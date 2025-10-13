@@ -16,3 +16,4 @@ Thumbs.db
 # Session logs (can be regenerated)
 session_logs/scratch_*
 session_logs/temp_*
+*.backup
