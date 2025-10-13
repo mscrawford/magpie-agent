@@ -1,10 +1,49 @@
-# MAgPIE AI Documentation Project
+# 🪺 magpie-nest
 
-**Purpose**: Comprehensive, AI-optimized documentation for the MAgPIE land-use model
+**MAgPIE AI Documentation System**
+
+Comprehensive, AI-optimized documentation for the MAgPIE land-use model.
 
 **⚠️ FOR CURRENT STATUS: See `CURRENT_STATE.json` ⚠️**
 
-**⚠️ THIS IS A STATIC REFERENCE DOCUMENT - DO NOT UPDATE STATUS HERE ⚠️**
+---
+
+## 🚀 Setup Instructions
+
+**If you're setting up MAgPIE with Claude Code:**
+
+### 1. Clone magpie-nest into your MAgPIE directory
+```bash
+cd /path/to/your/magpie/
+git clone git@github.com:mscrawford/magpie-nest.git
+```
+
+### 2. ⚠️ IMPORTANT: Copy CLAUDE.md to MAgPIE root
+
+**Claude Code needs `CLAUDE.md` in the working directory** (the MAgPIE root) to automatically read it.
+
+**Option A: Symlink** (recommended - stays in sync):
+```bash
+cd /path/to/your/magpie/
+ln -s magpie-nest/CLAUDE.md CLAUDE.md
+```
+
+**Option B: Copy** (simpler, but needs manual updates):
+```bash
+cd /path/to/your/magpie/
+cp magpie-nest/CLAUDE.md CLAUDE.md
+```
+
+**Why this matters**: Claude Code looks for `CLAUDE.md` in your current working directory, not in subdirectories. Without this step, Claude won't automatically load the AI instructions when you start working with MAgPIE.
+
+### 3. Verify Setup
+```bash
+# You should now have:
+ls -la CLAUDE.md          # ← In MAgPIE root (symlink or copy)
+ls -la magpie-nest/       # ← Full documentation repo
+```
+
+Now Claude Code will automatically use the comprehensive documentation when working with MAgPIE! 🎉
 
 ---
 
