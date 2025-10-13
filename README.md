@@ -15,7 +15,7 @@ Comprehensive, AI-optimized documentation for the MAgPIE land-use model.
 ### 1. Clone magpie-agent into your MAgPIE directory
 ```bash
 cd /path/to/your/magpie/
-git clone git@github.com:mscrawford/magpie-agent.git
+git clone git@github.com:mscrawford/magpie-nest.git magpie-agent
 ```
 
 ### 2. ⚠️ IMPORTANT: Copy CLAUDE.md to MAgPIE root
