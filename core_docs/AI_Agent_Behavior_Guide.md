@@ -25,7 +25,7 @@
 
 ### When to Report Errors:
 
-**Documentation Errors** (incorrect info in magpie-nest/):
+**Documentation Errors** (incorrect info in magpie-agent/):
 - Equation formula doesn't match source code
 - Variable name is wrong
 - File path is incorrect
