@@ -1,0 +1,91 @@
+{
+  "_comment": "🚨 THIS IS THE SINGLE SOURCE OF TRUTH FOR ALL PROJECT STATUS 🚨",
+  "_instructions": "Update this file after completing work. Do NOT update START_HERE.md, README.md, RULES_OF_THE_ROAD.md, or modules/README.md with status information.",
+  "project": "MAgPIE AI Documentation",
+  "last_updated": "2025-10-13T10:40:00Z",
+  "version": "2.0",
+
+  "current_phase": {
+    "phase": 2,
+    "name": "Cross-Module Analysis & Patterns",
+    "description": "Document module interactions, conservation laws, common workflows, and emergent behaviors",
+    "status": "in_progress",
+    "started": "2025-10-13"
+  },
+
+  "phase_1_completed": {
+    "name": "Module Documentation",
+    "completion_date": "2025-10-13",
+    "achievement": "46/46 modules fully verified with 100% equation accuracy",
+    "archived_at": "completed_phases/PHASE_1_MODULES_COMPLETE_2025-10-13.json"
+  },
+
+  "phase_2_progress": {
+    "conservation_laws": {
+      "land_balance": "pending",
+      "water_balance": "pending",
+      "carbon_balance": "pending",
+      "nitrogen_balance": "pending",
+      "food_balance": "pending"
+    },
+    "workflows": {
+      "add_new_crop": "pending",
+      "modify_yield_assumptions": "pending",
+      "implement_policy_scenario": "pending",
+      "add_climate_scenario": "pending"
+    },
+    "dependency_analysis": {
+      "circular_dependencies": "pending",
+      "modification_safety": "pending",
+      "cascade_effects": "pending"
+    },
+    "emergent_behaviors": {
+      "solver_behavior": "pending",
+      "constraint_binding": "pending",
+      "numerical_stability": "pending"
+    }
+  },
+
+  "priorities": {
+    "immediate": [
+      "Document land balance conservation across modules 10, 29, 30, 31, 32, 34, 35",
+      "Create modification safety guide for high-centrality modules (10, 11, 17, 56)",
+      "Map circular dependency resolution mechanisms"
+    ],
+    "next": [
+      "Document water balance (modules 42, 43)",
+      "Document carbon balance (modules 52, 53, 57, 59)",
+      "Create 'How to add a new crop' workflow guide"
+    ],
+    "future": [
+      "Solver behavior patterns",
+      "Performance optimization guide",
+      "Common debugging scenarios"
+    ]
+  },
+
+  "known_issues": {
+    "documentation_gaps": [],
+    "needs_verification": [],
+    "technical_debt": [
+      "Some modules use outdated citation formats",
+      "Cross-references between modules not fully mapped"
+    ]
+  },
+
+  "last_session": {
+    "date": "2025-10-13",
+    "accomplished": [
+      "✅ Answered user questions about SOM dynamics after deforestation",
+      "✅ Discovered 'parameterized vs. implemented' pattern (tillage example)",
+      "✅ Demonstrated cross-module mechanism tracing (tree cover → SOM)",
+      "✅ Identified temporal dynamics vs. static structure query patterns",
+      "✅ Documented policy implementation mechanisms (target+penalty, hard constraint, cost-based)",
+      "✅ Enhanced AI_Agent_Behavior_Guide.md with 5 new advanced patterns (582 lines added)",
+      "✅ Updated Code_Truth_Principles.md with parameterized vs. implemented verification (67 lines added)",
+      "✅ Added comprehensive error reporting protocol to both documents",
+      "✅ Integrated lessons learned from real user questions into guidance"
+    ],
+    "notes": "Major enhancement to AI support documentation based on lessons learned from actual user interactions. Added advanced pattern recognition for distinguishing infrastructure from implementation, tracing cross-module mechanisms, and handling temporal dynamics questions."
+  }
+}

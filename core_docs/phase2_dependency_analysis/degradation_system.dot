@@ -1,0 +1,55 @@
+digraph MAgPIE_Degradation_System {
+  rankdir=LR;
+  node [shape=box, style=filled];
+
+  "14_yields" [fillcolor="#FFD700", label="14\nyields", penwidth=3];
+  "35_natveg" [fillcolor="#FFD700", label="35\nnatveg", penwidth=3];
+  "58_peatland" [fillcolor="#FFD700", label="58\npeatland", penwidth=3];
+  "59_som" [fillcolor="#FFD700", label="59\nsom", penwidth=3];
+  "52_carbon" [fillcolor="#F0E8F8", label="52\ncarbon"];
+  "56_ghg_policy" [fillcolor="#F0E8F8", label="56\nghg\npolicy"];
+  "10_land" [fillcolor="#FFE6E6", label="10\nland"];
+  "11_costs" [fillcolor="#FFE6E6", label="11\ncosts"];
+  "29_cropland" [fillcolor="#E8F8E8", label="29\ncropland"];
+  "30_croparea" [fillcolor="#E8F8E8", label="30\ncroparea"];
+  "50_nr_soil_budget" [fillcolor="#F0E8F8", label="50\nnr\nsoil\nbudget"];
+  "51_nitrogen" [fillcolor="#F0E8F8", label="51\nnitrogen"];
+
+  "10_land" -> "14_yields" [label="pm:pm_land_start"];
+  "52_carbon" -> "14_yields" [label="pm:pm_carbon_density_other_ac, pm:pm_carbon_density_secdforest_ac +1"];
+  "56_ghg_policy" -> "35_natveg" [label="vm:vm_carbon_stock"];
+  "10_land" -> "35_natveg" [label="vm:vm_land, vm:vm_landexpansion +1"];
+  "14_yields" -> "35_natveg" [label="pm:pm_timber_yield"];
+  "52_carbon" -> "35_natveg" [label="pm:pm_carbon_density_other_ac, pm:pm_carbon_density_secdforest_ac"];
+  "56_ghg_policy" -> "58_peatland" [label="vm:vm_emissions_reg"];
+  "10_land" -> "58_peatland" [label="vm:vm_land, vm:vm_landreduction +1"];
+  "30_croparea" -> "59_som" [label="vm:vm_area"];
+  "56_ghg_policy" -> "59_som" [label="vm:vm_carbon_stock"];
+  "10_land" -> "59_som" [label="vm:vm_land, pm:pm_land_start +2"];
+  "35_natveg" -> "59_som" [label="vm:vm_land_other"];
+  "29_cropland" -> "59_som" [label="vm:vm_treecover, vm:vm_fallow +1"];
+  "56_ghg_policy" -> "52_carbon" [label="vm:vm_emissions_reg, vm:vm_carbon_stock"];
+  "35_natveg" -> "10_land" [label="vm:vm_landdiff_natveg"];
+  "30_croparea" -> "11_costs" [label="vm:vm_rotation_penalty"];
+  "56_ghg_policy" -> "11_costs" [label="vm:vm_emission_costs, vm:vm_reward_cdr_aff"];
+  "58_peatland" -> "11_costs" [label="vm:vm_peatland_cost"];
+  "10_land" -> "11_costs" [label="vm:vm_cost_land_transition"];
+  "35_natveg" -> "11_costs" [label="vm:vm_cost_hvarea_natveg"];
+  "59_som" -> "11_costs" [label="vm:vm_cost_scm"];
+  "50_nr_soil_budget" -> "11_costs" [label="vm:vm_nr_inorg_fert_costs"];
+  "29_cropland" -> "11_costs" [label="vm:vm_cost_cropland"];
+  "30_croparea" -> "29_cropland" [label="vm:vm_carbon_stock_croparea, vm:vm_area"];
+  "56_ghg_policy" -> "29_cropland" [label="vm:vm_carbon_stock"];
+  "10_land" -> "29_cropland" [label="vm:vm_land, pm:pm_land_hist +1"];
+  "52_carbon" -> "29_cropland" [label="pm:pm_carbon_density_plantation_ac, pm:pm_carbon_density_secdforest_ac"];
+  "10_land" -> "30_croparea" [label="vm:vm_land"];
+  "14_yields" -> "30_croparea" [label="vm:vm_yld"];
+  "29_cropland" -> "30_croparea" [label="pm:pm_avl_cropland_iso"];
+  "30_croparea" -> "50_nr_soil_budget" [label="vm:vm_area"];
+  "10_land" -> "50_nr_soil_budget" [label="vm:vm_land"];
+  "59_som" -> "50_nr_soil_budget" [label="vm:vm_nr_som_fertilizer"];
+  "29_cropland" -> "50_nr_soil_budget" [label="vm:vm_fallow"];
+  "56_ghg_policy" -> "51_nitrogen" [label="vm:vm_emissions_reg"];
+  "59_som" -> "51_nitrogen" [label="vm:vm_nr_som"];
+  "50_nr_soil_budget" -> "51_nitrogen" [label="vm:vm_nr_eff_pasture, vm:vm_nr_eff +1"];
+}

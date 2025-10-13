@@ -1,0 +1,5 @@
+Module,Variable,Type,Description
+38_factor_costs,per_ton_fao_may22,vm_cost_prod_cropi,factors,vm,Regional factor costs of capital and labor for crop production (mio. USD17MER per yr)
+16_demand,sector_may15,vm_supplyi,kall,vm,Regional demand (mio. tDM per yr)
+16_demand,sector_may15,vm_dem_seedi,kall,vm,Demand for seed (mio. tDM per yr)
+73_timber,default,vm_cost_timberi,vm,Actual cost of harvesting timber from forests (mio. USD17MER per yr)

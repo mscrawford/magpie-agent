@@ -1,0 +1,4 @@
+Module,Variable,Type,Description
+17_production,flexreg_apr16,pm_prod_initj,kcr,pm,Production initialization for year 1995 (tDM per yr)
+38_factor_costs,per_ton_fao_may22,pm_factor_cost_sharest,i,factors,pm,Capital and labor shares of factor costs on regional level (1)
+73_timber,default,pm_demand_forestryt_ext,i,kforestry,pm,Extended demand for timber beyound simulation (mio. tDM per yr)

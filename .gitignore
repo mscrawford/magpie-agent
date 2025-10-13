@@ -1,0 +1,18 @@
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Session logs (can be regenerated)
+session_logs/scratch_*
+session_logs/temp_*

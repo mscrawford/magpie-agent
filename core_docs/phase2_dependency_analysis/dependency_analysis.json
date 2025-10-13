@@ -1,0 +1,2677 @@
+{
+  "statistics": {
+    "total_vm_vars": 81,
+    "total_pm_vars": 19,
+    "total_im_vars": 15,
+    "total_modules": 45,
+    "total_dependencies": 173
+  },
+  "declarations": {
+    "vm": {
+      "vm_costs_additional_mon": [
+        [
+          "71_disagg_lvst",
+          "foragebased_jul23"
+        ],
+        [
+          "71_disagg_lvst",
+          "foragebased_aug18"
+        ],
+        [
+          "71_disagg_lvst",
+          "off"
+        ]
+      ],
+      "vm_watdem": [
+        [
+          "42_water_demand",
+          "all_sectors_aug13"
+        ],
+        [
+          "42_water_demand",
+          "agr_sector_aug13"
+        ]
+      ],
+      "vm_water_cost": [
+        [
+          "42_water_demand",
+          "all_sectors_aug13"
+        ],
+        [
+          "42_water_demand",
+          "agr_sector_aug13"
+        ]
+      ],
+      "vm_prod": [
+        [
+          "17_production",
+          "flexreg_apr16"
+        ]
+      ],
+      "vm_prod_reg": [
+        [
+          "17_production",
+          "flexreg_apr16"
+        ]
+      ],
+      "vm_p_fert_costs": [
+        [
+          "54_phosphorus",
+          "off"
+        ]
+      ],
+      "vm_tau": [
+        [
+          "13_tc",
+          "exo"
+        ],
+        [
+          "13_tc",
+          "endo_jan22"
+        ]
+      ],
+      "vm_tech_cost": [
+        [
+          "13_tc",
+          "exo"
+        ],
+        [
+          "13_tc",
+          "endo_jan22"
+        ]
+      ],
+      "vm_area": [
+        [
+          "30_croparea",
+          "simple_apr24"
+        ],
+        [
+          "30_croparea",
+          "detail_apr24"
+        ]
+      ],
+      "vm_rotation_penalty": [
+        [
+          "30_croparea",
+          "simple_apr24"
+        ],
+        [
+          "30_croparea",
+          "detail_apr24"
+        ]
+      ],
+      "vm_carbon_stock_croparea": [
+        [
+          "30_croparea",
+          "simple_apr24"
+        ],
+        [
+          "30_croparea",
+          "detail_apr24"
+        ]
+      ],
+      "vm_carbon_stock": [
+        [
+          "56_ghg_policy",
+          "price_aug22"
+        ]
+      ],
+      "vm_emission_costs": [
+        [
+          "56_ghg_policy",
+          "price_aug22"
+        ]
+      ],
+      "vm_emissions_reg": [
+        [
+          "56_ghg_policy",
+          "price_aug22"
+        ]
+      ],
+      "vm_reward_cdr_aff": [
+        [
+          "56_ghg_policy",
+          "price_aug22"
+        ]
+      ],
+      "vm_res_biomass_ag": [
+        [
+          "18_residues",
+          "flexcluster_jul23"
+        ],
+        [
+          "18_residues",
+          "flexreg_apr16"
+        ],
+        [
+          "18_residues",
+          "off"
+        ]
+      ],
+      "vm_res_biomass_bg": [
+        [
+          "18_residues",
+          "flexcluster_jul23"
+        ],
+        [
+          "18_residues",
+          "flexreg_apr16"
+        ],
+        [
+          "18_residues",
+          "off"
+        ]
+      ],
+      "vm_res_ag_burn": [
+        [
+          "18_residues",
+          "flexcluster_jul23"
+        ],
+        [
+          "18_residues",
+          "flexreg_apr16"
+        ],
+        [
+          "18_residues",
+          "off"
+        ]
+      ],
+      "vm_res_recycling": [
+        [
+          "18_residues",
+          "flexcluster_jul23"
+        ],
+        [
+          "18_residues",
+          "flexreg_apr16"
+        ],
+        [
+          "18_residues",
+          "off"
+        ]
+      ],
+      "vm_cost_prod_kres": [
+        [
+          "18_residues",
+          "flexcluster_jul23"
+        ],
+        [
+          "18_residues",
+          "flexreg_apr16"
+        ],
+        [
+          "18_residues",
+          "off"
+        ]
+      ],
+      "vm_cost_fore": [
+        [
+          "32_forestry",
+          "dynamic_may24"
+        ]
+      ],
+      "vm_landdiff_forestry": [
+        [
+          "32_forestry",
+          "dynamic_may24"
+        ]
+      ],
+      "vm_prod_forestry": [
+        [
+          "32_forestry",
+          "dynamic_may24"
+        ]
+      ],
+      "vm_landexpansion_forestry": [
+        [
+          "32_forestry",
+          "dynamic_may24"
+        ]
+      ],
+      "vm_landreduction_forestry": [
+        [
+          "32_forestry",
+          "dynamic_may24"
+        ]
+      ],
+      "vm_land_forestry": [
+        [
+          "32_forestry",
+          "dynamic_may24"
+        ]
+      ],
+      "vm_cdr_aff": [
+        [
+          "32_forestry",
+          "dynamic_may24"
+        ]
+      ],
+      "vm_dem_feed": [
+        [
+          "70_livestock",
+          "fbask_jan16"
+        ],
+        [
+          "70_livestock",
+          "fbask_jan16_sticky"
+        ]
+      ],
+      "vm_cost_prod_livst": [
+        [
+          "70_livestock",
+          "fbask_jan16"
+        ],
+        [
+          "70_livestock",
+          "fbask_jan16_sticky"
+        ]
+      ],
+      "vm_cost_prod_fish": [
+        [
+          "70_livestock",
+          "fbask_jan16"
+        ],
+        [
+          "70_livestock",
+          "fbask_jan16_sticky"
+        ]
+      ],
+      "vm_feed_balanceflow": [
+        [
+          "70_livestock",
+          "fbask_jan16"
+        ],
+        [
+          "70_livestock",
+          "fbask_jan16_sticky"
+        ]
+      ],
+      "vm_feed_intake": [
+        [
+          "70_livestock",
+          "fbask_jan16"
+        ],
+        [
+          "70_livestock",
+          "fbask_jan16_sticky"
+        ]
+      ],
+      "vm_manure": [
+        [
+          "55_awms",
+          "ipcc2006_aug16"
+        ],
+        [
+          "55_awms",
+          "off"
+        ]
+      ],
+      "vm_manure_recycling": [
+        [
+          "55_awms",
+          "ipcc2006_aug16"
+        ],
+        [
+          "55_awms",
+          "off"
+        ]
+      ],
+      "vm_manure_confinement": [
+        [
+          "55_awms",
+          "ipcc2006_aug16"
+        ],
+        [
+          "55_awms",
+          "off"
+        ]
+      ],
+      "vm_peatland_cost": [
+        [
+          "58_peatland",
+          "v2"
+        ],
+        [
+          "58_peatland",
+          "off"
+        ]
+      ],
+      "vm_cost_AEI": [
+        [
+          "41_area_equipped_for_irrigation",
+          "endo_apr13"
+        ],
+        [
+          "41_area_equipped_for_irrigation",
+          "static"
+        ]
+      ],
+      "vm_AEI": [
+        [
+          "41_area_equipped_for_irrigation",
+          "endo_apr13"
+        ],
+        [
+          "41_area_equipped_for_irrigation",
+          "static"
+        ]
+      ],
+      "vm_cost_bv_loss": [
+        [
+          "44_biodiversity",
+          "bii_target"
+        ],
+        [
+          "44_biodiversity",
+          "bv_btc_mar21"
+        ]
+      ],
+      "vm_bv": [
+        [
+          "44_biodiversity",
+          "bii_target"
+        ],
+        [
+          "44_biodiversity",
+          "bv_btc_mar21"
+        ]
+      ],
+      "vm_cost_trade": [
+        [
+          "21_trade",
+          "selfsuff_reduced"
+        ],
+        [
+          "21_trade",
+          "exo"
+        ],
+        [
+          "21_trade",
+          "selfsuff_reduced_bilateral22"
+        ]
+      ],
+      "vm_maccs_costs": [
+        [
+          "57_maccs",
+          "on_aug22"
+        ]
+      ],
+      "vm_cost_transp": [
+        [
+          "40_transport",
+          "gtap_nov12"
+        ],
+        [
+          "40_transport",
+          "off"
+        ]
+      ],
+      "vm_cost_glo": [
+        [
+          "11_costs",
+          "default"
+        ]
+      ],
+      "vm_cost_landcon": [
+        [
+          "39_landconversion",
+          "calib"
+        ]
+      ],
+      "vm_landdiff": [
+        [
+          "10_land",
+          "landmatrix_dec18"
+        ]
+      ],
+      "vm_land": [
+        [
+          "10_land",
+          "landmatrix_dec18"
+        ]
+      ],
+      "vm_landexpansion": [
+        [
+          "10_land",
+          "landmatrix_dec18"
+        ]
+      ],
+      "vm_landreduction": [
+        [
+          "10_land",
+          "landmatrix_dec18"
+        ]
+      ],
+      "vm_cost_land_transition": [
+        [
+          "10_land",
+          "landmatrix_dec18"
+        ]
+      ],
+      "vm_lu_transitions": [
+        [
+          "10_land",
+          "landmatrix_dec18"
+        ]
+      ],
+      "vm_dem_food": [
+        [
+          "15_food",
+          "anthro_iso_jun22"
+        ]
+      ],
+      "vm_dem_material": [
+        [
+          "62_material",
+          "exo_flexreg_apr16"
+        ]
+      ],
+      "vm_cost_prod_crop": [
+        [
+          "38_factor_costs",
+          "sticky_feb18"
+        ],
+        [
+          "38_factor_costs",
+          "per_ton_fao_may22"
+        ],
+        [
+          "38_factor_costs",
+          "sticky_labor"
+        ]
+      ],
+      "vm_cost_prod_past": [
+        [
+          "31_past",
+          "endo_jun13"
+        ]
+      ],
+      "vm_yld": [
+        [
+          "14_yields",
+          "managementcalib_aug19"
+        ]
+      ],
+      "vm_cost_urban": [
+        [
+          "34_urban",
+          "static"
+        ],
+        [
+          "34_urban",
+          "exo_nov21"
+        ]
+      ],
+      "vm_land_other": [
+        [
+          "35_natveg",
+          "pot_forest_may24"
+        ]
+      ],
+      "vm_landdiff_natveg": [
+        [
+          "35_natveg",
+          "pot_forest_may24"
+        ]
+      ],
+      "vm_prod_natveg": [
+        [
+          "35_natveg",
+          "pot_forest_may24"
+        ]
+      ],
+      "vm_cost_hvarea_natveg": [
+        [
+          "35_natveg",
+          "pot_forest_may24"
+        ]
+      ],
+      "vm_natforest_reduction": [
+        [
+          "35_natveg",
+          "pot_forest_may24"
+        ]
+      ],
+      "vm_supply": [
+        [
+          "16_demand",
+          "sector_may15"
+        ]
+      ],
+      "vm_dem_seed": [
+        [
+          "16_demand",
+          "sector_may15"
+        ]
+      ],
+      "vm_cost_timber": [
+        [
+          "73_timber",
+          "default"
+        ]
+      ],
+      "vm_cost_scm": [
+        [
+          "59_som",
+          "cellpool_jan23"
+        ],
+        [
+          "59_som",
+          "static_jan19"
+        ]
+      ],
+      "vm_nr_som": [
+        [
+          "59_som",
+          "cellpool_jan23"
+        ],
+        [
+          "59_som",
+          "static_jan19"
+        ]
+      ],
+      "vm_nr_som_fertilizer": [
+        [
+          "59_som",
+          "cellpool_jan23"
+        ],
+        [
+          "59_som",
+          "static_jan19"
+        ]
+      ],
+      "vm_nr_inorg_fert_reg": [
+        [
+          "50_nr_soil_budget",
+          "macceff_aug22"
+        ]
+      ],
+      "vm_nr_inorg_fert_costs": [
+        [
+          "50_nr_soil_budget",
+          "macceff_aug22"
+        ]
+      ],
+      "vm_nr_eff": [
+        [
+          "50_nr_soil_budget",
+          "macceff_aug22"
+        ]
+      ],
+      "vm_nr_eff_pasture": [
+        [
+          "50_nr_soil_budget",
+          "macceff_aug22"
+        ]
+      ],
+      "vm_dem_processing": [
+        [
+          "20_processing",
+          "substitution_may21"
+        ]
+      ],
+      "vm_secondary_overproduction": [
+        [
+          "20_processing",
+          "substitution_may21"
+        ]
+      ],
+      "vm_cost_processing": [
+        [
+          "20_processing",
+          "substitution_may21"
+        ]
+      ],
+      "vm_processing_substitution_cost": [
+        [
+          "20_processing",
+          "substitution_may21"
+        ]
+      ],
+      "vm_dem_bioen": [
+        [
+          "60_bioenergy",
+          "1st2ndgen_priced_feb24"
+        ],
+        [
+          "60_bioenergy",
+          "1stgen_priced_dec18"
+        ]
+      ],
+      "vm_bioenergy_utility": [
+        [
+          "60_bioenergy",
+          "1st2ndgen_priced_feb24"
+        ],
+        [
+          "60_bioenergy",
+          "1stgen_priced_dec18"
+        ]
+      ],
+      "vm_cost_cropland": [
+        [
+          "29_cropland",
+          "simple_apr24"
+        ],
+        [
+          "29_cropland",
+          "detail_apr24"
+        ]
+      ],
+      "vm_fallow": [
+        [
+          "29_cropland",
+          "simple_apr24"
+        ],
+        [
+          "29_cropland",
+          "detail_apr24"
+        ]
+      ],
+      "vm_treecover": [
+        [
+          "29_cropland",
+          "simple_apr24"
+        ],
+        [
+          "29_cropland",
+          "detail_apr24"
+        ]
+      ]
+    },
+    "pm": {
+      "pm_prod_init": [
+        [
+          "17_production",
+          "flexreg_apr16"
+        ]
+      ],
+      "pm_land_conservation": [
+        [
+          "22_land_conservation",
+          "area_based_apr22"
+        ]
+      ],
+      "pm_interest": [
+        [
+          "12_interest_rate",
+          "select_apr20"
+        ]
+      ],
+      "pm_past_mngmnt_factor": [
+        [
+          "70_livestock",
+          "fbask_jan16"
+        ],
+        [
+          "70_livestock",
+          "fbask_jan16_sticky"
+        ]
+      ],
+      "pm_hourly_costs": [
+        [
+          "36_employment",
+          "exo_may22"
+        ]
+      ],
+      "pm_productivity_gain_from_wages": [
+        [
+          "36_employment",
+          "exo_may22"
+        ]
+      ],
+      "pm_land_start": [
+        [
+          "10_land",
+          "landmatrix_dec18"
+        ]
+      ],
+      "pm_land_hist": [
+        [
+          "10_land",
+          "landmatrix_dec18"
+        ]
+      ],
+      "pm_kcal_pc_initial": [
+        [
+          "15_food",
+          "anthro_iso_jun22"
+        ]
+      ],
+      "pm_factor_cost_shares": [
+        [
+          "38_factor_costs",
+          "sticky_feb18"
+        ],
+        [
+          "38_factor_costs",
+          "per_ton_fao_may22"
+        ],
+        [
+          "38_factor_costs",
+          "sticky_labor"
+        ]
+      ],
+      "pm_timber_yield": [
+        [
+          "14_yields",
+          "managementcalib_aug19"
+        ]
+      ],
+      "pm_yields_semi_calib": [
+        [
+          "14_yields",
+          "managementcalib_aug19"
+        ]
+      ],
+      "pm_max_forest_est": [
+        [
+          "35_natveg",
+          "pot_forest_may24"
+        ]
+      ],
+      "pm_carbon_density_secdforest_ac": [
+        [
+          "52_carbon",
+          "normal_dec17"
+        ]
+      ],
+      "pm_carbon_density_other_ac": [
+        [
+          "52_carbon",
+          "normal_dec17"
+        ]
+      ],
+      "pm_carbon_density_plantation_ac": [
+        [
+          "52_carbon",
+          "normal_dec17"
+        ]
+      ],
+      "pm_demand_forestry": [
+        [
+          "73_timber",
+          "default"
+        ]
+      ],
+      "pm_labor_prod": [
+        [
+          "37_labor_prod",
+          "exo"
+        ],
+        [
+          "37_labor_prod",
+          "off"
+        ]
+      ],
+      "pm_avl_cropland_iso": [
+        [
+          "29_cropland",
+          "simple_apr24"
+        ],
+        [
+          "29_cropland",
+          "detail_apr24"
+        ]
+      ]
+    },
+    "im": {
+      "im_pollutant_prices": [
+        [
+          "56_ghg_policy",
+          "price_aug22"
+        ]
+      ],
+      "im_slaughter_feed_share": [
+        [
+          "70_livestock",
+          "fbask_jan16"
+        ],
+        [
+          "70_livestock",
+          "fbask_jan16_sticky"
+        ]
+      ],
+      "im_feed_baskets": [
+        [
+          "70_livestock",
+          "fbask_jan16"
+        ],
+        [
+          "70_livestock",
+          "fbask_jan16_sticky"
+        ]
+      ],
+      "im_pop_iso": [
+        [
+          "09_drivers",
+          "aug17"
+        ]
+      ],
+      "im_pop": [
+        [
+          "09_drivers",
+          "aug17"
+        ]
+      ],
+      "im_gdp_pc_mer_iso": [
+        [
+          "09_drivers",
+          "aug17"
+        ]
+      ],
+      "im_gdp_pc_mer": [
+        [
+          "09_drivers",
+          "aug17"
+        ]
+      ],
+      "im_gdp_pc_ppp_iso": [
+        [
+          "09_drivers",
+          "aug17"
+        ]
+      ],
+      "im_development_state": [
+        [
+          "09_drivers",
+          "aug17"
+        ]
+      ],
+      "im_physical_inactivity": [
+        [
+          "09_drivers",
+          "aug17"
+        ]
+      ],
+      "im_demography": [
+        [
+          "09_drivers",
+          "aug17"
+        ]
+      ],
+      "im_forest_ageclass": [
+        [
+          "28_ageclass",
+          "oct24"
+        ]
+      ],
+      "im_maccs_mitigation": [
+        [
+          "57_maccs",
+          "on_aug22"
+        ]
+      ],
+      "im_wat_avail": [
+        [
+          "43_water_availability",
+          "total_water_aug13"
+        ]
+      ],
+      "im_timber_prod_cost": [
+        [
+          "73_timber",
+          "default"
+        ]
+      ]
+    }
+  },
+  "usages": {
+    "vm": {
+      "vm_prod": [
+        "30_croparea",
+        "42_water_demand",
+        "18_residues",
+        "31_past",
+        "73_timber",
+        "71_disagg_lvst",
+        "17_production",
+        "40_transport",
+        "38_factor_costs"
+      ],
+      "vm_feed_balanceflow": [
+        "70_livestock",
+        "71_disagg_lvst"
+      ],
+      "vm_prod_reg": [
+        "70_livestock",
+        "20_processing",
+        "18_residues",
+        "16_demand",
+        "50_nr_soil_budget",
+        "71_disagg_lvst",
+        "17_production",
+        "21_trade",
+        "38_factor_costs"
+      ],
+      "vm_costs_additional_mon": [
+        "11_costs",
+        "71_disagg_lvst"
+      ],
+      "vm_watdem": [
+        "42_water_demand",
+        "43_water_availability"
+      ],
+      "vm_area": [
+        "30_croparea",
+        "42_water_demand",
+        "18_residues",
+        "32_forestry",
+        "41_area_equipped_for_irrigation",
+        "50_nr_soil_budget",
+        "59_som",
+        "53_methane",
+        "29_cropland"
+      ],
+      "vm_water_cost": [
+        "11_costs",
+        "42_water_demand"
+      ],
+      "vm_land": [
+        "10_land",
+        "30_croparea",
+        "32_forestry",
+        "31_past",
+        "58_peatland",
+        "50_nr_soil_budget",
+        "59_som",
+        "34_urban",
+        "22_land_conservation",
+        "35_natveg",
+        "29_cropland"
+      ],
+      "vm_treecover": [
+        "59_som",
+        "29_cropland",
+        "22_land_conservation"
+      ],
+      "vm_p_fert_costs": [
+        "11_costs",
+        "54_phosphorus"
+      ],
+      "vm_tau": [
+        "13_tc",
+        "14_yields"
+      ],
+      "vm_tech_cost": [
+        "11_costs",
+        "13_tc"
+      ],
+      "vm_cost_glo": [
+        "80_optimization",
+        "11_costs"
+      ],
+      "vm_landdiff": [
+        "80_optimization",
+        "10_land"
+      ],
+      "vm_yld": [
+        "14_yields",
+        "31_past",
+        "30_croparea"
+      ],
+      "vm_rotation_penalty": [
+        "11_costs",
+        "30_croparea"
+      ],
+      "vm_carbon_stock_croparea": [
+        "30_croparea",
+        "29_cropland"
+      ],
+      "vm_bv": [
+        "30_croparea",
+        "32_forestry",
+        "31_past",
+        "44_biodiversity",
+        "34_urban",
+        "35_natveg",
+        "29_cropland"
+      ],
+      "vm_AEI": [
+        "41_area_equipped_for_irrigation",
+        "30_croparea"
+      ],
+      "vm_carbon_stock": [
+        "32_forestry",
+        "31_past",
+        "52_carbon",
+        "56_ghg_policy",
+        "59_som",
+        "34_urban",
+        "35_natveg",
+        "29_cropland"
+      ],
+      "vm_emissions_reg": [
+        "58_peatland",
+        "57_maccs",
+        "52_carbon",
+        "56_ghg_policy",
+        "51_nitrogen",
+        "53_methane"
+      ],
+      "vm_emission_costs": [
+        "15_food",
+        "56_ghg_policy",
+        "11_costs"
+      ],
+      "vm_cdr_aff": [
+        "56_ghg_policy",
+        "32_forestry"
+      ],
+      "vm_reward_cdr_aff": [
+        "56_ghg_policy",
+        "11_costs"
+      ],
+      "vm_res_biomass_ag": [
+        "50_nr_soil_budget",
+        "18_residues"
+      ],
+      "vm_res_biomass_bg": [
+        "50_nr_soil_budget",
+        "18_residues"
+      ],
+      "vm_res_ag_burn": [
+        "51_nitrogen",
+        "53_methane",
+        "18_residues"
+      ],
+      "vm_res_recycling": [
+        "51_nitrogen",
+        "50_nr_soil_budget",
+        "18_residues"
+      ],
+      "vm_cost_prod_kres": [
+        "11_costs",
+        "18_residues"
+      ],
+      "vm_land_forestry": [
+        "32_forestry",
+        "58_peatland"
+      ],
+      "vm_fallow": [
+        "50_nr_soil_budget",
+        "59_som",
+        "32_forestry",
+        "29_cropland"
+      ],
+      "vm_cost_fore": [
+        "11_costs",
+        "32_forestry"
+      ],
+      "vm_landexpansion_forestry": [
+        "32_forestry",
+        "58_peatland"
+      ],
+      "vm_landreduction_forestry": [
+        "32_forestry",
+        "58_peatland"
+      ],
+      "vm_natforest_reduction": [
+        "32_forestry",
+        "35_natveg"
+      ],
+      "vm_landdiff_forestry": [
+        "32_forestry",
+        "10_land"
+      ],
+      "vm_prod_forestry": [
+        "73_timber",
+        "32_forestry"
+      ],
+      "vm_dem_feed": [
+        "70_livestock",
+        "16_demand"
+      ],
+      "vm_supply": [
+        "70_livestock",
+        "21_trade",
+        "16_demand"
+      ],
+      "vm_feed_intake": [
+        "70_livestock",
+        "53_methane",
+        "55_awms"
+      ],
+      "vm_cost_prod_livst": [
+        "70_livestock",
+        "11_costs",
+        "36_employment"
+      ],
+      "vm_cost_prod_fish": [
+        "70_livestock",
+        "11_costs"
+      ],
+      "vm_manure": [
+        "55_awms",
+        "53_methane",
+        "51_nitrogen",
+        "50_nr_soil_budget"
+      ],
+      "vm_manure_confinement": [
+        "55_awms",
+        "51_nitrogen"
+      ],
+      "vm_manure_recycling": [
+        "55_awms",
+        "50_nr_soil_budget",
+        "51_nitrogen"
+      ],
+      "vm_landexpansion": [
+        "10_land",
+        "39_landconversion",
+        "58_peatland",
+        "59_som",
+        "35_natveg"
+      ],
+      "vm_landreduction": [
+        "10_land",
+        "39_landconversion",
+        "58_peatland"
+      ],
+      "vm_peatland_cost": [
+        "11_costs",
+        "58_peatland"
+      ],
+      "vm_cost_AEI": [
+        "41_area_equipped_for_irrigation",
+        "11_costs"
+      ],
+      "vm_cost_prod_crop": [
+        "36_employment",
+        "11_costs",
+        "38_factor_costs"
+      ],
+      "vm_maccs_costs": [
+        "36_employment",
+        "11_costs",
+        "57_maccs"
+      ],
+      "vm_cost_bv_loss": [
+        "44_biodiversity",
+        "11_costs"
+      ],
+      "vm_nr_eff": [
+        "51_nitrogen",
+        "50_nr_soil_budget"
+      ],
+      "vm_nr_inorg_fert_reg": [
+        "51_nitrogen",
+        "50_nr_soil_budget"
+      ],
+      "vm_nr_eff_pasture": [
+        "51_nitrogen",
+        "50_nr_soil_budget"
+      ],
+      "vm_nr_som": [
+        "51_nitrogen",
+        "59_som"
+      ],
+      "vm_cost_trade": [
+        "11_costs",
+        "21_trade"
+      ],
+      "vm_cost_transp": [
+        "11_costs",
+        "40_transport"
+      ],
+      "vm_cost_prod_past": [
+        "11_costs",
+        "31_past"
+      ],
+      "vm_cost_landcon": [
+        "11_costs",
+        "39_landconversion"
+      ],
+      "vm_nr_inorg_fert_costs": [
+        "11_costs",
+        "50_nr_soil_budget"
+      ],
+      "vm_cost_timber": [
+        "11_costs",
+        "73_timber"
+      ],
+      "vm_cost_hvarea_natveg": [
+        "11_costs",
+        "35_natveg"
+      ],
+      "vm_cost_processing": [
+        "11_costs",
+        "20_processing"
+      ],
+      "vm_cost_scm": [
+        "11_costs",
+        "59_som"
+      ],
+      "vm_bioenergy_utility": [
+        "11_costs",
+        "60_bioenergy"
+      ],
+      "vm_processing_substitution_cost": [
+        "11_costs",
+        "20_processing"
+      ],
+      "vm_cost_land_transition": [
+        "11_costs",
+        "10_land"
+      ],
+      "vm_cost_cropland": [
+        "11_costs",
+        "29_cropland"
+      ],
+      "vm_cost_urban": [
+        "11_costs",
+        "34_urban"
+      ],
+      "vm_lu_transitions": [
+        "59_som",
+        "10_land",
+        "35_natveg",
+        "29_cropland"
+      ],
+      "vm_landdiff_natveg": [
+        "10_land",
+        "35_natveg"
+      ],
+      "vm_dem_food": [
+        "15_food",
+        "16_demand",
+        "20_processing",
+        "62_material"
+      ],
+      "vm_dem_material": [
+        "16_demand",
+        "62_material"
+      ],
+      "vm_land_other": [
+        "59_som",
+        "35_natveg"
+      ],
+      "vm_prod_natveg": [
+        "73_timber",
+        "35_natveg"
+      ],
+      "vm_dem_processing": [
+        "16_demand",
+        "20_processing"
+      ],
+      "vm_dem_bioen": [
+        "16_demand",
+        "60_bioenergy"
+      ],
+      "vm_dem_seed": [
+        "16_demand",
+        "50_nr_soil_budget"
+      ],
+      "vm_secondary_overproduction": [
+        "16_demand",
+        "20_processing"
+      ],
+      "vm_nr_som_fertilizer": [
+        "50_nr_soil_budget",
+        "59_som"
+      ]
+    },
+    "pm": {
+      "pm_land_start": [
+        "10_land",
+        "14_yields",
+        "32_forestry",
+        "59_som",
+        "71_disagg_lvst"
+      ],
+      "pm_prod_init": [
+        "17_production",
+        "38_factor_costs"
+      ],
+      "pm_yields_semi_calib": [
+        "14_yields",
+        "17_production"
+      ],
+      "pm_land_conservation": [
+        "32_forestry",
+        "31_past",
+        "22_land_conservation",
+        "35_natveg",
+        "29_cropland"
+      ],
+      "pm_interest": [
+        "70_livestock",
+        "32_forestry",
+        "39_landconversion",
+        "58_peatland",
+        "29_cropland",
+        "41_area_equipped_for_irrigation",
+        "56_ghg_policy",
+        "13_tc",
+        "12_interest_rate",
+        "38_factor_costs"
+      ],
+      "pm_avl_cropland_iso": [
+        "59_som",
+        "30_croparea",
+        "29_cropland"
+      ],
+      "pm_max_forest_est": [
+        "32_forestry",
+        "35_natveg"
+      ],
+      "pm_carbon_density_secdforest_ac": [
+        "14_yields",
+        "32_forestry",
+        "52_carbon",
+        "35_natveg",
+        "29_cropland"
+      ],
+      "pm_carbon_density_plantation_ac": [
+        "52_carbon",
+        "14_yields",
+        "32_forestry",
+        "29_cropland"
+      ],
+      "pm_timber_yield": [
+        "14_yields",
+        "32_forestry",
+        "35_natveg"
+      ],
+      "pm_demand_forestry": [
+        "73_timber",
+        "32_forestry",
+        "62_material"
+      ],
+      "pm_past_mngmnt_factor": [
+        "70_livestock",
+        "14_yields"
+      ],
+      "pm_kcal_pc_initial": [
+        "15_food",
+        "70_livestock"
+      ],
+      "pm_factor_cost_shares": [
+        "70_livestock",
+        "57_maccs",
+        "38_factor_costs",
+        "36_employment"
+      ],
+      "pm_productivity_gain_from_wages": [
+        "70_livestock",
+        "57_maccs",
+        "38_factor_costs",
+        "36_employment"
+      ],
+      "pm_hourly_costs": [
+        "70_livestock",
+        "57_maccs",
+        "38_factor_costs",
+        "36_employment"
+      ],
+      "pm_climate_class": [
+        "14_yields",
+        "58_peatland",
+        "52_carbon",
+        "59_som",
+        "45_climate"
+      ],
+      "pm_land_hist": [
+        "10_land",
+        "29_cropland"
+      ],
+      "pm_labor_prod": [
+        "37_labor_prod",
+        "38_factor_costs"
+      ],
+      "pm_carbon_density_other_ac": [
+        "52_carbon",
+        "14_yields",
+        "35_natveg"
+      ]
+    },
+    "im": {
+      "im_feed_baskets": [
+        "70_livestock",
+        "71_disagg_lvst"
+      ],
+      "im_gdp_pc_mer": [
+        "42_water_demand",
+        "09_drivers"
+      ],
+      "im_wat_avail": [
+        "42_water_demand",
+        "43_water_availability"
+      ],
+      "im_pop_iso": [
+        "70_livestock",
+        "09_drivers",
+        "42_water_demand",
+        "55_awms",
+        "56_ghg_policy",
+        "13_tc",
+        "73_timber",
+        "50_nr_soil_budget",
+        "60_bioenergy",
+        "12_interest_rate",
+        "15_food"
+      ],
+      "im_development_state": [
+        "09_drivers",
+        "18_residues",
+        "42_water_demand",
+        "55_awms",
+        "56_ghg_policy",
+        "12_interest_rate"
+      ],
+      "im_gdp_pc_ppp_iso": [
+        "73_timber",
+        "13_tc",
+        "09_drivers",
+        "15_food",
+        "38_factor_costs"
+      ],
+      "im_Variable": [
+        "80_optimization"
+      ],
+      "im_pollutant_prices": [
+        "56_ghg_policy",
+        "57_maccs"
+      ],
+      "im_timber_prod_cost": [
+        "73_timber",
+        "32_forestry"
+      ],
+      "im_pop": [
+        "15_food",
+        "70_livestock",
+        "62_material",
+        "09_drivers"
+      ],
+      "im_slaughter_feed_share": [
+        "70_livestock",
+        "55_awms"
+      ],
+      "im_gdp_pc_mer_iso": [
+        "15_food",
+        "36_employment",
+        "09_drivers"
+      ],
+      "im_maccs_mitigation": [
+        "51_nitrogen",
+        "53_methane",
+        "50_nr_soil_budget",
+        "57_maccs"
+      ],
+      "im_physical_inactivity": [
+        "15_food",
+        "09_drivers"
+      ],
+      "im_demography": [
+        "15_food",
+        "09_drivers"
+      ],
+      "im_forest_ageclass": [
+        "35_natveg",
+        "28_ageclass"
+      ]
+    }
+  },
+  "dependencies": {
+    "11_costs": {
+      "71_disagg_lvst": [
+        "vm:vm_costs_additional_mon"
+      ],
+      "42_water_demand": [
+        "vm:vm_water_cost"
+      ],
+      "54_phosphorus": [
+        "vm:vm_p_fert_costs"
+      ],
+      "13_tc": [
+        "vm:vm_tech_cost"
+      ],
+      "30_croparea": [
+        "vm:vm_rotation_penalty"
+      ],
+      "56_ghg_policy": [
+        "vm:vm_emission_costs",
+        "vm:vm_reward_cdr_aff"
+      ],
+      "18_residues": [
+        "vm:vm_cost_prod_kres"
+      ],
+      "32_forestry": [
+        "vm:vm_cost_fore"
+      ],
+      "70_livestock": [
+        "vm:vm_cost_prod_fish",
+        "vm:vm_cost_prod_livst"
+      ],
+      "58_peatland": [
+        "vm:vm_peatland_cost"
+      ],
+      "41_area_equipped_for_irrigation": [
+        "vm:vm_cost_AEI"
+      ],
+      "44_biodiversity": [
+        "vm:vm_cost_bv_loss"
+      ],
+      "21_trade": [
+        "vm:vm_cost_trade"
+      ],
+      "57_maccs": [
+        "vm:vm_maccs_costs"
+      ],
+      "40_transport": [
+        "vm:vm_cost_transp"
+      ],
+      "39_landconversion": [
+        "vm:vm_cost_landcon"
+      ],
+      "10_land": [
+        "vm:vm_cost_land_transition"
+      ],
+      "38_factor_costs": [
+        "vm:vm_cost_prod_crop"
+      ],
+      "31_past": [
+        "vm:vm_cost_prod_past"
+      ],
+      "34_urban": [
+        "vm:vm_cost_urban"
+      ],
+      "35_natveg": [
+        "vm:vm_cost_hvarea_natveg"
+      ],
+      "73_timber": [
+        "vm:vm_cost_timber"
+      ],
+      "59_som": [
+        "vm:vm_cost_scm"
+      ],
+      "50_nr_soil_budget": [
+        "vm:vm_nr_inorg_fert_costs"
+      ],
+      "20_processing": [
+        "vm:vm_cost_processing",
+        "vm:vm_processing_substitution_cost"
+      ],
+      "60_bioenergy": [
+        "vm:vm_bioenergy_utility"
+      ],
+      "29_cropland": [
+        "vm:vm_cost_cropland"
+      ]
+    },
+    "43_water_availability": {
+      "42_water_demand": [
+        "vm:vm_watdem"
+      ]
+    },
+    "30_croparea": {
+      "17_production": [
+        "vm:vm_prod"
+      ],
+      "41_area_equipped_for_irrigation": [
+        "vm:vm_AEI"
+      ],
+      "44_biodiversity": [
+        "vm:vm_bv"
+      ],
+      "10_land": [
+        "vm:vm_land"
+      ],
+      "14_yields": [
+        "vm:vm_yld"
+      ],
+      "29_cropland": [
+        "pm:pm_avl_cropland_iso"
+      ]
+    },
+    "42_water_demand": {
+      "17_production": [
+        "vm:vm_prod"
+      ],
+      "30_croparea": [
+        "vm:vm_area"
+      ],
+      "09_drivers": [
+        "im:im_development_state",
+        "im:im_gdp_pc_mer",
+        "im:im_pop_iso"
+      ],
+      "43_water_availability": [
+        "im:im_wat_avail"
+      ]
+    },
+    "18_residues": {
+      "17_production": [
+        "vm:vm_prod_reg",
+        "vm:vm_prod"
+      ],
+      "30_croparea": [
+        "vm:vm_area"
+      ],
+      "09_drivers": [
+        "im:im_development_state"
+      ]
+    },
+    "31_past": {
+      "17_production": [
+        "vm:vm_prod"
+      ],
+      "56_ghg_policy": [
+        "vm:vm_carbon_stock"
+      ],
+      "44_biodiversity": [
+        "vm:vm_bv"
+      ],
+      "10_land": [
+        "vm:vm_land"
+      ],
+      "14_yields": [
+        "vm:vm_yld"
+      ],
+      "22_land_conservation": [
+        "pm:pm_land_conservation"
+      ]
+    },
+    "73_timber": {
+      "17_production": [
+        "vm:vm_prod"
+      ],
+      "32_forestry": [
+        "vm:vm_prod_forestry"
+      ],
+      "35_natveg": [
+        "vm:vm_prod_natveg"
+      ],
+      "09_drivers": [
+        "im:im_gdp_pc_ppp_iso",
+        "im:im_pop_iso"
+      ]
+    },
+    "71_disagg_lvst": {
+      "17_production": [
+        "vm:vm_prod_reg",
+        "vm:vm_prod"
+      ],
+      "70_livestock": [
+        "vm:vm_feed_balanceflow",
+        "im:im_feed_baskets"
+      ],
+      "10_land": [
+        "pm:pm_land_start"
+      ]
+    },
+    "40_transport": {
+      "17_production": [
+        "vm:vm_prod"
+      ]
+    },
+    "38_factor_costs": {
+      "17_production": [
+        "vm:vm_prod_reg",
+        "vm:vm_prod",
+        "pm:pm_prod_init"
+      ],
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ],
+      "36_employment": [
+        "pm:pm_productivity_gain_from_wages",
+        "pm:pm_hourly_costs"
+      ],
+      "37_labor_prod": [
+        "pm:pm_labor_prod"
+      ],
+      "09_drivers": [
+        "im:im_gdp_pc_ppp_iso"
+      ]
+    },
+    "70_livestock": {
+      "17_production": [
+        "vm:vm_prod_reg"
+      ],
+      "16_demand": [
+        "vm:vm_supply"
+      ],
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ],
+      "36_employment": [
+        "pm:pm_productivity_gain_from_wages",
+        "pm:pm_hourly_costs"
+      ],
+      "15_food": [
+        "pm:pm_kcal_pc_initial"
+      ],
+      "38_factor_costs": [
+        "pm:pm_factor_cost_shares"
+      ],
+      "09_drivers": [
+        "im:im_pop",
+        "im:im_pop_iso"
+      ]
+    },
+    "20_processing": {
+      "17_production": [
+        "vm:vm_prod_reg"
+      ],
+      "15_food": [
+        "vm:vm_dem_food"
+      ]
+    },
+    "16_demand": {
+      "17_production": [
+        "vm:vm_prod_reg"
+      ],
+      "70_livestock": [
+        "vm:vm_dem_feed"
+      ],
+      "15_food": [
+        "vm:vm_dem_food"
+      ],
+      "62_material": [
+        "vm:vm_dem_material"
+      ],
+      "20_processing": [
+        "vm:vm_dem_processing",
+        "vm:vm_secondary_overproduction"
+      ],
+      "60_bioenergy": [
+        "vm:vm_dem_bioen"
+      ]
+    },
+    "50_nr_soil_budget": {
+      "17_production": [
+        "vm:vm_prod_reg"
+      ],
+      "30_croparea": [
+        "vm:vm_area"
+      ],
+      "18_residues": [
+        "vm:vm_res_biomass_ag",
+        "vm:vm_res_recycling",
+        "vm:vm_res_biomass_bg"
+      ],
+      "55_awms": [
+        "vm:vm_manure_recycling",
+        "vm:vm_manure"
+      ],
+      "10_land": [
+        "vm:vm_land"
+      ],
+      "16_demand": [
+        "vm:vm_dem_seed"
+      ],
+      "59_som": [
+        "vm:vm_nr_som_fertilizer"
+      ],
+      "29_cropland": [
+        "vm:vm_fallow"
+      ],
+      "09_drivers": [
+        "im:im_pop_iso"
+      ],
+      "57_maccs": [
+        "im:im_maccs_mitigation"
+      ]
+    },
+    "21_trade": {
+      "17_production": [
+        "vm:vm_prod_reg"
+      ],
+      "16_demand": [
+        "vm:vm_supply"
+      ]
+    },
+    "14_yields": {
+      "13_tc": [
+        "vm:vm_tau"
+      ],
+      "70_livestock": [
+        "pm:pm_past_mngmnt_factor"
+      ],
+      "10_land": [
+        "pm:pm_land_start"
+      ],
+      "52_carbon": [
+        "pm:pm_carbon_density_other_ac",
+        "pm:pm_carbon_density_secdforest_ac",
+        "pm:pm_carbon_density_plantation_ac"
+      ]
+    },
+    "32_forestry": {
+      "30_croparea": [
+        "vm:vm_area"
+      ],
+      "56_ghg_policy": [
+        "vm:vm_carbon_stock"
+      ],
+      "44_biodiversity": [
+        "vm:vm_bv"
+      ],
+      "10_land": [
+        "vm:vm_land",
+        "pm:pm_land_start"
+      ],
+      "35_natveg": [
+        "pm:pm_max_forest_est",
+        "vm:vm_natforest_reduction"
+      ],
+      "29_cropland": [
+        "vm:vm_fallow"
+      ],
+      "22_land_conservation": [
+        "pm:pm_land_conservation"
+      ],
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ],
+      "14_yields": [
+        "pm:pm_timber_yield"
+      ],
+      "52_carbon": [
+        "pm:pm_carbon_density_plantation_ac",
+        "pm:pm_carbon_density_secdforest_ac"
+      ],
+      "73_timber": [
+        "im:im_timber_prod_cost",
+        "pm:pm_demand_forestry"
+      ]
+    },
+    "41_area_equipped_for_irrigation": {
+      "30_croparea": [
+        "vm:vm_area"
+      ],
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ]
+    },
+    "59_som": {
+      "30_croparea": [
+        "vm:vm_area"
+      ],
+      "56_ghg_policy": [
+        "vm:vm_carbon_stock"
+      ],
+      "10_land": [
+        "vm:vm_land",
+        "pm:pm_land_start",
+        "vm:vm_landexpansion",
+        "vm:vm_lu_transitions"
+      ],
+      "35_natveg": [
+        "vm:vm_land_other"
+      ],
+      "29_cropland": [
+        "vm:vm_treecover",
+        "vm:vm_fallow",
+        "pm:pm_avl_cropland_iso"
+      ]
+    },
+    "53_methane": {
+      "30_croparea": [
+        "vm:vm_area"
+      ],
+      "56_ghg_policy": [
+        "vm:vm_emissions_reg"
+      ],
+      "18_residues": [
+        "vm:vm_res_ag_burn"
+      ],
+      "70_livestock": [
+        "vm:vm_feed_intake"
+      ],
+      "55_awms": [
+        "vm:vm_manure"
+      ],
+      "57_maccs": [
+        "im:im_maccs_mitigation"
+      ]
+    },
+    "29_cropland": {
+      "30_croparea": [
+        "vm:vm_carbon_stock_croparea",
+        "vm:vm_area"
+      ],
+      "56_ghg_policy": [
+        "vm:vm_carbon_stock"
+      ],
+      "44_biodiversity": [
+        "vm:vm_bv"
+      ],
+      "10_land": [
+        "vm:vm_land",
+        "pm:pm_land_hist",
+        "vm:vm_lu_transitions"
+      ],
+      "22_land_conservation": [
+        "pm:pm_land_conservation"
+      ],
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ],
+      "52_carbon": [
+        "pm:pm_carbon_density_plantation_ac",
+        "pm:pm_carbon_density_secdforest_ac"
+      ]
+    },
+    "52_carbon": {
+      "56_ghg_policy": [
+        "vm:vm_emissions_reg",
+        "vm:vm_carbon_stock"
+      ]
+    },
+    "34_urban": {
+      "56_ghg_policy": [
+        "vm:vm_carbon_stock"
+      ],
+      "44_biodiversity": [
+        "vm:vm_bv"
+      ],
+      "10_land": [
+        "vm:vm_land"
+      ]
+    },
+    "35_natveg": {
+      "56_ghg_policy": [
+        "vm:vm_carbon_stock"
+      ],
+      "44_biodiversity": [
+        "vm:vm_bv"
+      ],
+      "10_land": [
+        "vm:vm_land",
+        "vm:vm_landexpansion",
+        "vm:vm_lu_transitions"
+      ],
+      "22_land_conservation": [
+        "pm:pm_land_conservation"
+      ],
+      "14_yields": [
+        "pm:pm_timber_yield"
+      ],
+      "52_carbon": [
+        "pm:pm_carbon_density_other_ac",
+        "pm:pm_carbon_density_secdforest_ac"
+      ],
+      "28_ageclass": [
+        "im:im_forest_ageclass"
+      ]
+    },
+    "15_food": {
+      "56_ghg_policy": [
+        "vm:vm_emission_costs"
+      ],
+      "09_drivers": [
+        "im:im_demography",
+        "im:im_pop_iso",
+        "im:im_pop",
+        "im:im_gdp_pc_mer_iso",
+        "im:im_gdp_pc_ppp_iso",
+        "im:im_physical_inactivity"
+      ]
+    },
+    "58_peatland": {
+      "56_ghg_policy": [
+        "vm:vm_emissions_reg"
+      ],
+      "32_forestry": [
+        "vm:vm_landreduction_forestry",
+        "vm:vm_land_forestry",
+        "vm:vm_landexpansion_forestry"
+      ],
+      "10_land": [
+        "vm:vm_land",
+        "vm:vm_landreduction",
+        "vm:vm_landexpansion"
+      ],
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ]
+    },
+    "57_maccs": {
+      "56_ghg_policy": [
+        "vm:vm_emissions_reg",
+        "im:im_pollutant_prices"
+      ],
+      "36_employment": [
+        "pm:pm_productivity_gain_from_wages",
+        "pm:pm_hourly_costs"
+      ],
+      "38_factor_costs": [
+        "pm:pm_factor_cost_shares"
+      ]
+    },
+    "51_nitrogen": {
+      "56_ghg_policy": [
+        "vm:vm_emissions_reg"
+      ],
+      "18_residues": [
+        "vm:vm_res_recycling",
+        "vm:vm_res_ag_burn"
+      ],
+      "55_awms": [
+        "vm:vm_manure_confinement",
+        "vm:vm_manure_recycling",
+        "vm:vm_manure"
+      ],
+      "59_som": [
+        "vm:vm_nr_som"
+      ],
+      "50_nr_soil_budget": [
+        "vm:vm_nr_eff_pasture",
+        "vm:vm_nr_eff",
+        "vm:vm_nr_inorg_fert_reg"
+      ],
+      "57_maccs": [
+        "im:im_maccs_mitigation"
+      ]
+    },
+    "10_land": {
+      "32_forestry": [
+        "vm:vm_landdiff_forestry"
+      ],
+      "35_natveg": [
+        "vm:vm_landdiff_natveg"
+      ]
+    },
+    "56_ghg_policy": {
+      "32_forestry": [
+        "vm:vm_cdr_aff"
+      ],
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ],
+      "09_drivers": [
+        "im:im_development_state",
+        "im:im_pop_iso"
+      ]
+    },
+    "36_employment": {
+      "70_livestock": [
+        "vm:vm_cost_prod_livst"
+      ],
+      "57_maccs": [
+        "vm:vm_maccs_costs"
+      ],
+      "38_factor_costs": [
+        "vm:vm_cost_prod_crop",
+        "pm:pm_factor_cost_shares"
+      ],
+      "09_drivers": [
+        "im:im_gdp_pc_mer_iso"
+      ]
+    },
+    "55_awms": {
+      "70_livestock": [
+        "vm:vm_feed_intake",
+        "im:im_slaughter_feed_share"
+      ],
+      "09_drivers": [
+        "im:im_development_state",
+        "im:im_pop_iso"
+      ]
+    },
+    "80_optimization": {
+      "11_costs": [
+        "vm:vm_cost_glo"
+      ],
+      "10_land": [
+        "vm:vm_landdiff"
+      ]
+    },
+    "22_land_conservation": {
+      "10_land": [
+        "vm:vm_land"
+      ],
+      "29_cropland": [
+        "vm:vm_treecover"
+      ]
+    },
+    "39_landconversion": {
+      "10_land": [
+        "vm:vm_landreduction",
+        "vm:vm_landexpansion"
+      ],
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ]
+    },
+    "62_material": {
+      "15_food": [
+        "vm:vm_dem_food"
+      ],
+      "73_timber": [
+        "pm:pm_demand_forestry"
+      ],
+      "09_drivers": [
+        "im:im_pop"
+      ]
+    },
+    "13_tc": {
+      "12_interest_rate": [
+        "pm:pm_interest"
+      ],
+      "09_drivers": [
+        "im:im_gdp_pc_ppp_iso",
+        "im:im_pop_iso"
+      ]
+    },
+    "17_production": {
+      "14_yields": [
+        "pm:pm_yields_semi_calib"
+      ]
+    },
+    "60_bioenergy": {
+      "09_drivers": [
+        "im:im_pop_iso"
+      ]
+    },
+    "12_interest_rate": {
+      "09_drivers": [
+        "im:im_development_state",
+        "im:im_pop_iso"
+      ]
+    }
+  },
+  "centrality": {
+    "11_costs": {
+      "in": 1,
+      "out": 27,
+      "total": 28
+    },
+    "71_disagg_lvst": {
+      "in": 1,
+      "out": 3,
+      "total": 4
+    },
+    "42_water_demand": {
+      "in": 2,
+      "out": 4,
+      "total": 6
+    },
+    "54_phosphorus": {
+      "in": 1,
+      "out": 0,
+      "total": 1
+    },
+    "13_tc": {
+      "in": 2,
+      "out": 2,
+      "total": 4
+    },
+    "30_croparea": {
+      "in": 9,
+      "out": 6,
+      "total": 15
+    },
+    "56_ghg_policy": {
+      "in": 13,
+      "out": 3,
+      "total": 16
+    },
+    "18_residues": {
+      "in": 4,
+      "out": 3,
+      "total": 7
+    },
+    "32_forestry": {
+      "in": 5,
+      "out": 11,
+      "total": 16
+    },
+    "70_livestock": {
+      "in": 7,
+      "out": 7,
+      "total": 14
+    },
+    "58_peatland": {
+      "in": 1,
+      "out": 4,
+      "total": 5
+    },
+    "41_area_equipped_for_irrigation": {
+      "in": 2,
+      "out": 2,
+      "total": 4
+    },
+    "44_biodiversity": {
+      "in": 7,
+      "out": 0,
+      "total": 7
+    },
+    "21_trade": {
+      "in": 1,
+      "out": 2,
+      "total": 3
+    },
+    "57_maccs": {
+      "in": 5,
+      "out": 3,
+      "total": 8
+    },
+    "40_transport": {
+      "in": 1,
+      "out": 1,
+      "total": 2
+    },
+    "39_landconversion": {
+      "in": 1,
+      "out": 2,
+      "total": 3
+    },
+    "10_land": {
+      "in": 15,
+      "out": 2,
+      "total": 17
+    },
+    "38_factor_costs": {
+      "in": 4,
+      "out": 5,
+      "total": 9
+    },
+    "31_past": {
+      "in": 1,
+      "out": 6,
+      "total": 7
+    },
+    "34_urban": {
+      "in": 1,
+      "out": 3,
+      "total": 4
+    },
+    "35_natveg": {
+      "in": 5,
+      "out": 7,
+      "total": 12
+    },
+    "73_timber": {
+      "in": 3,
+      "out": 4,
+      "total": 7
+    },
+    "59_som": {
+      "in": 3,
+      "out": 5,
+      "total": 8
+    },
+    "50_nr_soil_budget": {
+      "in": 2,
+      "out": 10,
+      "total": 12
+    },
+    "20_processing": {
+      "in": 2,
+      "out": 2,
+      "total": 4
+    },
+    "60_bioenergy": {
+      "in": 2,
+      "out": 1,
+      "total": 3
+    },
+    "29_cropland": {
+      "in": 6,
+      "out": 7,
+      "total": 13
+    },
+    "43_water_availability": {
+      "in": 1,
+      "out": 1,
+      "total": 2
+    },
+    "17_production": {
+      "in": 13,
+      "out": 1,
+      "total": 14
+    },
+    "14_yields": {
+      "in": 5,
+      "out": 4,
+      "total": 9
+    },
+    "09_drivers": {
+      "in": 14,
+      "out": 0,
+      "total": 14
+    },
+    "22_land_conservation": {
+      "in": 4,
+      "out": 2,
+      "total": 6
+    },
+    "12_interest_rate": {
+      "in": 9,
+      "out": 1,
+      "total": 10
+    },
+    "36_employment": {
+      "in": 3,
+      "out": 4,
+      "total": 7
+    },
+    "37_labor_prod": {
+      "in": 1,
+      "out": 0,
+      "total": 1
+    },
+    "16_demand": {
+      "in": 3,
+      "out": 6,
+      "total": 9
+    },
+    "15_food": {
+      "in": 4,
+      "out": 2,
+      "total": 6
+    },
+    "62_material": {
+      "in": 1,
+      "out": 3,
+      "total": 4
+    },
+    "55_awms": {
+      "in": 3,
+      "out": 2,
+      "total": 5
+    },
+    "52_carbon": {
+      "in": 4,
+      "out": 1,
+      "total": 5
+    },
+    "53_methane": {
+      "in": 0,
+      "out": 6,
+      "total": 6
+    },
+    "28_ageclass": {
+      "in": 1,
+      "out": 0,
+      "total": 1
+    },
+    "51_nitrogen": {
+      "in": 0,
+      "out": 6,
+      "total": 6
+    },
+    "80_optimization": {
+      "in": 0,
+      "out": 2,
+      "total": 2
+    }
+  },
+  "critical_chains": [
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "13_tc",
+      "12_interest_rate"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "13_tc",
+      "09_drivers"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "16_demand"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "12_interest_rate"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "36_employment"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "15_food"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "38_factor_costs"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "09_drivers"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "10_land",
+      "32_forestry"
+    ],
+    [
+      "11_costs",
+      "71_disagg_lvst",
+      "17_production",
+      "14_yields",
+      "10_land",
+      "35_natveg"
+    ]
+  ],
+  "circular_dependencies": [
+    [
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "17_production"
+    ],
+    [
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "16_demand",
+      "17_production"
+    ],
+    [
+      "70_livestock",
+      "16_demand",
+      "70_livestock"
+    ],
+    [
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "16_demand",
+      "15_food",
+      "56_ghg_policy",
+      "32_forestry",
+      "30_croparea",
+      "17_production"
+    ],
+    [
+      "30_croparea",
+      "41_area_equipped_for_irrigation",
+      "30_croparea"
+    ],
+    [
+      "32_forestry",
+      "30_croparea",
+      "10_land",
+      "32_forestry"
+    ],
+    [
+      "56_ghg_policy",
+      "32_forestry",
+      "30_croparea",
+      "10_land",
+      "35_natveg",
+      "56_ghg_policy"
+    ],
+    [
+      "10_land",
+      "35_natveg",
+      "10_land"
+    ],
+    [
+      "10_land",
+      "35_natveg",
+      "22_land_conservation",
+      "10_land"
+    ],
+    [
+      "30_croparea",
+      "10_land",
+      "35_natveg",
+      "22_land_conservation",
+      "29_cropland",
+      "30_croparea"
+    ],
+    [
+      "56_ghg_policy",
+      "32_forestry",
+      "30_croparea",
+      "10_land",
+      "35_natveg",
+      "22_land_conservation",
+      "29_cropland",
+      "56_ghg_policy"
+    ],
+    [
+      "10_land",
+      "35_natveg",
+      "22_land_conservation",
+      "29_cropland",
+      "10_land"
+    ],
+    [
+      "22_land_conservation",
+      "29_cropland",
+      "22_land_conservation"
+    ],
+    [
+      "56_ghg_policy",
+      "32_forestry",
+      "30_croparea",
+      "10_land",
+      "35_natveg",
+      "22_land_conservation",
+      "29_cropland",
+      "52_carbon",
+      "56_ghg_policy"
+    ],
+    [
+      "14_yields",
+      "70_livestock",
+      "16_demand",
+      "15_food",
+      "56_ghg_policy",
+      "32_forestry",
+      "30_croparea",
+      "10_land",
+      "35_natveg",
+      "14_yields"
+    ],
+    [
+      "14_yields",
+      "70_livestock",
+      "16_demand",
+      "15_food",
+      "56_ghg_policy",
+      "32_forestry",
+      "30_croparea",
+      "14_yields"
+    ],
+    [
+      "56_ghg_policy",
+      "32_forestry",
+      "56_ghg_policy"
+    ],
+    [
+      "14_yields",
+      "70_livestock",
+      "16_demand",
+      "15_food",
+      "56_ghg_policy",
+      "32_forestry",
+      "14_yields"
+    ],
+    [
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "16_demand",
+      "15_food",
+      "56_ghg_policy",
+      "32_forestry",
+      "73_timber",
+      "17_production"
+    ],
+    [
+      "32_forestry",
+      "73_timber",
+      "32_forestry"
+    ],
+    [
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "16_demand",
+      "20_processing",
+      "17_production"
+    ],
+    [
+      "70_livestock",
+      "36_employment",
+      "70_livestock"
+    ],
+    [
+      "36_employment",
+      "57_maccs",
+      "36_employment"
+    ],
+    [
+      "17_production",
+      "14_yields",
+      "70_livestock",
+      "36_employment",
+      "57_maccs",
+      "38_factor_costs",
+      "17_production"
+    ],
+    [
+      "36_employment",
+      "57_maccs",
+      "38_factor_costs",
+      "36_employment"
+    ],
+    [
+      "42_water_demand",
+      "43_water_availability",
+      "42_water_demand"
+    ]
+  ]
+}

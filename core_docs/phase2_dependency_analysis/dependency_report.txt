@@ -1,0 +1,460 @@
+================================================================================
+MAGPIE MODULE DEPENDENCY ANALYSIS - COMPREHENSIVE REPORT
+================================================================================
+
+=== SUMMARY STATISTICS ===
+
+Total Interface Variables: 115
+  - vm_ (model variables):     81
+  - pm_ (model parameters):    19
+  - im_ (input parameters):    15
+
+Modules in dependency graph:  45
+Inter-module dependencies:    173
+
+=== MODULE CENTRALITY (Hub Analysis) ===
+
+Rank  Module                         Total   Provides  Depends 
+----------------------------------------------------------------------
+1     11_costs                       28      1         27      
+2     10_land                        17      15        2       
+3     56_ghg_policy                  16      13        3       
+4     32_forestry                    16      5         11      
+5     30_croparea                    15      9         6       
+6     70_livestock                   14      7         7       
+7     17_production                  14      13        1       
+8     09_drivers                     14      14        0       
+9     29_cropland                    13      6         7       
+10    35_natveg                      12      5         7       
+11    50_nr_soil_budget              12      2         10      
+12    12_interest_rate               10      9         1       
+13    38_factor_costs                9       4         5       
+14    14_yields                      9       5         4       
+15    16_demand                      9       3         6       
+16    57_maccs                       8       5         3       
+17    59_som                         8       3         5       
+18    18_residues                    7       4         3       
+19    44_biodiversity                7       7         0       
+20    31_past                        7       1         6       
+
+=== MODULE DEPENDENCY MATRIX ===
+Rows = Consumers (depend on), Columns = Producers (provide to)
+
+     012345678901234567890123456789012345678901234
+     ---------------------------------------------
+ 0 09_d |.                                            |
+ 1 10_l | .               1 1                         |
+ 2 11_c | 1. 1    121  111111  11111 11   1 21111 211 |
+ 3 12_i |2  .                                         |
+ 4 13_t |2  1.                                        |
+ 5 14_y | 1  1.                         3         1   |
+ 6 15_f |6     .                            1         |
+ 7 16_d |      1.1 2                            111   |
+ 8 17_p |     1  .                                    |
+ 9 18_r |1       2.     1                             |
+10 20_p |      1 1 .                                  |
+11 21_t |       11  .                                 |
+12 22_l | 1          . 1                              |
+13 28_a |             .                               |
+14 29_c | 3 1        1 .2            1  2   1         |
+15 30_c | 1   1  1     1.         1  1                |
+16 31_p | 1   1  1   1   .           1      1         |
+17 32_f | 2 1 1      1 11 . 2        1  2   1       2 |
+18 34_u | 1                .         1      1         |
+19 35_n | 3   1      11     .        1  2   1         |
+20 36_e |1                   . 2             1    1   |
+21 37_l |                     .                       |
+22 38_f |1  1    3           21.                      |
+23 39_l | 2 1                   .                     |
+24 40_t |        1               .                    |
+25 41_a |   1           1         .                   |
+26 42_w |3       1      1          .1                 |
+27 43_w |                          1.                 |
+28 44_b |                            .                |
+29 50_n |11     113    11             .    2 1 1      |
+30 51_n |         2                   3.   311 1      |
+31 52_c |                               .   2         |
+32 53_m |         1     1                . 111    1   |
+33 54_p |                                 .           |
+34 55_a |2                                 .      2   |
+35 56_g |2  1             1                 .         |
+36 57_m |                    2 1            2.        |
+37 58_p | 3 1             3                 1 .       |
+38 59_s | 4            31   1               1  .      |
+39 60_b |1                                      .     |
+40 62_m |1     1                                 .  1 |
+41 70_l |2  1  111           2 1                  .   |
+42 71_d | 1      2                                2.  |
+43 73_t |2       1        1 1                       . |
+44 80_o | 11                                         .|
+
+Module Index:
+   0: 09_drivers
+   1: 10_land
+   2: 11_costs
+   3: 12_interest_rate
+   4: 13_tc
+   5: 14_yields
+   6: 15_food
+   7: 16_demand
+   8: 17_production
+   9: 18_residues
+  10: 20_processing
+  11: 21_trade
+  12: 22_land_conservation
+  13: 28_ageclass
+  14: 29_cropland
+  15: 30_croparea
+  16: 31_past
+  17: 32_forestry
+  18: 34_urban
+  19: 35_natveg
+  20: 36_employment
+  21: 37_labor_prod
+  22: 38_factor_costs
+  23: 39_landconversion
+  24: 40_transport
+  25: 41_area_equipped_for_irrigation
+  26: 42_water_demand
+  27: 43_water_availability
+  28: 44_biodiversity
+  29: 50_nr_soil_budget
+  30: 51_nitrogen
+  31: 52_carbon
+  32: 53_methane
+  33: 54_phosphorus
+  34: 55_awms
+  35: 56_ghg_policy
+  36: 57_maccs
+  37: 58_peatland
+  38: 59_som
+  39: 60_bioenergy
+  40: 62_material
+  41: 70_livestock
+  42: 71_disagg_lvst
+  43: 73_timber
+  44: 80_optimization
+
+=== MOST SHARED INTERFACE VARIABLES ===
+
+
+VM Variables:
+  vm_land                                  | Declared by: 10_land                        | Used by 11 modules
+  vm_prod                                  | Declared by: 17_production                  | Used by  9 modules
+  vm_prod_reg                              | Declared by: 17_production                  | Used by  9 modules
+  vm_area                                  | Declared by: 30_croparea, 30_croparea       | Used by  9 modules
+  vm_carbon_stock                          | Declared by: 56_ghg_policy                  | Used by  8 modules
+  vm_bv                                    | Declared by: 44_biodiversity, 44_biodiversity | Used by  7 modules
+  vm_emissions_reg                         | Declared by: 56_ghg_policy                  | Used by  6 modules
+  vm_landexpansion                         | Declared by: 10_land                        | Used by  5 modules
+  vm_fallow                                | Declared by: 29_cropland, 29_cropland       | Used by  4 modules
+  vm_manure                                | Declared by: 55_awms, 55_awms               | Used by  4 modules
+  vm_lu_transitions                        | Declared by: 10_land                        | Used by  4 modules
+  vm_dem_food                              | Declared by: 15_food                        | Used by  4 modules
+  vm_treecover                             | Declared by: 29_cropland, 29_cropland       | Used by  3 modules
+  vm_yld                                   | Declared by: 14_yields                      | Used by  3 modules
+  vm_emission_costs                        | Declared by: 56_ghg_policy                  | Used by  3 modules
+
+PM Variables:
+  pm_interest                              | Declared by: 12_interest_rate               | Used by 10 modules
+  pm_land_start                            | Declared by: 10_land                        | Used by  5 modules
+  pm_land_conservation                     | Declared by: 22_land_conservation           | Used by  5 modules
+  pm_carbon_density_secdforest_ac          | Declared by: 52_carbon                      | Used by  5 modules
+  pm_climate_class                         | Declared by:                                | Used by  5 modules
+  pm_carbon_density_plantation_ac          | Declared by: 52_carbon                      | Used by  4 modules
+  pm_factor_cost_shares                    | Declared by: 38_factor_costs, 38_factor_costs, 38_factor_costs | Used by  4 modules
+  pm_productivity_gain_from_wages          | Declared by: 36_employment                  | Used by  4 modules
+  pm_hourly_costs                          | Declared by: 36_employment                  | Used by  4 modules
+  pm_avl_cropland_iso                      | Declared by: 29_cropland, 29_cropland       | Used by  3 modules
+  pm_timber_yield                          | Declared by: 14_yields                      | Used by  3 modules
+  pm_demand_forestry                       | Declared by: 73_timber                      | Used by  3 modules
+  pm_carbon_density_other_ac               | Declared by: 52_carbon                      | Used by  3 modules
+  pm_prod_init                             | Declared by: 17_production                  | Used by  2 modules
+  pm_yields_semi_calib                     | Declared by: 14_yields                      | Used by  2 modules
+
+IM Variables:
+  im_pop_iso                               | Declared by: 09_drivers                     | Used by 11 modules
+  im_development_state                     | Declared by: 09_drivers                     | Used by  6 modules
+  im_gdp_pc_ppp_iso                        | Declared by: 09_drivers                     | Used by  5 modules
+  im_pop                                   | Declared by: 09_drivers                     | Used by  4 modules
+  im_maccs_mitigation                      | Declared by: 57_maccs                       | Used by  4 modules
+  im_gdp_pc_mer_iso                        | Declared by: 09_drivers                     | Used by  3 modules
+  im_feed_baskets                          | Declared by: 70_livestock, 70_livestock     | Used by  2 modules
+  im_gdp_pc_mer                            | Declared by: 09_drivers                     | Used by  2 modules
+  im_wat_avail                             | Declared by: 43_water_availability          | Used by  2 modules
+  im_pollutant_prices                      | Declared by: 56_ghg_policy                  | Used by  2 modules
+  im_timber_prod_cost                      | Declared by: 73_timber                      | Used by  2 modules
+  im_slaughter_feed_share                  | Declared by: 70_livestock, 70_livestock     | Used by  2 modules
+  im_physical_inactivity                   | Declared by: 09_drivers                     | Used by  2 modules
+  im_demography                            | Declared by: 09_drivers                     | Used by  2 modules
+  im_forest_ageclass                       | Declared by: 28_ageclass                    | Used by  2 modules
+
+=== KEY MODULE DEPENDENCIES (Top Consumers) ===
+
+
+11_costs depends on 27 modules:
+  <- 56_ghg_policy                  ( 2 vars): vm:vm_reward_cdr_aff, vm:vm_emission_costs
+  <- 70_livestock                   ( 2 vars): vm:vm_cost_prod_livst, vm:vm_cost_prod_fish
+  <- 20_processing                  ( 2 vars): vm:vm_cost_processing, vm:vm_processing_substitution_cost
+  <- 71_disagg_lvst                 ( 1 vars): vm:vm_costs_additional_mon
+  <- 42_water_demand                ( 1 vars): vm:vm_water_cost
+  <- 54_phosphorus                  ( 1 vars): vm:vm_p_fert_costs
+  <- 13_tc                          ( 1 vars): vm:vm_tech_cost
+  <- 30_croparea                    ( 1 vars): vm:vm_rotation_penalty
+  <- 18_residues                    ( 1 vars): vm:vm_cost_prod_kres
+  <- 32_forestry                    ( 1 vars): vm:vm_cost_fore
+
+32_forestry depends on 11 modules:
+  <- 10_land                        ( 2 vars): vm:vm_land, pm:pm_land_start
+  <- 35_natveg                      ( 2 vars): vm:vm_natforest_reduction, pm:pm_max_forest_est
+  <- 52_carbon                      ( 2 vars): pm:pm_carbon_density_secdforest_ac, pm:pm_carbon_density_plantation_ac
+  <- 73_timber                      ( 2 vars): im:im_timber_prod_cost, pm:pm_demand_forestry
+  <- 30_croparea                    ( 1 vars): vm:vm_area
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_carbon_stock
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 29_cropland                    ( 1 vars): vm:vm_fallow
+  <- 22_land_conservation           ( 1 vars): pm:pm_land_conservation
+  <- 12_interest_rate               ( 1 vars): pm:pm_interest
+
+50_nr_soil_budget depends on 10 modules:
+  <- 18_residues                    ( 3 vars): vm:vm_res_biomass_bg, vm:vm_res_biomass_ag, vm:vm_res_recycling
+  <- 55_awms                        ( 2 vars): vm:vm_manure, vm:vm_manure_recycling
+  <- 17_production                  ( 1 vars): vm:vm_prod_reg
+  <- 30_croparea                    ( 1 vars): vm:vm_area
+  <- 10_land                        ( 1 vars): vm:vm_land
+  <- 16_demand                      ( 1 vars): vm:vm_dem_seed
+  <- 59_som                         ( 1 vars): vm:vm_nr_som_fertilizer
+  <- 29_cropland                    ( 1 vars): vm:vm_fallow
+  <- 09_drivers                     ( 1 vars): im:im_pop_iso
+  <- 57_maccs                       ( 1 vars): im:im_maccs_mitigation
+
+70_livestock depends on 7 modules:
+  <- 36_employment                  ( 2 vars): pm:pm_productivity_gain_from_wages, pm:pm_hourly_costs
+  <- 09_drivers                     ( 2 vars): im:im_pop, im:im_pop_iso
+  <- 17_production                  ( 1 vars): vm:vm_prod_reg
+  <- 16_demand                      ( 1 vars): vm:vm_supply
+  <- 12_interest_rate               ( 1 vars): pm:pm_interest
+  <- 15_food                        ( 1 vars): pm:pm_kcal_pc_initial
+  <- 38_factor_costs                ( 1 vars): pm:pm_factor_cost_shares
+
+29_cropland depends on 7 modules:
+  <- 10_land                        ( 3 vars): vm:vm_lu_transitions, vm:vm_land, pm:pm_land_hist
+  <- 30_croparea                    ( 2 vars): vm:vm_area, vm:vm_carbon_stock_croparea
+  <- 52_carbon                      ( 2 vars): pm:pm_carbon_density_secdforest_ac, pm:pm_carbon_density_plantation_ac
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_carbon_stock
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 22_land_conservation           ( 1 vars): pm:pm_land_conservation
+  <- 12_interest_rate               ( 1 vars): pm:pm_interest
+
+35_natveg depends on 7 modules:
+  <- 10_land                        ( 3 vars): vm:vm_landexpansion, vm:vm_land, vm:vm_lu_transitions
+  <- 52_carbon                      ( 2 vars): pm:pm_carbon_density_secdforest_ac, pm:pm_carbon_density_other_ac
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_carbon_stock
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 22_land_conservation           ( 1 vars): pm:pm_land_conservation
+  <- 14_yields                      ( 1 vars): pm:pm_timber_yield
+  <- 28_ageclass                    ( 1 vars): im:im_forest_ageclass
+
+30_croparea depends on 6 modules:
+  <- 17_production                  ( 1 vars): vm:vm_prod
+  <- 41_area_equipped_for_irrigation ( 1 vars): vm:vm_AEI
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 10_land                        ( 1 vars): vm:vm_land
+  <- 14_yields                      ( 1 vars): vm:vm_yld
+  <- 29_cropland                    ( 1 vars): pm:pm_avl_cropland_iso
+
+31_past depends on 6 modules:
+  <- 17_production                  ( 1 vars): vm:vm_prod
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_carbon_stock
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 10_land                        ( 1 vars): vm:vm_land
+  <- 14_yields                      ( 1 vars): vm:vm_yld
+  <- 22_land_conservation           ( 1 vars): pm:pm_land_conservation
+
+16_demand depends on 6 modules:
+  <- 20_processing                  ( 2 vars): vm:vm_dem_processing, vm:vm_secondary_overproduction
+  <- 17_production                  ( 1 vars): vm:vm_prod_reg
+  <- 70_livestock                   ( 1 vars): vm:vm_dem_feed
+  <- 15_food                        ( 1 vars): vm:vm_dem_food
+  <- 62_material                    ( 1 vars): vm:vm_dem_material
+  <- 60_bioenergy                   ( 1 vars): vm:vm_dem_bioen
+
+53_methane depends on 6 modules:
+  <- 30_croparea                    ( 1 vars): vm:vm_area
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_emissions_reg
+  <- 18_residues                    ( 1 vars): vm:vm_res_ag_burn
+  <- 70_livestock                   ( 1 vars): vm:vm_feed_intake
+  <- 55_awms                        ( 1 vars): vm:vm_manure
+  <- 57_maccs                       ( 1 vars): im:im_maccs_mitigation
+
+51_nitrogen depends on 6 modules:
+  <- 55_awms                        ( 3 vars): vm:vm_manure, vm:vm_manure_recycling, vm:vm_manure_confinement
+  <- 50_nr_soil_budget              ( 3 vars): vm:vm_nr_eff, vm:vm_nr_inorg_fert_reg, vm:vm_nr_eff_pasture
+  <- 18_residues                    ( 2 vars): vm:vm_res_ag_burn, vm:vm_res_recycling
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_emissions_reg
+  <- 59_som                         ( 1 vars): vm:vm_nr_som
+  <- 57_maccs                       ( 1 vars): im:im_maccs_mitigation
+
+38_factor_costs depends on 5 modules:
+  <- 17_production                  ( 3 vars): pm:pm_prod_init, vm:vm_prod, vm:vm_prod_reg
+  <- 36_employment                  ( 2 vars): pm:pm_productivity_gain_from_wages, pm:pm_hourly_costs
+  <- 12_interest_rate               ( 1 vars): pm:pm_interest
+  <- 37_labor_prod                  ( 1 vars): pm:pm_labor_prod
+  <- 09_drivers                     ( 1 vars): im:im_gdp_pc_ppp_iso
+
+59_som depends on 5 modules:
+  <- 10_land                        ( 4 vars): vm:vm_landexpansion, vm:vm_lu_transitions, vm:vm_land +1 more
+  <- 29_cropland                    ( 3 vars): vm:vm_fallow, pm:pm_avl_cropland_iso, vm:vm_treecover
+  <- 30_croparea                    ( 1 vars): vm:vm_area
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_carbon_stock
+  <- 35_natveg                      ( 1 vars): vm:vm_land_other
+
+42_water_demand depends on 4 modules:
+  <- 09_drivers                     ( 3 vars): im:im_development_state, im:im_gdp_pc_mer, im:im_pop_iso
+  <- 17_production                  ( 1 vars): vm:vm_prod
+  <- 30_croparea                    ( 1 vars): vm:vm_area
+  <- 43_water_availability          ( 1 vars): im:im_wat_avail
+
+73_timber depends on 4 modules:
+  <- 09_drivers                     ( 2 vars): im:im_gdp_pc_ppp_iso, im:im_pop_iso
+  <- 17_production                  ( 1 vars): vm:vm_prod
+  <- 32_forestry                    ( 1 vars): vm:vm_prod_forestry
+  <- 35_natveg                      ( 1 vars): vm:vm_prod_natveg
+
+=== KEY MODULE PROVIDERS (Most Depended Upon) ===
+
+
+10_land provides to 15 modules:
+  -> 11_costs, 14_yields, 22_land_conservation, 29_cropland, 30_croparea
+  -> 31_past, 32_forestry, 34_urban, 35_natveg, 39_landconversion
+  -> 50_nr_soil_budget, 58_peatland, 59_som, 71_disagg_lvst, 80_optimization
+
+09_drivers provides to 14 modules:
+  -> 12_interest_rate, 13_tc, 15_food, 18_residues, 36_employment
+  -> 38_factor_costs, 42_water_demand, 50_nr_soil_budget, 55_awms, 56_ghg_policy
+  -> 60_bioenergy, 62_material, 70_livestock, 73_timber
+
+56_ghg_policy provides to 13 modules:
+  -> 11_costs, 15_food, 29_cropland, 31_past, 32_forestry
+  -> 34_urban, 35_natveg, 51_nitrogen, 52_carbon, 53_methane
+  -> 57_maccs, 58_peatland, 59_som
+
+17_production provides to 13 modules:
+  -> 16_demand, 18_residues, 20_processing, 21_trade, 30_croparea
+  -> 31_past, 38_factor_costs, 40_transport, 42_water_demand, 50_nr_soil_budget
+  -> 70_livestock, 71_disagg_lvst, 73_timber
+
+30_croparea provides to 9 modules:
+  -> 11_costs, 18_residues, 29_cropland, 32_forestry, 41_area_equipped_for_irrigation
+  -> 42_water_demand, 50_nr_soil_budget, 53_methane, 59_som
+
+12_interest_rate provides to 9 modules:
+  -> 13_tc, 29_cropland, 32_forestry, 38_factor_costs, 39_landconversion
+  -> 41_area_equipped_for_irrigation, 56_ghg_policy, 58_peatland, 70_livestock
+
+70_livestock provides to 7 modules:
+  -> 11_costs, 14_yields, 16_demand, 36_employment, 53_methane
+  -> 55_awms, 71_disagg_lvst
+
+44_biodiversity provides to 7 modules:
+  -> 11_costs, 29_cropland, 30_croparea, 31_past, 32_forestry
+  -> 34_urban, 35_natveg
+
+29_cropland provides to 6 modules:
+  -> 11_costs, 22_land_conservation, 30_croparea, 32_forestry, 50_nr_soil_budget
+  -> 59_som
+
+32_forestry provides to 5 modules:
+  -> 10_land, 11_costs, 56_ghg_policy, 58_peatland, 73_timber
+
+57_maccs provides to 5 modules:
+  -> 11_costs, 36_employment, 50_nr_soil_budget, 51_nitrogen, 53_methane
+
+35_natveg provides to 5 modules:
+  -> 10_land, 11_costs, 32_forestry, 59_som, 73_timber
+
+14_yields provides to 5 modules:
+  -> 17_production, 30_croparea, 31_past, 32_forestry, 35_natveg
+
+18_residues provides to 4 modules:
+  -> 11_costs, 50_nr_soil_budget, 51_nitrogen, 53_methane
+
+38_factor_costs provides to 4 modules:
+  -> 11_costs, 36_employment, 57_maccs, 70_livestock
+
+=== DETAILED CIRCULAR DEPENDENCY ANALYSIS ===
+
+Found 26 circular dependency patterns
+
+
+Circle 1: 17_production -> 14_yields -> 70_livestock -> 17_production
+  17_production <- 14_yields: pm:pm_yields_semi_calib
+  14_yields <- 70_livestock: pm:pm_past_mngmnt_factor
+  70_livestock <- 17_production: vm:vm_prod_reg
+
+Circle 2: 17_production -> 14_yields -> 70_livestock -> 16_demand -> 17_production
+  17_production <- 14_yields: pm:pm_yields_semi_calib
+  14_yields <- 70_livestock: pm:pm_past_mngmnt_factor
+  70_livestock <- 16_demand: vm:vm_supply
+  16_demand <- 17_production: vm:vm_prod_reg
+
+Circle 3: 70_livestock -> 16_demand -> 70_livestock
+  70_livestock <- 16_demand: vm:vm_supply
+  16_demand <- 70_livestock: vm:vm_dem_feed
+
+Circle 4: 17_production -> 14_yields -> 70_livestock -> 16_demand -> 15_food -> 56_ghg_policy -> 32_forestry -> 30_croparea -> 17_production
+  17_production <- 14_yields: pm:pm_yields_semi_calib
+  14_yields <- 70_livestock: pm:pm_past_mngmnt_factor
+  70_livestock <- 16_demand: vm:vm_supply
+  16_demand <- 15_food: vm:vm_dem_food
+  15_food <- 56_ghg_policy: vm:vm_emission_costs
+  56_ghg_policy <- 32_forestry: vm:vm_cdr_aff
+  32_forestry <- 30_croparea: vm:vm_area
+  30_croparea <- 17_production: vm:vm_prod
+
+Circle 5: 30_croparea -> 41_area_equipped_for_irrigation -> 30_croparea
+  30_croparea <- 41_area_equipped_for_irrigation: vm:vm_AEI
+  41_area_equipped_for_irrigation <- 30_croparea: vm:vm_area
+
+Circle 6: 32_forestry -> 30_croparea -> 10_land -> 32_forestry
+  32_forestry <- 30_croparea: vm:vm_area
+  30_croparea <- 10_land: vm:vm_land
+  10_land <- 32_forestry: vm:vm_landdiff_forestry
+
+Circle 7: 56_ghg_policy -> 32_forestry -> 30_croparea -> 10_land -> 35_natveg -> 56_ghg_policy
+  56_ghg_policy <- 32_forestry: vm:vm_cdr_aff
+  32_forestry <- 30_croparea: vm:vm_area
+  30_croparea <- 10_land: vm:vm_land
+  10_land <- 35_natveg: vm:vm_landdiff_natveg
+  35_natveg <- 56_ghg_policy: vm:vm_carbon_stock
+
+Circle 8: 10_land -> 35_natveg -> 10_land
+  10_land <- 35_natveg: vm:vm_landdiff_natveg
+  35_natveg <- 10_land: vm:vm_landexpansion, vm:vm_land, vm:vm_lu_transitions
+
+Circle 9: 10_land -> 35_natveg -> 22_land_conservation -> 10_land
+  10_land <- 35_natveg: vm:vm_landdiff_natveg
+  35_natveg <- 22_land_conservation: pm:pm_land_conservation
+  22_land_conservation <- 10_land: vm:vm_land
+
+Circle 10: 30_croparea -> 10_land -> 35_natveg -> 22_land_conservation -> 29_cropland -> 30_croparea
+  30_croparea <- 10_land: vm:vm_land
+  10_land <- 35_natveg: vm:vm_landdiff_natveg
+  35_natveg <- 22_land_conservation: pm:pm_land_conservation
+  22_land_conservation <- 29_cropland: vm:vm_treecover
+  29_cropland <- 30_croparea: vm:vm_area, vm:vm_carbon_stock_croparea
+
+=== CRITICAL DEPENDENCY CHAINS ===
+
+Longest dependency chains (module call sequences):
+
+ 1. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 13_tc -> 12_interest_rate
+ 2. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 13_tc -> 09_drivers
+ 3. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 70_livestock -> 16_demand
+ 4. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 70_livestock -> 12_interest_rate
+ 5. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 70_livestock -> 36_employment
+ 6. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 70_livestock -> 15_food
+ 7. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 70_livestock -> 38_factor_costs
+ 8. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 70_livestock -> 09_drivers
+ 9. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 10_land -> 32_forestry
+10. Length 6: 11_costs -> 71_disagg_lvst -> 17_production -> 14_yields -> 10_land -> 35_natveg

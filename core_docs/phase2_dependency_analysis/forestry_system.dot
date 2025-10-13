@@ -1,0 +1,38 @@
+digraph MAgPIE_Forestry_System {
+  rankdir=TB;
+  node [shape=box, style=filled];
+
+  "16_demand" [fillcolor="#FFE6E6", label="16\ndemand"];
+  "73_timber" [fillcolor="#90EE90", label="73\ntimber", penwidth=3];
+  "32_forestry" [fillcolor="#90EE90", label="32\nforestry", penwidth=3];
+  "35_natveg" [fillcolor="#90EE90", label="35\nnatveg", penwidth=3];
+  "14_yields" [fillcolor="#FFE6E6", label="14\nyields"];
+  "28_ageclass" [fillcolor="#E8F8E8", label="28\nageclass"];
+  "10_land" [fillcolor="#FFE6E6", label="10\nland"];
+  "56_ghg_policy" [fillcolor="#F0E8F8", label="56\nghg\npolicy"];
+  "52_carbon" [fillcolor="#F0E8F8", label="52\ncarbon"];
+  "17_production" [fillcolor="#FFE6E6", label="17\nproduction"];
+
+  "17_production" -> "16_demand" [label="vm_prod_reg"];
+  "17_production" -> "73_timber" [label="vm_prod"];
+  "32_forestry" -> "73_timber" [label="vm_prod_forestry"];
+  "35_natveg" -> "73_timber" [label="vm_prod_natveg"];
+  "56_ghg_policy" -> "32_forestry" [label="vm_carbon_stock"];
+  "10_land" -> "32_forestry" [label="vm_land, pm_land_start"];
+  "35_natveg" -> "32_forestry" [label="pm_max_forest_est, vm_natforest_reduction"];
+  "14_yields" -> "32_forestry" [label="pm_timber_yield"];
+  "52_carbon" -> "32_forestry" [label="pm_carbon_density_plantation_ac, pm_carbon_density_secdforest_ac"];
+  "73_timber" -> "32_forestry" [label="im_timber_prod_cost, pm_demand_forestry"];
+  "56_ghg_policy" -> "35_natveg" [label="vm_carbon_stock"];
+  "10_land" -> "35_natveg" [label="vm_land, vm_landexpansion +1"];
+  "14_yields" -> "35_natveg" [label="pm_timber_yield"];
+  "52_carbon" -> "35_natveg" [label="pm_carbon_density_other_ac, pm_carbon_density_secdforest_ac"];
+  "28_ageclass" -> "35_natveg" [label="im_forest_ageclass"];
+  "10_land" -> "14_yields" [label="pm_land_start"];
+  "52_carbon" -> "14_yields" [label="pm_carbon_density_other_ac, pm_carbon_density_secdforest_ac +1"];
+  "32_forestry" -> "10_land" [label="vm_landdiff_forestry"];
+  "35_natveg" -> "10_land" [label="vm_landdiff_natveg"];
+  "32_forestry" -> "56_ghg_policy" [label="vm_cdr_aff"];
+  "56_ghg_policy" -> "52_carbon" [label="vm_emissions_reg, vm_carbon_stock"];
+  "14_yields" -> "17_production" [label="pm_yields_semi_calib"];
+}

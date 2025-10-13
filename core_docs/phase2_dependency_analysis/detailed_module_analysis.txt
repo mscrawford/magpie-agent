@@ -1,0 +1,467 @@
+
+================================================================================
+DETAILED ANALYSIS OF CORE HUB MODULES
+================================================================================
+
+================================================================================
+MODULE: 11_costs
+================================================================================
+Centrality Score: 28 (Provides to: 1, Depends on: 27)
+
+Interface Variables DECLARED by this module:
+  VM variables (1):
+    vm_cost_glo                     Total costs of production (mio. USD17MER per yr)
+
+  PM parameters (0):
+
+  IM variables (0):
+
+DEPENDS ON (27 modules):
+  <- 56_ghg_policy                  ( 2 vars): vm:vm_emission_costs, vm:vm_reward_cdr_aff
+  <- 70_livestock                   ( 2 vars): vm:vm_cost_prod_fish, vm:vm_cost_prod_livst
+  <- 20_processing                  ( 2 vars): vm:vm_cost_processing, vm:vm_processing_substitution_cost
+  <- 71_disagg_lvst                 ( 1 vars): vm:vm_costs_additional_mon
+  <- 42_water_demand                ( 1 vars): vm:vm_water_cost
+  <- 54_phosphorus                  ( 1 vars): vm:vm_p_fert_costs
+  <- 13_tc                          ( 1 vars): vm:vm_tech_cost
+  <- 30_croparea                    ( 1 vars): vm:vm_rotation_penalty
+  <- 18_residues                    ( 1 vars): vm:vm_cost_prod_kres
+  <- 32_forestry                    ( 1 vars): vm:vm_cost_fore
+
+PROVIDES TO (1 modules):
+  -> 80_optimization                ( 1 vars): vm:vm_cost_glo
+
+================================================================================
+MODULE: 10_land
+================================================================================
+Centrality Score: 17 (Provides to: 15, Depends on: 2)
+
+Interface Variables DECLARED by this module:
+  VM variables (6):
+    vm_landdiff                   Aggregated difference in land between current and previous time step (mio. ha)
+    vm_land(j,land)                             Land area of the different land types (mio. ha)
+    vm_landexpansion(j,land)                    Land expansion (mio. ha)
+    vm_landreduction(j,land)                   Land reduction (mio. ha)
+    vm_cost_land_transition(j)                  Costs for lu transitions (mio. USD17MER per yr)
+    vm_lu_transitions(j,land_from,land_to) Land transitions between time steps (mio. ha)
+
+  PM parameters (2):
+    pm_land_start(j,land)         Land initialization area (mio. ha)
+    pm_land_hist(t_ini10,j,land)  Land area for historial time steps (mio. ha)
+
+  IM variables (0):
+
+DEPENDS ON (2 modules):
+  <- 32_forestry                    ( 1 vars): vm:vm_landdiff_forestry
+  <- 35_natveg                      ( 1 vars): vm:vm_landdiff_natveg
+
+PROVIDES TO (15 modules):
+  -> 59_som                         ( 4 vars): vm:vm_land, pm:pm_land_start, vm:vm_landexpansion, vm:vm_lu_transitions
+  -> 29_cropland                    ( 3 vars): vm:vm_land, pm:pm_land_hist, vm:vm_lu_transitions
+  -> 35_natveg                      ( 3 vars): vm:vm_land, vm:vm_landexpansion, vm:vm_lu_transitions
+  -> 58_peatland                    ( 3 vars): vm:vm_land, vm:vm_landreduction, vm:vm_landexpansion
+  -> 32_forestry                    ( 2 vars): vm:vm_land, pm:pm_land_start
+  -> 39_landconversion              ( 2 vars): vm:vm_landreduction, vm:vm_landexpansion
+  -> 11_costs                       ( 1 vars): vm:vm_cost_land_transition
+  -> 30_croparea                    ( 1 vars): vm:vm_land
+  -> 31_past                        ( 1 vars): vm:vm_land
+  -> 71_disagg_lvst                 ( 1 vars): pm:pm_land_start
+
+================================================================================
+MODULE: 56_ghg_policy
+================================================================================
+Centrality Score: 16 (Provides to: 13, Depends on: 3)
+
+Interface Variables DECLARED by this module:
+  VM variables (4):
+    vm_carbon_stock(j,land,c_pools,stockType)     Carbon stock in vegetation soil and litter for different land types (mio. tC)
+    vm_emission_costs(i)                                    Costs for emission rights for pollutants and greenhouse gases (mio. USD17MER per yr)
+    vm_emissions_reg(i,emis_source,pollutants)              Regional emissions by source and gas after technical mitigation N CH4 C (Tg per yr)
+    vm_reward_cdr_aff(i)                                    Regional average annual expected revenue from afforestation (mio. USD17MER per yr)
+
+  PM parameters (0):
+
+  IM variables (1):
+    im_pollutant_prices(t_all,i,pollutants,emis_source)          Certificate prices for N2O-N CH4 CO2-C used in the model (USD17MER per Mg)
+
+DEPENDS ON (3 modules):
+  <- 09_drivers                     ( 2 vars): im:im_development_state, im:im_pop_iso
+  <- 32_forestry                    ( 1 vars): vm:vm_cdr_aff
+  <- 12_interest_rate               ( 1 vars): pm:pm_interest
+
+PROVIDES TO (13 modules):
+  -> 11_costs                       ( 2 vars): vm:vm_emission_costs, vm:vm_reward_cdr_aff
+  -> 52_carbon                      ( 2 vars): vm:vm_emissions_reg, vm:vm_carbon_stock
+  -> 57_maccs                       ( 2 vars): vm:vm_emissions_reg, im:im_pollutant_prices
+  -> 31_past                        ( 1 vars): vm:vm_carbon_stock
+  -> 32_forestry                    ( 1 vars): vm:vm_carbon_stock
+  -> 59_som                         ( 1 vars): vm:vm_carbon_stock
+  -> 53_methane                     ( 1 vars): vm:vm_emissions_reg
+  -> 29_cropland                    ( 1 vars): vm:vm_carbon_stock
+  -> 34_urban                       ( 1 vars): vm:vm_carbon_stock
+  -> 35_natveg                      ( 1 vars): vm:vm_carbon_stock
+
+================================================================================
+MODULE: 32_forestry
+================================================================================
+Centrality Score: 16 (Provides to: 5, Depends on: 11)
+
+Interface Variables DECLARED by this module:
+  VM variables (7):
+    vm_cost_fore(i)                                    Forestry costs (Mio USD)
+    vm_landdiff_forestry                               Aggregated difference in forestry land compared to previous timestep (mio. ha)
+    vm_prod_forestry(j,kforestry)                      Production of woody biomass from commercial plantations (mio. tDM per yr)
+    vm_landexpansion_forestry(j,type32)                Forestry land expansion (mio. ha)
+    vm_landreduction_forestry(j,type32)                Forestry land reduction (mio. ha)
+    vm_land_forestry(j,type32)                         Forestry land pools (mio. ha)
+    vm_cdr_aff(j,ac,aff_effect)                        Expected bgc (CDR) and local bph effects of afforestation depending on planning horizon (mio. tC)
+
+  PM parameters (0):
+
+  IM variables (0):
+
+DEPENDS ON (11 modules):
+  <- 10_land                        ( 2 vars): vm:vm_land, pm:pm_land_start
+  <- 35_natveg                      ( 2 vars): pm:pm_max_forest_est, vm:vm_natforest_reduction
+  <- 52_carbon                      ( 2 vars): pm:pm_carbon_density_plantation_ac, pm:pm_carbon_density_secdforest_ac
+  <- 73_timber                      ( 2 vars): im:im_timber_prod_cost, pm:pm_demand_forestry
+  <- 30_croparea                    ( 1 vars): vm:vm_area
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_carbon_stock
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 29_cropland                    ( 1 vars): vm:vm_fallow
+  <- 22_land_conservation           ( 1 vars): pm:pm_land_conservation
+  <- 12_interest_rate               ( 1 vars): pm:pm_interest
+
+PROVIDES TO (5 modules):
+  -> 58_peatland                    ( 3 vars): vm:vm_landreduction_forestry, vm:vm_land_forestry, vm:vm_landexpansion_forestry
+  -> 11_costs                       ( 1 vars): vm:vm_cost_fore
+  -> 73_timber                      ( 1 vars): vm:vm_prod_forestry
+  -> 10_land                        ( 1 vars): vm:vm_landdiff_forestry
+  -> 56_ghg_policy                  ( 1 vars): vm:vm_cdr_aff
+
+================================================================================
+MODULE: 30_croparea
+================================================================================
+Centrality Score: 15 (Provides to: 9, Depends on: 6)
+
+Interface Variables DECLARED by this module:
+  VM variables (6):
+    vm_area(j,kcr,w)                       Agricultural production area (mio. ha)
+    vm_rotation_penalty(i)                 Penalty for violating rotational constraints (mio. USD17MER)
+    vm_carbon_stock_croparea(j,ag_pools)   Carbon stock in croparea (tC)
+    vm_area(j,kcr,w)                     Agricultural production area (mio. ha)
+    vm_rotation_penalty(i)               Penalty for violating rotational constraints (mio. USD17MER)
+    vm_carbon_stock_croparea(j,ag_pools) Carbon stock in croparea (tC)
+
+  PM parameters (0):
+
+  IM variables (0):
+
+DEPENDS ON (6 modules):
+  <- 17_production                  ( 1 vars): vm:vm_prod
+  <- 41_area_equipped_for_irrigation ( 1 vars): vm:vm_AEI
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 10_land                        ( 1 vars): vm:vm_land
+  <- 14_yields                      ( 1 vars): vm:vm_yld
+  <- 29_cropland                    ( 1 vars): pm:pm_avl_cropland_iso
+
+PROVIDES TO (9 modules):
+  -> 29_cropland                    ( 2 vars): vm:vm_carbon_stock_croparea, vm:vm_area
+  -> 11_costs                       ( 1 vars): vm:vm_rotation_penalty
+  -> 42_water_demand                ( 1 vars): vm:vm_area
+  -> 18_residues                    ( 1 vars): vm:vm_area
+  -> 50_nr_soil_budget              ( 1 vars): vm:vm_area
+  -> 32_forestry                    ( 1 vars): vm:vm_area
+  -> 41_area_equipped_for_irrigation ( 1 vars): vm:vm_area
+  -> 59_som                         ( 1 vars): vm:vm_area
+  -> 53_methane                     ( 1 vars): vm:vm_area
+
+================================================================================
+MODULE: 70_livestock
+================================================================================
+Centrality Score: 14 (Provides to: 7, Depends on: 7)
+
+Interface Variables DECLARED by this module:
+  VM variables (10):
+    vm_dem_feed(i,kap,kall)             Regional feed demand including byproducts (mio. tDM per yr)
+    vm_cost_prod_livst(i,factors)       Livestock factor costs (mio. USD17MER per yr)
+    vm_cost_prod_fish(i)                Fish factor costs (mio. USD17MER per yr)
+    vm_feed_balanceflow(i,kap,kall)     Regional feed balance flows (mio. tDM)
+    vm_feed_intake(i,kap,kall)          Regional feed intake including byproducts (mio. tDM per yr)
+    vm_dem_feed(i,kap,kall)             Regional feed demand including byproducts (mio. tDM per yr)
+    vm_cost_prod_livst(i,factors)       Livestock factor costs (mio. USD17MER per yr)
+    vm_cost_prod_fish(i)                Fish factor costs (mio. USD17MER per yr)
+    vm_feed_balanceflow(i,kap,kall)     Regional feed balance flows (mio. tDM)
+    vm_feed_intake(i,kap,kall)          Regional feed intake including byproducts (mio. tDM per yr)
+
+  PM parameters (2):
+    pm_past_mngmnt_factor(t,i)                       Regional pasture management intensification factor (1)
+    pm_past_mngmnt_factor(t,i)                       Regional pasture management intensification factor (1)
+
+  IM variables (4):
+    im_slaughter_feed_share(t_all,i,kap,attributes)  Share of feed that is incorporated in animal biomass (1)
+    im_feed_baskets(t_all,i,kap,kall)                Feed baskets in tDM per tDM livestock product (1)
+    im_slaughter_feed_share(t_all,i,kap,attributes)  Share of feed that is incorporated in animal biomass (1)
+    im_feed_baskets(t_all,i,kap,kall)                Feed baskets in tDM per tDM livestock product (1)
+
+DEPENDS ON (7 modules):
+  <- 36_employment                  ( 2 vars): pm:pm_productivity_gain_from_wages, pm:pm_hourly_costs
+  <- 09_drivers                     ( 2 vars): im:im_pop, im:im_pop_iso
+  <- 17_production                  ( 1 vars): vm:vm_prod_reg
+  <- 16_demand                      ( 1 vars): vm:vm_supply
+  <- 12_interest_rate               ( 1 vars): pm:pm_interest
+  <- 15_food                        ( 1 vars): pm:pm_kcal_pc_initial
+  <- 38_factor_costs                ( 1 vars): pm:pm_factor_cost_shares
+
+PROVIDES TO (7 modules):
+  -> 11_costs                       ( 2 vars): vm:vm_cost_prod_fish, vm:vm_cost_prod_livst
+  -> 71_disagg_lvst                 ( 2 vars): vm:vm_feed_balanceflow, im:im_feed_baskets
+  -> 55_awms                        ( 2 vars): vm:vm_feed_intake, im:im_slaughter_feed_share
+  -> 16_demand                      ( 1 vars): vm:vm_dem_feed
+  -> 14_yields                      ( 1 vars): pm:pm_past_mngmnt_factor
+  -> 53_methane                     ( 1 vars): vm:vm_feed_intake
+  -> 36_employment                  ( 1 vars): vm:vm_cost_prod_livst
+
+================================================================================
+MODULE: 17_production
+================================================================================
+Centrality Score: 14 (Provides to: 13, Depends on: 1)
+
+Interface Variables DECLARED by this module:
+  VM variables (2):
+    vm_prod(j,k)                    Production in each cell (mio. tDM per yr)
+    vm_prod_reg(i,kall)             Regional aggregated production (mio. tDM per yr)
+
+  PM parameters (1):
+    pm_prod_init(j,kcr)               Production initialization for year 1995 (tDM per yr)
+
+  IM variables (0):
+
+DEPENDS ON (1 modules):
+  <- 14_yields                      ( 1 vars): pm:pm_yields_semi_calib
+
+PROVIDES TO (13 modules):
+  -> 38_factor_costs                ( 3 vars): vm:vm_prod_reg, vm:vm_prod, pm:pm_prod_init
+  -> 18_residues                    ( 2 vars): vm:vm_prod_reg, vm:vm_prod
+  -> 71_disagg_lvst                 ( 2 vars): vm:vm_prod_reg, vm:vm_prod
+  -> 30_croparea                    ( 1 vars): vm:vm_prod
+  -> 42_water_demand                ( 1 vars): vm:vm_prod
+  -> 31_past                        ( 1 vars): vm:vm_prod
+  -> 73_timber                      ( 1 vars): vm:vm_prod
+  -> 40_transport                   ( 1 vars): vm:vm_prod
+  -> 70_livestock                   ( 1 vars): vm:vm_prod_reg
+  -> 20_processing                  ( 1 vars): vm:vm_prod_reg
+
+================================================================================
+MODULE: 09_drivers
+================================================================================
+Centrality Score: 14 (Provides to: 14, Depends on: 0)
+
+Interface Variables DECLARED by this module:
+  VM variables (0):
+
+  PM parameters (0):
+
+  IM variables (8):
+    im_pop_iso(t_all,iso)                        Population (mio. per yr)
+    im_pop(t_all,i)                              Population (mio. per yr)
+    im_gdp_pc_mer_iso(t_all,iso)                 Income in market exchange rates (mio. USD17MER per yr)
+    im_gdp_pc_mer(t_all,i)                           Per capita income in market exchange rates (USD17MER per cap per yr)
+    im_gdp_pc_ppp_iso(t_all,iso)                     Per capita income in purchasing power parity (USD17PPP per cap per yr)
+    ... and 3 more
+
+PROVIDES TO (14 modules):
+  -> 15_food                        ( 6 vars): im:im_demography, im:im_pop_iso, im:im_pop, im:im_gdp_pc_mer_iso, im:im_gdp_pc_ppp_iso
+  -> 42_water_demand                ( 3 vars): im:im_development_state, im:im_gdp_pc_mer, im:im_pop_iso
+  -> 73_timber                      ( 2 vars): im:im_gdp_pc_ppp_iso, im:im_pop_iso
+  -> 70_livestock                   ( 2 vars): im:im_pop, im:im_pop_iso
+  -> 56_ghg_policy                  ( 2 vars): im:im_development_state, im:im_pop_iso
+  -> 55_awms                        ( 2 vars): im:im_development_state, im:im_pop_iso
+  -> 13_tc                          ( 2 vars): im:im_gdp_pc_ppp_iso, im:im_pop_iso
+  -> 12_interest_rate               ( 2 vars): im:im_development_state, im:im_pop_iso
+  -> 18_residues                    ( 1 vars): im:im_development_state
+  -> 38_factor_costs                ( 1 vars): im:im_gdp_pc_ppp_iso
+
+================================================================================
+MODULE: 29_cropland
+================================================================================
+Centrality Score: 13 (Provides to: 6, Depends on: 7)
+
+Interface Variables DECLARED by this module:
+  VM variables (6):
+    vm_cost_cropland(j)                Cost for total cropland (mio. USD17MER per yr)
+    vm_fallow(j)                       Fallow land is temporarily fallow cropland (mio. ha)
+    vm_treecover(j)                    Cropland tree cover (mio. ha)
+    vm_cost_cropland(j)                Cost for total cropland (mio. USD17MER per yr)
+    vm_treecover(j)                    Cropland tree cover (mio. ha)
+    vm_fallow(j)                       Fallow land is temporarily fallow cropland (mio. ha)
+
+  PM parameters (2):
+    pm_avl_cropland_iso(iso)           Available land area for cropland at ISO level (mio. ha)
+    pm_avl_cropland_iso(iso)           Available land area for cropland at ISO level (mio. ha)
+
+  IM variables (0):
+
+DEPENDS ON (7 modules):
+  <- 10_land                        ( 3 vars): vm:vm_land, pm:pm_land_hist, vm:vm_lu_transitions
+  <- 30_croparea                    ( 2 vars): vm:vm_carbon_stock_croparea, vm:vm_area
+  <- 52_carbon                      ( 2 vars): pm:pm_carbon_density_plantation_ac, pm:pm_carbon_density_secdforest_ac
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_carbon_stock
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 22_land_conservation           ( 1 vars): pm:pm_land_conservation
+  <- 12_interest_rate               ( 1 vars): pm:pm_interest
+
+PROVIDES TO (6 modules):
+  -> 59_som                         ( 3 vars): vm:vm_treecover, vm:vm_fallow, pm:pm_avl_cropland_iso
+  -> 11_costs                       ( 1 vars): vm:vm_cost_cropland
+  -> 30_croparea                    ( 1 vars): pm:pm_avl_cropland_iso
+  -> 50_nr_soil_budget              ( 1 vars): vm:vm_fallow
+  -> 32_forestry                    ( 1 vars): vm:vm_fallow
+  -> 22_land_conservation           ( 1 vars): vm:vm_treecover
+
+================================================================================
+MODULE: 35_natveg
+================================================================================
+Centrality Score: 12 (Provides to: 5, Depends on: 7)
+
+Interface Variables DECLARED by this module:
+  VM variables (5):
+    vm_land_other(j,othertype35,ac)                        Detailed stock of other land (mio. ha)
+    vm_landdiff_natveg                                     Aggregated difference in natveg land compared to previous timestep (mio. ha)
+    vm_prod_natveg(j,land_natveg,kforestry)                Production of woody biomass from natural vegetation (mio. tDM per yr)
+    vm_cost_hvarea_natveg(i)                               Cost of harvesting natural vegetation (mio. USD17MER)
+    vm_natforest_reduction(j)                              Natural forest reduction (mio. ha)
+
+  PM parameters (1):
+    pm_max_forest_est(t,j)                                   Overall forest establishment potential in current time step (mio. ha)
+
+  IM variables (0):
+
+DEPENDS ON (7 modules):
+  <- 10_land                        ( 3 vars): vm:vm_land, vm:vm_landexpansion, vm:vm_lu_transitions
+  <- 52_carbon                      ( 2 vars): pm:pm_carbon_density_other_ac, pm:pm_carbon_density_secdforest_ac
+  <- 56_ghg_policy                  ( 1 vars): vm:vm_carbon_stock
+  <- 44_biodiversity                ( 1 vars): vm:vm_bv
+  <- 22_land_conservation           ( 1 vars): pm:pm_land_conservation
+  <- 14_yields                      ( 1 vars): pm:pm_timber_yield
+  <- 28_ageclass                    ( 1 vars): im:im_forest_ageclass
+
+PROVIDES TO (5 modules):
+  -> 32_forestry                    ( 2 vars): pm:pm_max_forest_est, vm:vm_natforest_reduction
+  -> 11_costs                       ( 1 vars): vm:vm_cost_hvarea_natveg
+  -> 73_timber                      ( 1 vars): vm:vm_prod_natveg
+  -> 59_som                         ( 1 vars): vm:vm_land_other
+  -> 10_land                        ( 1 vars): vm:vm_landdiff_natveg
+
+================================================================================
+DEGRADATION SYSTEM MODULE ANALYSIS
+================================================================================
+
+14_yields:
+  Centrality: 9 (In: 5, Out: 4)
+  Depends on 4 modules:
+    <- 13_tc: vm:vm_tau
+    <- 70_livestock: pm:pm_past_mngmnt_factor
+    <- 10_land: pm:pm_land_start
+    <- 52_carbon: pm:pm_carbon_density_other_ac, pm:pm_carbon_density_secdforest_ac, pm:pm_carbon_density_plantation_ac
+  Provides to 5 modules:
+    -> 30_croparea: vm:vm_yld
+    -> 31_past: vm:vm_yld
+    -> 32_forestry: pm:pm_timber_yield
+    -> 35_natveg: pm:pm_timber_yield
+    -> 17_production: pm:pm_yields_semi_calib
+
+35_natveg:
+  Centrality: 12 (In: 5, Out: 7)
+  Depends on 7 modules:
+    <- 56_ghg_policy: vm:vm_carbon_stock
+    <- 44_biodiversity: vm:vm_bv
+    <- 10_land: vm:vm_land, vm:vm_landexpansion, vm:vm_lu_transitions
+    <- 22_land_conservation: pm:pm_land_conservation
+    <- 14_yields: pm:pm_timber_yield
+  Provides to 5 modules:
+    -> 11_costs: vm:vm_cost_hvarea_natveg
+    -> 73_timber: vm:vm_prod_natveg
+    -> 32_forestry: pm:pm_max_forest_est, vm:vm_natforest_reduction
+    -> 59_som: vm:vm_land_other
+    -> 10_land: vm:vm_landdiff_natveg
+
+58_peatland:
+  Centrality: 5 (In: 1, Out: 4)
+  Depends on 4 modules:
+    <- 56_ghg_policy: vm:vm_emissions_reg
+    <- 32_forestry: vm:vm_landreduction_forestry, vm:vm_land_forestry, vm:vm_landexpansion_forestry
+    <- 10_land: vm:vm_land, vm:vm_landreduction, vm:vm_landexpansion
+    <- 12_interest_rate: pm:pm_interest
+  Provides to 1 modules:
+    -> 11_costs: vm:vm_peatland_cost
+
+59_som:
+  Centrality: 8 (In: 3, Out: 5)
+  Depends on 5 modules:
+    <- 30_croparea: vm:vm_area
+    <- 56_ghg_policy: vm:vm_carbon_stock
+    <- 10_land: vm:vm_land, pm:pm_land_start, vm:vm_landexpansion
+    <- 35_natveg: vm:vm_land_other
+    <- 29_cropland: vm:vm_treecover, vm:vm_fallow, pm:pm_avl_cropland_iso
+  Provides to 3 modules:
+    -> 11_costs: vm:vm_cost_scm
+    -> 50_nr_soil_budget: vm:vm_nr_som_fertilizer
+    -> 51_nitrogen: vm:vm_nr_som
+
+52_carbon:
+  Centrality: 5 (In: 4, Out: 1)
+  Depends on 1 modules:
+    <- 56_ghg_policy: vm:vm_emissions_reg, vm:vm_carbon_stock
+  Provides to 4 modules:
+    -> 14_yields: pm:pm_carbon_density_other_ac, pm:pm_carbon_density_secdforest_ac, pm:pm_carbon_density_plantation_ac
+    -> 32_forestry: pm:pm_carbon_density_plantation_ac, pm:pm_carbon_density_secdforest_ac
+    -> 29_cropland: pm:pm_carbon_density_plantation_ac, pm:pm_carbon_density_secdforest_ac
+    -> 35_natveg: pm:pm_carbon_density_other_ac, pm:pm_carbon_density_secdforest_ac
+
+56_ghg_policy:
+  Centrality: 16 (In: 13, Out: 3)
+  Depends on 3 modules:
+    <- 32_forestry: vm:vm_cdr_aff
+    <- 12_interest_rate: pm:pm_interest
+    <- 09_drivers: im:im_development_state, im:im_pop_iso
+  Provides to 13 modules:
+    -> 11_costs: vm:vm_emission_costs, vm:vm_reward_cdr_aff
+    -> 31_past: vm:vm_carbon_stock
+    -> 32_forestry: vm:vm_carbon_stock
+    -> 59_som: vm:vm_carbon_stock
+    -> 53_methane: vm:vm_emissions_reg
+
+================================================================================
+FORESTRY/TIMBER SYSTEM MODULE ANALYSIS
+================================================================================
+
+Forestry System Dependency Subgraph:
+  32_forestry <- 73_timber: im:im_timber_prod_cost, pm:pm_demand_forestry
+  32_forestry <- 35_natveg: pm:pm_max_forest_est, vm:vm_natforest_reduction
+  73_timber <- 32_forestry: vm:vm_prod_forestry
+  73_timber <- 35_natveg: vm:vm_prod_natveg
+  35_natveg <- 28_ageclass: im:im_forest_ageclass
+
+
+Key Forestry Interface Variables:
+
+  vm_prod_forestry:
+    Declared by: 32_forestry
+    Used by: 32_forestry, 73_timber
+
+  vm_prod_natveg:
+    Declared by: 35_natveg
+    Used by: 35_natveg, 73_timber
+
+  pm_timber_yield:
+    Declared by: 14_yields
+    Used by: 14_yields, 32_forestry, 35_natveg
+
+  pm_demand_forestry:
+    Declared by: 73_timber
+    Used by: 32_forestry, 62_material, 73_timber
+
+  im_forest_ageclass:
+    Declared by: 28_ageclass
+    Used by: 28_ageclass, 35_natveg
