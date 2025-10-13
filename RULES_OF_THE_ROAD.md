@@ -154,7 +154,7 @@ Update `CURRENT_STATE.json` with:
 
 Move dated log files to archive:
 ```bash
-mv magpie_AI_documentation/*_2025-10-*.md magpie_AI_documentation/archive/
+mv magpie-nest/*_2025-10-*.md magpie-nest/archive/
 ```
 
 **Keep root clean!**
@@ -270,7 +270,7 @@ mv magpie_AI_documentation/*_2025-10-*.md magpie_AI_documentation/archive/
 
 ```bash
 # Count verified modules
-ls -1 magpie_AI_documentation/modules/module_*.md | wc -l
+ls -1 magpie-nest/modules/module_*.md | wc -l
 
 # Count equations in module XX
 grep "^[ ]*qXX_" modules/XX_*/*/declarations.gms | wc -l
@@ -285,7 +285,7 @@ grep -r "vm_varname" modules/*/*/declarations.gms
 # (manually edit after each module completion)
 
 # Archive dated files
-mv magpie_AI_documentation/*_2025-10-*.md magpie_AI_documentation/archive/
+mv magpie-nest/*_2025-10-*.md magpie-nest/archive/
 ```
 
 ---

@@ -35,7 +35,7 @@ This is your entry point. It will orient you in 2-5 minutes and tell you:
 ## 📁 Documentation Structure
 
 ```
-magpie_AI_documentation/
+magpie-nest/
 ├── START_HERE.md              ⭐ Read this first!
 ├── CURRENT_STATE.json         📊 Real-time project status
 ├── RULES_OF_THE_ROAD.md      📋 Session continuity protocol

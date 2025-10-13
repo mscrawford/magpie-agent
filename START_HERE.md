@@ -49,7 +49,7 @@ This project creates **comprehensive, 100% accurate AI documentation** for the M
 ## Project Structure
 
 ```
-magpie_AI_documentation/
+magpie-nest/
 ├── START_HERE.md              ← You are here (STATIC)
 ├── CURRENT_STATE.json         ← ONLY file with status info (UPDATE THIS)
 ├── RULES_OF_THE_ROAD.md      ← Session protocol (STATIC)

@@ -156,16 +156,16 @@ The MAgPIE AI documentation project has successfully documented 42/46 modules us
 
 **Issue**: CLAUDE.md references non-existent paths:
 ```
-magpie_AI_documentation/MAGPIE_AI_DOCS_Phase1_Core_Architecture.md  # Doesn't exist
-magpie_AI_documentation/AI_AGENT_BEHAVIOR_GUIDE.md                  # Doesn't exist
-magpie_AI_documentation/CRITICAL_ANALYSIS_PRINCIPLES.md             # Doesn't exist
+magpie-nest/MAGPIE_AI_DOCS_Phase1_Core_Architecture.md  # Doesn't exist
+magpie-nest/AI_AGENT_BEHAVIOR_GUIDE.md                  # Doesn't exist
+magpie-nest/CRITICAL_ANALYSIS_PRINCIPLES.md             # Doesn't exist
 ```
 
 **Actual paths**:
 ```
-magpie_AI_documentation/core_docs/Phase1_Core_Architecture.md
-magpie_AI_documentation/core_docs/AI_Agent_Behavior_Guide.md
-magpie_AI_documentation/reference/Code_Truth_Principles.md
+magpie-nest/core_docs/Phase1_Core_Architecture.md
+magpie-nest/core_docs/AI_Agent_Behavior_Guide.md
+magpie-nest/reference/Code_Truth_Principles.md
 ```
 
 **Impact**: Confusion for new sessions, broken references
@@ -299,7 +299,7 @@ if [ "$MODULE" == "10" ]; then
     echo ""
     echo "⚠️  WARNING: High-impact module (15 dependents) - test thoroughly!"
     echo ""
-    echo "For details: cat magpie_AI_documentation/core_docs/Phase2_Module_Dependencies.md"
+    echo "For details: cat magpie-nest/core_docs/Phase2_Module_Dependencies.md"
 fi
 
 # ... (similar for other modules)
@@ -308,7 +308,7 @@ fi
 **Alternative**: JSON-based lookup:
 ```bash
 # Generate from CURRENT_STATE.json or Phase 2 analysis
-jq '.modules."10".dependencies' magpie_AI_documentation/dependency_graph.json
+jq '.modules."10".dependencies' magpie-nest/dependency_graph.json
 ```
 
 **Benefits**:
@@ -351,7 +351,7 @@ Add to each module doc:
 
 MODULE=$1
 MODULE_PATH="modules/${MODULE}_*/*/"
-DOC_PATH="magpie_AI_documentation/modules/module_${MODULE}.md"
+DOC_PATH="magpie-nest/modules/module_${MODULE}.md"
 
 # Get last modification dates
 CODE_DATE=$(git log -1 --format=%cd --date=short -- $MODULE_PATH)
@@ -428,7 +428,7 @@ done
 **Suggestion**: Create `examples/` directory with real-world walkthroughs:
 
 ```
-magpie_AI_documentation/examples/
+magpie-nest/examples/
 ├── README.md                        # Overview of examples
 ├── scenario_setup_ssp2_ndc.md       # Configure SSP2 with NDC policy
 ├── debugging_infeasibility.md       # Walkthrough of actual infeasibility case
@@ -582,9 +582,9 @@ for (p in prices) {
 **Validation Checks**: 3 (price application, emission reduction, cost increase)
 
 ## Related Documentation
-- Module 56 (GHG Policy): `magpie_AI_documentation/modules/module_56.md`
-- Module 11 (Costs): `magpie_AI_documentation/modules/module_11.md`
-- Module 52 (Carbon): `magpie_AI_documentation/modules/module_52.md`
+- Module 56 (GHG Policy): `magpie-nest/modules/module_56.md`
+- Module 11 (Costs): `magpie-nest/modules/module_11.md`
+- Module 52 (Carbon): `magpie-nest/modules/module_52.md`
 - Phase 2 Dependencies: `core_docs/Phase2_Module_Dependencies.md`
 
 ## Next Steps
@@ -658,7 +658,7 @@ print(f"Module 10 has {eqs['count']} equations")
 # verify_equation_count.sh - Check doc matches code
 
 MODULE=$1
-DOC="magpie_AI_documentation/modules/module_${MODULE}.md"
+DOC="magpie-nest/modules/module_${MODULE}.md"
 CODE="modules/${MODULE}_*/*/equations.gms"
 
 # Extract count from documentation
