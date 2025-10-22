@@ -82,41 +82,58 @@ When you find an error, say:
 
 ## 🚀 INSTANT QUERY ROUTING (Use This First)
 
+**Available Documentation** (all in `magpie-agent/`):
+- **Phase 0 (Foundation)**: `core_docs/` - Architecture, dependencies, data flow
+- **Phase 1 (Modules)**: `modules/module_XX.md` - All 46 modules documented
+- **Phase 2 (Cross-Module)**: `cross_module/` - Conservation laws, safety, circular deps
+
 ```
-User Query → Pattern Match → Response Type
+User Query → Pattern Match → Where to Look
 
 "How does [X] work?" / "What is [X]?"
-  └─> STATIC STRUCTURE: Phase 1 (overview) → Phase 4 (module detail)
+  └─> MODULE DETAIL: modules/module_XX.md (if module-specific)
+  └─> OR: core_docs/Phase1_Core_Architecture.md (if general structure)
 
 "What happens after [X]?" / "How does [X] change over time?"
-  └─> TEMPORAL DYNAMICS: Trace initial state → transition → convergence → equilibrium
-  └─> See "Temporal Mechanism Questions" pattern in ADVANCED PATTERNS section
+  └─> TEMPORAL DYNAMICS: Trace initial state → transition → convergence
+  └─> Start: modules/module_XX.md (find equations)
+  └─> Context: core_docs/Phase1_Core_Architecture.md (execution phases)
 
 "How does [X] affect [Y]?" (across modules)
-  └─> CROSS-MODULE MECHANISM: Trace variable chain from X's module to Y's module
-  └─> See "Cross-Module Mechanism Tracing" pattern in ADVANCED PATTERNS section
+  └─> CROSS-MODULE: Trace variable chain from X's module to Y's module
+  └─> Start: modules/module_XX.md (interface variables)
+  └─> Then: core_docs/Phase2_Module_Dependencies.md (dependency paths)
+  └─> OR: cross_module/circular_dependency_resolution.md (if feedback loop)
 
 "Is [X] modeled?" / "Does MAgPIE account for [X]?"
-  └─> PARAMETERIZED vs IMPLEMENTED: Check infrastructure vs actual usage
-  └─> See "Parameterized vs. Implemented Detection" pattern in ADVANCED PATTERNS section
+  └─> PARAMETERIZED vs IMPLEMENTED: Check module docs for limitations
+  └─> modules/module_XX.md (limitations section)
 
 "What depends on [X]?" / "[X] depends on what?"
-  └─> DEPENDENCY: Phase 2 dependency matrix → list modules → warn if circular
+  └─> DEPENDENCY: core_docs/Phase2_Module_Dependencies.md
+  └─> Lists all 173 dependencies, 26 circular cycles
 
 "Where is [X] defined?" / "Which file has [X]?"
-  └─> DATA/CODE LOCATION: Phase 3 (if parameter) → Phase 4 (if in module)
+  └─> DATA: core_docs/Phase3_Data_Flow.md (if input parameter)
+  └─> CODE: modules/module_XX.md (if variable/equation)
 
 "[X] is broken" / "Error [Y]"
-  └─> DEBUG: Phase 5 error patterns → diagnostic workflow
+  └─> DEBUG: cross_module/circular_dependency_resolution.md (oscillations)
+  └─> OR: cross_module/modification_safety_guide.md (infeasibility)
 
 "How to modify [X]?" / "Add [Y] to MAgPIE"
-  └─> MODIFICATION: Phase 4 (current code) → Phase 2 (dependencies) → Phase 5 (template)
+  └─> MODIFICATION:
+  └─> 1. modules/module_XX.md (understand current code)
+  └─> 2. core_docs/Phase2_Module_Dependencies.md (check dependencies)
+  └─> 3. cross_module/modification_safety_guide.md (safety protocols)
 
-"How to set up [X] scenario?"
-  └─> CONFIGURATION: Phase 6 scenario templates
+"Can I change module [X] without breaking [Y]?"
+  └─> SAFETY: cross_module/modification_safety_guide.md
+  └─> Covers modules 10, 11, 17, 56 (highest risk)
 
-"What does output [X] mean?"
-  └─> OUTPUT: Phase 7 interpretation guide
+"Is [conservation law] enforced?"
+  └─> CONSERVATION: cross_module/[law]_balance_conservation.md
+  └─> land, water, carbon, nitrogen, food balance docs available
 ```
 
 ---
@@ -130,7 +147,7 @@ User Query → Pattern Match → Response Type
 - [ ] Did I avoid ecological/economic/general knowledge? (CODE behavior only)
 
 ### ✓ Dependencies (If modification suggested)
-- [ ] Did I check Phase 2 dependency matrix?
+- [ ] Did I check Phase2_Module_Dependencies.md for affected modules?
 - [ ] Did I list affected modules?
 - [ ] Did I warn if high-centrality module (10, 11, 17, 56)?
 - [ ] Did I warn if circular dependency involved?
@@ -156,7 +173,7 @@ User Query → Pattern Match → Response Type
 ```
 BEFORE suggesting any modification to module X:
 
-1. Check Phase 2 dependency matrix
+1. Check core_docs/Phase2_Module_Dependencies.md
 2. List upstream (X depends on these):
    - These provide data TO module X
 3. List downstream (these depend on X):
@@ -183,7 +200,7 @@ Structure for "Where is X?":
 3. Related locations:
    - Declared: declarations.gms
    - Calculated: presolve.gms or equations.gms
-   - Used in: [list other modules from Phase 2]
+   - Used in: [list other modules from Phase2_Module_Dependencies.md]
 4. Offer: "Would you like to see the actual code?"
 ```
 
@@ -610,16 +627,16 @@ Model fails?
 User asks: "Where does X come from?"
 
 1. Identify prefix:
-   f_ → Input file (Phase 3: check modules/.../input.gms)
+   f_ → Input file (check core_docs/Phase3_Data_Flow.md or modules/.../input.gms)
    i_ → Interpolated/processed from f_ (check preloop.gms or input.gms)
    p_ → Calculated per timestep (check presolve.gms)
-   pm_ → Passed between modules (check Phase 2 for provider)
+   pm_ → Passed between modules (check Phase2_Module_Dependencies.md for provider)
    vm_ → Optimization variable (check declarations.gms + equations.gms)
    o_ → Output (calculated in postsolve.gms from vm_)
 
 2. Find source module:
-   - Phase 2 dependency matrix shows which module provides pm_X
-   - Phase 4 module docs show internal calculations
+   - Phase2_Module_Dependencies.md shows which module provides pm_X
+   - modules/module_XX.md show internal calculations
 
 3. Trace backwards:
    vm_X ← calculated by equation q_X ← uses pm_Y ← provided by module Z ← from f_Y
@@ -689,7 +706,7 @@ User asks: "Where does X come from?"
    - Reference gaps: "See gap analysis for known limitations"
 3. If results:
    - Note: "I can explain MAgPIE's mechanisms, not run comparisons"
-   - Suggest: "For validation, see Phase 7 output interpretation"
+   - Suggest: "For output interpretation, check module docs for equation meanings"
    - Offer: "Would you like to know which mechanisms might explain differences?"
 
 ---
@@ -835,19 +852,27 @@ Pattern 4: "[Technical GAMS question]"
 
 ---
 
-## 📚 QUICK REFERENCE LINKS
+## 📚 DOCUMENTATION AVAILABLE (All in `magpie-agent/`)
 
-**Always Keep Available**:
-- Phase 1: Core Architecture (`MAGPIE_AI_DOCS_Phase1_Core_Architecture.md`)
-- Phase 2: Dependencies (`MAGPIE_AI_DOCS_Phase2_Module_Dependencies.md`)
-- CLAUDE.md: User instructions
+**Phase 0 - Foundation** (`core_docs/`):
+- `Phase1_Core_Architecture.md` - Model structure, execution, navigation (~10K words)
+- `Phase2_Module_Dependencies.md` - 173 dependencies, 26 circular cycles (~14K words)
+- `Phase3_Data_Flow.md` - 172 input files, data pipeline (~15K words)
+- `AI_Agent_Behavior_Guide.md` - This file (~30K words)
 
-**Load on Demand**:
-- Phase 3: Data Flow (for parameter tracing)
-- Phase 4: Module Details (for specific modules)
-- Phase 5: Debugging (for errors)
-- Phase 6: Configuration (for scenarios)
-- Phase 7: Outputs (for results)
+**Phase 1 - Modules** (`modules/`):
+- `module_09.md` through `module_80.md` - All 46 modules documented (~20K+ lines)
+- Each has: equations, parameters, dependencies, limitations
+
+**Phase 2 - Cross-Module** (`cross_module/`):
+- `land_balance_conservation.md` - Land area conservation (~900 lines)
+- `water_balance_conservation.md` - Water supply/demand (~850 lines)
+- `carbon_balance_conservation.md` - Carbon stocks/emissions (~1,300 lines)
+- `nitrogen_food_balance.md` - Nitrogen + food balance (~450 lines)
+- `modification_safety_guide.md` - Safety for modules 10,11,17,56 (~1,000 lines)
+- `circular_dependency_resolution.md` - 26 cycles, debugging (~900 lines)
+
+**Total**: ~95,000 words covering structure, all modules, and system constraints
 
 ---
 
@@ -856,22 +881,22 @@ Pattern 4: "[Technical GAMS question]"
 **Your job is to help users understand and modify MAgPIE, not to teach general ecology or modeling theory.**
 
 **Always**:
-- Cite specific code locations
-- Check dependencies before suggestions
-- Describe what IS, not what SHOULD BE
-- Offer appropriate detail level
-- Validate your own responses
+- Cite specific code locations (file.gms:line)
+- Check Phase2_Module_Dependencies.md before suggesting modifications
+- Describe what IS implemented, not what SHOULD BE
+- Offer appropriate detail level (overview → equations → code)
+- Validate your own responses against docs
 
 **Never**:
-- Assume features exist without checking
+- Assume features exist without checking module docs
 - Describe ecological processes as if they're model code
 - Suggest modifications without dependency check
-- Ignore conservation law implications
+- Ignore conservation law implications (check cross_module/ docs)
 - Provide vague answers when specific ones are possible
 
 ---
 
-**This guide evolves**. As Phase 4-8 documentation is completed, update routing logic and add new patterns.
+**Documentation is complete for Phases 0, 1, and 2.** Use what's available.
 
 ---
 
