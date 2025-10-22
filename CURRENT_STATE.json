@@ -2,8 +2,8 @@
   "_comment": "🚨 THIS IS THE SINGLE SOURCE OF TRUTH FOR ALL PROJECT STATUS 🚨",
   "_instructions": "Update this file after completing work. Do NOT update START_HERE.md, README.md, RULES_OF_THE_ROAD.md, or modules/README.md with status information.",
   "project": "MAgPIE AI Documentation",
-  "last_updated": "2025-10-22T23:30:00Z",
-  "version": "2.1",
+  "last_updated": "2025-10-23T00:00:00Z",
+  "version": "2.2",
 
   "current_phase": {
     "phase": 2,
@@ -187,7 +187,13 @@
       "✅ Documented interface variable patterns and circular dependency resolution",
       "✅ Included debugging strategies, performance optimization, and numerical stability guidance",
       "✅ Added quick reference tables and checklists throughout all phases",
-      "✅ Cross-linked to existing MAgPIE AI documentation (cross_module/, modules/)"
+      "✅ Cross-linked to existing MAgPIE AI documentation (cross_module/, modules/)",
+      "✅ Updated CLAUDE.md with mandatory GAMS reference workflow integration",
+      "✅ Added 'Step 3: Working with GAMS Code (CRITICAL)' section to CLAUDE.md",
+      "✅ Defined criteria for when to consult GAMS reference (complexity thresholds)",
+      "✅ Created progressive approach guidance (quick lookup → syntax → deep dive → troubleshooting)",
+      "✅ Added example workflow for writing new equations with GAMS reference",
+      "✅ Updated acknowledgment pattern to include GAMS reference citations"
     ],
     "deliverables": [
       "reference/GAMS_Programming_Reference_Plan.md (959 lines - comprehensive plan)",
@@ -198,6 +204,6 @@
       "reference/GAMS_Phase5_MAgPIE_Patterns.md (1,004 lines - practical patterns)",
       "reference/GAMS_Phase6_Best_Practices.md (794 lines - optimization guidance)"
     ],
-    "notes": "🎉 GAMS PROGRAMMING REFERENCE COMPLETE! Created comprehensive 6-phase guide (~38,000+ words) enabling AI agents to work with complex GAMS code. Heavy emphasis on official GAMS documentation references and real MAgPIE examples. Phase 1: Fundamentals (sets, parameters, variables, equations). Phase 2: Control structures (dollar conditions, if/loop/while). Phase 3: Advanced features (macros, variable attributes, set operations, time indexing). Phase 4: Functions (math, logic, aggregation). Phase 5: MAgPIE patterns (module structure, naming, interface variables, time management). Phase 6: Best practices (scaling, stability, performance, debugging). Key value: Agents should ALWAYS consult this documentation when working with complex GAMS code—it bridges general programming knowledge to GAMS/MAgPIE specifics. Total coverage: Syntax → Semantics → Patterns → Practice. Integration: Links to existing cross_module/ and modules/ documentation. Quality: All examples verified, all claims cited (official docs or MAgPIE code). Status: ✅ PRODUCTION READY. Recommendation: Make this MANDATORY reference for GAMS work."
+    "notes": "🎉 GAMS PROGRAMMING REFERENCE COMPLETE & INTEGRATED! Created comprehensive 6-phase guide (~38,000+ words) enabling AI agents to work with complex GAMS code. Heavy emphasis on official GAMS documentation references and real MAgPIE examples. Phase 1: Fundamentals (sets, parameters, variables, equations). Phase 2: Control structures (dollar conditions, if/loop/while). Phase 3: Advanced features (macros, variable attributes, set operations, time indexing). Phase 4: Functions (math, logic, aggregation). Phase 5: MAgPIE patterns (module structure, naming, interface variables, time management). Phase 6: Best practices (scaling, stability, performance, debugging). Key value: Agents MUST consult this documentation when working with complex GAMS code—it bridges general programming knowledge to GAMS/MAgPIE specifics. Total coverage: Syntax → Semantics → Patterns → Practice. Integration: (1) Links to existing cross_module/ and modules/ documentation. (2) CLAUDE.md updated with mandatory workflow (Step 3: Working with GAMS Code). (3) Clear criteria for when reference is required (writing equations, debugging, macros, time loops). (4) Progressive approach (quick lookup → deep dive → troubleshooting). Quality: All examples verified, all claims cited (official docs or MAgPIE code). Status: ✅ PRODUCTION READY & FULLY INTEGRATED into agent workflow."
   }
 }
