@@ -103,13 +103,55 @@ When updating this CLAUDE.md file:
 
 ❌ **Bad:** [Providing answers without stating whether from docs or code]
 
-### Step 3: Acknowledge What You Used
+### Step 3: Working with GAMS Code (CRITICAL)
+
+**⚡ MANDATORY: When working with GAMS code of sufficient complexity ⚡**
+
+**BEFORE** reading or writing complex GAMS code, **ALWAYS check**:
+- `magpie-agent/reference/GAMS_Phase1_Fundamentals.md` - GAMS basics (if unfamiliar)
+- `magpie-agent/reference/GAMS_Phase2_Control_Structures.md` - Dollar conditions, loops, if statements
+- `magpie-agent/reference/GAMS_Phase3_Advanced_Features.md` - Macros, variable attributes, time indexing
+- `magpie-agent/reference/GAMS_Phase4_Functions_Operations.md` - Math functions, aggregation
+- `magpie-agent/reference/GAMS_Phase5_MAgPIE_Patterns.md` - Module structure, naming conventions, MAgPIE idioms
+- `magpie-agent/reference/GAMS_Phase6_Best_Practices.md` - Scaling, debugging, common pitfalls
+
+**What counts as "sufficient complexity"?**
+- ✅ Writing new GAMS equations or modules
+- ✅ Debugging GAMS compilation or execution errors
+- ✅ Understanding complex dollar conditions or macros
+- ✅ Working with time loops, rolling parameters, or calibration
+- ✅ Modifying presolve/postsolve logic
+- ✅ Optimizing model performance or numerical stability
+
+**What does NOT require GAMS reference?**
+- ❌ Simple parameter lookups from module docs
+- ❌ Reading equation names (already in module_XX.md)
+- ❌ Understanding what a module does conceptually
+
+**Progressive approach**:
+1. **Quick lookup** → Phase 5 (MAgPIE Patterns) for naming conventions, module structure
+2. **Syntax check** → Phase 2 (Control Structures) for dollar conditions, loops
+3. **Deep dive** → Phase 3 (Advanced) for macros, Phase 4 for functions
+4. **Troubleshooting** → Phase 6 (Best Practices) for debugging, performance
+
+**Example workflow**:
+- User asks: "Write a new equation for carbon pricing in Module 56"
+  1. ✅ Read `GAMS_Phase5_MAgPIE_Patterns.md` → module file structure, naming (q56_)
+  2. ✅ Read `GAMS_Phase2_Control_Structures.md` → dollar condition syntax
+  3. ✅ Read `module_56.md` → existing equations for context
+  4. ✅ Write equation following MAgPIE patterns
+  5. ✅ Check `GAMS_Phase6_Best_Practices.md` → scaling, bounds
+
+**The GAMS reference is comprehensive (38,000+ words) - use it to avoid errors!**
+
+### Step 4: Acknowledge What You Used
 
 **At the end of your response, state:**
 - 🟡 "Based on module_XX.md documentation"
 - 🟢 "Verified against module_XX.md and modules/XX_.../equations.gms:123"
 - 🟠 "Module docs don't cover this, checked raw GAMS code"
 - 💬 "Includes user feedback from module_XX_notes.md" (if notes were used)
+- 📘 "Consulted GAMS_PhaseX for [syntax/patterns/debugging]" (if GAMS reference used)
 
 ### Why This Matters
 
