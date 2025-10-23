@@ -1,24 +1,31 @@
-# Git Workflow for CLAUDE.md
+# Git Workflow for AI Documentation
 
-**When updating the CLAUDE.md file, follow this workflow:**
+**When updating CLAUDE.md, slash commands, or any AI documentation, follow this workflow:**
 
 ## Critical Rules
 
-1. **ALWAYS work on the file in the magpie-agent directory** (`/path/to/magpie/magpie-agent/CLAUDE.md`)
-2. **After editing, copy it to the main MAgPIE directory**:
+1. **ALL AI documentation lives in magpie-agent directory**
+   - CLAUDE.md: `magpie-agent/CLAUDE.md`
+   - Slash commands: `magpie-agent/.claude/commands/`
+   - All other docs: `magpie-agent/` subdirectories
+
+2. **After editing CLAUDE.md, copy it to the main MAgPIE directory** (convenience only):
    ```bash
    cp magpie-agent/CLAUDE.md CLAUDE.md
    ```
+
 3. **Commit and push from the magpie-agent repository ONLY**:
    ```bash
    cd magpie-agent
-   git add CLAUDE.md
-   git commit -m "Update CLAUDE.md with [description]"
+   git add CLAUDE.md .claude/ [or other files]
+   git commit -m "Update [description]"
    git push
    ```
-4. **DO NOT commit CLAUDE.md from the main MAgPIE repository**
-   - The main MAgPIE repository should NOT track changes to CLAUDE.md
-   - All version control for CLAUDE.md happens in the magpie-agent subrepository
+
+4. **NEVER commit AI documentation from the main MAgPIE repository**
+   - The main MAgPIE repository should NOT track CLAUDE.md, .claude/, or magpie-agent/
+   - All version control for AI documentation happens in the magpie-agent subrepository
+   - No branches, no commits in main MAgPIE for AI docs
 
 ## Why This Workflow?
 
