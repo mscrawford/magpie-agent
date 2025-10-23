@@ -108,22 +108,123 @@ See `feedback/README.md` for complete details.
    - Cross-module interaction not explained
    - **Action**: Create "missing content" feedback with type 4
 
-**How to create feedback during a session:**
+---
+
+## 🔄 COMPLETE FEEDBACK WORKFLOW (CRITICAL!)
+
+**⚠️ Creating a feedback file is only STEP 1 - you MUST also integrate it!**
+
+### Step 1: Create Feedback File
 
 ```bash
-# 1. Write feedback file directly
+# Write feedback file to pending/
 Write: /path/to/magpie/magpie-agent/feedback/pending/YYYYMMDD_HHMMSS_type_target.md
 
-# 2. Follow template structure (see feedback/templates/)
-
-# 3. Commit with descriptive message
-Bash: git -C /path/to/magpie/magpie-agent add feedback/pending/[file]
-Bash: git -C /path/to/magpie/magpie-agent commit -m "Feedback: [description]"
+# Follow template structure (see feedback/templates/)
 ```
+
+### Step 2: Explain Proposed Changes to User
+
+**BEFORE integrating, tell the user:**
+
+> "I've documented this mistake in a feedback file. To prevent this from happening again, I propose the following changes:
+>
+> 1. **Update [file/command]** to add [specific change]
+> 2. **Add [warning/check/example]** to [location]
+> 3. **Move feedback** from pending/ to integrated/
+>
+> This will ensure future agents [benefit of the change].
+>
+> May I proceed with integrating these changes?"
+
+**Wait for user approval before proceeding!**
+
+### Step 3: Integrate the Feedback
+
+**Determine where to integrate based on feedback type:**
+
+- **Global behavior/workflow** → Update CLAUDE.md or relevant `/command`
+- **Module-specific** → Update `module_XX_notes.md`
+- **GAMS patterns** → Update `reference/GAMS_Phase*.md`
+- **Cross-module** → Update `cross_module/*.md`
+- **Agent behavior** → Update `core_docs/AI_Agent_Behavior_Guide.md`
+
+**Examples:**
+- Git workflow mistake → Update `/update-claude-md` command
+- Module 52 misunderstanding → Update `modules/module_52_notes.md`
+- GAMS syntax error → Update `reference/GAMS_Phase2_Control_Structures.md`
+
+### Step 4: Move Feedback to Integrated
+
+```bash
+# Move from pending to integrated
+mv feedback/pending/[file].md feedback/integrated/[file].md
+```
+
+### Step 5: Commit Everything Together
+
+```bash
+# Stage all changes (feedback + integrated changes)
+git add feedback/pending/[file].md feedback/integrated/[file].md [other changed files]
+
+# Commit with descriptive message
+git commit -m "Integrate feedback: [description]
+
+- Created feedback documenting [issue]
+- Updated [files] to incorporate lessons learned
+- Moved feedback to integrated/
+- Future agents will now [benefit]"
+
+# Push
+git push
+```
+
+---
+
+## ❌ WRONG: Creating Feedback Without Integrating
+
+**DON'T DO THIS:**
+```bash
+# Create feedback
+Write: feedback/pending/mistake.md
+git add feedback/pending/mistake.md
+git commit -m "Created feedback"
+git push
+# STOP HERE ← WRONG! Feedback not integrated!
+```
+
+**Problem:** The feedback just sits in pending/ forever. Future agents won't benefit because the instructions haven't been updated!
+
+## ✅ CORRECT: Complete Feedback Loop
+
+```bash
+# 1. Create feedback
+Write: feedback/pending/20251023_mistake.md
+
+# 2. Explain to user what you'll change
+# (get approval)
+
+# 3. Integrate into actual instructions
+Edit: [appropriate file based on feedback type]
+
+# 4. Move to integrated
+mv feedback/pending/20251023_mistake.md feedback/integrated/
+
+# 5. Commit everything together
+git add feedback/integrated/20251023_mistake.md [changed files]
+git commit -m "Integrate feedback: [description]"
+git push
+```
+
+---
 
 **Priority guide:**
 - **HIGH**: Fundamental mistakes about model architecture (parameterization vs. modeling)
 - **MEDIUM**: Module-specific corrections, important warnings
 - **LOW**: Minor clarifications, additional examples
 
-**Remember**: Future AI agents will benefit from your feedback. If the user had to correct you, document it so it doesn't happen again!
+**Remember**:
+1. Creating feedback is STEP 1, not the complete task
+2. Always explain proposed changes to user first
+3. Integrate before pushing
+4. Move to integrated/ to mark as complete
