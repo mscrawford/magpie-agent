@@ -702,6 +702,49 @@ Other IAMs may use different approaches:
 - "Other models also..." (verified or assumed?)
 - "Standard practice is..." (in MAgPIE specifically or generally?)
 - "X compares favorably to..." (based on what verification?)
+- **"MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA?
+
+### ⚠️ CRITICAL: Parameterization vs. Process-Based Modeling
+
+**Before claiming "MAgPIE models X", verify these THREE checks:**
+
+1. **Equation Check**: Are there equations that CALCULATE X?
+   ```gams
+   ✅ PROCESS: vm_carbon(j,ac) =e= f_chapman_richards(A,k,m,ac)
+   ❌ PARAMETER: p_loss(j) = f_historical_rate(j) * area
+   ```
+
+2. **Source Check**: Does X come from input files or calculations?
+   ```gams
+   ❌ PARAMETER: $include "./modules/XX/input/f_data.cs3"
+   ✅ PROCESS: p_calculated(j,t) = f(vm_variable1, pm_variable2)
+   ```
+
+3. **Feedback Check**: Does model state affect X dynamically?
+   ```gams
+   ✅ PROCESS: fire_risk(j,t) = f(forest_moisture(j,t), temperature(j,t))
+       where forest_moisture depends on vm_land_cover
+   ❌ PARAMETER: disturbance_rate(j) = fixed_data(j)
+   ```
+
+**Red flag patterns that indicate PARAMETERIZATION, not modeling:**
+- Variable names starting with `f_` or `i_` → Fixed inputs from data
+- `$include "./modules/XX/input/..."` → External data file
+- `parameter * area` → Applying rates, not calculating them
+- Labels like "wildfire" in data files → Statistical attribution, not mechanism
+- No equations that calculate the process rate dynamically
+
+**Correct language:**
+- ✅ "MAgPIE parameterizes X using historical data from [source]"
+- ✅ "MAgPIE applies exogenous rates for X"
+- ✅ "Module XX uses data labeled 'X' but doesn't simulate X processes"
+- ❌ "MAgPIE models X" (unless equations calculate X endogenously)
+
+**Example - Fire in Module 35:**
+- ❌ WRONG: "Module 35 models fire disturbance"
+- ✅ RIGHT: "Module 35 applies historical disturbance rates labeled 'wildfire' from observational data (f35_forest_lost_share.cs3), but does NOT simulate fire processes (no ignition, spread, or combustion calculations)"
+
+---
 
 **Always ask yourself**: "Where is this in the code? What file and line?"
 
@@ -820,3 +863,47 @@ MAgPIE developers can improve the agent by submitting feedback:
 - **Global**: Agent behavior improvements
 
 See `feedback/README.md` for complete details.
+
+---
+
+### 🤖 AI Agent: When to Create Feedback
+
+**As an AI agent, you should create feedback when you:**
+
+1. **Make a mistake that the user corrects**
+   - User points out error in your understanding
+   - User clarifies what code actually does vs. what you thought
+   - Example: "I don't think that's modeling fire, just generic disturbance"
+   - **Action**: Create global feedback with type 5
+
+2. **Learn something important from the user**
+   - User explains a pattern or principle you should know
+   - User shows how modules interact in ways not documented
+   - User provides critical context about model behavior
+   - **Action**: Create lesson or global feedback
+
+3. **Discover gaps in documentation**
+   - You can't answer a question because docs are incomplete
+   - User asks about something that should be documented but isn't
+   - Cross-module interaction not explained
+   - **Action**: Create "missing content" feedback with type 4
+
+**How to create feedback during a session:**
+
+```bash
+# 1. Write feedback file directly
+Write: /path/to/magpie/magpie-agent/feedback/pending/YYYYMMDD_HHMMSS_type_target.md
+
+# 2. Follow template structure (see feedback/templates/)
+
+# 3. Commit with descriptive message
+Bash: git -C /path/to/magpie/magpie-agent add feedback/pending/[file]
+Bash: git -C /path/to/magpie/magpie-agent commit -m "Feedback: [description]"
+```
+
+**Priority guide:**
+- **HIGH**: Fundamental mistakes about model architecture (parameterization vs. modeling)
+- **MEDIUM**: Module-specific corrections, important warnings
+- **LOW**: Minor clarifications, additional examples
+
+**Remember**: Future AI agents will benefit from your feedback. If the user had to correct you, document it so it doesn't happen again!
