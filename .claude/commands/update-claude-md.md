@@ -39,3 +39,82 @@
 - **Convenience copy**: `/Users/turnip/Documents/Work/Workspace/magpie/CLAUDE.md`
 
 Always edit the source of truth, then copy to the convenience location.
+
+---
+
+## 🚨 MANDATORY CHECK Before ANY Git Operation
+
+**Before running `git add`, `git commit`, or `git push`, ALWAYS ask:**
+
+### 1. What repository am I in?
+```bash
+pwd  # Check current directory
+```
+**Should see:** `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent`
+
+### 2. Is this AI documentation?
+- CLAUDE.md → YES
+- .claude/commands/ → YES
+- core_docs/, modules/, reference/, cross_module/ → YES
+- MAgPIE model code (*.gms, etc.) → NO
+
+### 3. Decision Tree
+
+```
+About to run git add/commit/push...
+  │
+  ├─ Is this AI documentation (CLAUDE.md, .claude/, docs/)?
+  │  │
+  │  ├─ YES → Check: Am I in magpie-agent/ directory?
+  │  │  │
+  │  │  ├─ YES → ✅ PROCEED
+  │  │  └─ NO  → 🛑 STOP! cd to magpie-agent/ first
+  │  │
+  │  └─ NO → Check: Am I modifying MAgPIE model code?
+  │     │
+  │     ├─ YES → ✅ PROCEED (but only if authorized)
+  │     └─ NO  → ❓ Ask user where this should be committed
+```
+
+### 🚩 Red Flags - STOP if you see:
+
+- `git add CLAUDE.md` from `/Users/turnip/Documents/Work/Workspace/magpie` (should be from magpie-agent)
+- `git add .claude/` from main MAgPIE directory (should be from magpie-agent)
+- Any attempt to commit AI docs from main MAgPIE repo
+- `pwd` shows you're in wrong directory
+
+### ✅ Correct Workflow Template
+
+```bash
+# 1. Check where you are
+pwd
+# Should see: /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+
+# 2. If not in magpie-agent, navigate there FIRST
+cd /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+
+# 3. Now commit AI documentation
+git add [files]
+git commit -m "message"
+git push
+```
+
+## Common Mistake
+
+**DON'T create files in main MAgPIE directory then commit them!**
+
+❌ WRONG:
+```bash
+# Create file in wrong location
+touch /Users/turnip/Documents/Work/Workspace/magpie/.claude/commands/foo.md
+cd /Users/turnip/Documents/Work/Workspace/magpie
+git add .claude/  # WRONG REPO!
+```
+
+✅ CORRECT:
+```bash
+# Create file in correct location
+touch /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/.claude/commands/foo.md
+cd /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+git add .claude/  # CORRECT REPO!
+```
