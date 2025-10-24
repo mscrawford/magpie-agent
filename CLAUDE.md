@@ -13,6 +13,7 @@
 
 - Module questions → `modules/module_XX.md` (AI docs in current directory)
 - General questions → `core_docs/AI_Agent_Behavior_Guide.md`
+- Tool usage questions → `core_docs/Tool_Usage_Patterns.md` (Bash, Read, Write, paths)
 - Only go to raw GAMS code if docs don't have what you need
 - For GAMS code → `../modules/XX_name/realization/file.gms` (parent directory)
 
@@ -359,6 +360,7 @@ MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized
 | **Phase2_Module_Dependencies.md** | 173 dependencies, 26 circular cycles, centrality analysis | "What modules depend on X?" "Can I modify Y without breaking Z?" "What are the feedback loops?" |
 | **Phase3_Data_Flow.md** | 172 input files, data sources, calibration pipeline | "Where does this data come from?" "How is input processed?" "What's the spatial aggregation?" |
 | **AI_Agent_Behavior_Guide.md** | Query routing, response patterns, error reporting | "How should I answer this type of question?" "What's the right pattern?" |
+| **Tool_Usage_Patterns.md** | Best practices for Claude Code tools (Bash, Read, Write, Edit, Grep, Glob) | "How do I use absolute paths?" "Why did my file operation fail?" "How to handle working directories?" |
 
 **Phase 0 covers**:
 - Model entry point (`main.gms`) and execution flow
