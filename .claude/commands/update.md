@@ -8,7 +8,9 @@ This command pulls the latest changes from the magpie-agent repository and re-de
 2. **Pulls latest changes** - Fetches and merges from origin/main
 3. **Handles conflicts** - Provides guidance if merge conflicts occur
 4. **Re-deploys CLAUDE.md** - Copies updated CLAUDE.md to parent magpie directory
-5. **Verifies deployment** - Confirms files are in sync
+5. **Re-deploys slash commands** - Copies .claude/commands/ to parent directory
+6. **Syncs settings** - Copies parent settings.local.json if newer
+7. **Verifies deployment** - Confirms files are in sync
 
 ## When to Use This
 
@@ -74,14 +76,23 @@ git pull origin main --no-edit
 - Restore them: `git stash pop`
 - If conflicts during restore, provide guidance
 
-### Step 4: Re-deploy CLAUDE.md
+### Step 4: Re-deploy CLAUDE.md and Slash Commands
 
 ```bash
 # Copy CLAUDE.md to parent magpie directory
 cp CLAUDE.md ../CLAUDE.md
 
-# Verify the copy
+# Copy slash commands to parent .claude directory
+cp -r .claude/commands ../.claude/
+
+# Sync settings from parent (if it exists and is newer)
+if [ -f ../.claude/settings.local.json ]; then
+  cp ../.claude/settings.local.json .claude/settings.local.json
+fi
+
+# Verify the copies
 ls -lh ../CLAUDE.md
+ls -lh ../.claude/commands/
 ```
 
 ### Step 5: Report Status
@@ -99,9 +110,12 @@ Show a summary:
 
 📝 Files updated:
    - CLAUDE.md
+   - .claude/commands/ (slash commands)
    - [list other changed files from git pull]
 
-📋 CLAUDE.md deployed to: /Users/turnip/Documents/Work/Workspace/magpie/CLAUDE.md
+📋 Deployed to parent directory:
+   - CLAUDE.md → /Users/turnip/Documents/Work/Workspace/magpie/CLAUDE.md
+   - Slash commands → /Users/turnip/Documents/Work/Workspace/magpie/.claude/commands/
 
 🎯 Status: Ready to use latest documentation
 

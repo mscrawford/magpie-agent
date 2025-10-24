@@ -17,3 +17,6 @@ Thumbs.db
 session_logs/scratch_*
 session_logs/temp_*
 *.backup
+
+# Claude Code settings (copied from parent, user-specific)
+.claude/settings.local.json

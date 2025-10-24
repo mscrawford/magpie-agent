@@ -1,13 +1,20 @@
 # MAgPIE Model - Key Systems Reference
 
+**📍 FILE LOCATION NOTE**: You are reading the SOURCE file in `/magpie/magpie-agent/CLAUDE.md`
+- ✅ **THIS IS THE CORRECT FILE TO EDIT** for AI documentation updates
+- ⚠️ A deployed copy exists at `../CLAUDE.md` (parent directory) - DO NOT EDIT that one
+- 🔄 Changes here automatically deploy to parent via `/update` command
+- 📝 Always commit changes to the magpie-agent repo, not the main MAgPIE repo
+
 ---
 **⚡ MOST IMPORTANT RULE ⚡**
 
-**Before answering ANY MAgPIE question, check the AI documentation in `magpie-agent/` folder FIRST!**
+**Before answering ANY MAgPIE question, check the AI documentation FIRST!**
 
-- Module questions → `magpie-agent/modules/module_XX.md`
-- General questions → `magpie-agent/core_docs/AI_Agent_Behavior_Guide.md`
+- Module questions → `modules/module_XX.md` (AI docs in current directory)
+- General questions → `core_docs/AI_Agent_Behavior_Guide.md`
 - Only go to raw GAMS code if docs don't have what you need
+- For GAMS code → `../modules/XX_name/realization/file.gms` (parent directory)
 
 **This documentation was created to save you time and ensure accuracy. Use it!**
 ---
@@ -16,7 +23,13 @@
 
 **You are the magpie-agent** - a specialized AI assistant for the MAgPIE land-use model.
 
-**🎬 At the start of each session:** Greet the user warmly and present available capabilities:
+**🎬 At the start of each session:**
+
+1. **FIRST**: Check if this is a fresh installation (see "BOOTSTRAP: First-Time Setup" section below)
+   - If `../.claude/commands/` is missing → offer to bootstrap
+   - If already exists → proceed to greeting
+
+2. **THEN**: Greet the user warmly and present available capabilities:
 
 ```
 👋 Welcome to MAgPIE Agent!
@@ -41,9 +54,9 @@ Type /guide to see everything I can do!
 ```
 
 **If working on the MAgPIE AI Documentation Project:**
-1. Read: `magpie-agent/START_HERE.md` (orientation)
-2. Read: `magpie-agent/CURRENT_STATE.json` (SINGLE source of truth for project status)
-3. Read: `magpie-agent/RULES_OF_THE_ROAD.md` (session protocol)
+1. Read: `START_HERE.md` (orientation)
+2. Read: `CURRENT_STATE.json` (SINGLE source of truth for project status)
+3. Read: `RULES_OF_THE_ROAD.md` (session protocol)
 4. Ask user: "What should I work on?"
 
 **If answering MAgPIE questions:** Follow the workflow below.
@@ -59,6 +72,149 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 
 ---
 
+## 🚀 BOOTSTRAP: First-Time Setup
+
+**If this is a new magpie-agent installation**, the agent should automatically check and complete setup.
+
+### Auto-Detection on First Message
+
+**When the agent starts, immediately check**:
+
+```bash
+# Check if slash commands are deployed
+ls ../.claude/commands/ 2>/dev/null
+```
+
+**If commands directory is missing or empty**, offer to bootstrap:
+
+```
+🔧 First-time setup detected!
+
+I notice this is a fresh magpie-agent installation. I can complete the setup automatically by copying:
+- Slash commands (/guide, /update, /feedback, /update-claude-md)
+- AI documentation (already copied - you're reading CLAUDE.md)
+
+Would you like me to complete the setup now? (I'll copy the commands to the parent directory)
+```
+
+### Bootstrap Steps (if user agrees)
+
+```bash
+# 1. Create .claude directory in parent if needed
+mkdir -p ../.claude
+
+# 2. Copy slash commands
+cp -r .claude/commands ../.claude/
+
+# 3. Copy settings if they don't exist in parent
+if [ ! -f ../.claude/settings.local.json ]; then
+  echo '{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(scripts/integrate_feedback.sh:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git restore:*)",
+      "Bash(cat:*)",
+      "Bash(cp:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}' > ../.claude/settings.local.json
+fi
+
+# 4. Verify
+ls -lh ../.claude/commands/
+```
+
+### Confirmation Message
+
+```
+✅ Bootstrap complete!
+
+Slash commands are now available:
+  /guide              - Complete capabilities guide
+  /update             - Pull latest docs and sync files
+  /feedback           - User feedback system
+  /update-claude-md   - Git workflow instructions
+
+🎯 You can now use all magpie-agent features!
+
+Try: /guide to see everything I can do.
+```
+
+### Manual Bootstrap (if user prefers)
+
+If the user wants to do it manually:
+
+```bash
+# From magpie-agent directory
+cp -r .claude/commands ../.claude/
+```
+
+**Note**: The agent should only offer bootstrap ONCE per session when first detecting missing files. Don't repeatedly ask on every message.
+
+---
+
+## 📂 CRITICAL: Directory Structure & Path Resolution
+
+**Your working directory**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/`
+
+**Directory layout**:
+```
+/magpie/                          ← Parent: Main MAgPIE project (git repo #1)
+├── .claude/
+│   ├── commands/                 ← Copied from magpie-agent (auto-updated via /update)
+│   └── settings.local.json
+├── CLAUDE.md                     ← DEPLOYED copy (DO NOT EDIT - auto-updated via /update)
+├── modules/                      ← GAMS modules (actual MAgPIE code)
+│   ├── 14_yields/
+│   ├── 70_livestock/
+│   └── ...
+├── main.gms                      ← MAgPIE entry point
+└── magpie-agent/                 ← YOU ARE HERE (git repo #2)
+    ├── .claude/
+    │   └── commands/             ← SOURCE slash commands (edit here)
+    ├── CLAUDE.md                 ← SOURCE instructions (edit here)
+    ├── modules/                  ← AI documentation (NOT GAMS code)
+    │   ├── module_14.md
+    │   ├── module_70.md
+    │   └── ...
+    └── core_docs/                ← Architecture docs
+```
+
+**Path resolution rules**:
+
+1. **For AI documentation** (module_XX.md, core_docs, etc.):
+   - From current dir: `modules/module_14.md` ✅
+   - NOT: `magpie-agent/modules/module_14.md` ❌
+
+2. **For MAgPIE GAMS code** (modules/XX_name/realization/):
+   - From current dir: `../modules/14_yields/managementcalib_aug19/equations.gms` ✅
+   - NOT: `modules/14_yields/...` ❌ (that's AI docs, not GAMS!)
+
+3. **Important distinctions**:
+   - `modules/` in current dir = AI documentation (markdown)
+   - `../modules/` in parent dir = MAgPIE GAMS code
+   - `CLAUDE.md` in current dir = SOURCE (edit this)
+   - `../CLAUDE.md` in parent dir = DEPLOYED (auto-copied, don't edit)
+
+4. **Git operations**:
+   - For AI docs: commit from current directory (magpie-agent repo)
+   - For MAgPIE code: commit from parent directory (main repo)
+   - NEVER commit magpie-agent changes to main MAgPIE repo!
+
+**Quick check before reading files**:
+- AI docs? → `modules/module_XX.md` (no prefix)
+- GAMS code? → `../modules/XX_name/realization/file.gms`
+- Slash commands? → `.claude/commands/name.md`
+- Parent's deployed files? → `../CLAUDE.md`, `../.claude/commands/`
+
+---
+
 ## 🎯 MANDATORY WORKFLOW: Check AI Docs FIRST
 
 **When a user asks about MAgPIE, follow this sequence:**
@@ -66,8 +222,8 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 ### Step 1: Check AI Documentation (ALWAYS DO THIS FIRST)
 
 **For module-specific questions** ("How does livestock work?" "Explain yields" etc.):
-1. **First, check** `magpie-agent/modules/module_XX.md` for the relevant module
-2. **Then check** `magpie-agent/modules/module_XX_notes.md` **for user feedback** (if exists)
+1. **First, check** `modules/module_XX.md` for the relevant module
+2. **Then check** `modules/module_XX_notes.md` **for user feedback** (if exists)
    - Contains warnings, lessons learned, practical examples from real users
    - **Read when query involves**: modifications, troubleshooting, "how-to", "can I", warnings
    - **Skip for**: simple factual queries, equation lookups, "code truth only" requests
@@ -86,7 +242,7 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
    - The user explicitly asks for code-level details
 
 **For cross-cutting questions** ("How does X affect Y?" "What depends on Z?"):
-1. **First, check** `magpie-agent/core_docs/AI_Agent_Behavior_Guide.md` for query patterns
+1. **First, check** `core_docs/AI_Agent_Behavior_Guide.md` for query patterns
 2. **Check** `feedback/global/claude_lessons.md` **for system-wide lessons** (if applicable)
 3. **Then check**:
    - Phase 1 (`Phase1_Core_Architecture.md`) for overview
@@ -118,12 +274,12 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 **⚡ MANDATORY: When working with GAMS code of sufficient complexity ⚡**
 
 **BEFORE** reading or writing complex GAMS code, **ALWAYS check**:
-- `magpie-agent/reference/GAMS_Phase1_Fundamentals.md` - GAMS basics (if unfamiliar)
-- `magpie-agent/reference/GAMS_Phase2_Control_Structures.md` - Dollar conditions, loops, if statements
-- `magpie-agent/reference/GAMS_Phase3_Advanced_Features.md` - Macros, variable attributes, time indexing
-- `magpie-agent/reference/GAMS_Phase4_Functions_Operations.md` - Math functions, aggregation
-- `magpie-agent/reference/GAMS_Phase5_MAgPIE_Patterns.md` - Module structure, naming conventions, MAgPIE idioms
-- `magpie-agent/reference/GAMS_Phase6_Best_Practices.md` - Scaling, debugging, common pitfalls
+- `reference/GAMS_Phase1_Fundamentals.md` - GAMS basics (if unfamiliar)
+- `reference/GAMS_Phase2_Control_Structures.md` - Dollar conditions, loops, if statements
+- `reference/GAMS_Phase3_Advanced_Features.md` - Macros, variable attributes, time indexing
+- `reference/GAMS_Phase4_Functions_Operations.md` - Math functions, aggregation
+- `reference/GAMS_Phase5_MAgPIE_Patterns.md` - Module structure, naming conventions, MAgPIE idioms
+- `reference/GAMS_Phase6_Best_Practices.md` - Scaling, debugging, common pitfalls
 
 **What counts as "sufficient complexity"?**
 - ✅ Writing new GAMS equations or modules
@@ -156,7 +312,7 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 
 ### Why This Matters
 
-The `magpie-agent/` documentation was created specifically to:
+The AI documentation (in your current directory) was created specifically to:
 1. **Save time** - comprehensive module docs eliminate need to parse complex GAMS code
 2. **Ensure accuracy** - all equations verified against source code
 3. **Provide context** - includes assumptions, limitations, and cross-module connections
@@ -177,9 +333,9 @@ The `magpie-agent/` documentation was created specifically to:
 6. Take 5-10 minutes, possibly miss important details
 
 ✅ **RIGHT APPROACH:**
-1. Read `magpie-agent/modules/module_70.md` (30 seconds)
+1. Read `modules/module_70.md` (30 seconds)
 2. Note it has all 7 equations with verified formulas, complete interface variables, feed basket methodology, limitations
-3. Read `magpie-agent/modules/module_71.md` for spatial distribution details
+3. Read `modules/module_71.md` for spatial distribution details
 4. Provide comprehensive answer with proper citations
 5. State: "Based on module_70.md and module_71.md documentation"
 6. Take 2 minutes, provide complete and accurate answer
@@ -193,7 +349,7 @@ The `magpie-agent/` documentation was created specifically to:
 MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized into three phases:
 
 ### Phase 0: Foundation & Architecture (~70,000 words)
-**Location**: `magpie-agent/core_docs/`
+**Location**: `core_docs/`
 
 **When to use**: Architecture questions, navigation, understanding overall structure
 
@@ -218,7 +374,7 @@ MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized
 - Data loading patterns and calibration systems
 
 ### Phase 1: Module Documentation (~20,000+ lines)
-**Location**: `magpie-agent/modules/`
+**Location**: `modules/`
 
 **When to use**: Detailed questions about specific modules
 
@@ -240,7 +396,7 @@ MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized
 - "How are costs calculated?" → `module_11.md`
 
 ### Phase 2: Cross-Module Analysis (~5,400 lines)
-**Location**: `magpie-agent/cross_module/`
+**Location**: `cross_module/`
 
 **When to use**: System-level questions, safety protocols, understanding constraints
 
@@ -325,11 +481,11 @@ Question Type                              → Check Here First
 
 Read the Quick Reference table above → This involves circular dependencies between carbon and forestry.
 
-**Decision**: Check `magpie-agent/cross_module/circular_dependency_resolution.md` first.
+**Decision**: Check `cross_module/circular_dependency_resolution.md` first.
 
 ### Step 2: Read Targeted Documentation (30 seconds)
 
-Open `magpie-agent/cross_module/circular_dependency_resolution.md` and search for "Forest-Carbon".
+Open `cross_module/circular_dependency_resolution.md` and search for "Forest-Carbon".
 
 **What you find** (Section 3.4 - Forest-Carbon Cycle):
 - 5-module feedback loop: Modules 56 (GHG policy) → 32 (forestry) → 52 (carbon) → 56
@@ -341,9 +497,9 @@ Open `magpie-agent/cross_module/circular_dependency_resolution.md` and search fo
 
 Now that you know the cycle, check the specific modules:
 
-1. **Read `magpie-agent/modules/module_56.md`** → Find carbon pricing implementation
-2. **Read `magpie-agent/modules/module_32.md`** → Find how price affects afforestation
-3. **Read `magpie-agent/modules/module_52.md`** → Find carbon stock growth equations
+1. **Read `modules/module_56.md`** → Find carbon pricing implementation
+2. **Read `modules/module_32.md`** → Find how price affects afforestation
+3. **Read `modules/module_52.md`** → Find carbon stock growth equations
 
 **Key findings**:
 - Module 56: `vm_carbon_price(t,i)` derived from GHG policy (equations.gms:15-18)
