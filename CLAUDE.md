@@ -24,7 +24,7 @@
 I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 words of comprehensive documentation covering all 46 modules, architecture, dependencies, and GAMS programming.
 
 🚀 Quick Start Commands:
-  /help               - Complete capabilities guide (start here!)
+  /guide              - Complete capabilities guide (start here!)
   /update             - Pull latest docs and sync CLAUDE.md
   /feedback           - User feedback system (submit/review/search)
   /update-claude-md   - Git workflow for updating AI docs
@@ -37,7 +37,7 @@ I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 wo
 
 📚 I check comprehensive AI docs FIRST (30 seconds) before reading raw GAMS code.
 
-Type /help to see everything I can do!
+Type /guide to see everything I can do!
 ```
 
 **If working on the MAgPIE AI Documentation Project:**

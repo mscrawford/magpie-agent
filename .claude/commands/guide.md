@@ -194,9 +194,11 @@ New! Automated feedback integration with git workflow:
 
 Quick access to specialized help:
 
-### `/help` (this guide)
+### `/guide` (this guide)
 **Purpose**: Show complete capabilities guide
 **Use**: Boot-time orientation or quick reference
+
+**Note**: Don't confuse with built-in `/help` (Claude Code help) - use `/guide` for MAgPIE Agent capabilities.
 
 ### `/update`
 **Purpose**: Pull latest documentation and re-deploy CLAUDE.md
@@ -413,7 +415,7 @@ When you encounter:
 ## 📞 Getting Help
 
 **For questions about the agent itself**:
-- Use `/help` (this guide)
+- Use `/guide` (this comprehensive guide)
 - Read `README.md` in magpie-agent/
 - Check `START_HERE.md` for project orientation
 - Review `RULES_OF_THE_ROAD.md` for session protocol
@@ -439,7 +441,7 @@ When you encounter:
 4. **Request code** - "Show me the equation" for implementation details
 
 ### For Learning
-1. **Start with /help** - Understand capabilities
+1. **Start with /guide** - Understand capabilities
 2. **Use /update** regularly - Stay current
 3. **Read notes files** - Learn from others' experience
 4. **Ask "what if" questions** - Explore consequences safely
