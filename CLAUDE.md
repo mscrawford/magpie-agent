@@ -768,43 +768,153 @@ Other IAMs may use different approaches:
 
 ### ⚠️ CRITICAL: Parameterization vs. Process-Based Modeling
 
-**Before claiming "MAgPIE models X", verify these THREE checks:**
+**CRITICAL ERROR PATTERN**: Conflating "calculated by equations" with "mechanistic process modeling"
 
-1. **Equation Check**: Are there equations that CALCULATE X?
-   ```gams
-   ✅ PROCESS: vm_carbon(j,ac) =e= f_chapman_richards(A,k,m,ac)
-   ❌ PARAMETER: p_loss(j) = f_historical_rate(j) * area
-   ```
+**The Problem**: Saying "MAgPIE calculates/models X" is AMBIGUOUS. It could mean:
+1. ✅ Equations compute amounts dynamically (e.g., total emissions vary with N inputs)
+2. ❌ Mechanistic process model (e.g., soil chemistry determines volatilization)
+3. ⚠️ Hybrid (e.g., fixed rate per hectare × optimized area)
 
-2. **Source Check**: Does X come from input files or calculations?
-   ```gams
-   ❌ PARAMETER: $include "./modules/XX/input/f_data.cs3"
-   ✅ PROCESS: p_calculated(j,t) = f(vm_variable1, pm_variable2)
-   ```
+**Before claiming "MAgPIE models/simulates/calculates X", verify ALL THREE checks:**
 
-3. **Feedback Check**: Does model state affect X dynamically?
-   ```gams
-   ✅ PROCESS: fire_risk(j,t) = f(forest_moisture(j,t), temperature(j,t))
-       where forest_moisture depends on vm_land_cover
-   ❌ PARAMETER: disturbance_rate(j) = fixed_data(j)
-   ```
+#### Check 1: Equation Structure
+**Question**: Does it compute FROM first principles or APPLY a rate/factor?
 
-**Red flag patterns that indicate PARAMETERIZATION, not modeling:**
-- Variable names starting with `f_` or `i_` → Fixed inputs from data
-- `$include "./modules/XX/input/..."` → External data file
-- `parameter * area` → Applying rates, not calculating them
-- Labels like "wildfire" in data files → Statistical attribution, not mechanism
-- No equations that calculate the process rate dynamically
+```gams
+✅ MECHANISTIC PROCESS:
+vm_carbon(j,ac) =e= f_chapman_richards(A,k,m,ac)
+→ Growth function based on biological theory
 
-**Correct language:**
-- ✅ "MAgPIE parameterizes X using historical data from [source]"
-- ✅ "MAgPIE applies exogenous rates for X"
-- ✅ "Module XX uses data labeled 'X' but doesn't simulate X processes"
-- ❌ "MAgPIE models X" (unless equations calculate X endogenously)
+❌ PARAMETERIZATION (applying fixed rates):
+vm_emissions(i) = N_input × fixed_EF × efficiency_factor
+where fixed_EF = 0.01 (IPCC constant)
+→ Applying IPCC emission factor, NOT modeling chemistry
 
-**Example - Fire in Module 35:**
-- ❌ WRONG: "Module 35 models fire disturbance"
-- ✅ RIGHT: "Module 35 applies historical disturbance rates labeled 'wildfire' from observational data (f35_forest_lost_share.cs3), but does NOT simulate fire processes (no ignition, spread, or combustion calculations)"
+❌ SCALING (applying historical rates):
+disturbance(j) = f_historical_rate(j) × area(j)
+→ Scaling historical data, NOT simulating fire
+```
+
+#### Check 2: Parameter Source
+**Question**: Where do key values come from?
+
+```gams
+❌ PARAMETERIZATION INDICATORS:
+- Variable names: f_* (input files), i_* (initialized params)
+- File includes: $include "./modules/XX/input/f_data.cs3"
+- Comments: "Source: IPCC 2006", "Historical observations"
+- Data labels: "wildfire", "disturbance_rate", "loss_factor"
+
+✅ MECHANISTIC INDICATORS:
+- Calculated from: vm_* (optimized), pm_* (processed)
+- Comments: "Based on Chapman-Richards", "Farquhar photosynthesis"
+- Mathematical functions with biological/physical meaning
+```
+
+#### Check 3: Dynamic Feedback
+**Question**: Does model state AFFECT the process rate?
+
+```gams
+✅ MECHANISTIC (endogenous feedback):
+fire_risk(j,t) = f(moisture(j,t), temp(j,t), wind(j,t))
+where moisture depends on vm_land_cover(j,t)
+→ Model state creates feedback loop
+
+❌ PARAMETERIZATION (exogenous rates):
+disturbance(j,t) = f_rate(j) × area(j,t)
+where f_rate from historical data (fixed)
+→ Model state only SCALES rate, doesn't AFFECT it
+
+⚠️ HYBRID (partial dynamics - COMMON PATTERN):
+emissions(i,t) = N_input(i,t) × fixed_EF × (1-NUE(i,t))
+where N_input optimized, NUE scenario-based, EF fixed
+→ Amount varies but NOT mechanistic process modeling
+```
+
+---
+
+#### Correct Language Patterns
+
+**❌ WRONG: Implying mechanistic modeling**
+- "Module 51 models nitrogen volatilization"
+- "NH₃ emissions calculated from soil properties"
+- "The model simulates N₂O production"
+- "MAgPIE accounts for fire disturbance"
+
+**✅ CORRECT: Precise description**
+- "Module 51 **calculates nitrogen emissions using IPCC Tier 1 emission factors**"
+- "NH₃ emissions are **X% of applied N (IPCC default), adjusted for NUE**"
+- "N₂O emissions use **fixed emission factors** (1% of N applied), **not mechanistic nitrification modeling**"
+- "Module 35 **applies historical disturbance rates** labeled 'wildfire', **not fire simulation**"
+
+**✅ BEST: Full transparency**
+> "Module 51 **applies parameterized emission factors** (IPCC guidelines) **adjusted dynamically** for nitrogen inputs and use efficiency. The emission factors themselves (1-3% for N₂O, 10-30% for NH₃) are **fixed parameters**, not calculated from soil moisture, temperature, or pH. **This is NOT process-based modeling** of volatilization chemistry."
+
+---
+
+#### Examples Across Model Types
+
+**Example 1: PARAMETERIZED (Module 51 - Nitrogen Emissions)**
+- Equations: `emissions = N_input × fixed_EF × NUE_adjustment`
+- Parameters: IPCC emission factors (1% → N₂O)
+- Feedback: None (EF doesn't respond to soil/climate)
+- **Correct**: "Applies IPCC emission factors, NOT mechanistic volatilization modeling"
+
+**Example 2: PARAMETERIZED (Module 35 - Disturbance)**
+- Equations: `loss = historical_rate × forest_area`
+- Parameters: Observational data labeled "wildfire"
+- Feedback: None (rate doesn't respond to drought/fuel)
+- **Correct**: "Applies historical rates, NOT fire process simulation"
+
+**Example 3: MECHANISTIC (Module 52 - Carbon Growth)**
+- Equations: `C(age) = A × (1-exp(-k×age))^m` (Chapman-Richards)
+- Parameters: Calibrated growth curve parameters (biological)
+- Feedback: Yes (carbon accumulates with stand age)
+- **Correct**: "Mechanistically models carbon growth using Chapman-Richards curves"
+
+**Example 4: HYBRID (Module 42 - Water Demand)**
+- Equations: `demand = water_per_ha × crop_area`
+- Parameters: Water per ha from LPJmL (fixed)
+- Feedback: Partial (area optimized, but rate fixed)
+- **Correct**: "Calculates demand from fixed water requirements × dynamic crop areas"
+
+---
+
+#### Red Flag Phrases - STOP and Verify
+
+**If you write these, STOP and perform three-check verification:**
+
+**High-Risk Phrases**:
+- "MAgPIE models/simulates [process]"
+- "The model calculates [process]" ← AMBIGUOUS!
+- "[Process] responds to [environmental variable]"
+- "Emissions calculated from soil conditions"
+
+**Domain-Specific Red Flags**:
+- Emissions: "models volatilization/nitrification/denitrification"
+- Disturbance: "models fire/pests/windthrow"
+- Yields: "responds to nutrient deficiency"
+- Erosion: "calculated from rainfall intensity"
+
+---
+
+#### Why This Matters
+
+**Implications differ drastically**:
+
+**If MECHANISTIC** → Can explore novel conditions, climate scenarios, management innovations
+**If PARAMETERIZED** → Limited to conditions similar to historical data, no mechanistic responses
+**If HYBRID** → Some dynamics but constrained by fixed parameters
+
+**Users need to know**:
+- What scenarios are valid
+- What uncertainties exist
+- What improvements are possible
+- Scientific limitations
+
+---
+
+**See detailed examples**: `feedback/integrated/20251024_215608_global_calculated_vs_mechanistic.md`
 
 ---
 
