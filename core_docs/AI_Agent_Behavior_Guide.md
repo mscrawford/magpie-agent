@@ -711,6 +711,97 @@ User asks: "Where does X come from?"
 
 ---
 
+### "How does MAgPIE calculate/model/simulate [process]?"
+
+**⚠️ CRITICAL: Verify whether this is MECHANISTIC, PARAMETERIZED, or HYBRID before answering!**
+
+**Response Pattern**:
+
+**Step 1: Determine Model Approach**
+1. Read module equations (equations.gms)
+2. Check parameter sources (input.gms, input/ folder)
+3. Apply three-check verification (see CLAUDE.md Warning Signs):
+   - ✅ Check 1: Equation structure (first principles vs. applying rates?)
+   - ✅ Check 2: Parameter source (calculated vs. input data?)
+   - ✅ Check 3: Dynamic feedback (process rate responds to model state?)
+
+**Step 2: Classify the Approach**
+- **MECHANISTIC**: Process calculated from first principles (rare in MAgPIE)
+- **PARAMETERIZED**: Fixed rates/factors from IPCC/data (most common)
+- **HYBRID**: Some aspects dynamic, some fixed (common)
+- **DATA-DRIVEN**: Directly from input files (no calculation)
+
+**Step 3: Use Precise Language**
+
+**If MECHANISTIC** (rare):
+> "Module X **mechanistically models [process]** using [theory/model name]. The process is **calculated from first principles** based on [state variables].
+>
+> Example: Module 52 uses Chapman-Richards growth curves: `C(age) = A × (1-exp(-k×age))^m`
+>
+> **What varies**: [list endogenous variables]
+> **What's fixed**: [list parameters]
+>
+> 🟢 Verified: equations.gms:123-145"
+
+**If PARAMETERIZED** (most common):
+> "Module X **calculates [quantity] using [parameter type]** (IPCC factors / historical rates / input data).
+>
+> **What IS calculated dynamically**:
+> - Total amounts (equations compute these each timestep)
+> - Response to [what varies - e.g., nitrogen inputs, land use]
+> - [Other dynamic aspects]
+>
+> **What is PARAMETERIZED** (fixed parameters):
+> - [Parameter 1]: [value/source] (e.g., IPCC emission factor = 1%)
+> - [Parameter 2]: [value/source]
+> - These rates are **fixed**, not calculated from [environmental conditions]
+>
+> **What is NOT modeled**:
+> - ❌ Mechanistic [actual process] (e.g., soil chemistry, fire ignition)
+> - ❌ Response to [conditions] (e.g., temperature, moisture, pH)
+> - ❌ [Other limitations]
+>
+> **Example**: Module 51 nitrogen emissions:
+> - Emissions = N_input × 0.01 (IPCC factor) × NUE_adjustment
+> - The 1% factor is **fixed**, NOT calculated from soil conditions
+> - This is **NOT mechanistic nitrification modeling**
+>
+> 🟡 Based on: module_XX.md"
+
+**If HYBRID** (common):
+> "Module X **calculates [quantity]** where:
+>
+> **Dynamic components** (respond to model):
+> - [Aspect A]: [how it varies]
+>
+> **Fixed components** (parameterized):
+> - [Aspect B]: [source/value]
+>
+> **Example**: Module 42 water demand:
+> - demand = water_per_ha (fixed from LPJmL) × crop_area (optimized)
+> - Total demand varies with land use decisions
+> - But per-hectare requirement doesn't respond to irrigation efficiency
+>
+> 🟡 Based on: module_XX.md"
+
+**Step 4: Always State Limitations**
+
+End every response with explicit limitations:
+> "**Limitations of this approach**:
+> - Cannot explore scenarios outside historical range (if parameterized)
+> - Does not respond to [environmental/management factors]
+> - Assumes [key assumptions]
+> - See module_XX.md Section Y for full limitations"
+
+**Common Mistakes to Avoid**:
+- ❌ "MAgPIE models fire disturbance" → ✅ "MAgPIE applies historical disturbance rates"
+- ❌ "Emissions calculated from soil properties" → ✅ "Emissions use IPCC factors, not soil chemistry"
+- ❌ "The model simulates volatilization" → ✅ "The model applies volatilization rates (X% of N)"
+
+**See**: `feedback/integrated/20251024_215608_global_calculated_vs_mechanistic.md` for detailed examples
+
+---
+
 ## 🧠 CONTEXT MANAGEMENT FOR LONG CONVERSATIONS
 
 ### Track These Across Messages:
