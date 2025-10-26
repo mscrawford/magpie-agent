@@ -6,7 +6,21 @@
 
 ---
 
-## 📊 COMPLETE INVENTORY (ALL 82+ FILES)
+## 🚨 ACTIVE INITIATIVE: Documentation Consolidation
+
+**Status**: Planning Phase
+**Plan Document**: `CONSOLIDATION_PLAN.md`
+**Goal**: Reduce 82 → ~65 files, eliminate duplication, enable per-module validation
+
+This map identified significant duplication risks. See **CONSOLIDATION_PLAN.md** for the three-phase plan to address these issues.
+
+**Next Steps**: Review CONSOLIDATION_PLAN.md, decide which phase to start
+
+---
+
+---
+
+## 📊 COMPLETE INVENTORY (81 FILES - Updated after Phase 1 Task 1.2)
 
 ```
 CATEGORY                        FILES    ~LINES    ROLE
@@ -20,8 +34,7 @@ CATEGORY                        FILES    ~LINES    ROLE
 └─ DIRECTORY_AUDIT_REPORT.md      1        ???    Audit report (reference)
 
 🤖 PRIMARY AGENT INSTRUCTIONS
-├─ CLAUDE.md                      1        974    AGENT SYSTEM PROMPT (always loaded)
-└─ AI_Agent_Behavior_Guide.md     1        994    Query routing & response patterns
+└─ CLAUDE.md                      1      1,348    AGENT SYSTEM PROMPT (consolidated, includes patterns)
 
 🏗️ CORE ARCHITECTURE REFERENCE
 ├─ Phase1_Core_Architecture       1        366    Model structure, execution flow

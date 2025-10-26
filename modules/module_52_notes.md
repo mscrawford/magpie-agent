@@ -79,4 +79,3 @@ Result: After extending the time horizon and monitoring age class progression, c
 ---
 
 ## 🧪 Practical Examples
-

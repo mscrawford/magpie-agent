@@ -9,10 +9,12 @@
 ## ⚠️ WARNING: High-Risk Modification Zone
 
 This guide covers the **4 highest-centrality modules** in MAgPIE:
-- **Module 10 (Land)**: 17 connections, affects 15 modules
-- **Module 11 (Costs)**: 28 connections, receives from 27 modules
-- **Module 17 (Production)**: 14 connections, affects 13 modules
-- **Module 56 (GHG Policy)**: 16 connections, affects 13 modules
+- **Module 10 (Land)**: Central land allocation hub
+- **Module 11 (Costs)**: Cost aggregator (highest dependency count)
+- **Module 17 (Production)**: Spatial aggregation hub
+- **Module 56 (GHG Policy)**: Environmental-economic bridge
+
+**For exact dependency counts, see**: `core_docs/Phase2_Module_Dependencies.md`
 
 **Modifying these modules without proper precautions can break the entire model.**
 
@@ -29,10 +31,9 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 
 ### 1.1 Why Module 10 is Critical
 
-**Centrality**: **HIGHEST** in entire model (17 total connections)
-- Provides to: 15 modules
-- Depends on: 2 modules
+**Centrality**: **HIGHEST** in entire model
 - Role: **Central land allocation hub**
+- See `core_docs/Phase2_Module_Dependencies.md` for complete dependency list
 
 **File**: `modules/10_land/landmatrix_dec18/`
 
@@ -53,12 +54,9 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 
 ### 1.3 Conservation Law: LAND BALANCE (STRICT EQUALITY)
 
-**Equation** (equations.gms:13-15):
-```gams
-q10_land_area(j2) ..
-  sum(land, vm_land(j2,land)) =e=
-  sum(land, pcm_land(j2,land));
-```
+**Constraint**: `q10_land_area` enforces strict land area conservation
+
+**For full equation details**: See `cross_module/land_balance_conservation.md`
 
 **What This Means**:
 - Total land area in each cell MUST remain constant
@@ -192,10 +190,9 @@ vm_cost_landcon.up(j,"primforest") = 1e6;  * USD/ha
 
 ### 2.1 Why Module 11 is Critical
 
-**Centrality**: 28 connections (HIGHEST dependency count)
-- Provides to: 1 module (80_optimization)
-- Depends on: 27 modules
+**Centrality**: HIGHEST dependency count
 - Role: **Defines MAgPIE's optimization objective**
+- See `core_docs/Phase2_Module_Dependencies.md` for complete dependency list
 
 **File**: `modules/11_costs/default/`
 
@@ -203,10 +200,9 @@ vm_cost_landcon.up(j,"primforest") = 1e6;  * USD/ha
 
 ### 2.2 The Objective Function
 
-**Equation** (equations.gms:10):
-```gams
-q11_cost_glo .. vm_cost_glo =e= sum(i2, v11_cost_reg(i2));
-```
+**Objective**: `q11_cost_glo` aggregates regional costs into global objective function
+
+**For full equation details**: See `modules/module_11.md`
 
 **What This Means**:
 - `vm_cost_glo` is **THE variable MAgPIE minimizes**
@@ -319,10 +315,9 @@ q11_cost_reg(i2) =e= ... - vm_reward_cdr_aff(i2);  * Subtract reward
 
 ### 3.1 Why Module 17 is Critical
 
-**Centrality**: 14 connections
-- Provides to: 13 modules
-- Depends on: 1 module (30_croparea)
+**Centrality**: HIGH
 - Role: **Spatial aggregation hub** (cell → region)
+- See `core_docs/Phase2_Module_Dependencies.md` for complete dependency list
 
 **File**: `modules/17_production/flexreg_apr16/`
 
@@ -335,11 +330,9 @@ q11_cost_reg(i2) =e= ... - vm_reward_cdr_aff(i2);  * Subtract reward
 | `vm_prod_reg(i,k)` | 9 modules | Regional production (for trade, demand) |
 | `pm_prod_init(j,k)` | 3 modules | Initial production (solver starting point) |
 
-**Key Equation** (equations.gms:10-11):
-```gams
-q17_prod_reg(i2,k) ..
-  vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k));
-```
+**Key Equation**: `q17_prod_reg` aggregates cell-level production to regional level
+
+**For full equation details**: See `modules/module_17.md`
 
 **What This Means**:
 - Regional production = sum of all cells in region
@@ -444,10 +437,9 @@ vm_prod_reg(i,k) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
 
 ### 4.1 Why Module 56 is Critical
 
-**Centrality**: 16 connections
-- Provides to: 13 modules
-- Depends on: 3 modules (52_carbon, 57_maccs, 09_drivers)
+**Centrality**: HIGH
 - Role: **Environmental-economic bridge** (emissions → costs)
+- See `core_docs/Phase2_Module_Dependencies.md` for complete dependency list
 
 **File**: `modules/56_ghg_policy/price_aug22/`
 
@@ -461,14 +453,9 @@ vm_prod_reg(i,k) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
 | `vm_reward_cdr_aff(i)` | 11_costs | Carbon removal revenue (afforestation) |
 | `im_pollutant_prices(t,i,pollutants,emis_source)` | 32_forestry, 60_bioenergy | Price signals for land-use decisions |
 
-**Key Equation** (equations.gms:35-52):
-```gams
-q56_emission_costs(i2) ..
-  vm_emission_costs(i2) =e=
-    sum((emis_source,pollutants), v56_emis_pricing(i2,emis_source,pollutants)
-                                    * im_pollutant_prices(t,i2,pollutants,emis_source))
-                                    / s56_timestep_length;
-```
+**Key Equation**: `q56_emission_costs` calculates GHG policy costs entering objective function
+
+**For full equation details**: See `modules/module_56.md`
 
 **What This Means**:
 - Emission costs = Emissions × Price

@@ -12,7 +12,7 @@
 **Before answering ANY MAgPIE question, check the AI documentation FIRST!**
 
 - Module questions → `modules/module_XX.md` (AI docs in current directory)
-- General questions → `core_docs/AI_Agent_Behavior_Guide.md`
+- Advanced query patterns → See "Advanced Query Patterns" section below
 - Tool usage questions → `core_docs/Tool_Usage_Patterns.md` (Bash, Read, Write, paths)
 - Only go to raw GAMS code if docs don't have what you need
 - For GAMS code → `../modules/XX_name/realization/file.gms` (parent directory)
@@ -37,14 +37,18 @@
 
 I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 words of comprehensive documentation covering all 46 modules, architecture, dependencies, and GAMS programming.
 
-🚀 Quick Start Commands:
+🎯 First time here?
+   Type this → /guide
+   (Slash commands start with / and show you what I can do)
+
+🚀 Available Commands:
   /guide              - Complete capabilities guide (start here!)
   /update             - Pull latest docs and sync CLAUDE.md
   /feedback           - User feedback system (submit/review/search)
-  /compress-feedback  - Synthesize feedback & streamline docs
+  /integrate-feedback - Process pending feedback (maintainers)
   /update-claude-md   - Git workflow for updating AI docs
 
-💡 Just ask me anything about MAgPIE!
+💡 Or just ask me anything about MAgPIE!
   • "How does livestock work?"
   • "Can I safely modify Module X?"
   • "What does this GAMS code mean?"
@@ -52,20 +56,20 @@ I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 wo
 
 📚 I check comprehensive AI docs FIRST (30 seconds) before reading raw GAMS code.
 
-Type /guide to see everything I can do!
+New user? → Type /guide to see everything I can do!
 ```
 
 **If working on the MAgPIE AI Documentation Project:**
-1. Read: `START_HERE.md` (orientation)
+1. Read: `README.md` (orientation and session protocol)
 2. Read: `CURRENT_STATE.json` (SINGLE source of truth for project status)
-3. Read: `RULES_OF_THE_ROAD.md` (session protocol)
+3. Read: `CONSOLIDATION_PLAN.md` (if current initiative is active)
 4. Ask user: "What should I work on?"
 
 **If answering MAgPIE questions:** Follow the workflow below.
 
 **📍 CRITICAL - Documentation Project Rule:**
 - `CURRENT_STATE.json` is the ONLY file tracking project status
-- DO NOT update `START_HERE.md`, `RULES_OF_THE_ROAD.md`, `README.md`, or `modules/README.md` (all STATIC)
+- DO NOT update `README.md` or `modules/README.md` (both STATIC reference documents)
 - After ANY work, update ONLY `CURRENT_STATE.json`
 
 **📍 CRITICAL - Git Workflow for CLAUDE.md:**
@@ -226,10 +230,10 @@ cp -r .claude/commands ../.claude/
 
 **For module-specific questions** ("How does livestock work?" "Explain yields" etc.):
 1. **First, check** `modules/module_XX.md` for the relevant module
-2. **Then check** `modules/module_XX_notes.md` **for user feedback** (if exists)
+2. **Always check** `modules/module_XX_notes.md` **for user feedback** (if exists)
    - Contains warnings, lessons learned, practical examples from real users
-   - **Read when query involves**: modifications, troubleshooting, "how-to", "can I", warnings
-   - **Skip for**: simple factual queries, equation lookups, "code truth only" requests
+   - **Always read when answering about a module** - warnings and lessons can be relevant to any question
+   - Even simple factual queries may benefit from knowing common pitfalls or user experiences
 3. **Use these as your primary sources** - comprehensive, verified, and contain:
    - All equations with verified formulas and line numbers (main docs)
    - Complete parameter descriptions (main docs)
@@ -245,7 +249,7 @@ cp -r .claude/commands ../.claude/
    - The user explicitly asks for code-level details
 
 **For cross-cutting questions** ("How does X affect Y?" "What depends on Z?"):
-1. **First, check** `core_docs/AI_Agent_Behavior_Guide.md` for query patterns
+1. **First, check** "Advanced Query Patterns" section below for query patterns
 2. **Check** `feedback/global/claude_lessons.md` **for system-wide lessons** (if applicable)
 3. **Then check**:
    - Phase 1 (`Phase1_Core_Architecture.md`) for overview
@@ -361,7 +365,6 @@ MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized
 | **Phase1_Core_Architecture.md** | Model structure, execution flow, navigation | "How does MAgPIE execute?" "What's the folder structure?" "What do variable names mean?" |
 | **Phase2_Module_Dependencies.md** | 173 dependencies, 26 circular cycles, centrality analysis | "What modules depend on X?" "Can I modify Y without breaking Z?" "What are the feedback loops?" |
 | **Phase3_Data_Flow.md** | 172 input files, data sources, calibration pipeline | "Where does this data come from?" "How is input processed?" "What's the spatial aggregation?" |
-| **AI_Agent_Behavior_Guide.md** | Query routing, response patterns, error reporting | "How should I answer this type of question?" "What's the right pattern?" |
 | **Tool_Usage_Patterns.md** | Best practices for Claude Code tools (Bash, Read, Write, Edit, Grep, Glob) | "How do I use absolute paths?" "Why did my file operation fail?" "How to handle working directories?" |
 
 **Phase 0 covers**:
@@ -442,7 +445,7 @@ Question Type                              → Check Here First
 "How does carbon pricing affect forests?"  → circular_dependency_resolution.md (Forest-Carbon cycle)
 "What if I modify module X?"               → modification_safety_guide.md
 "Why is my solution oscillating?"          → circular_dependency_resolution.md (debugging)
-"How should I answer question type Q?"     → AI_Agent_Behavior_Guide.md
+"How should I answer question type Q?"     → CLAUDE.md (Advanced Query Patterns section)
 ```
 
 ### Total Documentation Coverage
@@ -638,6 +641,272 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 - Reading Phase 0 docs when you just need one equation
 
 **Remember**: The docs exist to PREVENT you from reading everything. Trust them.
+
+---
+
+## 🔍 ADVANCED QUERY PATTERNS
+
+**These patterns help you recognize complex query types and respond accurately.**
+
+### Pattern 1: "Parameterized vs. Implemented" Detection
+
+**Use when**: User asks "Is X modeled?" or "Does MAgPIE account for X?"
+
+**Critical Distinction**: Something can be **parameterized** (infrastructure exists) but **NOT implemented** (hardcoded to defaults).
+
+**Detection Workflow**:
+
+1. ✅ **Check if sets exist** - Are the categories defined?
+   ```bash
+   grep "tillage59\|inputs59" modules/59_som/*/sets.gms
+   ```
+
+2. ✅ **Check if factors loaded** - Are parameters read from files?
+   ```bash
+   grep "f59_cratio_tillage" modules/59_som/*/input.gms
+   ```
+
+3. ✅ **Check if used in equations** - Is it in the calculations?
+   ```bash
+   grep "i59_cratio" modules/59_som/*/preloop.gms
+   ```
+
+4. ⚠️ **CRITICAL: Check if shares are hardcoded**
+   ```gams
+   i59_tillage_share(i,tillage59) = 0;
+   i59_tillage_share(i,"full_tillage") = 1;  ← RED FLAG!
+   ```
+
+5. 🔍 **Verify if ever changed**
+   ```bash
+   grep "i59_tillage_share" modules/59_som/*/{presolve,equations}.gms
+   ```
+   → If no results = never updated after initialization = NOT modeled
+
+**Response Pattern - If Parameterized But Not Implemented**:
+
+> "Tillage is **parameterized** (IPCC factors loaded, equation structure supports variation) but **NOT actively modeled** (hardcoded to 100% full tillage in `preloop.gms:52-53`).
+>
+> The infrastructure exists:
+> - Sets defined: full_tillage, reduced_tillage, no_tillage
+> - IPCC factors: No-tillage could increase SOM by 10-22%
+> - Equation ready: Factor included in calculation
+>
+> However, implementation does NOT use this:
+> - All regions set to 100% full tillage
+> - Never updated in presolve or equations
+> - Result: Tillage has **zero effect** on SOM
+>
+> To enable, you would need to replace hardcoded defaults with regional data or optimization variables."
+
+**Warning Signs** (RED FLAGS):
+```gams
+! RED FLAG #1: All regions set to same value
+i59_tillage_share(i,"full_tillage") = 1;
+
+! RED FLAG #2: Single option selected from multiple
+i59_tillage_share(i,tillage59) = 0;  ! Zero all first
+i59_tillage_share(i,"full_tillage") = 1;  ! Then only one
+
+! RED FLAG #3: Comment mentions limitation
+*' So far it just tracks the subsystem due to missing data
+
+! RED FLAG #4: Parameter multiplied by 1 or 0 everywhere
+s29_treecover_target = 0  ! Disabled by default
+```
+
+---
+
+### Pattern 2: Cross-Module Mechanism Tracing
+
+**Use when**: User asks "How does X affect Y?" where X and Y are in different modules
+
+**Tracing Workflow**:
+
+1. **Identify starting module** (where X is calculated/optimized):
+   ```bash
+   grep -r "vm_treecover" modules/*/*/declarations.gms
+   ```
+
+2. **Find interface variable** (what X provides to other modules):
+   - Check module_XX.md "Interface Variables" section
+   - Look for aggregation equations
+
+3. **Search for downstream usage** (where consumed):
+   ```bash
+   grep -r "vm_treecover" modules/*/*/equations.gms
+   ```
+
+4. **Trace parameter chain** (how X is transformed):
+   - Follow through intermediate parameters
+   - Check preloop.gms and presolve.gms for transformations
+
+5. **Follow to final effect** (ultimate impact):
+   - Trace to final reported variables
+   - Check cross_module docs for system-level effects
+
+**Response Pattern**:
+
+> "Tree cover affects SOM through this mechanism chain:
+>
+> **1. Module 29 (Cropland)** - Tree cover optimization:
+> - Variable: `v29_treecover(j,ac)` by age class
+> - Equation: `q29_treecover` aggregates to `vm_treecover(j)`
+> - Location: `equations.gms:83-84`
+>
+> **2. Module 59 (SOM)** - SOM equilibrium:
+> - Uses: `vm_treecover` in cropland SOM target
+> - Formula: `vm_treecover × i59_cratio_treecover × f59_topsoilc_density`
+> - Where: `i59_cratio_treecover = 1.0` (100% of natural carbon)
+>
+> **3. Module 52 (Carbon)** - Stock aggregation:
+> - Aggregates SOM into total soil carbon
+> - Reports: `vm_carbon_stock(j,"crop","soilc")`
+>
+> **Net Effect**: Trees restore SOM to 100% of natural levels (vs. typical cropland at 60-80%)."
+
+**Key Insight**: Always trace the FULL chain - don't stop at first module that uses the variable.
+
+---
+
+### Pattern 3: Temporal Mechanism Questions
+
+**Use when**: User asks "What happens after X?" or "How does X change over time?"
+
+**Response Structure**:
+
+**1. Initial State** (before event):
+```
+Before: Forest with SOM = natural topsoil density
+Location: Module 59, q59_som_target_noncropland
+Value: vm_land(j,"forest") × f59_topsoilc_density(ct,j)
+```
+
+**2. Transition Mechanism** (the event):
+```
+Transition: Forest → cropland via land-use transition matrix
+Tracked by: vm_lu_transitions(j,"forest","crop")
+Location: Module 10 (Land), used in Module 59
+```
+
+**3. Convergence Dynamics** (movement toward new state):
+```
+Convergence: 15% annual movement toward equilibrium
+Formula: i59_lossrate(t) = 1 - 0.85^timestep_length
+Rates:
+- 5 years: 44% of gap closed
+- 10 years: 80% of gap closed
+- 20 years: 96% of gap closed
+```
+
+**4. New Equilibrium** (final stable state):
+```
+After: Cropland with SOM = crop_carbon_ratio × natural_density
+Location: q59_som_target_cropland
+Typical: 60-80% of natural level
+```
+
+**5. Timeframe** (how long until equilibrium):
+```
+Practical equilibrium: ~20 years (96% convergence)
+Mathematical equilibrium: Never fully reached (exponential decay)
+```
+
+**Key Insight**: Temporal questions require **initial state → transition → convergence → equilibrium**, not just equation structure.
+
+---
+
+### Pattern 4: "How does MAgPIE calculate/model/simulate [process]?" Handler
+
+**⚠️ CRITICAL: This is the most error-prone query type. Follow this protocol exactly.**
+
+**Step 1: Determine Model Approach**
+
+Apply the three-check verification (from Warning Signs section):
+- ✅ **Check 1**: Equation structure (first principles vs. applying rates?)
+- ✅ **Check 2**: Parameter source (calculated vs. input data?)
+- ✅ **Check 3**: Dynamic feedback (process rate responds to model state?)
+
+**Step 2: Classify the Approach**
+
+- **MECHANISTIC**: Calculated from first principles (rare in MAgPIE)
+- **PARAMETERIZED**: Fixed rates/factors from IPCC/data (most common)
+- **HYBRID**: Some aspects dynamic, some fixed (common)
+- **DATA-DRIVEN**: Directly from input files (no calculation)
+
+**Step 3: Use Precise Language**
+
+**If PARAMETERIZED (most common)**:
+> "Module X **calculates [quantity] using [parameter type]** (IPCC factors / historical rates / input data).
+>
+> **What IS calculated dynamically**:
+> - Total amounts (equations compute these each timestep)
+> - Response to [optimized variables - e.g., land use, N inputs]
+>
+> **What is PARAMETERIZED** (fixed parameters):
+> - [Parameter 1]: [value/source] (e.g., IPCC EF = 1%)
+> - These rates are **fixed**, not calculated from [environmental conditions]
+>
+> **What is NOT modeled**:
+> - ❌ Mechanistic [process] (e.g., soil chemistry, fire ignition)
+> - ❌ Response to [conditions] (e.g., temperature, moisture)
+>
+> **Example**: Module 51 nitrogen emissions:
+> - Emissions = N_input × 0.01 (IPCC factor) × NUE_adjustment
+> - The 1% is **fixed**, NOT from soil conditions
+> - This is **NOT mechanistic nitrification modeling**
+>
+> 🟡 Based on: module_XX.md"
+
+**Common Mistakes to Avoid**:
+- ❌ "MAgPIE models fire disturbance" → ✅ "MAgPIE applies historical disturbance rates"
+- ❌ "Emissions calculated from soil properties" → ✅ "Emissions use IPCC factors"
+- ❌ "The model simulates volatilization" → ✅ "The model applies volatilization rates (X% of N)"
+
+**See**: `feedback/integrated/20251024_215608_global_calculated_vs_mechanistic.md` for detailed examples
+
+---
+
+### Pattern 5: Debugging Decision Tree
+
+```
+Model fails?
+│
+├─ modelstat = 4 (INFEASIBLE)
+│  ├─ Check which timestep failed
+│  ├─ Display binding constraints: .m > 0
+│  ├─ Common causes:
+│  │  ├─ Land balance: sum(land) ≠ total_available
+│  │  ├─ Water shortage: watdem > watavail
+│  │  ├─ Food deficit: production < demand
+│  │  └─ Incompatible bounds: .lo > .up
+│  └─ Fix strategy:
+│     ├─ Relax constraint temporarily (find root cause)
+│     ├─ Check data integrity (NaN, Inf, negative)
+│     └─ Reduce timesteps to isolate problem
+│
+├─ modelstat = 3 (UNBOUNDED)
+│  ├─ Missing cost terms in objective
+│  ├─ Missing upper bounds on variables
+│  └─ Check: vm_cost_glo has all components
+│
+├─ modelstat = 13 (ERROR)
+│  ├─ GAMS syntax error: Check .lst file
+│  ├─ Division by zero: Check denominators
+│  └─ Set domain violation: Check set membership
+│
+└─ modelstat = 1-2 but results unrealistic
+   ├─ Check conservation:
+   │  ├─ Land: sum(vm_land) = available area
+   │  ├─ Water: sum(use) ≤ supply
+   │  ├─ Carbon: emissions = Δstock + combustion
+   │  └─ Food: production + trade ≥ demand
+   └─ Compare to historical (2015 should match FAO)
+```
+
+---
+
+**These patterns cover 80% of complex queries. Use them to provide accurate, detailed responses.**
 
 ---
 
@@ -961,6 +1230,29 @@ where N_input optimized, NUE scenario-based, EF fixed
 
 **Remember: The AI documentation exists to make your job easier AND more accurate. Use it!**
 
+### Encouraging User Feedback
+
+**Occasionally remind users they can submit feedback** (use sparingly, not every response):
+
+**When to mention**:
+- ✅ After explaining a complex module or mechanism
+- ✅ When user asks detailed technical questions (shows engagement)
+- ✅ If you notice a gap or potential error in documentation
+- ✅ When user corrects you or provides additional context
+- ❌ Not on simple factual queries
+- ❌ Not more than once every 3-4 responses
+
+**How to mention** (pick one style, keep it brief):
+```
+📝 Spot an error or have insights to share? Use /feedback to help improve the documentation!
+```
+Or:
+```
+💡 Your question revealed interesting details - consider using /feedback to document this for others!
+```
+
+**Goal**: Encourage quality feedback without being annoying. Users should feel invited, not pestered.
+
 ---
 
 ## 🔄 User Feedback System
@@ -1003,27 +1295,25 @@ User asks MAgPIE question
 ```
 
 **DO NOT read** (noise for MAgPIE questions):
-- ❌ START_HERE.md (documentation project entry point)
-- ❌ RULES_OF_THE_ROAD.md (documentation project protocol)
-- ❌ CURRENT_STATE.json (documentation project status)
-- ❌ README.md (GitHub project overview)
+- ❌ README.md (documentation project overview - only read if working on doc project)
+- ❌ CURRENT_STATE.json (documentation project status - only read if working on doc project)
+- ❌ CONSOLIDATION_PLAN.md (active initiative documentation - only read if working on doc project)
 
 #### **Context 2: Working on Documentation Project** (rare)
 
 **Read in this order:**
 ```
 New documentation project session
-  → START_HERE.md (entry point)
+  → README.md (orientation and session protocol)
   → CURRENT_STATE.json (SINGLE SOURCE OF TRUTH for project status)
-  → RULES_OF_THE_ROAD.md (session protocol)
+  → CONSOLIDATION_PLAN.md (if active initiative exists)
   → Ask user: "What should I work on?"
 ```
 
 **Update ONLY:**
 - ✅ CURRENT_STATE.json (project status)
-- ❌ NOT START_HERE.md (STATIC)
-- ❌ NOT RULES_OF_THE_ROAD.md (STATIC)
-- ❌ NOT README.md (STATIC)
+- ❌ NOT README.md (STATIC reference document)
+- ❌ NOT modules/README.md (STATIC reference)
 
 ### **Handling Conflicts**
 

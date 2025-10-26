@@ -808,6 +808,64 @@ for(yr in hist_years) {
 
 ---
 
+### 11. Participates In
+
+This section shows Module 10's role in system-level mechanisms. For complete details, see the linked documentation.
+
+#### Conservation Laws
+
+**Land Balance Conservation** ⭐ PRIMARY ENFORCER
+- **Role**: Enforces strict land area conservation via `q10_land_area` constraint
+- **Formula**: ∑(land types) = constant for each cell
+- **Details**: `cross_module/land_balance_conservation.md`
+
+**Carbon Balance**
+- **Role**: Tracks carbon stock changes through land-use transitions
+- **Contribution**: Provides `vm_land` and `vm_lu_transitions` for carbon accounting
+- **Details**: `cross_module/carbon_balance_conservation.md`
+
+#### Dependency Chains
+
+**As Central Hub** (Rank #2 by centrality):
+- **Provides interface to**: 15 modules via `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`
+- **Consumes from**: 2 modules (32_forestry, 35_natveg for gross change components)
+- **Complete dependency map**: `core_docs/Phase2_Module_Dependencies.md`
+
+**Key downstream dependents**:
+- Module 11 (Costs): Land conversion costs
+- Module 14 (Yields): Cropland area for production
+- Module 42 (Water): Land area for water demand
+- Module 52 (Carbon): Land area for carbon stocks
+- Module 59 (SOM): Land transitions for soil carbon dynamics
+
+#### Circular Dependencies
+
+**Land-Vegetation Cycles**:
+- **Cycle 1**: Module 10 ←→ Module 35 (Natural Vegetation)
+  - Module 10 provides land allocation → Module 35 calculates gross changes → Module 10 aggregates
+- **Cycle 2**: Module 10 ←→ Module 22 (Land Conservation)
+  - Module 10 allocates land → Module 22 enforces protection → Module 10 respects bounds
+
+**Complex multi-module cycles**:
+- **Forest-Land-Carbon Cycle**: 56_ghg_policy → 32_forestry → 10_land → 52_carbon → 56_ghg_policy
+  - Carbon pricing affects afforestation → changes land allocation → updates carbon stocks → affects pricing
+- **Details**: `cross_module/circular_dependency_resolution.md`
+
+#### Modification Safety
+
+**Risk Level**: ⚠️ **CRITICAL** (Highest centrality module)
+- **Impact**: Changes affect 15 downstream modules
+- **Testing required**: Comprehensive validation of all dependents
+- **Safety protocols**: `cross_module/modification_safety_guide.md#module-10`
+
+**Before modifying Module 10**:
+1. Review dependency list (15 modules depend on vm_land)
+2. Check conservation law implications (land balance is strict equality)
+3. Test with circular dependency modules (32, 35) together
+4. Verify no cascading failures in water (42), carbon (52), or costs (11)
+
+---
+
 **Module 10 Status**: ✅ COMPLETE (~318 lines of code documented)
 **Verified Against**: Actual code in `modules/10_land/landmatrix_dec18/`
 **Documentation Date**: October 11, 2025

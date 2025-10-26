@@ -1,9 +1,22 @@
 #!/bin/bash
 
 # submit_feedback.sh - Easy feedback submission for MAgPIE Agent
-# Usage: ./scripts/submit_feedback.sh
+# Usage: ./scripts/submit_feedback.sh (run from magpie-agent/ directory)
 
 set -e
+
+# Check if running from correct directory
+if [ ! -d "feedback/templates" ]; then
+  echo "❌ Error: Must run this script from the magpie-agent/ directory"
+  echo ""
+  echo "Current directory: $(pwd)"
+  echo "Expected: .../magpie/magpie-agent/"
+  echo ""
+  echo "Please cd to magpie-agent/ and try again:"
+  echo "  cd /path/to/magpie/magpie-agent/"
+  echo "  ./scripts/submit_feedback.sh"
+  exit 1
+fi
 
 echo "🔧 MAgPIE Agent Feedback Submission"
 echo "===================================="
@@ -40,8 +53,8 @@ echo ""
 # Get target document
 if [ "$TEMPLATE" = "global" ]; then
   echo "Global feedback affects:"
-  echo "  - CLAUDE.md (agent instructions)"
-  echo "  - AI_Agent_Behavior_Guide.md (query routing)"
+  echo "  - CLAUDE.md (agent instructions and behavior)"
+  echo "  - feedback/global/claude_lessons.md (system-wide lessons)"
   echo "  - System-wide workflow"
   echo ""
   read -p "Target document (or 'system-wide'): " TARGET

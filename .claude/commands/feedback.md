@@ -67,7 +67,7 @@ When using notes files, structure your response like this:
 MAgPIE developers can improve the agent by submitting feedback:
 
 ```bash
-# Easy way: Run the interactive script
+# Easy way: Run the interactive script (from magpie-agent/ directory)
 ./scripts/submit_feedback.sh
 
 # Choose type: correction, warning, lesson, missing content, or global
@@ -82,7 +82,13 @@ MAgPIE developers can improve the agent by submitting feedback:
 - **Missing**: Document gaps in existing docs
 - **Global**: Agent behavior improvements
 
-See `feedback/README.md` for complete details.
+**⏱️ When will my feedback be integrated?**
+- Feedback accumulates in `feedback/pending/`
+- Integration happens **weekly or monthly** via `/integrate-feedback`
+- You'll see your corrections in `module_XX.md` or warnings/lessons in `module_XX_notes.md`
+- Timeline: Typically integrated within 1-4 weeks of submission
+
+See `feedback/README.md` and `feedback/WORKFLOW_GUIDE.md` for complete details.
 
 ---
 

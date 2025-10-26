@@ -19,16 +19,31 @@ All feedback gets integrated into the documentation, making the agent smarter ov
 
 ```
 feedback/
-├── pending/          ← New submissions awaiting review
-├── integrated/       ← Archive of feedback that's been applied
-├── global/          ← System-wide lessons (affects CLAUDE.md, agent behavior)
-├── templates/       ← Easy-to-fill templates for submitting feedback
-└── README.md        ← You are here
+├── pending/              ← NEW: Staged feedback awaiting validation & integration
+│   ├── README.md         ← Staged workflow documentation
+│   ├── global/           ← System-wide feedback (agent behavior)
+│   └── module_XX/        ← Module-specific feedback (created as needed)
+├── integrated/           ← Archive of validated & integrated feedback
+├── global/               ← System-wide lessons (claude_lessons.md)
+├── templates/            ← Easy-to-fill submission templates
+└── README.md             ← You are here
 ```
 
 ---
 
 ## 🚀 Quick Start
+
+### ⚡ Quick Reference Card
+
+| Task | Command | When |
+|------|---------|------|
+| Submit feedback | `scripts/submit_feedback.sh` | Anytime you have feedback |
+| Process pending feedback | `/integrate-feedback all` | Weekly/monthly |
+| Reduce bloat | `/compress-documentation` | Quarterly (optional) |
+
+**📖 New user?** See [WORKFLOW_GUIDE.md](WORKFLOW_GUIDE.md) for complete workflow explanation
+
+---
 
 ### Submit Feedback (Easy Way)
 
@@ -99,48 +114,107 @@ git push
 
 ---
 
-## 🔄 Integration Workflow
+## 🔄 Integration Workflow (Staged Approach)
 
-### For Contributors
+### **NEW: Staged Workflow** ✨
+
+Feedback now flows through a **staged validation process** to maintain stability of core docs while enabling continuous feedback flow.
+
+### For Contributors (Unchanged)
 
 1. **Submit** feedback using script or template
-2. **Commit** to your branch
-3. **Push** or create PR
-4. Wait for review
-
-### For Maintainers
-
-1. **Review** pending feedback:
    ```bash
-   ./scripts/review_feedback.sh
+   ./scripts/submit_feedback.sh
+   ```
+2. **Feedback goes to**: `feedback/pending/module_XX/` (core docs untouched)
+3. **Commit** and push
+4. Done! Your feedback is now pending integration
+
+### For Maintainers (Enhanced)
+
+**Periodic Integration Sessions** (weekly, monthly, or as needed):
+
+1. **Scan pending feedback**:
+   ```bash
+   /integrate-feedback              # Interactive mode
+   # OR
+   /integrate-feedback module_10    # Single module
+   # OR
+   /integrate-feedback all          # All pending feedback
    ```
 
-2. **Integrate** each item:
-   ```bash
-   ./scripts/integrate_feedback.sh feedback/pending/[filename]
-   ```
+2. **Agent validates** each item:
+   - ✅ Valid: Applies to current code
+   - ⚠️ Outdated: Code changed, needs updating
+   - ❌ Incorrect: Contains errors
 
-3. **Follow prompts** to add content to appropriate locations
+3. **Review integration proposal**:
+   - See what will be integrated
+   - Which files will be updated (module_XX.md or module_XX_notes.md)
+   - What will be archived
 
-4. **Commit** integrated changes
+4. **Approve and execute**:
+   - Agent routes corrections → `module_XX.md` (fixes errors)
+   - Agent routes warnings/lessons → `module_XX_notes.md` (user experience)
+   - Archives to `integrated/`
+   - Updates timestamps
+   - Removes from `pending/`
+
+5. **Commit** batch integration
+
+### Key Differences from Old Workflow
+
+**OLD**: Submit → Immediate review → Immediate integration → Update docs
+- Risk: Core docs could become unstable
+- Friction: Every submission needs immediate attention
+
+**NEW**: Submit → Accumulate in pending/ → Periodic batch integration → Update notes files
+- ✅ Core docs (`module_XX.md`) stay stable (only change when code changes)
+- ✅ User feedback (`module_XX_notes.md`) updated in validated batches
+- ✅ No submission friction
+- ✅ Controlled integration with validation
 
 ---
 
 ## 📊 Where Feedback Goes
 
 ### Module-Specific Feedback
-- **Destination:** `modules/module_XX_notes.md`
+- **Submission**: `feedback/pending/module_XX/` (e.g., `pending/module_10/warning_land_2025-10-26.md`)
+- **After Integration**: `modules/module_XX_notes.md`
 - **Contains:** Warnings, lessons, corrections specific to that module
-- **Agent reads:** When answering questions about Module XX
+- **Agent reads:** When answering questions about Module XX (if how-to/troubleshooting)
+- **Core docs unchanged**: `modules/module_XX.md` stays stable (verified against code)
 
 ### Global Feedback
-- **Destination:** `feedback/global/claude_lessons.md`
+- **Submission**: `feedback/pending/global/`
+- **After Integration**: `feedback/global/claude_lessons.md`
 - **Contains:** Agent behavior improvements, workflow enhancements
-- **Used to update:** CLAUDE.md, AI_Agent_Behavior_Guide.md
+- **Used to update:** CLAUDE.md (agent instructions)
 
 ### Cross-Module Feedback
-- **Destination:** `feedback/global/cross_module_lessons.md`
+- **Submission**: `feedback/pending/global/` (mark as cross-module in content)
+- **After Integration**: `feedback/global/cross_module_lessons.md`
 - **Contains:** Interactions between modules, system-level insights
+
+### Flow Summary
+
+```
+User submits feedback
+  ↓
+feedback/pending/module_XX/ (or global/)
+  ↓
+Periodic integration session (/integrate-feedback all)
+  ↓
+Validation against current code
+  ↓
+Type-based routing:
+  - corrections/missing → module_XX.md (fixes errors)
+  - warnings/lessons → module_XX_notes.md (user experience)
+  ↓
+Archive to feedback/integrated/
+  ↓
+Remove from pending/
+```
 
 ---
 
@@ -207,55 +281,98 @@ This feedback system enables:
 
 ---
 
-## 🗜️ Feedback Compression
+## 🗜️ Feedback Workflow: Two Commands
 
-As feedback accumulates, documentation can become bloated. The **compression system** synthesizes integrated feedback to maintain streamlined docs without losing information.
+The feedback system uses **two sequential commands**:
 
-### When to Compress
+### `/integrate-feedback` - Process Pending Submissions
 
-Consider compression when:
-- CLAUDE.md or notes files exceed 500 lines per section
-- Multiple feedback items address the same issue
-- Warnings/lessons become redundant
-- Documentation feels verbose or scattered
+**Purpose**: Validate and integrate new user feedback
 
-### How to Compress
+**When to use**: Weekly or monthly, whenever feedback accumulates
 
+**Command**:
 ```bash
-# Check compression status
-./scripts/compress_feedback.sh status
-
-# See uncompressed feedback
-./scripts/compress_feedback.sh list
-
-# Run compression (AI-assisted)
-# Use the /compress-feedback command in Claude Code
+/integrate-feedback module_10     # Single module
+/integrate-feedback all           # All pending feedback
+/integrate-feedback               # Interactive mode
 ```
 
-### Compression Workflow
+**What it does**:
+1. ✅ Scans `feedback/pending/` for new submissions
+2. ✅ Validates each item against current code
+3. ✅ Routes corrections/missing → `module_XX.md` (fixes errors in core docs)
+4. ✅ Routes warnings/lessons → `module_XX_notes.md` (user experience)
+5. ✅ Archives to `integrated/` with batch report
+6. ✅ Updates timestamps
+7. ✅ Removes from `pending/`
 
-1. **Analyze**: AI identifies patterns in integrated feedback
-2. **Propose**: AI shows consolidation proposals with before/after
-3. **Approve**: User reviews and approves changes
-4. **Apply**: AI updates documentation files
-5. **Track**: Compression metadata records what was consolidated
+**Key principle**: Type-based routing prevents "notes purgatory" - corrections actually fix core docs!
 
-### What Compression Does
+---
 
-✅ **Consolidates** redundant warnings into comprehensive versions
-✅ **Organizes** scattered lessons into coherent sections
-✅ **Streamlines** verbose examples into concise references
-✅ **Preserves** all unique insights with traceability
-✅ **Maintains** feedback IDs for historical tracking
+### `/compress-documentation` - Reduce Bloat (Optional)
 
-### What Compression Does NOT Do
+**Purpose**: Consolidate accumulated feedback to reduce bloat
 
-❌ Delete unique information
-❌ Remove important warnings
-❌ Lose attribution or context
-❌ Break traceability to original feedback
+**When to use**: Quarterly, or when notes files feel verbose (AFTER multiple integrations)
 
-See `/compress-feedback` command for complete workflow.
+**Command**:
+```bash
+/compress-documentation     # Analyze and compress integrated feedback
+```
+
+**What it does**:
+1. ✅ Analyzes patterns in `integrated/` feedback
+2. ✅ Identifies consolidation opportunities (redundant warnings, scattered lessons)
+3. ✅ Proposes before/after with line reductions
+4. ✅ Updates `module_XX_notes.md`, `CLAUDE.md`, global lessons (with approval)
+5. ✅ Maintains traceability with feedback IDs
+6. ✅ Tracks compression metadata
+
+**What gets compressed**:
+- ✅ `module_XX_notes.md` - User warnings, lessons, examples
+- ✅ `CLAUDE.md` - Agent behavioral guidance (if bloated)
+- ✅ `feedback/global/claude_lessons.md` - System-wide lessons
+- ❌ **NEVER** `module_XX.md` - Core docs (facts are sacred!)
+
+**What compression does**:
+- ✅ Consolidates redundant warnings into comprehensive versions
+- ✅ Organizes scattered lessons into coherent sections
+- ✅ Preserves all unique insights with traceability
+
+**What compression does NOT do**:
+- ❌ Delete unique information
+- ❌ Remove important warnings
+- ❌ Compress core technical documentation
+- ❌ Break traceability to original feedback
+
+---
+
+### Recommended Workflow
+
+**They are SEQUENTIAL, not alternatives**: Integrate first (always), then compress later (sometimes).
+
+1. **Regular Integration** (weekly/monthly): `/integrate-feedback all`
+   - Keeps `pending/` clean
+   - Validates and integrates user feedback
+   - Updates core docs (corrections) and notes files (warnings/lessons)
+
+2. **Periodic Compression** (quarterly, optional): `/compress-documentation`
+   - Reduces bloat in notes files and agent guidance
+   - Organizes feedback into coherent sections
+   - Maintains quality while reducing redundancy
+
+**Timeline example**:
+```
+Week 1-4: Submit feedback → /integrate-feedback
+Week 5-8: Submit feedback → /integrate-feedback
+Week 9-12: Submit feedback → /integrate-feedback
+Month 3: Notes feeling bloated → /compress-documentation
+Month 4+: Back to /integrate-feedback (cycle continues)
+```
+
+**📖 See [WORKFLOW_GUIDE.md](WORKFLOW_GUIDE.md) for detailed workflow explanation and decision tree**
 
 ---
 
