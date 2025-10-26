@@ -207,4 +207,56 @@ This feedback system enables:
 
 ---
 
+## 🗜️ Feedback Compression
+
+As feedback accumulates, documentation can become bloated. The **compression system** synthesizes integrated feedback to maintain streamlined docs without losing information.
+
+### When to Compress
+
+Consider compression when:
+- CLAUDE.md or notes files exceed 500 lines per section
+- Multiple feedback items address the same issue
+- Warnings/lessons become redundant
+- Documentation feels verbose or scattered
+
+### How to Compress
+
+```bash
+# Check compression status
+./scripts/compress_feedback.sh status
+
+# See uncompressed feedback
+./scripts/compress_feedback.sh list
+
+# Run compression (AI-assisted)
+# Use the /compress-feedback command in Claude Code
+```
+
+### Compression Workflow
+
+1. **Analyze**: AI identifies patterns in integrated feedback
+2. **Propose**: AI shows consolidation proposals with before/after
+3. **Approve**: User reviews and approves changes
+4. **Apply**: AI updates documentation files
+5. **Track**: Compression metadata records what was consolidated
+
+### What Compression Does
+
+✅ **Consolidates** redundant warnings into comprehensive versions
+✅ **Organizes** scattered lessons into coherent sections
+✅ **Streamlines** verbose examples into concise references
+✅ **Preserves** all unique insights with traceability
+✅ **Maintains** feedback IDs for historical tracking
+
+### What Compression Does NOT Do
+
+❌ Delete unique information
+❌ Remove important warnings
+❌ Lose attribution or context
+❌ Break traceability to original feedback
+
+See `/compress-feedback` command for complete workflow.
+
+---
+
 **Thank you for helping improve the MAgPIE agent!** 🎉

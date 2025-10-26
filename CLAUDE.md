@@ -41,6 +41,7 @@ I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 wo
   /guide              - Complete capabilities guide (start here!)
   /update             - Pull latest docs and sync CLAUDE.md
   /feedback           - User feedback system (submit/review/search)
+  /compress-feedback  - Synthesize feedback & streamline docs
   /update-claude-md   - Git workflow for updating AI docs
 
 💡 Just ask me anything about MAgPIE!
@@ -92,7 +93,7 @@ ls ../.claude/commands/ 2>/dev/null
 🔧 First-time setup detected!
 
 I notice this is a fresh magpie-agent installation. I can complete the setup automatically by copying:
-- Slash commands (/guide, /update, /feedback, /update-claude-md)
+- Slash commands (/guide, /update, /feedback, /compress-feedback, /update-claude-md)
 - AI documentation (already copied - you're reading CLAUDE.md)
 
 Would you like me to complete the setup now? (I'll copy the commands to the parent directory)
@@ -140,6 +141,7 @@ Slash commands are now available:
   /guide              - Complete capabilities guide
   /update             - Pull latest docs and sync files
   /feedback           - User feedback system
+  /compress-feedback  - Synthesize feedback & streamline docs
   /update-claude-md   - Git workflow instructions
 
 🎯 You can now use all magpie-agent features!
@@ -970,3 +972,113 @@ where N_input optimized, NUE scenario-based, EF fixed
 - Skip for: simple factual queries, equation lookups
 
 **For complete details on the feedback system (how to read notes, submit feedback, or create feedback as an AI agent), use the `/feedback` command.**
+
+---
+
+## 📐 DOCUMENT ROLE HIERARCHY
+
+**MAgPIE has 82+ documentation files. To avoid confusion and inconsistency, follow this hierarchy:**
+
+### **Two Contexts: MAgPIE Questions vs. Documentation Project**
+
+#### **Context 1: Answering MAgPIE Questions** (most common)
+
+**Document precedence** (if information conflicts):
+1. **Code Truth**: `../modules/XX_name/realization/*.gms` (actual GAMS code)
+2. **Module Docs**: `modules/module_XX.md` (SINGLE SOURCE OF TRUTH - verified against code)
+3. **Cross-Module**: `cross_module/*.md` (system-level analysis, derived from modules)
+4. **Architecture**: `core_docs/Phase*.md` (overview and reference)
+5. **Module Notes**: `modules/module_XX_notes.md` (user experience, warnings - may lag behind code changes)
+6. **Workflow**: `CLAUDE.md` (routing logic, not facts about modules)
+
+**Read in this order:**
+```
+User asks MAgPIE question
+  → CLAUDE.md (you're reading it - tells you WHERE to look)
+  → modules/module_XX.md (FACTS about the module)
+  → module_XX_notes.md (WARNINGS/LESSONS if how-to/troubleshooting)
+  → cross_module/*.md (SYSTEM-LEVEL if safety/dependencies)
+  → core_docs/Phase*.md (ARCHITECTURE if structural question)
+  → reference/GAMS_Phase*.md (GAMS CODE if writing/debugging code)
+```
+
+**DO NOT read** (noise for MAgPIE questions):
+- ❌ START_HERE.md (documentation project entry point)
+- ❌ RULES_OF_THE_ROAD.md (documentation project protocol)
+- ❌ CURRENT_STATE.json (documentation project status)
+- ❌ README.md (GitHub project overview)
+
+#### **Context 2: Working on Documentation Project** (rare)
+
+**Read in this order:**
+```
+New documentation project session
+  → START_HERE.md (entry point)
+  → CURRENT_STATE.json (SINGLE SOURCE OF TRUTH for project status)
+  → RULES_OF_THE_ROAD.md (session protocol)
+  → Ask user: "What should I work on?"
+```
+
+**Update ONLY:**
+- ✅ CURRENT_STATE.json (project status)
+- ❌ NOT START_HERE.md (STATIC)
+- ❌ NOT RULES_OF_THE_ROAD.md (STATIC)
+- ❌ NOT README.md (STATIC)
+
+### **Handling Conflicts**
+
+**If you find contradictory information:**
+
+1. **Check precedence hierarchy** (above)
+2. **Trust higher-precedence source** (code > module docs > cross-module > notes)
+3. **Create feedback** if notes contradict main docs:
+   ```bash
+   # Use /feedback command to report inconsistency
+   ```
+
+**Example conflict resolution:**
+```
+module_52_notes.md says: "Chapman-Richards has 3 parameters"
+module_52.md says: "Chapman-Richards: C(age) = A × (1-exp(-k×age))^m (3 parameters)"
+
+Action: Trust module_52.md (higher precedence)
+Reason: Notes may be outdated, main doc is verified against code
+```
+
+### **Special Cases**
+
+**Module Dependencies:**
+- **Authoritative source**: `Phase2_Module_Dependencies.md` (dependency graph)
+- **Quick reference**: `modification_safety_guide.md` (top 4 modules)
+- **Module-specific**: `module_XX.md` (lists dependents for that module)
+- **User warnings**: `module_XX_notes.md` (practical lessons about dependencies)
+
+**If counts differ** → Trust Phase2_Module_Dependencies.md, create feedback
+
+**Conservation Laws:**
+- **Authoritative source**: `cross_module/*_balance_conservation.md`
+- **Quick reference**: `module_XX.md` (mentions relevant equations)
+
+**If formulas differ** → Trust cross_module file (comprehensive analysis), verify against code
+
+**GAMS Syntax:**
+- **Authoritative source**: Official GAMS documentation (gams.com)
+- **MAgPIE patterns**: `reference/GAMS_Phase5_MAgPIE_Patterns.md`
+- **Quick reference**: `Phase1_Core_Architecture.md` (naming conventions overview)
+
+**If patterns differ** → Trust GAMS_Phase5 for MAgPIE-specific patterns
+
+### **Quality Assurance**
+
+**Before citing information, verify:**
+- [ ] Is this from the highest-precedence source?
+- [ ] If multiple sources, do they agree?
+- [ ] If conflict, did I use precedence hierarchy?
+- [ ] If notes contradict main docs, did I trust main docs?
+- [ ] If unsure, can I verify against code?
+
+**When in doubt:**
+- State: "I found conflicting information in [source A] and [source B]"
+- Apply precedence hierarchy
+- Offer to verify against actual GAMS code
+- Create feedback for the inconsistency
