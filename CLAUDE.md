@@ -61,16 +61,28 @@ New user? → Type /guide to see everything I can do!
 
 **If working on the MAgPIE AI Documentation Project:**
 1. Read: `README.md` (orientation and session protocol)
-2. Read: `CURRENT_STATE.json` (SINGLE source of truth for project status)
-3. Read: `CONSOLIDATION_PLAN.md` (if current initiative is active)
-4. Ask user: "What should I work on?"
+2. Read: `project/CURRENT_STATE.json` (SINGLE source of truth - status, plans, history)
+3. Ask user: "What should I work on?"
 
 **If answering MAgPIE questions:** Follow the workflow below.
 
 **📍 CRITICAL - Documentation Project Rule:**
-- `CURRENT_STATE.json` is the ONLY file tracking project status
-- DO NOT update `README.md` or `modules/README.md` (both STATIC reference documents)
-- After ANY work, update ONLY `CURRENT_STATE.json`
+
+**🚨 WHEN WORKING ON THE DOCUMENTATION PROJECT 🚨**
+
+**UPDATE THIS FILE AND ONLY THIS FILE:**
+- ✅ `project/CURRENT_STATE.json` ← **THIS IS THE ONLY FILE YOU MODIFY**
+
+**DO NOT UPDATE THESE FILES (THEY ARE STATIC REFERENCE DOCS):**
+- ❌ `README.md` - Static reference (DO NOT modify with status)
+- ❌ `project/README.md` - Static reference (DO NOT modify with status)
+- ❌ `modules/README.md` - Static reference (DO NOT modify)
+- ❌ `CLAUDE.md` - AI instructions (DO NOT modify with status)
+- ❌ No handoff docs (put everything in CURRENT_STATE.json)
+- ❌ No plan docs (put everything in CURRENT_STATE.json)
+
+**After ANY work session, update ONLY `project/CURRENT_STATE.json`**
+**ALL project information goes in the JSON: status, progress, plans, handoffs, next steps**
 
 **📍 CRITICAL - Git Workflow for CLAUDE.md:**
 
@@ -1296,8 +1308,7 @@ User asks MAgPIE question
 
 **DO NOT read** (noise for MAgPIE questions):
 - ❌ README.md (documentation project overview - only read if working on doc project)
-- ❌ CURRENT_STATE.json (documentation project status - only read if working on doc project)
-- ❌ CONSOLIDATION_PLAN.md (active initiative documentation - only read if working on doc project)
+- ❌ project/ directory (project management files - only read if working on doc project)
 
 #### **Context 2: Working on Documentation Project** (rare)
 
@@ -1305,13 +1316,12 @@ User asks MAgPIE question
 ```
 New documentation project session
   → README.md (orientation and session protocol)
-  → CURRENT_STATE.json (SINGLE SOURCE OF TRUTH for project status)
-  → CONSOLIDATION_PLAN.md (if active initiative exists)
+  → project/CURRENT_STATE.json (SINGLE SOURCE OF TRUTH - status, plans, history)
   → Ask user: "What should I work on?"
 ```
 
 **Update ONLY:**
-- ✅ CURRENT_STATE.json (project status)
+- ✅ project/CURRENT_STATE.json (project status)
 - ❌ NOT README.md (STATIC reference document)
 - ❌ NOT modules/README.md (STATIC reference)
 

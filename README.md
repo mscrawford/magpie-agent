@@ -4,7 +4,7 @@
 
 Comprehensive, AI-optimized documentation for the MAgPIE land-use model.
 
-**⚠️ FOR CURRENT STATUS: See `CURRENT_STATE.json` ⚠️**
+**⚠️ FOR CURRENT STATUS: See `project/CURRENT_STATE.json` ⚠️**
 
 ---
 
@@ -15,9 +15,12 @@ Comprehensive, AI-optimized documentation for the MAgPIE land-use model.
 **Working on documentation project? Read these in order:**
 
 1. **This file** (you're reading it!) - Setup & orientation
-2. **`CURRENT_STATE.json`** - Single source of truth for ALL project status
-3. **`CONSOLIDATION_PLAN.md`** - Current initiative (if active)
-4. **Ask user**: "What should I work on?"
+2. **`project/CURRENT_STATE.json`** - Single source of truth (status, plans, history)
+3. **Ask user**: "What should I work on?"
+
+**🚨 CRITICAL: When working on the project, update ONLY `project/CURRENT_STATE.json` 🚨**
+- **DO NOT** update README.md, CLAUDE.md, or any other file with project status
+- **ALL** project information goes in the JSON (status, plans, handoffs, next steps)
 
 **Using MAgPIE with Claude Code? You're all set!** Claude automatically reads `CLAUDE.md` which contains all AI instructions for answering MAgPIE questions.
 
@@ -60,7 +63,7 @@ Now Claude Code will automatically use the comprehensive documentation when work
 
 ## 📊 Project Status
 
-**👉 For current progress numbers, check `CURRENT_STATE.json` 👈**
+**👉 For current progress numbers, check `project/CURRENT_STATE.json` 👈**
 
 ### Completed Work
 
@@ -83,7 +86,7 @@ Now Claude Code will automatically use the comprehensive documentation when work
 
 ### Current Work
 
-See `CURRENT_STATE.json` → `current_initiative` for active projects
+See `project/CURRENT_STATE.json` → `current_initiative` for active projects
 
 ---
 
@@ -92,9 +95,11 @@ See `CURRENT_STATE.json` → `current_initiative` for active projects
 ```
 magpie-agent/
 ├── README.md                  ← You are here (project overview)
-├── CURRENT_STATE.json         ← ONLY file with status (UPDATE THIS)
 ├── CLAUDE.md                  ← AI agent instructions (SOURCE - edit here)
-├── CONSOLIDATION_PLAN.md      ← Current initiative documentation
+│
+├── project/                   ← PROJECT MANAGEMENT (maintainers only)
+│   ├── README.md              ← What's in this folder
+│   └── CURRENT_STATE.json     ← EVERYTHING (status, plans, history)
 │
 ├── modules/                   ← Phase 1: Module Docs (46 files) ✅
 │   ├── module_09.md           Drivers
@@ -155,7 +160,7 @@ magpie-agent/
 **Step 1: Orient (2 minutes)**
 
 1. Read this README (you're doing it!)
-2. Check `CURRENT_STATE.json` for:
+2. Check `project/CURRENT_STATE.json` for:
    - Current progress (what's completed)
    - Known issues (problems to avoid)
    - Priorities (what to work on next)
@@ -165,9 +170,8 @@ magpie-agent/
 **Step 2: Choose Your Path**
 
 **Path A: Documentation Project Work**
-- Update `CURRENT_STATE.json` (the ONLY status file)
-- Follow `CONSOLIDATION_PLAN.md` if that initiative is active
-- Check `DOCUMENTATION_ECOSYSTEM_MAP.md` for file inventory
+- Update `project/CURRENT_STATE.json` (the ONLY file you modify - contains status, plans, history)
+- Check `current_initiative` and `phase_3` sections in the JSON for active work
 
 **Path B: MAgPIE Question Support**
 - Follow instructions in `CLAUDE.md` (AI agent workflow)
@@ -177,7 +181,7 @@ magpie-agent/
 **Path C: Module Documentation**
 - Read `reference/Verification_Protocol.md`
 - Follow verification checklist
-- Update ONLY `CURRENT_STATE.json` for status
+- Update ONLY `project/CURRENT_STATE.json` for status
 
 ### During Work: Quality Standards
 
@@ -236,9 +240,9 @@ If you provide calculations, **double-check the math**:
 
 **Step 1: Update State (5 minutes) - CRITICAL**
 
-**🚨 ONLY UPDATE `CURRENT_STATE.json` - DO NOT UPDATE ANY OTHER FILES WITH STATUS 🚨**
+**🚨 ONLY UPDATE `project/CURRENT_STATE.json` - DO NOT UPDATE ANY OTHER FILES WITH STATUS 🚨**
 
-Update `CURRENT_STATE.json` with:
+Update `project/CURRENT_STATE.json` with:
 1. Work completed (what you finished)
 2. New issues found (problems discovered)
 3. Recommended priorities for next session
@@ -261,7 +265,7 @@ mv *_2025-10-*.md archive/
 
 **Step 3: Create Lightweight Handover (50 lines MAX)**
 
-**DO NOT** duplicate information from `CURRENT_STATE.json`
+**DO NOT** duplicate information from `project/CURRENT_STATE.json`
 
 **DO** include:
 - What was accomplished (bullet points)
@@ -295,7 +299,7 @@ mv *_2025-10-*.md archive/
 ### For New Claude Sessions
 
 1. Read this README (2 min)
-2. Check `CURRENT_STATE.json` (1 min)
+2. Check `project/CURRENT_STATE.json` (1 min)
 3. If active initiative exists, read that plan document (5 min)
 4. Ask user what to work on
 
@@ -370,20 +374,27 @@ dot -Tpng core_dependencies.dot -o core_dependencies.png
 
 ## 📐 CRITICAL: Single Source of Truth
 
-**`CURRENT_STATE.json` is the ONLY file tracking project status.**
+**🚨 `project/CURRENT_STATE.json` IS THE ONLY FILE YOU MODIFY FOR PROJECT WORK 🚨**
 
-**DO NOT update**:
-- ❌ This README (static reference)
-- ❌ CLAUDE.md (agent instructions)
-- ❌ modules/README.md (static overview)
+**This file contains EVERYTHING:**
+- ✅ Current status and progress
+- ✅ All session accomplishments (no separate handoff docs!)
+- ✅ Future plans and priorities (no separate plan docs!)
+- ✅ Phase 3 task details
+- ✅ Next steps
 
-**DO update**:
-- ✅ CURRENT_STATE.json (all progress, status, priorities)
+**NEVER UPDATE THESE FILES WITH PROJECT STATUS:**
+- ❌ This README (static reference - DO NOT TOUCH)
+- ❌ CLAUDE.md (AI instructions - DO NOT TOUCH)
+- ❌ project/README.md (static reference - DO NOT TOUCH)
+- ❌ modules/README.md (static overview - DO NOT TOUCH)
+- ❌ **NO HANDOFF DOCUMENTS** - everything goes in CURRENT_STATE.json
+- ❌ **NO PLAN DOCUMENTS** - everything goes in CURRENT_STATE.json
 
 **After EVERY session:**
-1. Update `CURRENT_STATE.json` with progress
-2. Archive dated log files to `archive/`
-3. DO NOT update status in any other files
+1. Update `project/CURRENT_STATE.json` with ALL progress/plans/status
+2. Archive dated log files if any (usually none needed - use the JSON!)
+3. **DO NOT** update status in README, CLAUDE.md, or create handoff docs
 
 ---
 
@@ -411,7 +422,7 @@ See `feedback/README.md` for details.
 - **Solution**: Check `core_docs/Phase2_Module_Dependencies.md` for provider module
 
 **Problem**: Not sure what to work on
-- **Solution**: Check `CURRENT_STATE.json` → `priorities` section
+- **Solution**: Check `project/CURRENT_STATE.json` → `priorities` section
 
 **Problem**: Equation formula doesn't match source
 - **Solution**: Mark module as needing verification, document the discrepancy
@@ -474,7 +485,7 @@ See `feedback/README.md` for details.
 **Goal**: Make it effortless for the next Claude (or yourself tomorrow) to pick up instantly.
 
 **How**:
-- Keep `CURRENT_STATE.json` current
+- Keep `project/CURRENT_STATE.json` current
 - Archive dated files immediately
 - Use the quality checklist
 - Follow Code Truth principles
@@ -487,4 +498,4 @@ See `feedback/README.md` for details.
 
 **Principle**: Code Truth - Describe only what IS implemented in the code
 
-**This is a STATIC reference document. For current project status, see `CURRENT_STATE.json`**
+**This is a STATIC reference document. For current project status, see `project/CURRENT_STATE.json`**

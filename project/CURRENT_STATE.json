@@ -376,12 +376,36 @@
       "phase_3": {
         "name": "Link Don't Duplicate Enforcement",
         "status": "not_started",
-        "goal": "Cultural shift to linking over duplication",
-        "tasks": [
-          "Replace all dependency mentions with links to Phase2",
-          "Replace all conservation law duplicates with links to cross_module",
-          "Create enforcement guidelines"
-        ]
+        "goal": "Cultural shift to eliminate future duplication",
+        "task_3_1": {
+          "name": "Audit All Dependency Mentions",
+          "action": "Search for all dependency count mentions, replace with links to Phase2_Module_Dependencies.md",
+          "example_before": "Module 10 has 23 dependents including modules 11, 14, 17, 29...",
+          "example_after": "Dependencies: See Phase2_Module_Dependencies.md#module-10 for complete list",
+          "command": "grep -r 'dependent' modules/ core_docs/ cross_module/"
+        },
+        "task_3_2": {
+          "name": "Audit All Equation Duplications",
+          "action": "For each equation in multiple files, verify one authoritative source, others link only",
+          "rule": "Full formula lives in ONE place (usually module_XX.md), others link to it"
+        },
+        "task_3_3": {
+          "name": "Create Enforcement Guidelines",
+          "action": "Add LINK_DONT_DUPLICATE section to CLAUDE.md with rules",
+          "rules": {
+            "module_facts": "modules/module_XX.md (authoritative)",
+            "dependencies": "Phase2_Module_Dependencies.md (authoritative)",
+            "conservation_laws": "cross_module/*_balance.md (authoritative)",
+            "gams_syntax": "reference/GAMS_Phase*.md (authoritative)"
+          },
+          "when_to_duplicate": "Different contexts require different explanations (overview vs detailed)",
+          "when_to_link": "Exact same information, numbers, formulas, counts that must stay synchronized"
+        },
+        "task_3_4": {
+          "name": "Update Compression System",
+          "action": "Enhance /compress-documentation to detect duplications and suggest links",
+          "features": ["Detect duplications during compression", "Suggest consolidation + link pattern", "Warn if creating new duplication"]
+        }
       }
     },
     "next_steps": [
