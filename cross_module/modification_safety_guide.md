@@ -14,7 +14,7 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 - **Module 17 (Production)**: Spatial aggregation hub
 - **Module 56 (GHG Policy)**: Environmental-economic bridge
 
-**For exact dependency counts, see**: `core_docs/Phase2_Module_Dependencies.md`
+**For exact dependency counts, see**: `core_docs/Module_Dependencies.md`
 
 **Modifying these modules without proper precautions can break the entire model.**
 
@@ -33,7 +33,7 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 
 **Centrality**: **HIGHEST** in entire model
 - Role: **Central land allocation hub**
-- See `core_docs/Phase2_Module_Dependencies.md` for complete dependency list
+- See `core_docs/Module_Dependencies.md` for complete dependency list
 
 **File**: `modules/10_land/landmatrix_dec18/`
 
@@ -192,7 +192,7 @@ vm_cost_landcon.up(j,"primforest") = 1e6;  * USD/ha
 
 **Centrality**: HIGHEST dependency count
 - Role: **Defines MAgPIE's optimization objective**
-- See `core_docs/Phase2_Module_Dependencies.md` for complete dependency list
+- See `core_docs/Module_Dependencies.md` for complete dependency list
 
 **File**: `modules/11_costs/default/`
 
@@ -317,7 +317,7 @@ q11_cost_reg(i2) =e= ... - vm_reward_cdr_aff(i2);  * Subtract reward
 
 **Centrality**: HIGH
 - Role: **Spatial aggregation hub** (cell → region)
-- See `core_docs/Phase2_Module_Dependencies.md` for complete dependency list
+- See `core_docs/Module_Dependencies.md` for complete dependency list
 
 **File**: `modules/17_production/flexreg_apr16/`
 
@@ -439,7 +439,7 @@ vm_prod_reg(i,k) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
 
 **Centrality**: HIGH
 - Role: **Environmental-economic bridge** (emissions → costs)
-- See `core_docs/Phase2_Module_Dependencies.md` for complete dependency list
+- See `core_docs/Module_Dependencies.md` for complete dependency list
 
 **File**: `modules/56_ghg_policy/price_aug22/`
 
@@ -596,7 +596,7 @@ s56_c_price_induced_aff = 1;  * Enable afforestation CDR
 
 ### 5.1 Circular Dependency Verification
 
-**Critical Feedback Cycles** (from Phase2_Module_Dependencies.md:151-179):
+**Critical Feedback Cycles** (from Module_Dependencies.md:151-179):
 
 1. **Production-Yield-Livestock Triangle**:
    ```
@@ -936,7 +936,7 @@ Is model infeasible?
 **Checklist**:
 - [ ] Read this entire guide
 - [ ] Read module documentation (`magpie-agent/modules/module_XX.md`)
-- [ ] Understand dependency chains (Phase2_Module_Dependencies.md)
+- [ ] Understand dependency chains (Module_Dependencies.md)
 - [ ] Check conservation law implications (cross_module/*.md)
 - [ ] Create git branch for changes
 - [ ] Set up baseline comparison scenario
@@ -1006,7 +1006,7 @@ Is model infeasible?
 - Food Balance: `magpie-agent/cross_module/nitrogen_food_balance.md`
 
 **Dependency Analysis**:
-- Phase 2: `magpie-agent/core_docs/Phase2_Module_Dependencies.md` (Complete dependency graph)
+- Phase 2: `magpie-agent/core_docs/Module_Dependencies.md` (Complete dependency graph)
 
 ### 8.2 Testing Tools
 
@@ -1058,7 +1058,7 @@ library(magpie4)
 | 9 | 29_cropland | 13 | 6 | 7 | 🟠 MEDIUM |
 | 10 | 35_natveg | 12 | 5 | 7 | 🟠 MEDIUM |
 
-**Source**: Phase2_Module_Dependencies.md (lines 29-40)
+**Source**: Module_Dependencies.md (lines 29-40)
 
 ---
 
@@ -1075,12 +1075,12 @@ library(magpie4)
 | `vm_prod_reg(i,k)` | 9 | 17_production | vm_ | Regional production |
 | `vm_area(j,kcr,w)` | 9 | 30_croparea | vm_ | Cropland area by irrigation |
 
-**Source**: Phase2_Module_Dependencies.md (lines 46-59)
+**Source**: Module_Dependencies.md (lines 46-59)
 
 ---
 
 **Document Status**: ✅ Complete
-**Verified Against**: module_10.md, module_11.md, module_17.md, module_56.md, Phase2_Module_Dependencies.md
+**Verified Against**: module_10.md, module_11.md, module_17.md, module_56.md, Module_Dependencies.md
 **Created**: 2025-10-22
 **Validation**: All equation references, line numbers, and dependency counts verified against source
 

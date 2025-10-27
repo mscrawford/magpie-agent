@@ -1316,7 +1316,7 @@ Module 14 does **not directly participate** in any conservation laws:
 
 ### 21.2 Dependency Chains
 
-**Centrality Analysis** (from Phase2_Module_Dependencies.md and module connections):
+**Centrality Analysis** (from Module_Dependencies.md and module connections):
 - **Centrality Rank**: High (exact rank not in top 10, but critical provider to production system)
 - **Total Connections**: 5+ (provides to 4 major consumers, depends on 3 sources)
 - **Hub Type**: **Processing Hub** (receives biophysical data, provides to production modules)

@@ -1130,7 +1130,7 @@ Module 53 (Methane) calculates **CH4 emissions from 4 agricultural sources** fol
 ### Dependency Chains
 
 **Centrality**: Low (emissions calculator)
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 

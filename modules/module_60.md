@@ -1081,7 +1081,7 @@ i60_bioenergy_dem(t,i)$(i60_bioenergy_dem(t,i) < s60_2ndgen_bioenergy_dem_min)
 ### Dependency Chains
 
 **Centrality**: Medium (demand provider)
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 

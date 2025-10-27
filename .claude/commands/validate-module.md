@@ -56,11 +56,11 @@ grep -oP '\[.*?\]\(\K[^)]+' modules/module_XX.md
 Validate each link:
 - Internal links (e.g., `#section-name`) → verify section exists
 - Relative file links (e.g., `../modules/10_land/`) → verify file/directory exists
-- Cross-doc links (e.g., `Phase2_Module_Dependencies.md`) → verify file exists
-- Cross-doc anchors (e.g., `Phase2_Module_Dependencies.md#module-10`) → verify file exists (anchor validation optional)
+- Cross-doc links (e.g., `Module_Dependencies.md`) → verify file exists
+- Cross-doc anchors (e.g., `Module_Dependencies.md#module-10`) → verify file exists (anchor validation optional)
 
 Common link patterns to check:
-- `Phase2_Module_Dependencies.md#module-XX`
+- `Module_Dependencies.md#module-XX`
 - `cross_module/*.md`
 - `core_docs/*.md`
 - `reference/GAMS_Phase*.md`
@@ -96,7 +96,7 @@ Verify:
 
 Check if this module is mentioned correctly in other files:
 
-**If module is in Phase2_Module_Dependencies.md:**
+**If module is in Module_Dependencies.md:**
 - Extract dependent count from Phase2
 - Search for module mentions in other files
 - Verify no outdated counts elsewhere
@@ -148,11 +148,11 @@ Generated: YYYY-MM-DD HH:MM
 **Links Validation**
 ✅ Internal links: 12/12 valid
 ✅ Cross-doc links: 8/8 valid
-   ✅ Phase2_Module_Dependencies.md
+   ✅ Module_Dependencies.md
    ✅ cross_module/land_balance_conservation.md
    ✅ modification_safety_guide.md
 ❌ Broken links: 1 found
-   ❌ Phase2_Module_Dependencies.md#module-XX-deps (file exists, anchor not checked)
+   ❌ Module_Dependencies.md#module-XX-deps (file exists, anchor not checked)
 
 **Verification Status**
 ✅ Last Verified: 2025-10-13 (13 days ago - FRESH)
@@ -187,7 +187,7 @@ Checks: 25
 **Overall**: ⚠️ MINOR ISSUES (1 broken link)
 
 **Recommendations**:
-1. Fix broken link to Phase2_Module_Dependencies.md#module-XX-deps
+1. Fix broken link to Module_Dependencies.md#module-XX-deps
 2. Module is otherwise well-maintained
 
 **Next Steps**:

@@ -804,8 +804,8 @@ plot(land[,"y1995":"y2100",])  # Should show smooth transitions
 - Module 35: `magpie-agent/modules/module_35.md`
 
 **Core Documentation**:
-- Phase 1: Core Architecture (`magpie-agent/core_docs/Phase1_Core_Architecture.md`)
-- Phase 2: Module Dependencies (`magpie-agent/core_docs/Phase2_Module_Dependencies.md`)
+- Phase 1: Core Architecture (`magpie-agent/core_docs/Core_Architecture.md`)
+- Phase 2: Module Dependencies (`magpie-agent/core_docs/Module_Dependencies.md`)
 
 **Source Code**:
 - Module 10 equations: `modules/10_land/landmatrix_dec18/equations.gms:13-25`

@@ -428,7 +428,7 @@ Module 28 is a **reference data module** with zero equations and zero optimizati
 - MAgPIE: Remapped to 5-year age-classes (ac1...ac15)
 - Plus dynamic sets: ac_sub, ac_est, ac_ff
 
-**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Section 4, Pure Source Modules)
+**Reference**: `core_docs/Module_Dependencies.md` (Section 4, Pure Source Modules)
 
 ---
 
@@ -486,7 +486,7 @@ Module 28 is a **reference data module** with zero equations and zero optimizati
 
 **Why Low Risk**: Module 28 has **zero behavioral impact** - it only provides reference data. Modifications cannot violate conservation laws or create circular dependencies. Worst-case scenario is compilation error (easily detected).
 
-**Reference**: Data provider modules in `core_docs/Phase1_Core_Architecture.md` (Section 4.3)
+**Reference**: Data provider modules in `core_docs/Core_Architecture.md` (Section 4.3)
 
 ---
 

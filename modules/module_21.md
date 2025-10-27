@@ -591,7 +591,7 @@ Module 21 implements the **regional trade balance mechanism** that ensures globa
 
 **Key Position**: Module 21 acts as the **trade intermediary** between regional production (Module 17) and regional demand (Module 16), ensuring global market clearing.
 
-**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Section 6.2: "Most Dependent Modules")
+**Reference**: `core_docs/Module_Dependencies.md` (Section 6.2: "Most Dependent Modules")
 
 ---
 

@@ -904,7 +904,7 @@ None
 **Risk Level**: 🟡 **MEDIUM RISK**
 **Testing**: Verify material demand reasonable
 
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ---
 

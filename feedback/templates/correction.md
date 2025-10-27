@@ -1,6 +1,6 @@
 ---
 type: correction
-target: [e.g., module_70.md, CLAUDE.md, Phase1_Core_Architecture.md]
+target: [e.g., module_70.md, CLAUDE.md, Core_Architecture.md]
 severity: [high|medium|low]
 date: YYYY-MM-DD
 author: [optional - your name or username]
@@ -36,5 +36,5 @@ grep -r "pm_carbon_density" ../../modules/52_carbon/
 
 Examples:
 - modules/70_livestock/fbask_jan16/equations.gms:45-52
-- Phase2_Module_Dependencies.md Section 3.2
+- Module_Dependencies.md Section 3.2
 - Robinson et al. (2014) - Livestock methodology paper

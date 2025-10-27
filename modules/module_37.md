@@ -1220,7 +1220,7 @@ Module 37 does **not directly participate** in any conservation laws:
 
 ### Dependency Chains
 
-**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+**Centrality Analysis** (from Module_Dependencies.md):
 - **Centrality Rank**: Low (peripheral module)
 - **Total Connections**: 1 (provides to 1 module, depends on 0)
 - **Hub Type**: **Low-Risk Peripheral Module**
@@ -1299,7 +1299,7 @@ Module 37 participates in **zero circular dependencies**:
 - ❌ Using wrong units for temperature or work intensity
 
 **Links**:
-- Full dependency details → `core_docs/Phase2_Module_Dependencies.md`
+- Full dependency details → `core_docs/Module_Dependencies.md`
 - Factor costs (Module 38) → `modules/module_38.md`
 - Climate data (Module 45) → `modules/module_45.md`
 

@@ -900,7 +900,7 @@ This section shows Module 50's role in system-level mechanisms.
 
 **Depends on**: Modules 14 (yields), 18 (residues), 55 (awms): Nitrogen flows
 
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 
@@ -920,7 +920,7 @@ This section shows Module 50's role in system-level mechanisms.
 
 **Links**:
 - Conservation law → `cross_module/nitrogen_food_balance.md`
-- Dependencies → `core_docs/Phase2_Module_Dependencies.md`
+- Dependencies → `core_docs/Module_Dependencies.md`
 
 ---
 

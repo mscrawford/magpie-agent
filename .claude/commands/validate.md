@@ -80,7 +80,7 @@ Date: 2025-10-26
 ✓ Module 10: 23 dependents (consistent across 4 files)
 ✓ Module 11: 17 dependents (consistent)
 ⚠️  Module 17: Found "21 dependents" in Phase2 but "20 dependents" in modification_safety_guide.md
-    → Files: Phase2_Module_Dependencies.md:87, modification_safety_guide.md:203
+    → Files: Module_Dependencies.md:87, modification_safety_guide.md:203
 
 [2/6] Checking equation parameters...
 ✓ Chapman-Richards: 3 parameters (consistent across 3 files)
@@ -187,11 +187,11 @@ If file counts changed:
 ```
 
 **How to fix:**
-1. Check Phase2_Module_Dependencies.md (authoritative source)
+1. Check Module_Dependencies.md (authoritative source)
 2. Update modification_safety_guide.md to match
 3. Update any module_XX_notes.md that mention it
 
-**Precedence:** Phase2_Module_Dependencies.md > other files
+**Precedence:** Module_Dependencies.md > other files
 
 ### Equation Description Inconsistencies
 
@@ -326,7 +326,7 @@ If file counts changed:
 ### Real Issues Caught
 
 **Example 1: Dependency count divergence**
-- Phase2_Module_Dependencies.md updated with new analysis
+- Module_Dependencies.md updated with new analysis
 - modification_safety_guide.md still has old count
 - Validation catches mismatch
 

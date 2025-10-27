@@ -1059,7 +1059,7 @@ Module 11 does **not directly participate** in any conservation laws:
 
 ### 17.2 Dependency Chains
 
-**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+**Centrality Analysis** (from Module_Dependencies.md):
 - **Centrality Rank**: **1st of 46 modules (HIGHEST CENTRALITY)**
 - **Total Connections**: 28 (provides to 1 [GAMS solver], depends on 27 modules)
 - **Hub Type**: **Pure Sink Hub** (receives from many, provides only to solver)
@@ -1236,7 +1236,7 @@ Module 11 participates in **zero circular dependencies**:
 - **Scenario sensitivity** testing (SSP1-SSP5 all must run successfully)
 
 **Links**:
-- Full dependency details → Phase2_Module_Dependencies.md (Section 2.1, Table 1)
+- Full dependency details → Module_Dependencies.md (Section 2.1, Table 1)
 - Modification protocols → cross_module/modification_safety_guide.md (Module 11 section)
 - Cost component catalog → This document Section 3
 

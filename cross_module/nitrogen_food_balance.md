@@ -320,8 +320,8 @@ stopifnot(max_shortage < 0.01)  # Small tolerance for numerical error
 - Module 21: `magpie-agent/modules/module_21.md`
 
 **Core Documentation**:
-- Phase 1: `magpie-agent/core_docs/Phase1_Core_Architecture.md`
-- Phase 2: `magpie-agent/core_docs/Phase2_Module_Dependencies.md`
+- Phase 1: `magpie-agent/core_docs/Core_Architecture.md`
+- Phase 2: `magpie-agent/core_docs/Module_Dependencies.md`
 
 ---
 

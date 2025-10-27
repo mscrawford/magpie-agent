@@ -844,7 +844,7 @@ Module 09 does **not directly participate** in any conservation laws:
 
 ### 12.2 Dependency Chains
 
-**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+**Centrality Analysis** (from Module_Dependencies.md):
 - **Centrality Rank**: 8th of 46 modules
 - **Total Connections**: 14 (provides to 14 modules, depends on 0)
 - **Hub Type**: **Pure Source Hub** (no dependencies, only provides data)
@@ -942,7 +942,7 @@ Module 09 participates in **zero circular dependencies**:
 - If regional anomalies: Verify ISO→regional aggregation (Section 4.1)
 
 **Links**:
-- Full dependency details → Phase2_Module_Dependencies.md (Section 2.1)
+- Full dependency details → Module_Dependencies.md (Section 2.1)
 - Demand system → modules/module_15.md, module_16.md
 - No modification safety guide entry (too low risk to warrant specific protocols)
 

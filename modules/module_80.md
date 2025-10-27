@@ -863,7 +863,7 @@ None (terminal aggregator)
 **Why**: Changes affect what model optimizes for
 **Testing**: Verify objective components weighted correctly, check solution makes economic sense
 
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ---
 

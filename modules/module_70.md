@@ -1237,7 +1237,7 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 **Provides to**: 7 modules (production, costs, emissions, manure)
 **Depends on**: Modules 14 (yields), 17 (production), 70 (self - feed baskets)
 
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 

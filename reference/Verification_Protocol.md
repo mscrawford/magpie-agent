@@ -73,7 +73,7 @@ For variables/parameters received from other modules:
 
 ```bash
 # Check Phase 2 dependency matrix
-cat core_docs/Phase2_Module_Dependencies.md | grep "vm_varname"
+cat core_docs/Module_Dependencies.md | grep "vm_varname"
 ```
 
 ### Step 5: Document Limitations (10 min)

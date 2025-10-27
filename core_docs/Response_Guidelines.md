@@ -92,13 +92,13 @@ Now that you know the cycle, check the specific modules:
 
 🔍 **READ MORE if you need to**:
 - Understand a circular dependency or cross-module interaction
-- Trace where a parameter comes from (check Phase3_Data_Flow.md)
-- Assess modification safety (check Phase2_Module_Dependencies.md)
+- Trace where a parameter comes from (check Data_Flow.md)
+- Assess modification safety (check Module_Dependencies.md)
 - Clarify how modules connect (check module "Interface Variables" sections)
 
 **Example**: User asks "Can I modify Module 10 without affecting water?"
 - ✅ Read `module_10.md` (interface variables) → See vm_land exported
-- ✅ Read `Phase2_Module_Dependencies.md` → Check Module 10 dependents
+- ✅ Read `Module_Dependencies.md` → Check Module 10 dependents
 - ✅ Read `modification_safety_guide.md` → Module 10 has 23 dependents including Module 42 (water)
 - ✅ STOP and answer: "No, Module 10 affects water through land allocation"
 
@@ -151,11 +151,11 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 - ⏱️ Time: 2 minutes
 
 **Complex Query** ("Can I safely modify Module 10?"):
-- ✅ Read: `module_10.md` + `Phase2_Module_Dependencies.md` + `modification_safety_guide.md` → 10,000 tokens
+- ✅ Read: `module_10.md` + `Module_Dependencies.md` + `modification_safety_guide.md` → 10,000 tokens
 - ⏱️ Time: 3-4 minutes
 
 **Exploratory Query** ("How does the whole model work?"):
-- ⚠️ This requires Phase1_Core_Architecture.md → 10,000+ tokens
+- ⚠️ This requires Core_Architecture.md → 10,000+ tokens
 - ✅ But suggest: "Would you like an overview, or specific aspect details?" to reduce scope
 
 ### Red Flags: You're Reading Too Much
@@ -164,7 +164,7 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 - Reading more than 3 files for a simple "how does X work" question
 - Reading cross-module docs when question is about single module
 - Reading raw GAMS code when module doc already has the answer
-- Reading Phase 0 docs when you just need one equation
+- Reading architecture docs when you just need one equation
 
 **Remember**: The docs exist to PREVENT you from reading everything. Trust them.
 
@@ -257,7 +257,7 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 - [ ] **Described CODE behavior only** (not ecological/economic theory)
 - [ ] **Labeled examples** (made-up numbers vs. actual input data)
 - [ ] **Checked arithmetic** (if providing calculations)
-- [ ] **Listed dependencies** (if suggesting modifications - use Phase 2 or module docs)
+- [ ] **Listed dependencies** (if suggesting modifications - use Module_Dependencies.md or module docs)
 - [ ] **Stated limitations** (what code does NOT do - module docs have comprehensive sections)
 - [ ] **No vague language** ("the model handles..." → specific equation with file:line)
 - [ ] **If comparing systems: Stated verification status (🟢🟡🟠🔵🔴) for EACH?**
@@ -265,7 +265,7 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 - [ ] **If unverified claim: Offered to verify or stated limitation?**
 - [ ] **If using numerical examples: Clearly labeled as "illustrative" or cited actual input file?**
 - [ ] **If using numerical examples: Verified arithmetic is correct?**
-- [ ] Checked Phase 2 for dependencies if modification suggested?
+- [ ] Checked Module_Dependencies.md for dependencies if modification suggested?
 - [ ] Listed affected modules?
 - [ ] Warned about conservation law implications?
 - [ ] Offered next level of detail?
@@ -368,12 +368,12 @@ Reason: Notes may be outdated, main doc is verified against code
 ### **Special Cases**
 
 **Module Dependencies:**
-- **Authoritative source**: `Phase2_Module_Dependencies.md` (dependency graph)
+- **Authoritative source**: `Module_Dependencies.md` (dependency graph)
 - **Quick reference**: `modification_safety_guide.md` (top 4 modules)
 - **Module-specific**: `module_XX.md` (lists dependents for that module)
 - **User warnings**: `module_XX_notes.md` (practical lessons about dependencies)
 
-**If counts differ** → Trust Phase2_Module_Dependencies.md, create feedback
+**If counts differ** → Trust Module_Dependencies.md, create feedback
 
 **Conservation Laws:**
 - **Authoritative source**: `cross_module/*_balance_conservation.md`
@@ -384,7 +384,7 @@ Reason: Notes may be outdated, main doc is verified against code
 **GAMS Syntax:**
 - **Authoritative source**: Official GAMS documentation (gams.com)
 - **MAgPIE patterns**: `reference/GAMS_Phase5_MAgPIE_Patterns.md`
-- **Quick reference**: `Phase1_Core_Architecture.md` (naming conventions overview)
+- **Quick reference**: `Core_Architecture.md` (naming conventions overview)
 
 **If patterns differ** → Trust GAMS_Phase5 for MAgPIE-specific patterns
 

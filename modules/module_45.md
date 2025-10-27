@@ -520,10 +520,10 @@ Module 45 does **not directly participate** in any conservation laws as a primar
 
 ### Dependency Chains
 
-**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+**Centrality Analysis** (from Module_Dependencies.md):
 - **Hub Type**: Climate Data Provider (Pure Source)
 
-**Details**: See `core_docs/Phase2_Module_Dependencies.md` for complete dependency information.
+**Details**: See `core_docs/Module_Dependencies.md` for complete dependency information.
 
 ### Circular Dependencies
 
@@ -535,7 +535,7 @@ Module 45 participates in **zero or minimal circular dependencies**.
 
 **Testing Requirements**: Verify outputs are in expected ranges and check downstream modules.
 
-**Links**: See `core_docs/Phase2_Module_Dependencies.md` for dependencies.
+**Links**: See `core_docs/Module_Dependencies.md` for dependencies.
 
 ---
 

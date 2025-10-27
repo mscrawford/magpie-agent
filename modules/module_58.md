@@ -1949,7 +1949,7 @@ v58_manLand(j2,"forestry") =e= vm_land_forestry(j2,"plant")
 ### Dependency Chains
 
 **Centrality**: Low (peatland emissions)
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 

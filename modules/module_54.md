@@ -488,7 +488,7 @@ Module 54 (Phosphorus) is a **placeholder module** currently **deactivated** in 
 ### Dependency Chains
 
 **Centrality**: Very Low (peripheral tracker)
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 

@@ -829,7 +829,7 @@ This section shows Module 10's role in system-level mechanisms. For complete det
 **As Central Hub** (Rank #2 by centrality):
 - **Provides interface to**: 15 modules via `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`
 - **Consumes from**: 2 modules (32_forestry, 35_natveg for gross change components)
-- **Complete dependency map**: `core_docs/Phase2_Module_Dependencies.md`
+- **Complete dependency map**: `core_docs/Module_Dependencies.md`
 
 **Key downstream dependents**:
 - Module 11 (Costs): Land conversion costs

@@ -1252,7 +1252,7 @@ Module 30 provides **crop area** that Module 50 uses for nitrogen fertilizer dem
 - WHICH water source (irrigated vs rainfed)
 - All downstream food, water, nitrogen, carbon impacts
 
-**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Table: Rank 5, 15 connections)
+**Reference**: `core_docs/Module_Dependencies.md` (Table: Rank 5, 15 connections)
 
 ---
 

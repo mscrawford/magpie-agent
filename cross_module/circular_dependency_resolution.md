@@ -485,7 +485,7 @@ grep -r "vm_[a-zA-Z_]*(" modules/*/*/equations.gms > vm_usage.txt
 ```
 
 **Method 2: Dependency Graph**
-- Read Phase2_Module_Dependencies.md
+- Read Module_Dependencies.md
 - Check sections 4.1-4.2 for documented cycles
 - Visualize using GraphViz (files in `/tmp/magpie_analysis/`)
 
@@ -735,7 +735,7 @@ vm_var_A(j) depends on sum(j2, vm_var_B(j2)) [regional total]
 | **C3** | 30-41 | Croparea-Irrigation | Simultaneous + Temporal | 🟡 LOW | Test if water/crop modified |
 | **C4** | 32-30-10-35-56 | Forest-Carbon 5-way | Temporal + Simultaneous | 🔴 EXTREME | Test always |
 
-**Source**: Phase2_Module_Dependencies.md (lines 149-179)
+**Source**: Module_Dependencies.md (lines 149-179)
 
 ### 8.2 Additional Cycles (22 More, Inferred)
 
@@ -923,8 +923,8 @@ vm_problematic_var.fx(j) = baseline_value(j);
 ### 11.1 MAgPIE Documentation
 
 **Core Architecture**:
-- `magpie-agent/core_docs/Phase1_Core_Architecture.md` - Model structure
-- `magpie-agent/core_docs/Phase2_Module_Dependencies.md` - Full dependency graph
+- `magpie-agent/core_docs/Core_Architecture.md` - Model structure
+- `magpie-agent/core_docs/Module_Dependencies.md` - Full dependency graph
 - `magpie-agent/cross_module/modification_safety_guide.md` - Safety protocols
 
 **Conservation Laws** (all involve circular dependencies):
@@ -1025,7 +1025,7 @@ vm_problematic_var.fx(j) = baseline_value(j);
 ---
 
 **Document Status**: ✅ Complete
-**Verified Against**: Phase2_Module_Dependencies.md, module_*.md, source code structure
+**Verified Against**: Module_Dependencies.md, module_*.md, source code structure
 **Created**: 2025-10-22
 **Coverage**: 4 major cycles documented in detail, 26 total cycles cataloged, resolution mechanisms classified
 

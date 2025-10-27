@@ -582,7 +582,7 @@ Module 22 provides **exogenous protection and restoration targets** that constra
 
 **Key Position**: Module 22 acts as **policy enforcement layer** that translates WDPA baseline + conservation scenarios into binding land allocation constraints.
 
-**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Section 4, Module Catalog)
+**Reference**: `core_docs/Module_Dependencies.md` (Section 4, Module Catalog)
 
 ---
 

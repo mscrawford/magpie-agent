@@ -106,17 +106,18 @@ Get help writing or understanding GAMS code:
 
 **Comprehensive documentation structure**:
 
-**Phase 0: Foundation & Architecture** (~70,000 words)
-- `Phase1_Core_Architecture.md` - Model structure, execution flow
-- `Phase2_Module_Dependencies.md` - 173 dependencies mapped
-- `Phase3_Data_Flow.md` - 172 input files cataloged
-- `AI_Agent_Behavior_Guide.md` - Query routing patterns
+**Core Documentation** (~70,000 words)
+- `Core_Architecture.md` - Model structure, execution flow
+- `Module_Dependencies.md` - 173 dependencies mapped
+- `Data_Flow.md` - 172 input files cataloged
+- `Query_Patterns_Reference.md` - Complex query patterns
+- `Response_Guidelines.md` - Token efficiency, quality checklist
 
-**Phase 1: Module Documentation** (~20,000+ lines)
+**Module Documentation** (~20,000+ lines)
 - All 46 modules: `module_09.md` through `module_80.md`
 - Each includes: equations, parameters, interface variables, dependencies, limitations
 
-**Phase 2: Cross-Module Analysis** (~5,400 lines)
+**Cross-Module Analysis** (~5,400 lines)
 - `land_balance_conservation.md` - Land conservation (strict equality)
 - `water_balance_conservation.md` - Water supply/demand
 - `carbon_balance_conservation.md` - Carbon stocks and emissions
@@ -339,7 +340,7 @@ Located in `scripts/` directory:
 
 **Agent will**:
 1. Read `module_10.md` (interface variables)
-2. Read `Phase2_Module_Dependencies.md` (dependents)
+2. Read `Module_Dependencies.md` (dependents)
 3. Read `modification_safety_guide.md` (safety protocols)
 4. Answer: "No - Module 10 exports vm_land which affects Module 42 (water demand). You'll need to test water allocation after changes."
 

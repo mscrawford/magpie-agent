@@ -100,7 +100,7 @@ Each module documentation includes:
 
 ### For Modifying Code
 1. Read module documentation
-2. Check `../core_docs/Phase2_Module_Dependencies.md` for dependencies
+2. Check `../core_docs/Module_Dependencies.md` for dependencies
 3. Verify interface variables in source code
 4. Use "Common Modifications" section as starting point
 

@@ -115,9 +115,9 @@ magpie-agent/
 │   └── circular_dependency_resolution.md
 │
 ├── core_docs/                 ← Phase 0: Foundation (4 files) ✅
-│   ├── Phase1_Core_Architecture.md
-│   ├── Phase2_Module_Dependencies.md
-│   ├── Phase3_Data_Flow.md
+│   ├── Core_Architecture.md
+│   ├── Module_Dependencies.md
+│   ├── Data_Flow.md
 │   └── Tool_Usage_Patterns.md
 │
 ├── reference/                 ← GAMS Programming (6 files)
@@ -305,15 +305,15 @@ mv *_2025-10-*.md archive/
 
 ### For Understanding MAgPIE
 
-1. **Model Overview**: `core_docs/Phase1_Core_Architecture.md`
+1. **Model Overview**: `core_docs/Core_Architecture.md`
 2. **Specific Module**: `modules/module_XX.md`
-3. **Module Interactions**: `core_docs/Phase2_Module_Dependencies.md`
-4. **Data Sources**: `core_docs/Phase3_Data_Flow.md`
+3. **Module Interactions**: `core_docs/Module_Dependencies.md`
+4. **Data Sources**: `core_docs/Data_Flow.md`
 
 ### For Modifying MAgPIE Code
 
 1. Read target module documentation in `modules/`
-2. **Always check dependencies** in `core_docs/Phase2_Module_Dependencies.md`
+2. **Always check dependencies** in `core_docs/Module_Dependencies.md`
 3. Verify interface variables in source code
 4. Follow "Common Modifications" section in module doc
 5. Test affected downstream modules
@@ -419,7 +419,7 @@ See `feedback/README.md` for details.
 - **Solution**: Recount with grep (see command above)
 
 **Problem**: Unknown interface variable
-- **Solution**: Check `core_docs/Phase2_Module_Dependencies.md` for provider module
+- **Solution**: Check `core_docs/Module_Dependencies.md` for provider module
 
 **Problem**: Not sure what to work on
 - **Solution**: Check `project/CURRENT_STATE.json` → `priorities` section

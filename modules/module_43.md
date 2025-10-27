@@ -857,7 +857,7 @@ This section shows Module 43's role in system-level mechanisms.
 
 **Depends on**: Module 42 (water_demand): vm_watdem for all sectors
 
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 
@@ -877,7 +877,7 @@ This section shows Module 43's role in system-level mechanisms.
 
 **Links**:
 - Conservation law → `cross_module/water_balance_conservation.md`
-- Dependencies → `core_docs/Phase2_Module_Dependencies.md`
+- Dependencies → `core_docs/Module_Dependencies.md`
 
 ---
 

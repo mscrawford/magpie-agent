@@ -371,7 +371,7 @@ to consolidate accumulated feedback and reduce bloat.
 
 **DO**: Validate first, skip if outdated
 ```markdown
-✅ Validated against Phase2_Module_Dependencies.md (24 dependents as of 2025-10-26)
+✅ Validated against Module_Dependencies.md (24 dependents as of 2025-10-26)
 ```
 
 ---

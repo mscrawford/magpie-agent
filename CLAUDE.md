@@ -146,9 +146,9 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 1. **First, check** `core_docs/Query_Patterns_Reference.md` for query patterns
 2. **Check** `feedback/global/claude_lessons.md` for system-wide lessons (if applicable)
 3. **Then check**:
-   - Phase 1 (`Phase1_Core_Architecture.md`) for overview
-   - Phase 2 (`Phase2_Module_Dependencies.md`) for dependencies
-   - Phase 3 (`Phase3_Data_Flow.md`) for data flow
+   - `Core_Architecture.md` for model structure and overview
+   - `Module_Dependencies.md` for dependencies and interactions
+   - `Data_Flow.md` for data sources and flow
 4. **Then supplement** with module docs, notes files, or code as needed
 
 ### Step 2: Cite Your Sources
@@ -175,27 +175,27 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 
 ## 📚 COMPLETE DOCUMENTATION STRUCTURE
 
-MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized into three phases:
+MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized into three categories:
 
-### Phase 0: Foundation & Architecture (~70,000 words)
+### Core Documentation (~70,000 words)
 **Location**: `core_docs/`
 
 | File | Use For |
 |------|---------|
-| **Phase1_Core_Architecture.md** | "How does MAgPIE execute?" "What's the folder structure?" |
-| **Phase2_Module_Dependencies.md** | "What modules depend on X?" "Can I modify Y?" |
-| **Phase3_Data_Flow.md** | "Where does this data come from?" |
+| **Core_Architecture.md** | "How does MAgPIE execute?" "What's the folder structure?" |
+| **Module_Dependencies.md** | "What modules depend on X?" "Can I modify Y?" |
+| **Data_Flow.md** | "Where does this data come from?" |
 | **Query_Patterns_Reference.md** | Complex query patterns, parameterization vs. mechanistic modeling |
 | **Response_Guidelines.md** | Token efficiency, examples, quality checklist, complete workflows |
 | **Tool_Usage_Patterns.md** | Best practices for Claude Code tools (Bash, Read, Write, paths) |
 
-### Phase 1: Module Documentation (~20,000+ lines)
+### Module Documentation (~20,000+ lines)
 **Location**: `modules/`
 
 **Coverage**: All 46 modules documented with equations, parameters, dependencies, assumptions.
 **File pattern**: `module_XX.md` + `module_XX_notes.md` (user feedback)
 
-### Phase 2: Cross-Module Analysis (~5,400 lines)
+### Cross-Module Analysis (~5,400 lines)
 **Location**: `cross_module/`
 
 | File | Purpose |
@@ -212,10 +212,10 @@ MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized
 ```
 Question Type                              → Check Here First
 ─────────────────────────────────────────────────────────────────
-"How does MAgPIE execute?"                 → Phase1_Core_Architecture.md
-"How does module X work?"                  → modules/module_XX.md
-"What depends on module X?"                → Phase2_Module_Dependencies.md
-"Where does data file X come from?"        → Phase3_Data_Flow.md
+"How does MAgPIE execute?"                 → Core_Architecture.md
+"How does module X work?"                  → module_XX.md
+"What depends on module X?"                → Module_Dependencies.md
+"Where does data file X come from?"        → Data_Flow.md
 "Is X modeled mechanistically?"            → Query_Patterns_Reference.md
 "How do I write efficient responses?"      → Response_Guidelines.md
 "Tool usage best practices?"               → Tool_Usage_Patterns.md
@@ -237,7 +237,7 @@ Question Type                              → Check Here First
 **Environment**: 22 (conservation), 44 (biodiversity), 45 (climate), 54 (phosphorus)
 **Other**: 28 (age class), 36 (employment), 37 (labor productivity), 80 (optimization)
 
-*Full list with descriptions in Phase1_Core_Architecture.md Section 4.2*
+*Full list with descriptions in Core_Architecture.md Section 4.2*
 
 ---
 
@@ -336,7 +336,7 @@ User asks MAgPIE question
   → Query_Patterns_Reference.md (for complex query patterns)
   → Response_Guidelines.md (for quality/efficiency guidance)
   → cross_module/*.md (SYSTEM-LEVEL if safety/dependencies)
-  → core_docs/Phase*.md (ARCHITECTURE if structural question)
+  → core_docs/ (ARCHITECTURE if structural question)
   → reference/GAMS_Phase*.md (GAMS CODE if writing/debugging code)
 ```
 

@@ -841,7 +841,7 @@ Solid storage:
 ### Dependency Chains
 
 **Centrality**: Low (manure N calculator)
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 

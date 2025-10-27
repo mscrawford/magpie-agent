@@ -768,7 +768,7 @@ vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) = vm_demand(i,k)
 
 ### 16.2 Dependency Chains
 
-**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+**Centrality Analysis** (from Module_Dependencies.md):
 - **Centrality Rank**: 7th of 46 modules
 - **Total Connections**: 14 (provides to 13 modules, depends on 1)
 - **Hub Type**: **Aggregation Hub** (receives spatial, provides regional)
@@ -980,7 +980,7 @@ Production affects demand via prices (if endogenous demand) → **BACK TO START*
 **Links**:
 - Food balance details → cross_module/nitrogen_food_balance.md (Part 2)
 - Circular dependency details → cross_module/circular_dependency_resolution.md (Sections 3.1, 8.2)
-- Full dependency details → Phase2_Module_Dependencies.md (Section 2.1)
+- Full dependency details → Module_Dependencies.md (Section 2.1)
 - Trade system → modules/module_21.md
 
 ---

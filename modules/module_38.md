@@ -1596,11 +1596,11 @@ Module 38 does **not directly participate** in any conservation laws as a primar
 
 ### Dependency Chains
 
-**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+**Centrality Analysis** (from Module_Dependencies.md):
 - **Centrality Rank**: Low-to-Medium (peripheral/intermediate module)
 - **Hub Type**: **Cost Component Provider**
 
-**Details**: See `core_docs/Phase2_Module_Dependencies.md` for complete dependency information.
+**Details**: See `core_docs/Module_Dependencies.md` for complete dependency information.
 
 ### Circular Dependencies
 
@@ -1623,7 +1623,7 @@ Module 38 participates in **zero or minimal circular dependencies**.
 3. Run full model to ensure no infeasibility
 
 **Links**:
-- Full dependency details → `core_docs/Phase2_Module_Dependencies.md`
+- Full dependency details → `core_docs/Module_Dependencies.md`
 - Related modules → Check interface variables in module documentation
 
 ---

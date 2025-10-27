@@ -813,7 +813,7 @@ Module 57 is a **cost bridge** between GHG policy and emission modules:
 ### Dependency Chains
 
 **Centrality**: Low (MACC curves)
-**Details**: `core_docs/Phase2_Module_Dependencies.md`
+**Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 

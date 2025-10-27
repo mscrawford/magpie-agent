@@ -892,7 +892,7 @@ Module 29 does NOT directly participate in water balance (no water equations), b
 
 **Key Position**: Module 29 acts as **cropland aggregator** - it sums harvested area (Module 30), fallow land, and tree cover into total cropland area for the land balance.
 
-**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Section 3.1, Centrality Rankings)
+**Reference**: `core_docs/Module_Dependencies.md` (Section 3.1, Centrality Rankings)
 
 ---
 

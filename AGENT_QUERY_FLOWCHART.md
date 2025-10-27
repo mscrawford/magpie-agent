@@ -175,7 +175,7 @@ User Question
 │
 ├─ CROSS-MODULE ("How does X affect Y?")
 │  1. Read: Query_Patterns_Reference.md (Pattern 2)
-│  2. Read: Phase2_Module_Dependencies.md
+│  2. Read: Module_Dependencies.md
 │  3. Trace: X → intermediate steps → Y
 │  4. Read: relevant module_XX.md for each step
 │  5. Cite: 🟡 all modules in chain
@@ -202,13 +202,13 @@ User Question
 │
 ├─ MODIFICATION SAFETY ("Can I modify Module X?")
 │  1. Read: modification_safety_guide.md
-│  2. Read: Phase2_Module_Dependencies.md
+│  2. Read: Module_Dependencies.md
 │  3. Check: Is module in top 4 centrality?
 │     ├─ Yes → HIGH RISK (17+ dependents, read safety protocols)
 │     └─ No → Read specific dependents
 │  4. List: All affected modules + conservation law impacts
 │  5. Warn: Testing recommendations
-│  6. Cite: 🟡 safety guide + Phase2
+│  6. Cite: 🟡 safety guide + Module_Dependencies
 │
 ├─ CONSERVATION ("Is land/water/carbon conserved?")
 │  1. Read: cross_module/*_balance_conservation.md
@@ -219,13 +219,13 @@ User Question
 │  2. Cite: 🟡 relevant balance doc
 │
 ├─ DATA SOURCE ("Where does X come from?")
-│  1. Read: Phase3_Data_Flow.md (172 input files)
+│  1. Read: Data_Flow.md (172 input files)
 │  2. Find: specific file + data source
 │  3. Cite: 🟡 file path + source + calibration method
 │
 ├─ ARCHITECTURE ("How does MAgPIE execute?")
-│  1. Read: Phase1_Core_Architecture.md
-│  2. Cite: 🟡 Phase1 sections
+│  1. Read: Core_Architecture.md
+│  2. Cite: 🟡 Core_Architecture sections
 │
 └─ DEBUGGING ("Model failed - why?")
    1. Read: Query_Patterns_Reference.md (Pattern 5: Debug Tree)
@@ -319,11 +319,11 @@ User: "Can I modify Module 10 (land) without breaking things?"
 
 Agent Path:
 1. Read modification_safety_guide.md → Module 10 is HIGHEST centrality
-2. Read Phase2_Module_Dependencies.md → 23 dependents
+2. Read Module_Dependencies.md → 23 dependents
 3. List affected: Modules 11,14,17,18,29-32,35,38-40,42,52,56,58-59,70-71,73
 4. Warn: Affects ALL conservation laws (land, water, carbon, nitrogen)
 5. Recommend: Extensive testing, check all dependents
-6. Cite: 🟡 "Based on modification_safety_guide.md, Phase2_Module_Dependencies.md"
+6. Cite: 🟡 "Based on modification_safety_guide.md, Module_Dependencies.md"
 
 Tokens: ~41K (16K + 20K guidelines + 5K safety)
 Time: 3-4 minutes
@@ -333,16 +333,16 @@ Time: 3-4 minutes
 
 ## Token Budget by Query Type
 
-| Query Type           | Docs Read              | Token Budget | Time   |
-|---------------------|------------------------|--------------|--------|
-| Simple module       | 1 module doc           | ~19K         | 30s    |
-| Module + notes      | module + notes         | ~20K         | 1min   |
-| Cross-module        | 3-4 modules            | ~24K         | 2min   |
-| Parameterization    | pattern + module       | ~34K         | 2min   |
-| Modification safety | safety + Phase2        | ~41K         | 3min   |
-| Temporal mechanism  | pattern + modules      | ~24K         | 2min   |
-| Conservation laws   | balance docs           | ~21K         | 2min   |
-| Architecture        | Phase1                 | ~26K         | 3min   |
+| Query Type           | Docs Read                    | Token Budget | Time   |
+|---------------------|------------------------------|--------------|--------|
+| Simple module       | 1 module doc                 | ~19K         | 30s    |
+| Module + notes      | module + notes               | ~20K         | 1min   |
+| Cross-module        | 3-4 modules                  | ~24K         | 2min   |
+| Parameterization    | pattern + module             | ~34K         | 2min   |
+| Modification safety | safety + Module_Dependencies | ~41K         | 3min   |
+| Temporal mechanism  | pattern + modules            | ~24K         | 2min   |
+| Conservation laws   | balance docs                 | ~21K         | 2min   |
+| Architecture        | Core_Architecture            | ~26K         | 3min   |
 
 **Key principle**: Agent loads 16K CLAUDE.md always, then reads only what's needed for the specific question.
 

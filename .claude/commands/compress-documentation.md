@@ -113,7 +113,7 @@ For each consolidation opportunity, create a proposal showing:
 Module 10 has **23 dependents** including water (Module 42), costs (Module 11), and carbon (Module 52).
 
 **Before modifying**:
-1. Check Phase2_Module_Dependencies.md for full dependency list
+1. Check Module_Dependencies.md for full dependency list
 2. Review modification_safety_guide.md (Module 10 section)
 3. Verify impact on conservation laws (especially land and water)
 
@@ -329,7 +329,7 @@ After completing compression:
 Module 10 has **23 dependents** including water (Module 42), costs (Module 11), and carbon (Module 52).
 
 **Before modifying**:
-1. Check Phase2_Module_Dependencies.md for full dependency list
+1. Check Module_Dependencies.md for full dependency list
 2. Review modification_safety_guide.md (Module 10 section)
 3. Verify impact on conservation laws (especially land and water)
 

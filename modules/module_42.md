@@ -911,7 +911,7 @@ Regional EFP share = (100+50) / (100+50+50) = 150/200 = **0.75** (75%)
 - Module 11 (Costs): Receives pumping costs
 - Module 43 (Water Availability): Receives total water demand
 
-**Phase 2 Documentation**: See `MAGPIE_AI_DOCS_Phase2_Module_Dependencies.md` for complete dependency matrix
+**Phase 2 Documentation**: See `MAGPIE_AI_DOCS_Module_Dependencies.md` for complete dependency matrix
 
 **Configuration**: See `scenario_config.csv` for SSP-to-water-scenario mapping
 
@@ -962,7 +962,7 @@ Module 42 is a **core participant** in the water balance conservation law:
 
 ### Dependency Chains
 
-**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+**Centrality Analysis** (from Module_Dependencies.md):
 - **Centrality Rank**: Medium (water system component)
 - **Total Connections**: Medium (provides water demand to Module 43)
 - **Hub Type**: **Sector Demand Aggregator** (similar to Module 11 for costs)
@@ -1076,7 +1076,7 @@ Module 42 participates in **indirect circular dependencies** through the Cropare
 - Water balance conservation law → `cross_module/water_balance_conservation.md`
 - Irrigation infrastructure → `modules/module_41.md`
 - Croparea allocation → `modules/module_30.md`
-- Full dependency details → `core_docs/Phase2_Module_Dependencies.md`
+- Full dependency details → `core_docs/Module_Dependencies.md`
 
 ---
 
