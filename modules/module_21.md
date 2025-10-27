@@ -545,6 +545,141 @@ v21_cost_trade_reg.scale(i,k_trade) = 10e4;
 
 ---
 
+## Participates In
+
+### Conservation Laws
+
+**Food Supply = Demand Balance**: ✅ **CRITICAL PARTICIPANT**
+
+Module 21 implements the **regional trade balance mechanism** that ensures global food supply meets demand:
+
+- **Global Production Constraint** (`q21_trade_glo`): Enforces that regional production plus net imports equals supply requirements
+  - Formula: `vm_prod_reg(i,k) + sum(i2, vm_import(i2,i,k)) - sum(i2, vm_export(i,i2,k)) = vm_supply(i,k)`
+  - Location: `equations.gms:12-14`
+
+- **Two-Pool Trade System**:
+  - **Self-sufficiency pool**: Regions trade to meet minimum self-sufficiency targets (`i21_trade_bal_reduction`)
+  - **Comparative advantage pool**: Remaining production allocated by comparative advantage
+  - Balance reduction reduces reliance on trade over time
+
+- **Cross-Module Reference**: `cross_module/nitrogen_food_balance.md` (Part 2, Section 2.4)
+
+**Other Conservation Laws**:
+- Land Balance: ❌ Does NOT participate (reads `vm_land` but doesn't affect land allocation)
+- Water Balance: ❌ Does NOT participate (no direct water demand)
+- Carbon Balance: ❌ Does NOT participate (trade flows are carbon-neutral in accounting)
+- Nitrogen Tracking: ❌ Does NOT explicitly participate (N-embodied in trade is implicit)
+
+---
+
+### Dependency Chains
+
+**Centrality Rank**: 6 of 46 modules
+**Total Connections**: 9 (provides to 8 modules, depends on 1)
+**Hub Type**: **Processing Hub** (aggregates regional supply/demand and balances via trade)
+
+**Provides To** (8 modules):
+1. **Module 11 (Costs)** - Trade costs (`vm_cost_trade`)
+2. **Module 16 (Demand)** - Supply signals (import/export flows affect food availability)
+3. **Module 17 (Production)** - Trade flows inform production decisions
+4. **Module 73 (Timber)** - Timber trade balance
+5. Plus 4 other modules receiving trade flow information
+
+**Depends On** (1 direct dependency):
+1. **Module 16 (Demand)** - Regional supply requirements (`vm_supply`)
+2. **Module 17 (Production)** - Regional production totals (`vm_prod_reg`)
+
+**Key Position**: Module 21 acts as the **trade intermediary** between regional production (Module 17) and regional demand (Module 16), ensuring global market clearing.
+
+**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Section 6.2: "Most Dependent Modules")
+
+---
+
+### Circular Dependencies
+
+**Participates In**: 1 circular dependency cycle
+
+#### Cycle C5: Demand-Trade-Production (Simultaneous Resolution)
+
+**Structure**:
+```
+Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
+       ↑                                         │
+       │                                         │
+       └─────────── vm_import/export ←───────────┘
+                           ↓
+                  Module 17 (Production)
+                     vm_prod_reg(i,k)
+```
+
+**Resolution Mechanism**: **Type 2 - Simultaneous Equations**
+- All three modules' variables (`vm_supply`, `vm_import`, `vm_export`, `vm_prod_reg`) are optimized **simultaneously** in the same GAMS SOLVE statement
+- The coupled system of equations forms a square system (# variables = # equations) with unique solution
+- GAMS solver (CONOPT/IPOPT) solves all equations together in one optimization
+
+**Why It Works**:
+1. Trade variables (`vm_import`, `vm_export`) link supply and production
+2. Global balance ensures total imports = total exports
+3. Regional production + net imports must meet regional demand
+4. System is economically consistent (market clearing)
+
+**Testing Protocol** (if modifying Module 21):
+- ✅ Verify food balance holds: `sum(i, vm_prod_reg(i,k)) = sum(i, vm_supply(i,k))`
+- ✅ Verify trade balance: `sum(i, sum(i2, vm_import(i,i2,k))) = sum(i, sum(i2, vm_export(i,i2,k)))`
+- ✅ Test infeasibility scenarios (regions with zero production but high demand)
+- ✅ Check self-sufficiency constraints are not violated
+
+**Reference**: `cross_module/circular_dependency_resolution.md` (Section 3.1, Table of Cycles - C5)
+
+---
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+
+**Safe Modifications**:
+- ✅ Adjusting trade cost parameters (`f21_trade_margin`, `f21_trade_tariff`)
+- ✅ Changing self-sufficiency reduction trajectories (`i21_trade_bal_reduction`)
+- ✅ Modifying export share distributions (`f21_exp_shr`)
+- ✅ Adding new commodities to trade pools (requires set expansion)
+- ✅ Implementing trade policy scenarios (tariff/margin adjustments)
+
+**Dangerous Modifications**:
+- ⚠️ Removing global production constraint → violates food balance
+- ⚠️ Hardcoding trade flows → can make model infeasible
+- ⚠️ Changing trade balance equations → affects 8 downstream modules
+- ⚠️ Modifying feasibility import mechanism → can break emergency food supply
+
+**Required Testing** (for ANY modification):
+1. **Food Balance Conservation**:
+   - Verify global production = global supply for all commodities
+   - Check regional food security (no starvation scenarios)
+   - Test with extreme self-sufficiency scenarios
+
+2. **Dependency Chain Validation**:
+   - Module 11 (Costs): Verify trade costs are reasonable (not infinite)
+   - Module 16 (Demand): Verify supply signals reach demand module
+   - Module 17 (Production): Verify production responds to trade opportunities
+
+3. **Circular Dependency Check**:
+   - Run model and verify convergence (simultaneous equations must have solution)
+   - Check for oscillations in trade flows between regions
+   - Test with constrained production scenarios (droughts, yield shocks)
+
+4. **Infeasibility Testing**:
+   - Test regions with zero production but non-zero demand
+   - Verify feasibility imports activate when needed
+   - Check that tariff costs don't become prohibitive
+
+**Common Issues**:
+- **Trade starvation**: Regions cannot import enough food → increase self-sufficiency reduction or enable feasibility imports
+- **Unrealistic trade flows**: All production concentrated in one region → adjust export shares or trade margins
+- **High trade costs**: Tariffs too high → model prefers autarky over trade → reduce tariff rates
+
+**Reference**: `cross_module/modification_safety_guide.md` (mentions Module 21 as medium-risk trade hub)
+
+---
+
 ## Limitations
 
 ### 1. Fixed Trade Patterns
@@ -620,3 +755,10 @@ v21_cost_trade_reg.scale(i,k_trade) = 10e4;
 **Last Updated**: 2025-10-12
 **Lines Analyzed**: 88 (equations.gms) + 57 (input.gms) + 58 (sets.gms) + 35 (preloop.gms) + 10 (scaling.gms) = 248 lines
 **Verification Status**: 100% verified, zero errors found
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/21_*/off/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

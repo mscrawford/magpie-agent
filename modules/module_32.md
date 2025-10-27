@@ -614,6 +614,75 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 ---
 
+### 8.1. Participates In
+
+#### Conservation Laws
+
+**Land Balance**: ✅ **CRITICAL PARTICIPANT** - Provides `vm_land(j,"forestry")` for managed plantations. Three types: "plant" (timber), "ndc" (policy), "aff" (CDR-driven). Constraint: Total forestry ≤ available land from Module 35 (max forest establishment potential).
+
+**Carbon Balance**: ✅ **CRITICAL PARTICIPANT** - Afforestation drives carbon sequestration. CDR equation: plantation area × carbon growth × carbon price sensitivity. Module 56 receives `vm_cdr_aff` for carbon pricing. **CRITICAL FEEDBACK LOOP**: Carbon price → afforestation → carbon removal → updated carbon price (5-module cycle).
+
+**Food Balance**: ❌ Does NOT participate directly (but competes for land with agriculture)
+
+**Water Balance**: ⚠️ **INDIRECT** - Afforestation affects water availability (forests consume water)
+
+**Nitrogen**: ❌ Does NOT participate
+
+**Cross-Reference**: `cross_module/land_balance_conservation.md` (Section 5.5), `cross_module/carbon_balance_conservation.md` (Section 8.2, "Afforestation Scenario")
+
+---
+
+#### Dependency Chains
+
+**Centrality**: **Rank 4 of 46** modules (EXTREME centrality)
+**Total Connections**: **16** (provides to 5, depends on 11)
+**Hub Type**: Central Hub (three plantation types + carbon-price feedback)
+
+**Provides To**: Module 10 (Land), Module 11 (Costs + CDR rewards), Module 52 (Carbon), Module 56 (GHG policy), Module 73 (Timber)
+
+**Depends On**: Module 14 (Yields), Module 35 (Max forest establishment), Module 56 (Carbon price), plus 8 others
+
+**Key Role**: Carbon-price-driven afforestation - the PRIMARY mechanism for land-based carbon dioxide removal (CDR) in MAgPIE.
+
+---
+
+#### Circular Dependencies
+
+**Participates In**: **2 major cycles** (including most complex cycle in model)
+
+**Cycle 1**: Forestry ↔ Croparea ↔ Land ↔ NatVeg (4-module land competition)
+**Resolution**: Type 2 - Simultaneous equations
+
+**Cycle 2**: **Complex Forest-Carbon-Price Cycle** (5-module feedback - MOST COMPLEX IN MODEL)
+**Structure**: Module 32 (Forestry) → Module 30 (Croparea) → Module 10 (Land) → Module 35 (NatVeg) → Module 52 (Carbon) → Module 56 (GHG Policy) → **back to Module 32**
+
+**Mechanism**: Carbon price → afforestation incentive → land allocation → natural vegetation change → carbon stocks → emissions accounting → **NEW carbon price**
+
+**Resolution**: Type 1 + 2 (Temporal feedback + Simultaneous equations + Economic optimization)
+
+**Risk**: Oscillations in afforestation if carbon price volatile. Convergence issues if policy targets unrealistic.
+
+**Reference**: `cross_module/circular_dependency_resolution.md` (Section 3.4, "Cycle 4: Complex Forest-Carbon Cycle")
+
+---
+
+#### Modification Safety
+
+**Risk Level**: 🔴 **EXTREME RISK**
+
+**Justification**: Rank 4 of 46, 16 connections, participates in 2 major cycles (including most complex cycle), CRITICAL for carbon policy effectiveness
+
+**Safe**: Adjusting rotation lengths, changing afforestation cost parameters, modifying NPI/NDC targets
+**Dangerous**: Removing CDR linkage to Module 56 (breaks carbon pricing mechanism), hardcoding afforestation area (prevents price response), changing max forest establishment logic (can make model infeasible)
+**Required Testing**: Carbon balance, land balance, afforestation response to carbon prices, 5-module cycle convergence
+**Common Issues**: Afforestation oscillations (carbon price swings) → stabilize price trajectory; Infeasibility from excessive afforestation targets → reduce NPI/NDC ambition; No afforestation despite high carbon price → check max forest establishment potential (Module 35)
+
+**CRITICAL**: Module 32 is the HEART of MAgPIE's climate mitigation capability. Any modification requires expert review and comprehensive testing of carbon-price feedback loop.
+
+**Reference**: `cross_module/modification_safety_guide.md` (EXTREME RISK, Section 4: Module 56 Interactions)
+
+---
+
 ### 9. Configuration & Scenarios
 
 **VERIFIED**: 20+ configuration switches control forestry behavior (`input.gms`).
@@ -1189,9 +1258,7 @@ abline(v=rot_age, col="red", lty=2)  # Rotation age
 
 ---
 
-**Module 32 Status**: ✅ COMPLETE (1,313 lines documented)
-**Verified Against**: Actual code in `modules/32_forestry/dynamic_may24/`
-**Equations Verified**: 31/31 (100%)
-**Documentation Date**: October 12, 2025
-
----
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/32_*/dynamic_may24/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

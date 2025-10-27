@@ -1002,3 +1002,58 @@ grep "^[ ]*q41_" modules/41_area_equipped_for_irrigation/static/declarations.gms
 
 **Documentation complete**: 2025-10-13
 **Module 41 Status**: Fully verified - All equations checked, all mechanisms documented, zero errors
+
+---
+
+## Participates In
+
+This section shows Module 41's role in system-level mechanisms. For complete details, see the linked documentation.
+
+### Conservation Laws
+
+Module 41 does **not directly participate** in any conservation laws as a primary enforcer.
+
+**Indirect Role**: Module 41 may affect irrigation infrastructure costs and water availability, which influences other modules, but has no direct conservation constraints.
+
+### Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Centrality Rank**: Low-to-Medium (peripheral/intermediate module)
+- **Hub Type**: **Water Infrastructure Provider**
+
+**Details**: See `core_docs/Phase2_Module_Dependencies.md` for complete dependency information.
+
+### Circular Dependencies
+
+Module 41 participates in **zero or minimal circular dependencies**.
+
+**Details**: See `cross_module/circular_dependency_resolution.md` for system-level cycles.
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+
+**Safe Modifications**:
+- ✅ Adjust module-specific parameters
+- ✅ Change scenario selections
+- ✅ Modify calculation methods within module
+
+**Testing Requirements**:
+1. Verify outputs are in expected ranges
+2. Check downstream modules that depend on this module's outputs
+3. Run full model to ensure no infeasibility
+
+**Links**:
+- Full dependency details → `core_docs/Phase2_Module_Dependencies.md`
+- Related modules → Check interface variables in module documentation
+
+---
+
+**Module 41 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/41_*/endo_aug13/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

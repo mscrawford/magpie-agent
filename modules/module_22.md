@@ -531,6 +531,154 @@ Module 22 has **NO circular dependencies** because:
 
 ---
 
+### 5.1. Participates In
+
+#### Conservation Laws
+
+**Land Area Balance**: ✅ **CRITICAL PARTICIPANT**
+
+Module 22 provides **exogenous protection and restoration targets** that constrain land allocation in Module 10:
+
+- **Protection Constraint**: Enforces minimum land area that cannot be converted
+  - Formula: `vm_land(j,land) ≥ pm_land_conservation(j,land,"protect")`
+  - Applied in Module 10 land allocation equations
+  - Prevents conversion of protected primary forest, secondary forest, other natural land, and pasture
+
+- **Restoration Constraint**: Drives active restoration to meet targets
+  - Formula: `vm_land(j,land) ≥ pm_land_conservation(j,land,"restore")`
+  - Increases land area above historical levels where targets exceed current allocation
+  - Example: 30by30 scenario restores 3,094 Mha globally by 2030
+
+- **Historical Coverage**:
+  - 1995: 864.31 Mha protected (6.79% of land)
+  - 2020: 1,662.02 Mha protected (13.06% of land)
+  - Post-2020: Constant at 2020 levels (unless additional scenarios active)
+
+- **Cross-Module Reference**: `cross_module/land_balance_conservation.md` (Section 5, Module Interactions)
+
+**Other Conservation Laws**:
+- Water Balance: ❌ Does NOT directly participate (but conservation may reduce available irrigated area)
+- Carbon Balance: ⚠️ INDIRECT - Protection prevents deforestation → preserves carbon stocks (Module 52)
+- Food Balance: ❌ Does NOT participate (parameter-only module)
+- Nitrogen: ❌ Does NOT participate (parameter-only module)
+
+---
+
+#### Dependency Chains
+
+**Centrality Rank**: ~25 of 46 modules (moderate centrality)
+**Total Connections**: 5-7 (provides to 5-7 modules, depends on 1)
+**Hub Type**: **Data Provider** (exogenous policy constraints)
+
+**Provides To** (5-7 modules):
+1. **Module 10 (Land)** - Conservation constraints (`pm_land_conservation`)
+2. **Module 31 (Pasture)** - Pasture protection targets
+3. **Module 35 (NatVeg)** - Natural vegetation protection/restoration targets
+4. **Module 32 (Forestry)** - Land availability constraints for afforestation
+5. Plus 2-3 other modules receiving conservation data
+
+**Depends On** (1 module):
+1. **Module 09 (Drivers)** - Population and scenario data (for conservation priority areas)
+
+**Key Position**: Module 22 acts as **policy enforcement layer** that translates WDPA baseline + conservation scenarios into binding land allocation constraints.
+
+**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Section 4, Module Catalog)
+
+---
+
+#### Circular Dependencies
+
+**Participates In**: 1 temporal feedback cycle (NOT within-timestep circular dependency)
+
+#### Temporal Feedback: Land Allocation ↔ Conservation Targets
+
+**Structure**:
+```
+Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Module 10 (Land)
+       ↑                                                              │
+       │                                                              │
+       └────────── pcm_land(t-1,j,land) (previous timestep) ←────────┘
+                                    ↓
+                          Module 35 (NatVeg)
+                    (natural vegetation dynamics)
+```
+
+**Why NOT a Within-Timestep Circular Dependency**:
+1. **Module 22 runs in `presolve`** (before optimization), NOT during solve
+2. **Uses previous timestep values**: `pcm_land(t-1,j,land)`, not current `vm_land(t,j,land)`
+3. **Provides parameters** (`pm_land_conservation`), not optimization variables
+4. **One-way flow**: Conservation targets → Land allocation (no backward link within timestep)
+
+**Temporal Feedback Mechanism** (across timesteps):
+- **Time t-1**: Land allocation produces `vm_land(t-1,j,land)`
+- **Time t presolve**: Module 22 calculates targets using `pcm_land(t-1,j,land)`
+- **Time t solve**: Module 10 respects new conservation constraints
+- **Impact**: Protection targets can increase if previous land exceeded thresholds
+
+**Resolution Mechanism**: **Type 1 - Temporal Feedback** (NOT simultaneous)
+- No circular equations within a single timestep
+- Sequential execution: presolve → solve
+- Feedback occurs across time steps, not within them
+
+**Testing Protocol** (if modifying Module 22):
+- ✅ Verify protection targets don't exceed available land (can cause infeasibility)
+- ✅ Check restoration targets are achievable given land availability
+- ✅ Test that `vm_land(j,land) ≥ pm_land_conservation(j,land,"protect" + "restore")`
+- ✅ Validate land balance holds with conservation constraints
+
+**Reference**: `cross_module/circular_dependency_resolution.md` (Temporal feedback patterns)
+
+---
+
+#### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+
+**Safe Modifications**:
+- ✅ Adjusting conservation priority area scenarios (BH, IFL, KBA, WDPA, etc.)
+- ✅ Changing protection/restoration allocation logic (`s22_conservation_target`)
+- ✅ Modifying conservation share parameters (`f22_conservation_fader`)
+- ✅ Adding new conservation scenarios or land protection types
+- ✅ Updating WDPA baseline data with new protected area information
+
+**Dangerous Modifications**:
+- ⚠️ Setting protection targets > available land → **model infeasibility**
+- ⚠️ Removing protection constraints → violates conservation policies (NPI/NDC)
+- ⚠️ Hardcoding land types → can conflict with land balance equations in Module 10
+- ⚠️ Changing restoration logic without testing land availability
+
+**Required Testing** (for ANY modification):
+1. **Land Balance Conservation**:
+   - Verify total conservation ≤ total available land by region
+   - Check that protection + restoration targets are consistent
+   - Test extreme scenarios (e.g., 30by30 with 3,094 Mha restoration)
+
+2. **Dependency Chain Validation**:
+   - Module 10 (Land): Verify land allocation respects conservation constraints
+   - Module 35 (NatVeg): Verify natural vegetation meets protection targets
+   - Module 31 (Pasture): Verify pasture protection works correctly
+   - Module 32 (Forestry): Verify afforestation doesn't violate protected areas
+
+3. **Infeasibility Testing**:
+   - Test regions where conservation targets approach 100% of available land
+   - Check conflict resolution between cropland expansion and protection
+   - Verify restoration is feasible given land type transitions
+
+4. **Scenario Testing**:
+   - Run with different conservation scenarios (BH, IFL, 30by30, etc.)
+   - Test interaction between WDPA baseline and additional priority areas
+   - Validate conservation fader trajectories (0 to 1 over time)
+
+**Common Issues**:
+- **Infeasibility from over-protection**: Conservation targets exceed available land → reduce targets or adjust land allocation flexibility
+- **Restoration conflicts**: Target land type cannot be restored from current type → check land type transition matrix
+- **Scenario conflicts**: Multiple conservation scenarios applied → targets sum to > available land → use `s22_conservation_target` to prioritize
+- **Pasture protection ignored**: Pasture has low conservation priority in data → manually increase pasture protection in scenarios
+
+**Reference**: `cross_module/modification_safety_guide.md` (Conservation constraint impacts)
+
+---
+
 ### 6. Code Truth: What Module 22 DOES
 
 ✅ **1. Implements WDPA Baseline Protection (1995-2020)** (`presolve.gms:20-26`):
@@ -1222,7 +1370,6 @@ if(reversal_year < 9999) {  # Reversal enabled
 
 **Module 22 Status**: ✅ COMPLETE (~850 lines documented)
 **Verified Against**: Actual code in `modules/22_land_conservation/area_based_apr22/`
-**Documentation Date**: October 11, 2025
 
 ---
 
@@ -1419,3 +1566,10 @@ Data sources:
 ⚠️ Note: Scenarios are ADDITIVE to WDPA baseline (not replacing). Total protection = WDPA + scenario.
 ⚠️ Higher protection % = greater land-use constraints and higher food prices.
 ```
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/22_*/land_feb18/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

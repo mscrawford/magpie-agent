@@ -927,3 +927,164 @@ Regional EFP share = (100+50) / (100+50+50) = 150/200 = **0.75** (75%)
 - Verification date: 2025-10-12
 - Verified by: Claude Code AI Documentation Project
 - Status: ✓ Fully Verified - Zero Errors
+---
+
+## Participates In
+
+This section shows Module 42's role in system-level mechanisms. For complete details, see the linked documentation.
+
+### Conservation Laws
+
+**Water Balance Conservation** ⭐ PRIMARY DEMAND CALCULATOR
+
+Module 42 is a **core participant** in the water balance conservation law:
+- **Role**: Calculates **all water demands** across 5 sectors (agriculture, manufacturing, electricity, ecosystem, domestic)
+- **Formula**: `vm_watdem(wat_dem,j)` for each sector
+- **Constraint**: Module 43 enforces `Σ(demands) ≤ Σ(supply)` (inequality constraint)
+- **Details**: `cross_module/water_balance_conservation.md`
+
+**Water Demand Sectors**:
+1. **Agriculture** (endogenous): Optimized based on irrigation area × crop water requirements + livestock water
+2. **Manufacturing** (exogenous): Fixed by SSP scenarios (WATERGAP data)
+3. **Electricity** (exogenous): Fixed by SSP scenarios
+4. **Ecosystem** (exogenous): Environmental flow requirements (LPJmL)
+5. **Domestic** (exogenous): Household water use by SSP scenarios
+
+**Key Equations**:
+- Agricultural demand: `vm_watdem("agriculture",j) × efficiency = Σ(irrigated_area × water_req) + Σ(livestock_prod × water_req)` (`equations.gms:10-14`)
+- Pumping costs: `vm_cost_wat(j) = watdem × pumping_cost_factor` (`equations.gms:16-17`)
+
+**Not in other conservation laws**:
+- **Not in** land balance (uses land allocation, doesn't enforce it)
+- **Not in** carbon balance (no carbon flows)
+- **Not in** nitrogen balance (no nitrogen flows)
+- **Not in** food balance (water affects production, not food supply directly)
+
+### Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Centrality Rank**: Medium (water system component)
+- **Total Connections**: Medium (provides water demand to Module 43)
+- **Hub Type**: **Sector Demand Aggregator** (similar to Module 11 for costs)
+- **Critical Path**: Land allocation (Module 10) → Crop area (Module 30) → **Water demand (Module 42)** → Water balance (Module 43)
+
+**Provides to**:
+- Module 43 (water_availability): `vm_watdem(wat_dem,j)` - total water withdrawals by sector
+- Module 11 (costs): `vm_cost_wat(j)` - water pumping/conveyance costs
+
+**Depends on**:
+- Module 09 (drivers): SSP scenarios for non-agricultural water demands
+- Module 10 (land): Land allocation affects agricultural water indirectly
+- Module 30 (croparea): `vm_area(j,kcr,"irrigated")` - irrigated cropland area
+- Module 70 (livestock): `vm_prod(j,kli)` - livestock production (water for animals)
+- Module 41 (irrigation): Irrigation infrastructure affects efficiency
+
+### Circular Dependencies
+
+Module 42 participates in **indirect circular dependencies** through the Croparea-Irrigation cycle:
+
+**Croparea-Irrigation Cycle**:
+- Module 30 (Croparea) → allocates irrigated vs rainfed area
+- Module 42 (Water Demand) → calculates agricultural water needs based on irrigated area
+- Module 43 (Water Availability) → constrains water withdrawals (may limit irrigation)
+- Module 41 (Irrigation Infrastructure) → affects irrigation efficiency and costs
+- **Feedback**: Water scarcity (high shadow prices) → reduces irrigated area allocation → lower water demand
+
+**Resolution Mechanism**: Simultaneous optimization
+- All variables (irrigated area, water demand, water availability) solved together in single optimization
+- Shadow prices on water constraint signal scarcity
+- Land allocation responds to water scarcity via costs
+
+**Details**: `cross_module/circular_dependency_resolution.md` (Section 3.3 - Croparea-Irrigation Cycle)
+
+### Modification Safety
+
+**Risk Level**: ⚠️ **MEDIUM-HIGH RISK** (Core water system component)
+
+**Why Medium-High Risk**:
+1. **Critical for water balance**: Demand calculation errors cause infeasibility
+2. **Multiple dependents**: Modules 43 (water balance) and 11 (costs) depend on accurate water demands
+3. **Complex interactions**: Agricultural demand depends on irrigation area, efficiency, crop/livestock mix
+4. **SSP scenario sensitivity**: Non-agricultural demands affect water availability for agriculture
+
+**Safe Modifications**:
+- ✅ Change SSP scenario for non-agricultural demands (`c42_watdem_nonagr_scen`)
+- ✅ Adjust irrigation efficiency assumptions (`s42_irrig_eff_*` scalars)
+- ✅ Modify pumping cost parameters (`s42_watdem_nonagr_*`)
+- ✅ Change environmental flow scenarios (`s42_env_flow_scenario`)
+
+**High-Risk Modifications**:
+- ⚠️ Change agricultural water demand equation structure (may violate water balance)
+- ⚠️ Modify livestock water requirements dramatically (affects feasibility)
+- ⚠️ Remove non-agricultural demands (unrealistic, creates false water surplus)
+- ⚠️ Change units or scaling (critical - must match Module 43 expectations)
+
+**Testing Requirements After Modification**:
+1. **Water balance check**:
+   ```r
+   # Verify demand ≤ supply in all cells
+   watdem <- readGDX("fulldata.gdx", "vm_watdem")
+   watavail <- readGDX("fulldata.gdx", "v43_watavail")
+   total_dem <- apply(watdem, MARGIN=2, FUN=sum)  # Sum across sectors
+   total_supply <- apply(watavail, MARGIN=2, FUN=sum)  # Sum across sources
+   stopifnot(all(total_dem <= total_supply * 1.01))  # Allow 1% tolerance
+   ```
+
+2. **Irrigation feasibility check**:
+   ```r
+   # Verify agricultural demand is reasonable
+   agr_dem <- watdem["agriculture",,]
+   irr_area <- readGDX("fulldata.gdx", "vm_area")[,,"irrigated"]
+   watreq_per_ha <- agr_dem / (irr_area + 0.001)  # Avoid div-by-zero
+   # Typical range: 5,000-15,000 m³/ha/yr
+   stopifnot(all(watreq_per_ha < 20000, na.rm=TRUE))
+   ```
+
+3. **Non-agricultural demand validation**:
+   ```r
+   # Verify SSP scenario demands loaded correctly
+   nonagr <- watdem[c("manufacturing", "electricity", "domestic"),,]
+   # Should increase over time in most SSPs
+   trend <- nonagr[,"y2050",] / nonagr[,"y2020",]
+   stopifnot(mean(trend) > 0.9)  # At least stable or growing
+   ```
+
+4. **Cost component check**:
+   ```r
+   # Verify water costs are reasonable
+   wat_costs <- readGDX("fulldata.gdx", "vm_cost_wat")
+   total_costs <- readGDX("fulldata.gdx", "vm_cost_glo")
+   wat_share <- sum(wat_costs) / total_costs
+   # Water costs typically <5% of total costs
+   stopifnot(wat_share < 0.10)
+   ```
+
+**Common Pitfalls**:
+- ❌ Forgetting that agricultural demand is GROSS (before efficiency losses)
+- ❌ Not accounting for irrigation efficiency when modifying crop water requirements
+- ❌ Mixing withdrawal vs consumption water metrics (MAgPIE uses withdrawals)
+- ❌ Assuming non-agricultural demands respond to scarcity (they don't - fixed exogenously)
+- ❌ Ignoring environmental flows (mandatory minimum flows)
+
+**Emergency Fixes**:
+- If water infeasibility: Reduce non-agricultural demands or increase environmental flow buffer
+- If unrealistic irrigation: Check `ic42_wat_req_k` loaded correctly from LPJmL data
+- If cost anomalies: Verify `s42_pumping_cost` parameter units and magnitudes
+
+**Links**:
+- Water balance enforcement → `modules/module_43.md`
+- Water balance conservation law → `cross_module/water_balance_conservation.md`
+- Irrigation infrastructure → `modules/module_41.md`
+- Croparea allocation → `modules/module_30.md`
+- Full dependency details → `core_docs/Phase2_Module_Dependencies.md`
+
+---
+
+**Module 42 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/42_*/all_sectors_aug13/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

@@ -952,3 +952,42 @@ Check: Monotonic increase between start and target
 
 ---
 
+---
+
+## Participates In
+
+### Conservation Laws
+
+**Carbon Balance (Soil Organic Matter)**
+- **Role**: Calculates topsoil carbon equilibrium and dynamics
+- **Formula**: Equilibrium-seeking model with annual loss rate
+- **Details**: `cross_module/carbon_balance_conservation.md` Section 5
+
+**Not in** land, water, nitrogen (separate from soil N), or food balance
+
+### Dependency Chains
+
+**Centrality**: Medium (SOM calculator)
+**Hub Type**: Soil Carbon Dynamics
+**Provides to**: Module 52 (carbon stocks for topsoil component)
+**Depends on**: Modules 10 (land), 29 (cropland), 35 (natveg)
+
+### Circular Dependencies
+
+None (SOM dynamics are slow, no optimization feedbacks)
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+**Testing**: Verify SOM equilibrium is reasonable, check land-use impacts
+
+---
+
+**Module 59 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/59_*/static_jan19/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

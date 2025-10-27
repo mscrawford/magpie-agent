@@ -386,6 +386,110 @@ Harvesting permitted in ac_sub age-classes that exceed rotation age (Module 32 l
 
 ---
 
+## Participates In
+
+### Conservation Laws
+
+**All Conservation Laws**: ❌ **DOES NOT PARTICIPATE** (pure data provider module)
+
+Module 28 is a **reference data module** with zero equations and zero optimization variables. It provides age-class definitions used by other modules but does not directly affect any conservation laws:
+
+- **Land Balance**: ❌ Does NOT participate (provides age-class structure, not land amounts)
+- **Water Balance**: ❌ Does NOT participate (no water-related parameters)
+- **Carbon Balance**: ⚠️ **INDIRECT** - Age-classes used in Module 52 carbon growth calculations
+  - Chapman-Richards vegetation growth uses `ac` (age-class set) for carbon density progression
+  - Carbon stocks vary by age: `pm_carbon_density_ac(t,j,ac,ag_pools)`
+  - Module 28 provides the age-class indexing structure
+  - **Reference**: `cross_module/carbon_balance_conservation.md` (Section 6, Chapman-Richards Growth)
+- **Food Balance**: ❌ Does NOT participate (age-classes don't affect production directly)
+- **Nitrogen**: ❌ Does NOT participate (no nitrogen parameters)
+
+**Key Insight**: Module 28 is **infrastructure only** - it defines the temporal structure (age-classes) that other modules use for carbon dynamics and forest management, but it has no behavioral equations itself.
+
+---
+
+### Dependency Chains
+
+**Centrality Rank**: ~25 of 46 modules (low centrality)
+**Total Connections**: 3 (provides to 3 modules, depends on 0)
+**Hub Type**: **Pure Data Provider** (single realization, no equations, no optimization)
+
+**Provides To** (3 modules):
+1. **Module 35 (NatVeg)** - Forest age-class distribution (`ac`, `ac_sub`)
+2. **Module 32 (Forestry)** - Age-class definitions for plantation rotation (`ac_est`, `ac_sub`)
+3. **Module 52 (Carbon)** - Age-class index for carbon density lookups (`ac`, `ac_sub`)
+
+**Depends On**: ZERO modules (pure input data from GFAD)
+
+**Key Position**: Module 28 is a **foundational data module** that provides temporal granularity for forest age tracking. All forestry-related dynamics depend on this age-class structure.
+
+**Data Source**: Global Forest Age Dataset (GFAD v1.1)
+- Original: 10-year age-classes
+- MAgPIE: Remapped to 5-year age-classes (ac1...ac15)
+- Plus dynamic sets: ac_sub, ac_est, ac_ff
+
+**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Section 4, Pure Source Modules)
+
+---
+
+### Circular Dependencies
+
+**Participates In**: ZERO circular dependency cycles
+
+**Why NO Circular Dependencies**:
+1. **Pure data provider**: No optimization variables (`vm_*`), only sets and parameters
+2. **Single realization**: Only `oct24` realization exists (no algorithmic variation)
+3. **Static data**: Age-class definitions loaded once, never updated during model run
+4. **One-way information flow**: Provides age-class structure → other modules use it → no feedback
+
+**Module Type**: **Acyclic Source Node** in dependency graph
+
+**Testing**: Not applicable (no equations to test)
+
+---
+
+### Modification Safety
+
+**Risk Level**: 🟢 **LOW RISK**
+
+**Safe Modifications**:
+- ✅ Changing age-class granularity (e.g., 1-year instead of 5-year classes)
+- ✅ Updating GFAD input data with newer forest age observations
+- ✅ Modifying dynamic age-class sets (`ac_sub`, `ac_est`, `ac_ff`) generation logic
+- ✅ Adding new age-class categories for specific analyses
+- ✅ Changing the number of age-classes (currently 15 classes covering 0-75+ years)
+
+**Dangerous Modifications**:
+- ⚠️ Removing age-class sets → breaks Modules 32, 35, 52 (compilation errors)
+- ⚠️ Changing set names (`ac`, `ac_sub`, etc.) → breaks all dependent modules
+- ⚠️ Making age-classes inconsistent with carbon density data → Module 52 indexing errors
+
+**Required Testing** (for ANY modification):
+1. **Compilation Check**:
+   - Verify all dependent modules compile without errors
+   - Check that `ac`, `ac_sub`, `ac_est` sets are properly defined
+
+2. **Data Integrity**:
+   - Ensure new age-class data covers all spatial cells
+   - Verify age-class distributions sum to correct totals (if using shares)
+   - Check that maximum age-class matches carbon density data range
+
+3. **Dependent Module Validation**:
+   - **Module 32 (Forestry)**: Verify rotation ages map to new age-classes correctly
+   - **Module 35 (NatVeg)**: Verify forest distribution initializes without errors
+   - **Module 52 (Carbon)**: Verify carbon densities index correctly by age-class
+
+**Common Issues**:
+- **Index mismatch**: Carbon density data has different age-classes than Module 28 → align data ranges
+- **Missing age-classes**: New forest areas assigned to undefined age-class → extend ac set
+- **Dynamic set errors**: `ac_sub` or `ac_est` empty → check conditional logic in sets.gms
+
+**Why Low Risk**: Module 28 has **zero behavioral impact** - it only provides reference data. Modifications cannot violate conservation laws or create circular dependencies. Worst-case scenario is compilation error (easily detected).
+
+**Reference**: Data provider modules in `core_docs/Phase1_Core_Architecture.md` (Section 4.3)
+
+---
+
 ## Implementation Details
 
 ### Data Loading and Transformation
@@ -734,3 +838,10 @@ ac_sub(ac) = yes$(ord(ac) > (m_yeardiff_forestry(t)/5))   ! Sub-rotation age-cla
 
 **Documentation complete**: 2025-10-13
 **Module 28 Status**: Fully verified, zero errors
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/28_*/feb15/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

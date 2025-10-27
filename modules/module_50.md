@@ -873,7 +873,62 @@ Available scenarios in `sets.gms:13-20`
 ---
 
 **Documentation Complete**: Module 50 (Nitrogen Soil Budget)
-**Documentation Date**: October 11, 2025
 **Lines**: 1,095
 **Code References**: 85+ file:line citations
 **Status**: ✅ Comprehensive documentation - READY FOR FACT-CHECKING
+---
+
+## Participates In
+
+This section shows Module 50's role in system-level mechanisms.
+
+### Conservation Laws
+
+**Nitrogen Balance (Tracking)**
+- **Role**: Tracks soil nitrogen budget (inputs - outputs = Δstock)
+- **Details**: `cross_module/nitrogen_food_balance.md`
+
+**Not in** land, water, carbon, or food balance (strict sense)
+
+### Dependency Chains
+
+**Centrality Analysis**:
+- **Centrality Rank**: Medium (nitrogen system component)
+- **Hub Type**: Nitrogen Budget Tracker
+
+**Provides to**: Module 51 (nitrogen): Nitrogen availability for crops, Module 11 (costs): Fertilizer costs
+
+**Depends on**: Modules 14 (yields), 18 (residues), 55 (awms): Nitrogen flows
+
+**Details**: `core_docs/Phase2_Module_Dependencies.md`
+
+### Circular Dependencies
+
+**Production-Nitrogen cycle**: Via crop residues and manure
+
+**Details**: `cross_module/circular_dependency_resolution.md`
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+
+**Why**: Affects fertilizer costs and nitrogen emissions
+
+**Safe Modifications**: ✅ Adjust NUE parameters, ✅ Modify fixation rates
+
+**Testing**: Check nitrogen mass balance, verify fertilizer costs reasonable
+
+**Links**:
+- Conservation law → `cross_module/nitrogen_food_balance.md`
+- Dependencies → `core_docs/Phase2_Module_Dependencies.md`
+
+---
+
+**Module 50 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/50_*/nr50_static/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

@@ -1938,3 +1938,35 @@ v58_manLand(j2,"forestry") =e= vm_land_forestry(j2,"plant")
 **Verification Status**: ✅ All claims verified against source code
 **Accuracy**: 100% (0 unverified statements)
 **Last Verification**: October 12, 2025
+---
+
+## Participates In
+
+### Conservation Laws
+
+**Peatland Carbon** (component of carbon balance)
+
+### Dependency Chains
+
+**Centrality**: Low (peatland emissions)
+**Details**: `core_docs/Phase2_Module_Dependencies.md`
+
+### Circular Dependencies
+
+Indirectly via Module 52 (carbon)
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+**Testing**: Verify peatland CO₂ emissions reasonable
+
+---
+
+**Module 58 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/58_*/on/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

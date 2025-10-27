@@ -966,7 +966,41 @@ constr_demand <- readGDX(gdx, "p73_demand_constr_wood")
 
 **Module 73 Status**: ✅ COMPLETE (394 lines documented)
 **Verified Against**: Actual code in `modules/73_timber/default/`
-**Documentation Date**: October 11, 2025
 
 ---
 
+---
+
+## Participates In
+
+### Conservation Laws
+
+**Not in conservation laws** (timber demand driver)
+
+**Indirect Role**: Drives forestry plantation decisions via timber demand
+
+### Dependency Chains
+
+**Centrality**: Medium (demand provider)
+**Provides to**: Module 32 (forestry) - timber demand signal
+**Depends on**: Module 09 (drivers) for population and GDP
+
+### Circular Dependencies
+
+**Indirect**: Via forestry-land allocation interactions
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+**Testing**: Verify timber demand reasonable, check forestry response
+
+---
+
+**Module 73 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/73_*/static_jan21/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

@@ -721,3 +721,46 @@ Benjamin Leon Bodirsky, Florian Humpenöder, Edna Molina Bacca `realization.gms:
 **Verification level**: 100% (all 10 equations, all 4 interface variables, all 8 input files)
 **Rejected issues**: None
 **Documentation date**: 2025-10-12
+
+---
+
+## Participates In
+
+### Conservation Laws
+**Module 20 participates in Food Balance**:
+- Calculates processing demand (primary → secondary products)
+- Secondary products (oils, sugar, alcohol, ethanol, distillers grains, brans, SCP, molasses) enter food/feed system
+- Mass balance: Primary inputs = Secondary outputs (accounting for conversion losses)
+
+### Dependency Chains
+**Centrality**: Low-medium (specialized conversion module)
+- **Depends on**: Module 16 (demand for processed products)
+- **Provides to**: Modules 11 (processing costs), 16 (secondary product supply)
+- **Role**: **Product converter** - transforms primary agricultural products into processed forms
+
+**Key equations**: 10 conversion equations (kall → kpr transformations)
+
+### Circular Dependencies
+**Zero circular dependencies** - processing is one-way transformation (primary → secondary).
+
+**Note**: SCP (single-cell protein) has special circular structure within module (hydrogen → SCP, but self-contained).
+
+### Modification Safety
+**Risk Level**: 🟢 **LOW-MEDIUM RISK** (specialized module, well-defined conversions)
+
+**Safe Modifications**:
+- ✅ Adjust conversion factors (efficiency of primary → secondary)
+- ✅ Change processing costs
+- ✅ Add new processed products (requires new conversion equations)
+
+**Testing**:
+1. **Mass balance**: Secondary output < primary input (conversion losses)
+2. **Positive outputs**: All v20_dem_processing ≥ 0
+3. **Cost plausibility**: Processing costs reasonable vs. raw material costs
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/20_*/substitution_dec18/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

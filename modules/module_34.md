@@ -291,6 +291,53 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 
 ---
 
+## Participates In
+
+### Conservation Laws
+
+**Land Balance**: ✅ **PARTICIPANT** - Provides `vm_land(j,"urban")` (exogenous expansion from LUH3). Regional totals are **HARD constraints** (must equal prescribed values). Cell-level allocation flexible with strong punishment costs (1e6 USD17/ha) for deviation. Reduces available land for agriculture/forestry.
+
+**Carbon Balance**: ⚠️ **LIMITATION** - Urban land carbon set to **ZERO** (no data for urban vegetation). This is an oversimplification - real urban areas have trees, parks, green roofs with carbon stocks.
+
+**All Other Laws**: ❌ Does NOT participate (Food, Water, Nitrogen)
+
+**Cross-Reference**: `cross_module/land_balance_conservation.md` (Section 5.6, "Module 34 Exogenous Urban Expansion")
+
+---
+
+### Dependency Chains
+
+**Centrality**: ~30 of 46 modules (moderate-low centrality)
+**Total Connections**: 3-4 (provides to 3-4, depends on 1)
+**Hub Type**: Data Provider with soft constraints (exogenous expansion)
+
+**Provides To**: Module 10 (Land), Module 11 (Costs - deviation penalties), Module 22 (Conservation - potentially), Module 44 (Biodiversity - urban BII)
+
+**Depends On**: Module 09 (Drivers - LUH3 scenarios)
+
+**Key Role**: Enforces exogenous urban expansion trajectory from socioeconomic scenarios.
+
+---
+
+### Circular Dependencies
+
+**Participates In**: ZERO circular dependencies (exogenous expansion, no feedbacks)
+
+---
+
+### Modification Safety
+
+**Risk Level**: 🟢 **LOW RISK**
+
+**Safe**: Adjusting deviation cost parameters, changing LUH3 input scenarios, modifying cell-level allocation logic
+**Dangerous**: Setting regional targets > available land (causes infeasibility), removing punishment costs (allows unrealistic urban distribution)
+**Required Testing**: Land balance (urban + other land types = total), regional urban totals match targets
+**Common Issues**: Urban expansion too aggressive → reduces land for food production → model infeasible → reduce urban growth rate in LUH3 scenarios
+
+**Why Low Risk**: Pure data provider (exogenous), minimal feedbacks, only affects land availability and total costs. Cannot violate conservation laws except land balance (easily tested).
+
+---
+
 ## Limitations
 
 ### 1. Exogenous Urbanization (no economic feedback)
@@ -547,3 +594,10 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 **Errors Found**: 0
 **Lines Documented**: 217 (exo_nov21) + 40 (static)
 **File Citations**: 60+
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/34_*/static/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

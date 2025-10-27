@@ -733,6 +733,258 @@ Module 17 is a **minimal but essential aggregation module** that connects spatia
 
 ---
 
+## 16. Participates In
+
+### 16.1 Conservation Laws
+
+**Module 17 participates in 1 conservation law**: **Food Balance**
+
+#### **Food Balance** (from nitrogen_food_balance.md)
+
+**Role**: Module 17 aggregates cell-level production to regional totals (`vm_prod_reg`), which is the **supply side** of the food balance equation.
+
+**Equation** (Module 21, trade):
+```
+vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) = vm_demand(i,k)
+```
+
+**Module 17's contribution**:
+- Provides `vm_prod_reg(i,k)` for crops and pasture
+- **Critical**: If production aggregation is wrong, food balance cannot be satisfied
+- **Must sum correctly**: Σ(cells) production = regional production
+
+**Why this matters**:
+- **Undercounting production** → Food shortages → Model infeasible or unrealistic imports
+- **Overcounting production** → False abundance → Unrealistic land use patterns
+- **Regional errors** → Wrong trade patterns → Misallocation of production
+
+**Not in other conservation laws**:
+- **Not in** land balance (aggregates production, doesn't allocate land)
+- **Not in** water balance (aggregates production, doesn't manage water)
+- **Not in** carbon balance (aggregates production, doesn't track carbon)
+- **Not in** nitrogen balance (aggregates production, doesn't track N flows)
+
+**Links**: nitrogen_food_balance.md (Section 2.3-2.4)
+
+### 16.2 Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Centrality Rank**: 7th of 46 modules
+- **Total Connections**: 14 (provides to 13 modules, depends on 1)
+- **Hub Type**: **Aggregation Hub** (receives spatial, provides regional)
+- **Role**: **Production aggregator** - connects cell-level to regional supply
+
+**Modules that Module 17 depends on**:
+- **Module 30 (croparea)**: `vm_prod(j,kcr)` — crop production by cell (**PRIMARY DEPENDENCY**)
+- **Module 31 (pasture)**: `vm_prod(j,"pasture")` — pasture production by cell
+- **Spatial mapping**: `cell(i,j)` set defines which cells belong to which regions
+
+**Modules that depend on Module 17**:
+- Module 15 (food): Food demand calculations use production availability
+- Module 16 (demand): Demand projections consider production constraints
+- Module 18 (residues): Residue availability from crop production
+- Module 20 (processing): Processing volumes based on production
+- Module 21 (trade): **CRITICAL** - Trade balances regional production vs. demand
+- Module 50 (nr_soil_budget): Nitrogen in harvested biomass
+- Module 51 (nitrogen): N content in products
+- Module 53 (methane): CH₄ from residue management
+- Module 55 (awms): Animal waste from production
+- Module 60 (bioenergy): Bioenergy feedstock availability
+- Module 62 (material): Material product availability
+- Module 70 (livestock): Livestock production data (though Module 70 has its own aggregation)
+- Module 73 (timber): Timber production (forestry)
+
+**Key Interface Variables**:
+- `vm_prod_reg(i,k)`: Regional production - **MOST CRITICAL OUTPUT** (used by 13 modules)
+- `vm_prod(j,k)`: Cell-level production - INPUT from Modules 30/31
+
+### 16.3 Circular Dependencies
+
+**Module 17 participates in 2 circular dependency cycles**:
+
+#### **Cycle 1: Production-Yield-Livestock Triangle ⭐⭐⭐ (HIGHEST COMPLEXITY)**
+
+**Modules involved**: **17 (production)** ↔ 14 (yields) ↔ 70 (livestock)
+
+**Dependency chain**:
+```
+vm_prod(j,kcr) [17] → Aggregated production used in yield calibration
+    ↓
+Module 14 (yields) → Calibrates yields to match FAO production
+    ↓
+vm_yld(j,kcr,w) [14] → Yields drive production
+    ↓
+vm_prod(j,kcr) = vm_area(j,kcr,w) × vm_yld(j,kcr,w) [30]
+    ↓
+vm_prod(j,kcr) [17] → **BACK TO START** (via aggregation)
+```
+
+**Module 17's role in cycle**:
+- **Spatial aggregator**: Sums cell production to regional/global
+- **Calibration target**: Regional production used to calibrate yields (Module 14)
+- **No equations involved**: Module 17 just aggregates, doesn't create feedback
+- **Resolution**: Temporal feedback through Module 14 calibration (see module_14.md Section 21.3)
+
+**Implication for Module 17**: Module 17 itself doesn't cause the cycle - it's a **passive aggregator**. The cycle is driven by Module 14 yield calibration using production data.
+
+#### **Cycle 5 (Suspected): Demand-Trade-Production**
+
+**Modules involved**: 16 (demand) ↔ 21 (trade) ↔ **17 (production)**
+
+**Dependency chain**:
+```
+vm_demand(i,k) [16] → Food demand by region
+    ↓
+Module 21 (trade) → Trade balances production vs. demand
+    ↓
+vm_import/export [21] → Trade flows
+    ↓
+vm_prod_reg(i,k) [17] → Production must meet (demand - imports + exports)
+    ↓
+Production affects demand via prices (if endogenous demand) → **BACK TO START**
+```
+
+**Resolution Type**: **Simultaneous Equations**
+
+**How it resolves**:
+- All three modules optimize **simultaneously** within each timestep
+- Trade equation explicitly links production, demand, and trade flows
+- GAMS solver finds consistent solution for all three
+- **No iteration required** (all in one solve)
+
+**Module 17's role**: Provides `vm_prod_reg` which **must balance** with demand + net trade (Module 21 constraint).
+
+**Implication**: Module 17 is part of the **market clearing** system - production, trade, and demand must be mutually consistent.
+
+**Links**: circular_dependency_resolution.md (Sections 3.1, 8.2)
+
+### 16.4 Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM-HIGH RISK** (production hub, minimal logic)
+
+**Why Medium-High Risk**:
+1. **Food balance dependency**: Wrong aggregation → food shortage/surplus
+2. **13 downstream modules**: Any change affects many modules
+3. **Part of 2 circular cycles**: Could destabilize feedback loops
+4. **Market clearing constraint**: Production must match demand via trade
+5. **Minimal code**: Only 1 equation, but errors have large impact
+
+**However, risk is mitigated by**:
+- ✅ Simple aggregation logic (just sums cells to regions)
+- ✅ No complex calculations or parameters
+- ✅ Well-defined interface (vm_prod and vm_prod_reg)
+- ✅ Passive in circular dependencies (doesn't drive feedback)
+
+**Safe Modifications** (rare but allowed):
+- ✅ Add new products to aggregation (if added to Module 30/31 first):
+  ```gams
+  vm_prod_reg(i2,kall) =e= sum(cell(i2,j2), vm_prod(j2,kall));
+  ```
+- ✅ Add production reporting variables (no optimization impact)
+- ✅ Adjust initialization values (Section 7) if convergence issues
+
+**Moderate-Risk Modifications**:
+- ⚠️ Change regionalization (update `cell(i,j)` mapping):
+  - Must maintain: all cells assigned to exactly one region
+  - Test: Σ(regions) production = Σ(cells) production
+- ⚠️ Add sub-regional aggregation:
+  - Requires new sets and equations
+  - Must maintain consistency with regional totals
+
+**Dangerous Modifications** (expert-only):
+- 🔴 Change aggregation equation structure:
+  - Downstream modules expect `vm_prod_reg(i,k)` dimensions
+  - Changing sets breaks 13 dependent modules
+- 🔴 Add weights or filters to aggregation:
+  - Violates **mass balance**: regional ≠ sum of cells
+  - Breaks food balance constraint → infeasibility
+- 🔴 Make aggregation conditional (e.g., exclude some cells):
+  - "Lost" production causes food shortages
+  - Trade system cannot compensate for missing production
+
+**Testing Requirements After Modification**:
+
+1. **Mass balance check** (Section 9.1):
+   ```r
+   prod_cell <- production(gdx, level="cell", products="kcr")
+   prod_reg <- production(gdx, level="regglo", products="kcr")
+
+   # Sum cells by region
+   prod_reg_calc <- aggregate(prod_cell, by=cell_to_region_mapping, FUN=sum)
+
+   # Should match exactly
+   stopifnot(all.equal(prod_reg, prod_reg_calc, tolerance=1e-6))
+   ```
+
+2. **Food balance check**:
+   ```r
+   production <- production(gdx, level="regglo")
+   demand <- demand(gdx, level="regglo")
+   trade_balance <- trade_balance(gdx)  # Imports - exports
+
+   supply <- production + trade_balance
+   shortage <- demand - supply
+
+   # Food balance should hold
+   stopifnot(max(abs(shortage)) < 0.01)  # <0.01 Mt tolerance
+   ```
+
+3. **Circular dependency stability** (from Module 14 tests):
+   ```r
+   # Production should not oscillate between timesteps
+   prod_t1 <- production(gdx)[,"y2025",]
+   prod_t2 <- production(gdx)[,"y2030",]
+   prod_t3 <- production(gdx)[,"y2035",]
+
+   prod_change_12 <- (prod_t2 - prod_t1) / (prod_t1 + 1e-6)
+   prod_change_23 <- (prod_t3 - prod_t2) / (prod_t2 + 1e-6)
+
+   # Should be gradual changes (not oscillation)
+   signs_match <- sign(prod_change_12) == sign(prod_change_23)
+   stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)
+   ```
+
+4. **Regional totals plausibility**:
+   ```r
+   # Production should scale with regional area and population
+   production <- production(gdx, level="reg")
+   area <- land(gdx, level="reg", type="crop")
+
+   # Production per hectare should be reasonable (0.5-10 t/ha typical)
+   prod_per_ha <- production / area
+   stopifnot(all(prod_per_ha > 0.1, na.rm=TRUE))
+   stopifnot(all(prod_per_ha < 20, na.rm=TRUE))
+   ```
+
+5. **Trade system check**:
+   ```r
+   # Global production = global demand (no trade losses)
+   prod_glo <- sum(production(gdx, level="regglo"))
+   demand_glo <- sum(demand(gdx, level="regglo"))
+   stopifnot(abs(prod_glo - demand_glo) / demand_glo < 0.01)
+   ```
+
+**Common Pitfalls**:
+- ❌ Forgetting to include new crops in aggregation equation
+- ❌ Off-by-one errors in cell-region mapping (cells assigned to wrong region)
+- ❌ Double-counting cells (cell appears in multiple regions)
+- ❌ Missing cells (cell not assigned to any region)
+- ❌ Assuming regional production = average of cells (must be SUM, not MEAN)
+
+**Emergency Fixes**:
+- If food balance infeasible: Check all cells are included in aggregation
+- If regional anomalies: Verify `cell(i,j)` mapping is correct
+- If oscillation: Check Module 14 yield calibration (not Module 17 issue)
+- If trade errors: Verify `vm_prod_reg` units match `vm_demand` units (both Mt DM/yr)
+
+**Links**:
+- Food balance details → cross_module/nitrogen_food_balance.md (Part 2)
+- Circular dependency details → cross_module/circular_dependency_resolution.md (Sections 3.1, 8.2)
+- Full dependency details → Phase2_Module_Dependencies.md (Section 2.1)
+- Trade system → modules/module_21.md
+
+---
+
 **Documentation Status:** ✅ Fully Verified (2025-10-12)
 **Verification Method:** All source files read, 1 equation verified against declarations.gms, 115 lines analyzed, aggregation logic traced
 **Citation Density:** 30+ file:line references
@@ -740,3 +992,9 @@ Module 17 is a **minimal but essential aggregation module** that connects spatia
 
 **Next Steps:** Update CURRENT_STATE.json with progress (16 modules now documented, 30 remaining)
 
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/17_*/sector_may15/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

@@ -1115,3 +1115,58 @@ print(paste("Uncalibrated error:", error_uncalib))  # May be 10-30%
 ---
 
 **End of Module 39 Comprehensive Documentation**
+
+---
+
+## Participates In
+
+This section shows Module 39's role in system-level mechanisms. For complete details, see the linked documentation.
+
+### Conservation Laws
+
+Module 39 does **not directly participate** in any conservation laws as a primary enforcer.
+
+**Indirect Role**: Module 39 may affect land conversion costs, which influences other modules, but has no direct conservation constraints.
+
+### Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Centrality Rank**: Low-to-Medium (peripheral/intermediate module)
+- **Hub Type**: **Cost Component Provider**
+
+**Details**: See `core_docs/Phase2_Module_Dependencies.md` for complete dependency information.
+
+### Circular Dependencies
+
+Module 39 participates in **zero or minimal circular dependencies**.
+
+**Details**: See `cross_module/circular_dependency_resolution.md` for system-level cycles.
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+
+**Safe Modifications**:
+- ✅ Adjust module-specific parameters
+- ✅ Change scenario selections
+- ✅ Modify calculation methods within module
+
+**Testing Requirements**:
+1. Verify outputs are in expected ranges
+2. Check downstream modules that depend on this module's outputs
+3. Run full model to ensure no infeasibility
+
+**Links**:
+- Full dependency details → `core_docs/Phase2_Module_Dependencies.md`
+- Related modules → Check interface variables in module documentation
+
+---
+
+**Module 39 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/39_*/maccs_aug22/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

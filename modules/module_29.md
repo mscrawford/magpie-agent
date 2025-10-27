@@ -803,6 +803,205 @@ Scaling file not present in module.
 
 ---
 
+## Participates In
+
+### Conservation Laws
+
+Module 29 participates in **FOUR of the five conservation laws** - one of the most interconnected modules:
+
+#### 1. Land Area Balance: ✅ **CRITICAL PARTICIPANT**
+
+Module 29 provides **total cropland area** to the land balance equation in Module 10:
+
+- **Cropland Components**:
+  - `vm_land(j,"crop") = vm_area(j,kcr) + vm_fallow(j) + vm_treecover(j)`
+  - Three land use types within cropland: harvested area (Module 30), fallow, tree cover
+
+- **Constraint**: Total cropland cannot exceed available cropland
+  - Equation: `q29_avl_cropland` limits `vm_land(j,"crop")`
+  - Ensures cropland expansion doesn't violate land availability
+
+- **Cross-Module Reference**: `cross_module/land_balance_conservation.md` (Section 5.2, "Module 29 Aggregates Cropland Components")
+
+#### 2. Carbon Balance: ✅ **PARTICIPANT**
+
+Module 29 tracks **cropland carbon stocks** across four pools:
+
+- **Four Carbon Pools**:
+  1. **Vegetation carbon**: Crops (annual, negligible stocks)
+  2. **Litter carbon**: Crop residues (small pool)
+  3. **Soil carbon**: Largest pool, **dynamic via Module 59 (SOM)**
+     - Converges to equilibrium based on management (tillage, residue, manure)
+     - Tree cover on cropland increases soil carbon (100% of natural levels)
+  4. **Below-ground carbon**: Root biomass
+
+- **Dynamic Soil Carbon**:
+  - Module 59 calculates equilibrium: `pm_carbon_density_secdforest` for tree cover
+  - Equation: `v29_treecover(j,ac)` affects soil carbon accumulation
+  - Tree cover acts as carbon sink on cropland
+
+- **Cross-Module Reference**: `cross_module/carbon_balance_conservation.md` (Section 3.1, "Cropland Carbon")
+
+#### 3. Food Supply Balance: ✅ **PARTICIPANT**
+
+Module 29 contributes to agricultural land that supports food production:
+
+- **Indirect Participation**: Cropland area (vm_land("crop")) affects total production capacity
+- **Mechanism**: Module 30 uses cropland area for crop allocation → Module 17 aggregates production
+- **Equation**: `vm_land(j,"crop")` provides land base for Module 30 crop allocation
+
+- **Cross-Module Reference**: `cross_module/nitrogen_food_balance.md` (Part 2, Food Supply)
+
+#### 4. Nitrogen Tracking: ✅ **PARTICIPANT**
+
+Module 29 provides land use data that Module 50/51 use for nitrogen accounting:
+
+- **Cropland Nitrogen Demand**: Module 50 uses `vm_land(j,"crop")` for N fertilizer requirements
+- **Soil Nitrogen Dynamics**: Cropland expansion/contraction affects soil N pools
+- **Tree Cover Impact**: Trees on cropland affect N cycling (via soil carbon Module 59)
+
+- **Cross-Module Reference**: `cross_module/nitrogen_food_balance.md` (Part 1, Section 1.2)
+
+#### 5. Water Balance: ⚠️ **INDIRECT**
+
+Module 29 does NOT directly participate in water balance (no water equations), but:
+- Irrigated vs rainfed split in Module 30 affects water demand
+- Cropland expansion can increase irrigation requirements (Module 41/42)
+
+---
+
+### Dependency Chains
+
+**Centrality Rank**: 9 of 46 modules
+**Total Connections**: 13 (provides to 6 modules, depends on 7)
+**Hub Type**: **Aggregation Hub** (aggregates cropland components: area + fallow + tree cover)
+
+**Provides To** (6 modules):
+1. **Module 10 (Land)** - Total cropland area (`vm_land(j,"crop")`)
+2. **Module 11 (Costs)** - Cropland management costs (fallow, tree cover, seminatural vegetation)
+3. **Module 52 (Carbon)** - Cropland carbon stocks (four pools)
+4. **Module 59 (SOM)** - Soil organic matter targets for cropland
+5. **Module 22 (Conservation)** - Protected cropland area (if applicable)
+6. Plus potentially 1-2 other modules
+
+**Depends On** (7 modules):
+1. **Module 30 (Croparea)** - Harvested crop area (`vm_area(j,kcr)`)
+2. **Module 14 (Yields)** - Yield parameters for fallow/tree cover productivity
+3. **Module 16 (Demand)** - Demand signals affecting land use
+4. Plus 4 other modules providing policy constraints
+
+**Key Position**: Module 29 acts as **cropland aggregator** - it sums harvested area (Module 30), fallow land, and tree cover into total cropland area for the land balance.
+
+**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Section 3.1, Centrality Rankings)
+
+---
+
+### Circular Dependencies
+
+**Participates In**: 2 circular dependency cycles
+
+#### Cycle C9: Cropland ↔ Crop Area ↔ Land (Simultaneous Resolution)
+
+**Structure**:
+```
+Module 29 (Cropland) ──→ vm_land(j,"crop") ──→ Module 10 (Land)
+       ↑                                              │
+       │                                              │
+       └─────────── Land availability ←───────────────┘
+                           ↓
+                  Module 30 (Croparea)
+                    vm_area(j,kcr)
+```
+
+**Resolution Mechanism**: **Type 2 - Simultaneous Equations**
+- All cropland variables optimized together in same SOLVE statement
+- Module 29 aggregates: `vm_land("crop") = sum(kcr, vm_area(j,kcr)) + vm_fallow + vm_treecover`
+- Module 30 allocates crops within available cropland
+- Module 10 ensures total land balance: `sum(land, vm_land(j,land)) = pm_land_start(j)`
+
+#### Cycle C29: Cropland ↔ SOM (Temporal Feedback)
+
+**Structure**:
+```
+Module 29 (Cropland) ──→ vm_treecover(j) ──→ Module 59 (SOM)
+       ↑                                          │
+       │                                          │
+       └────────── pm_carbon_density_soilc ←──────┘
+                  (soil carbon equilibrium)
+```
+
+**Resolution Mechanism**: **Type 1 - Temporal Feedback**
+- **Within timestep**: Module 59 calculates SOM equilibrium targets
+- **Across timesteps**: Soil carbon converges to equilibrium (15% annual rate)
+- Tree cover increases soil carbon → affects carbon accounting in future timesteps
+
+**Testing Protocol** (if modifying Module 29):
+- ✅ Verify land balance: `sum(land, vm_land(j,land)) = pm_land_start(j)`
+- ✅ Check cropland components sum correctly: `vm_land("crop") = vm_area + vm_fallow + vm_treecover`
+- ✅ Test fallow/tree cover policies don't make cropland infeasible
+- ✅ Verify soil carbon dynamics converge (Module 59 interaction)
+
+**Reference**: `cross_module/circular_dependency_resolution.md` (Section 3, Major Cycles)
+
+---
+
+### Modification Safety
+
+**Risk Level**: 🔴 **HIGH RISK**
+
+**Justification**:
+- Participates in **4 of 5 conservation laws** (land, carbon, food, nitrogen)
+- 7 dependent modules affected by changes
+- 2 circular dependency cycles (cropland allocation + soil carbon)
+- Core module for land use policy (SNV, fallow, tree cover)
+
+**Safe Modifications**:
+- ✅ Adjusting fallow land policies (`s29_snv_shr`, `s29_snv_shr_noselect`)
+- ✅ Changing tree cover targets (`s29_treecover_target`, `s29_treecover_bii_coeff`)
+- ✅ Modifying semi-natural vegetation (SNV) cost parameters
+- ✅ Adding new cropland management options (requires new equations)
+- ✅ Updating biodiversity coefficients for fallow/tree cover
+
+**Dangerous Modifications**:
+- ⚠️ Removing cropland aggregation equation → breaks land balance in Module 10
+- ⚠️ Hardcoding `vm_land("crop")` → prevents cropland expansion/contraction
+- ⚠️ Changing fallow/tree cover equations without testing land availability
+- ⚠️ Modifying soil carbon linkage (Module 59) → can break carbon balance convergence
+
+**Required Testing** (for ANY modification):
+1. **Land Balance Conservation**:
+   - Verify: `sum(land, vm_land(j,land)) = pm_land_start(j)` for all cells
+   - Check cropland components sum correctly
+   - Test that fallow + tree cover + harvested area ≤ available cropland
+
+2. **Carbon Balance Conservation**:
+   - Verify soil carbon converges to equilibrium (Module 59)
+   - Check tree cover carbon accumulation is realistic
+   - Test that cropland carbon stocks are tracked correctly
+
+3. **Food Balance**:
+   - Verify cropland expansion/contraction affects production (Module 30)
+   - Test that fallow/tree cover policies don't cause food shortages
+
+4. **Nitrogen Tracking**:
+   - Check that N demand scales with cropland area
+   - Verify soil N dynamics respond to land use changes
+
+5. **Circular Dependency Check**:
+   - Run model and verify convergence (no oscillations)
+   - Test extreme scenarios (100% fallow, 100% tree cover)
+   - Check that land allocation and SOM dynamics are stable
+
+**Common Issues**:
+- **Infeasibility from SNV/tree cover**: Fallow + tree cover targets exceed available cropland → reduce policy ambition
+- **Soil carbon divergence**: SOM module doesn't converge → check Module 59 convergence rate
+- **Biodiversity miscalculation**: BII coefficients wrong → verify `s29_treecover_bii_coeff` reasonable
+- **Cost explosion**: SNV costs too high → model avoids cropland entirely → reduce cost parameters
+
+**Reference**: `cross_module/modification_safety_guide.md` (High-Risk Modules)
+
+---
+
 ## Limitations
 
 ### 1. Uniform Tree Cover Within Cells
@@ -892,3 +1091,10 @@ Scaling file not present in module.
 **Last Updated**: 2025-10-12
 **Lines Analyzed**: 124 (equations.gms) + 103 (input.gms) + 17 (sets.gms) + 131 (presolve.gms) + 69 (preloop.gms) = 444 lines
 **Verification Status**: 100% verified
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/29_*/cropland_apr16/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

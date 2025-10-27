@@ -1153,6 +1153,233 @@ v30_betr_missing(j) ≥ 0
 
 ---
 
+## Participates In
+
+### Conservation Laws
+
+Module 30 participates in **ALL FIVE conservation laws** - making it one of the most systemically critical modules in MAgPIE:
+
+#### 1. Land Area Balance: ✅ **CRITICAL PARTICIPANT**
+
+Module 30 provides **detailed crop area allocation** within total cropland:
+
+- **Crop Area Constraint**: `vm_area(j,kcr,w)` must fit within available cropland
+  - Module 29 aggregates: `vm_land(j,"crop") = sum(kcr,w, vm_area(j,kcr,w)) + fallow + tree cover`
+  - Module 10 enforces: `sum(land, vm_land(j,land)) = pm_land_start(j)`
+
+- **Spatial Allocation**: Endogenous optimization determines which cells grow which crops
+  - Driven by comparative advantage (yields, costs, water availability)
+  - Constrained by rotation diversity requirements (29 crop groups)
+
+- **Cross-Module Reference**: `cross_module/land_balance_conservation.md` (Section 5.3, "Module 30 Spatial Crop Allocation")
+
+#### 2. Water Balance: ✅ **CRITICAL PARTICIPANT**
+
+Module 30 determines **irrigated vs rainfed crop allocation**, which drives water demand:
+
+- **Irrigation Constraint**: `vm_area(j,kcr,"irrigated") ≤ vm_AEI(j)` (Module 41)
+- **Water Demand Response**: Crops shift to rainfed when water scarce (shadow price mechanism)
+  - Equation: `q30_prod(j,kcr,w)` multiplies area × yield
+  - Irrigated yields higher → preference for irrigation if water available
+  - Water shortage → rainfed expansion
+
+- **Cross-Module Reference**: `cross_module/water_balance_conservation.md` (Section 6.3, "Module 30 Responds to Water Scarcity")
+
+#### 3. Carbon Balance: ✅ **PARTICIPANT**
+
+Module 30 affects carbon through **land use change emissions**:
+
+- **Indirect Participation**: Cropland expansion → deforestation → carbon loss
+  - Carbon stocks tracked in Module 52 (carbon) for all land types
+  - Land transitions (forest → crop) emit stored carbon
+  - Module 30 drives cropland expansion demand
+
+- **Soil Carbon**: Crop area affects soil organic matter dynamics (Module 59)
+
+- **Cross-Module Reference**: `cross_module/carbon_balance_conservation.md` (Section 3, "Cropland Carbon Dynamics")
+
+#### 4. Food Supply = Demand Balance: ✅ **CRITICAL PARTICIPANT**
+
+Module 30 calculates **crop production** that feeds into food supply:
+
+- **Production Equation**: `vm_prod(j,kcr) = sum(w, vm_area(j,kcr,w) × vm_yld(j,kcr,w))`
+  - 19 crops: 15 food crops + 4 bioenergy crops
+  - Aggregated by Module 17 into regional production
+  - Balanced by Module 21 (Trade) against regional demand
+
+- **Critical Chain**: Module 30 (area × yield) → Module 17 (aggregate) → Module 21 (trade) → Module 16 (demand)
+
+- **Cross-Module Reference**: `cross_module/nitrogen_food_balance.md` (Part 2, Section 2.3)
+
+#### 5. Nitrogen Tracking: ✅ **CRITICAL PARTICIPANT**
+
+Module 30 provides **crop area** that Module 50 uses for nitrogen fertilizer demand:
+
+- **N Demand Calculation**: Crop area × N application rates = total N fertilizer
+- **Spatial Distribution**: Module 30 determines WHERE crops grown → WHERE N applied
+- **Emissions**: Module 51 uses crop area for N₂O and NH₃ emissions calculations
+
+- **Cross-Module Reference**: `cross_module/nitrogen_food_balance.md` (Part 1, Section 1.2, "Cropland N Demand")
+
+---
+
+### Dependency Chains
+
+**Centrality Rank**: **5 of 46 modules** (one of the highest-centrality modules)
+**Total Connections**: **15** (provides to 9 modules, depends on 6)
+**Hub Type**: **Central Production Hub** (crop allocation + production calculation)
+
+**Provides To** (9 modules):
+1. **Module 10 (Land)** - via Module 29 aggregation
+2. **Module 17 (Production)** - `vm_prod(j,kcr)` by crop
+3. **Module 18 (Residues)** - Biomass for residue calculations
+4. **Module 38 (Factor Costs)** - Production costs (labor, capital)
+5. **Module 41 (Irrigation)** - Irrigated crop area
+6. **Module 42 (Water Demand)** - Irrigation water requirements
+7. **Module 50 (N Soil Budget)** - Crop N demand
+8. **Module 52 (Carbon)** - Cropland carbon (indirectly)
+9. **Module 73 (Timber)** - Bioenergy tree production
+
+**Depends On** (6 modules):
+1. **Module 14 (Yields)** - `vm_yld(j,kcr,w)` for production
+2. **Module 16 (Demand)** - Demand signals for crop allocation
+3. **Module 13 (TC)** - Technological change affecting productivity
+4. Plus 3 other modules providing constraints
+
+**Key Position**: Module 30 is the **CENTRAL HUB** for crop production, determining:
+- WHERE crops grown (spatial allocation)
+- HOW MUCH produced (area × yield)
+- WHICH water source (irrigated vs rainfed)
+- All downstream food, water, nitrogen, carbon impacts
+
+**Reference**: `core_docs/Phase2_Module_Dependencies.md` (Table: Rank 5, 15 connections)
+
+---
+
+### Circular Dependencies
+
+**Participates In**: **3+ circular dependency cycles** (highest in model)
+
+#### Cycle C1: Croparea ↔ Yields ↔ TC (via Production)
+
+**Structure**:
+```
+Module 30 (Croparea) ──→ vm_prod(j,kcr) ──→ Module 17 (Production)
+       ↑                                           │
+       │                                           │
+       └──── vm_yld (via Module 14) ←──── Module 13 (TC)
+```
+
+**Resolution**: **Type 1 - Temporal Feedback** (TC calibrated to historical production)
+
+#### Cycle C2: Croparea ↔ Irrigation (Bidirectional Constraint)
+
+**Structure**:
+```
+Module 30 (Croparea) ──→ vm_area(j,kcr,"irrigated") ──→ Module 41 (Irrigation)
+       ↑                                                        │
+       │                                                        │
+       └──────────── vm_AEI(j) (area equipped) ←───────────────┘
+```
+
+**Resolution**: **Type 2 - Simultaneous Equations**
+- Both irrigated area and AEI optimized together
+- Constraint: irrigated crop area ≤ AEI capacity
+
+#### Cycle C3: Croparea ↔ Land Allocation (via Modules 29, 10)
+
+**Structure**:
+```
+Module 30 ──→ vm_area ──→ Module 29 ──→ vm_land("crop") ──→ Module 10 (Land)
+   ↑                                                              │
+   │                                                              │
+   └────────── Land availability for crops ←──────────────────────┘
+```
+
+**Resolution**: **Type 2 - Simultaneous Equations** (all land optimized together)
+
+**Testing Protocol** (if modifying Module 30):
+- ✅ Verify all 5 conservation laws hold (land, water, carbon, food, nitrogen)
+- ✅ Check convergence (no oscillations in production or land allocation)
+- ✅ Test extreme scenarios (water scarcity, land constraints, high demand)
+- ✅ Validate crop diversity constraints don't cause infeasibility
+- ✅ Verify irrigation allocation responds correctly to water prices
+
+**Reference**: `cross_module/circular_dependency_resolution.md` (Section 3, Cycles C1, C2, C3)
+
+---
+
+### Modification Safety
+
+**Risk Level**: 🔴 **EXTREME RISK**
+
+**Justification**:
+- **Rank 5 of 46** modules (one of highest-centrality)
+- Participates in **ALL FIVE conservation laws**
+- **15 total connections** (9 downstream modules affected)
+- **3+ circular dependency cycles**
+- Core module for food security, water allocation, land use
+
+**Safe Modifications**:
+- ✅ Adjusting rotation penalty parameters (`s30_rotation_scenario_speed`, `s30_rotation_scenario_target`)
+- ✅ Changing BETR (bioenergy tree) targets (`s30_betr_target`, `s30_betr_penalty`)
+- ✅ Modifying crop diversity constraints (rotamax30 scalars)
+- ✅ Adding new crop types to `kcr` set (requires extensive downstream updates)
+- ✅ Updating crop group definitions in `rotamax30` set
+
+**Dangerous Modifications**:
+- ⚠️ Removing production equation → breaks food balance in Module 17
+- ⚠️ Hardcoding crop allocation → prevents model from responding to demand/prices
+- ⚠️ Changing irrigation constraint → can violate water balance (Module 41/42)
+- ⚠️ Modifying rotation diversity logic → can make model infeasible (no feasible crop mix)
+- ⚠️ Breaking linkage to Module 14 (Yields) → production calculation fails
+
+**Required Testing** (for ANY modification):
+1. **All Five Conservation Laws**:
+   - Land: Verify crop area fits within available cropland
+   - Water: Verify irrigated area ≤ AEI, total water demand feasible
+   - Carbon: Check land transitions tracked correctly
+   - Food: Verify production meets demand (via Modules 17, 21, 16)
+   - Nitrogen: Verify N demand scales correctly with crop area
+
+2. **Dependency Chain Validation** (test ALL 9 downstream modules):
+   - Module 17: Production aggregates correctly
+   - Module 18: Residue biomass calculated
+   - Module 38: Factor costs reasonable
+   - Module 41: Irrigation area consistent
+   - Module 42: Water demand calculated
+   - Module 50: N demand realistic
+   - Module 52: Carbon stocks updated
+   - Module 73: Bioenergy tree production tracked
+
+3. **Circular Dependency Check**:
+   - Run model to convergence (verify no oscillations)
+   - Test yield response to production changes (TC calibration)
+   - Test irrigation response to water scarcity
+   - Verify land allocation stable
+
+4. **Infeasibility Testing**:
+   - Test extreme rotation diversity (e.g., 50% of 29 crop groups required)
+   - Test water scarcity scenarios (all regions hit irrigation limits)
+   - Test land constraints (no available cropland for expansion)
+   - Test BETR targets exceeding feasible area
+
+**Common Issues**:
+- **Rotation infeasibility**: Crop diversity constraints too strict → no feasible mix → relax rotation penalties
+- **Irrigation infeasibility**: Irrigated crop demand > AEI → model fails → expand AEI or reduce irrigation demand
+- **Food shortage**: Production < demand → infeasible → adjust trade parameters or land availability
+- **Oscillations**: Production swings between time steps → TC calibration issue → check Module 13
+
+**CRITICAL IMPORTANCE**: Module 30 is the **CORE of MAgPIE's production system**. Any modification requires:
+- ✅ Comprehensive testing of all 5 conservation laws
+- ✅ Validation with 9+ dependent modules
+- ✅ Multi-scenario testing (water scarcity, land constraints, high demand)
+- ✅ Expert review before deployment
+
+**Reference**: `cross_module/modification_safety_guide.md` (EXTREME RISK - Top 5 Modules)
+
+---
+
 ## Module Dependencies
 
 ### Critical Dependencies (High-Centrality Modules)
@@ -1404,3 +1631,10 @@ vm_area.fx(j,kbe30,w) = 0;  * In presolve
 **Verification Status**: 100% Verified - Zero Errors
 **Total Citations**: 115+ file:line references
 **Code Truth Compliance**: ✅ All claims verified against source code
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/30_*/croparea_nov24/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

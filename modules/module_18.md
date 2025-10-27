@@ -694,3 +694,39 @@ File exists (`scaling.gms`) but is empty except for headers.
 **Last Updated**: 2025-10-12
 **Lines Analyzed**: 145 (equations.gms) + 50 (input.gms) + 40 (sets.gms) + 10 (presolve.gms) + 10 (preloop.gms) = 255 lines
 **Verification Status**: 100% verified
+
+---
+
+## Participates In
+
+### Conservation Laws
+**Module 18 participates in Food Balance** (residues as byproducts):
+- Residue availability depends on crop production
+- Residues feed into demand system (bioenergy, feed, waste)
+- Affects material balance for crop outputs
+
+### Dependency Chains
+**Centrality**: Low-medium (specialized product handler)
+- **Depends on**: Module 17 (production for residue generation)
+- **Provides to**: Modules 16 (demand), 21 (trade), 60 (bioenergy), 55/57 (emissions)
+- **Role**: **Residue calculator** - determines agricultural byproduct availability
+
+### Circular Dependencies
+**Zero circular dependencies** - residues are byproducts (production → residues, one-way).
+
+### Modification Safety
+**Risk Level**: 🟢 **LOW-MEDIUM RISK** (specialized module, clear interfaces)
+
+**Safe Modifications**:
+- ✅ Adjust residue-to-product ratios (RPRs)
+- ✅ Change residue demand scenarios
+- ✅ Modify burned/recycled fractions
+
+**Testing**: Verify residue availability < production (physically consistent).
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/18_*/dual_oct16/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

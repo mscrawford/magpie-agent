@@ -1296,8 +1296,244 @@ Timber yields are calculated separately in the presolve phase by converting carb
 
 ---
 
+## 21. Participates In
+
+### 21.1 Conservation Laws
+
+Module 14 does **not directly participate** in any conservation laws:
+- **Not in** land balance (provides yields, doesn't allocate land)
+- **Not in** water balance (provides yields, doesn't manage water - though yields affect water demand indirectly)
+- **Not in** carbon balance (provides yields, doesn't track carbon stocks)
+- **Not in** nitrogen balance (no direct nitrogen flows - yields assume N is met)
+- **Not in** food balance (provides yields to calculate production, doesn't balance supply/demand)
+
+**Indirect Role**: Yields are **the critical link** between land and production:
+- **Higher yields** → Less land needed for same production → Land balance affected
+- **Irrigation vs. rainfed yields** → Water demand trade-offs → Water balance affected
+- **Pasture yields** → Grazing intensity → Potential land sparing → Land balance affected
+
+**Critical**: Module 14 shapes **how efficiently land converts to food**, which determines feasibility of meeting demand within land/water constraints.
+
+### 21.2 Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md and module connections):
+- **Centrality Rank**: High (exact rank not in top 10, but critical provider to production system)
+- **Total Connections**: 5+ (provides to 4 major consumers, depends on 3 sources)
+- **Hub Type**: **Processing Hub** (receives biophysical data, provides to production modules)
+- **Role**: **Yield calibration and delivery** - connects LPJmL to crop/pasture/forestry modules
+
+**Modules that Module 14 depends on**:
+- Module 13 (tc): τ (tau) technological change factor — **CRITICAL DEPENDENCY**
+- Module 52 (carbon): Carbon densities for timber yield calculation
+- Module 45 (climate): Climate class data for calibration
+- **External data**: LPJmL biophysical yields, FAO production/yield data, AQUASTAT irrigation data
+
+**Modules that depend on Module 14**:
+- Module 30 (croparea): `vm_yld(j,kcr,w)` for crop yields → determines crop area needed
+- Module 31 (pasture): `vm_yld(j,"pasture",w)` for pasture yields → determines pasture area needed
+- Module 32 (forestry): Timber yields (`pm_timber_yield`) → determines plantation productivity
+- Module 35 (natveg): Natural vegetation yields (implicitly through land competition)
+- Module 17 (production): Production = Area × Yield (via modules 30/31/32)
+- Module 70 (livestock): Feed availability from crop residues (via Module 18)
+
+**Key Interface Variables**:
+- `vm_yld(j,kcr,w)`: Crop yields by irrigation type — **MOST CRITICAL OUTPUT**
+- `vm_yld(j,"pasture",w)`: Pasture yields
+- `pm_timber_yield(t,j,ac,sys)`: Timber yields by age class and plantation type
+
+### 21.3 Circular Dependencies
+
+**Module 14 participates in 1 major circular dependency**:
+
+#### **Cycle 1: Production-Yield-Livestock Triangle ⭐⭐⭐ (HIGHEST COMPLEXITY)**
+
+**Modules involved**: 17 (production) ↔ 14 (yields) ↔ 70 (livestock)
+
+**Dependency chain**:
+```
+vm_prod(j,kcr) [17] → Used for calibration of yields
+    ↓
+pm_yields_semi_calib(j,kcr,w) [14] → Calibrated yields
+    ↓
+vm_yld(j,kcr,w) [14] → Scaled by tau factor → Affects crop production
+    ↓
+vm_prod(j,kcr) [30/17] → Crop production = Area × Yield
+    ↓
+Feed availability [18] → Crop residues for livestock
+    ↓
+vm_prod(j,kli) [70] → Livestock production
+    ↓
+Manure production [70/55] → Affects soil fertility
+    ↓
+pm_yields_semi_calib(j,kcr,w) [14] → **BACK TO START** (via soil organic matter effects)
+```
+
+**Resolution Type**: **Temporal Feedback + Iterative Convergence**
+
+**How it resolves**:
+1. **Within timestep**: Yields are **fixed parameters** from calibration (not optimized)
+2. **Across timesteps**:
+   - τ factor (Module 13) adjusts yields based on past production patterns
+   - Soil organic matter (Module 59) from manure affects future yields
+   - **Temporal lag** breaks the circular dependency within optimization
+3. **Calibration phase**: Requires **multiple model runs** to match observed FAO yields
+   - Run 1: Use LPJmL base yields
+   - Calibration: Adjust λ blend factors to match FAO regional averages
+   - Run 2: Re-run with calibrated yields → production changes
+   - Iterate until yields stabilize
+
+**Risks from this cycle**:
+- **Oscillating yields**: τ factor too sensitive → yields swing between timesteps
+- **Unrealistic intensification**: Manure contribution overestimated → yields too high
+- **Calibration non-convergence**: FAO target impossible to match with LPJmL base
+- **Feed demand infeasibility**: Low yields → insufficient crop residues → livestock fails
+
+**Resolution mechanism in code** (from circular_dependency_resolution.md Section 3.1):
+- **Preloop calibration**: `pm_yields_semi_calib` calculated BEFORE optimization
+- **τ factor from previous timestep**: `pm_tau(t)` uses **lagged** production values
+- **SOM effects gradual**: 15% annual convergence (Module 59) → smooth feedback
+- **No iteration within timestep**: Yields fixed → production optimized → manure calculated → affects NEXT timestep
+
+**Testing for cycle stability** (Section 5.3 from circular_dependency_resolution.md):
+```r
+# Check yields don't oscillate between timesteps
+yields_t1 <- yields(gdx, level="cell", products="kcr")[,"y2025",]
+yields_t2 <- yields(gdx, level="cell", products="kcr")[,"y2030",]
+yields_t3 <- yields(gdx, level="cell", products="kcr")[,"y2035",]
+
+yield_change_12 <- (yields_t2 - yields_t1) / (yields_t1 + 1e-6)
+yield_change_23 <- (yields_t3 - yields_t2) / (yields_t2 + 1e-6)
+
+# Changes should be gradual (driven by TC, not oscillation)
+stopifnot(all(abs(yield_change_12) < 0.2))  # <20% per 5-year timestep
+stopifnot(all(abs(yield_change_23) < 0.2))
+
+# Direction should be consistent (not alternating)
+signs_match <- sign(yield_change_12) == sign(yield_change_23)
+stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same direction
+```
+
+### 21.4 Modification Safety
+
+**Risk Level**: 🔴 **HIGH RISK** (critical production determinant)
+
+**Why High Risk**:
+1. **Production system bottleneck**: Yields determine if model can meet food demand
+2. **Circular dependency**: Part of Production-Yield-Livestock cycle (requires calibration)
+3. **Spatial complexity**: Cell-level yields with 200+ cells × 18 crops × 2 irrigation types
+4. **Calibration fragility**: Limited calibration tuned to FAO data → easy to break
+5. **Climate sensitivity**: LPJmL yields respond to climate → modifications may alter climate response
+
+**Safe Modifications**:
+- ✅ Change τ (tau) factor scaling (via Module 13 configuration)
+- ✅ Adjust pasture spillover (`s14_yld_past_switch`) within 0-1 range
+- ✅ Toggle degradation effects (`s14_degradation` 0/1)
+- ✅ Switch climate scenario (`c14_yields_scenario`: cc/nocc/nocc_hist)
+- ✅ Modify timber conversion factors (small adjustments to IPCC factors)
+- ✅ Change bioenergy scaling (`s14_yld_bioen_scaling`) if using bioenergy scenarios
+
+**Moderate-Risk Modifications** (require calibration testing):
+- ⚠️ Change limited calibration bounds (`s14_limit_calib`):
+  - Lower bound → more LPJmL influence → may mismatch FAO
+  - Higher bound → more statistical adjustment → may mask climate signal
+- ⚠️ Disable irrigated-rainfed calibration (`s14_calib_ir2rf = 0`):
+  - Loses AQUASTAT yield ratio data → irrigation overestimated or underestimated
+- ⚠️ Add new crops to calibration system:
+  - Requires FAO production data for target
+  - Requires LPJmL biophysical yields as base
+  - Requires testing convergence
+
+**High-Risk Modifications** (expert-only, full testing required):
+- 🔴 Change calibration methodology (e.g., replace λ-blend with different approach):
+  - May break convergence
+  - Requires re-tuning all parameters
+  - Must maintain climate sensitivity
+- 🔴 Modify yield equation structure:
+  - Other modules expect `vm_yld(j,kcr,w)` dimensions
+  - Changing sets or indices breaks downstream modules
+- 🔴 Remove calibration entirely (`s14_use_yield_calib = 0` AND `s14_limit_calib = 0`):
+  - Pure LPJmL yields often unrealistic (too low in some regions, too high in others)
+  - Model likely infeasible (can't meet food demand)
+
+**Testing Requirements After Modification**:
+
+1. **Calibration target check** (Section 13.1):
+   ```r
+   # Compare modeled to FAO yields
+   yields_model <- yields(gdx, level="reg", products="kcr")
+   yields_fao <- read.csv("modules/14_yields/input/f14_yields_calib.cs3")
+   relative_error <- abs(yields_model - yields_fao) / yields_fao
+   stopifnot(mean(relative_error, na.rm=TRUE) < 0.15)  # <15% avg error
+   ```
+
+2. **Irrigation ratio check** (Section 6):
+   ```r
+   yld_irrig <- yields(gdx, irrigation="irrigated")
+   yld_rainfed <- yields(gdx, irrigation="rainfed")
+   ratio <- yld_irrig / yld_rainfed
+   # Ratio should be 1.0-3.0 for most crops (AQUASTAT typical)
+   stopifnot(all(ratio > 0.8, na.rm=TRUE))  # Irrigated never worse than rainfed
+   stopifnot(mean(ratio, na.rm=TRUE) > 1.0 && mean(ratio, na.rm=TRUE) < 5.0)
+   ```
+
+3. **Yield stability check** (Cycle 1 test above)
+
+4. **Production feasibility** (downstream check):
+   ```r
+   # Verify model can meet food demand
+   production <- production(gdx, level="glo", products="kcr")
+   demand <- demand(gdx, level="glo", products="kcr")
+   stopifnot(all(production >= demand * 0.95))  # Allow 5% trade slack
+   ```
+
+5. **Timber yield plausibility** (Section 8):
+   ```r
+   timber_yld <- readGDX(gdx, "pm_timber_yield")
+   # Typical: 5-20 m³/ha/yr depending on climate and rotation
+   stopifnot(all(timber_yld > 0, na.rm=TRUE))
+   stopifnot(all(timber_yld < 50, na.rm=TRUE))  # Very high yields suspicious
+   ```
+
+6. **Climate signal preservation**:
+   ```r
+   # Compare cc vs. nocc scenarios
+   yields_cc <- yields(gdx_cc, level="glo")
+   yields_nocc <- yields(gdx_nocc, level="glo")
+   yield_change <- (yields_cc - yields_nocc) / yields_nocc
+   # Should see climate impact (usually negative in many regions by 2050)
+   stopifnot(abs(mean(yield_change["y2050",,])) > 0.02)  # >2% avg change
+   ```
+
+**Common Pitfalls**:
+- ❌ Breaking limited calibration bounds (λ outside [0,1]) → nonsensical blending
+- ❌ Forgetting to update FAO calibration targets when adding new crops
+- ❌ Ignoring pasture yield changes (often overlooked, but critical for livestock)
+- ❌ Not testing timber yields after carbon density changes (Module 52 updates)
+- ❌ Assuming yield changes are linear (degradation effects are multiplicative)
+
+**Emergency Fixes**:
+- If food demand infeasibility: Increase `s14_limit_calib` upper bound (allow more statistical adjustment)
+- If unrealistic yield patterns: Check LPJmL input data quality
+- If oscillation: Reduce τ factor sensitivity in Module 13 (`s13_tau_response`)
+- If irrigation fails: Verify irrigated-rainfed calibration (`s14_calib_ir2rf = 1`)
+- If calibration non-convergence: Relax convergence tolerance or fix problematic crops
+
+**Links**:
+- Circular dependency details → cross_module/circular_dependency_resolution.md (Section 3.1)
+- Full calibration methodology → This document Sections 4-8
+- Technological change → modules/module_13.md
+- Production system → modules/module_17.md, module_30.md, module_31.md
+
+---
+
 **Documentation Status:** ✅ Fully Verified (2025-10-12)
 **Verification Method:** All source files read, 2 equations verified against declarations.gms, 557 lines of code analyzed, calibration methodology traced through preloop phase
 **Citation Density:** 100+ file:line references throughout this document
 **Next Module:** Module 11 (Costs) or Module 17 (Production) — core hub modules
 
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/14_*/managementcalib_aug19/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

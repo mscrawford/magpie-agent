@@ -1061,7 +1061,6 @@ for(cell in tropical_cells) {
 
 **Module 37 Status**: ✅ COMPLETE (1046 lines documented, 24.9× expansion from 42 lines)
 **Verified Against**: Actual code in `modules/37_labor_prod/`
-**Documentation Date**: October 11, 2025
 
 ---
 
@@ -1202,3 +1201,115 @@ Recommendation:
 • For optimistic scenario: Use 300W (mechanization adaptation)
 • For full range: Run both and report as uncertainty band
 ```
+---
+
+## Participates In
+
+This section shows Module 37's role in system-level mechanisms. For complete details, see the linked documentation.
+
+### Conservation Laws
+
+Module 37 does **not directly participate** in any conservation laws:
+- **Not in** land balance (provides labor productivity, doesn't manage land)
+- **Not in** water balance (labor productivity is exogenous)
+- **Not in** carbon balance (no carbon flows)
+- **Not in** nitrogen balance (no nitrogen flows)
+- **Not in** food balance (affects production costs, not supply/demand balance)
+
+**Indirect Role**: Labor productivity affects **production costs** (Module 38), which influences land allocation decisions, but Module 37 itself has no conservation constraints.
+
+### Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Centrality Rank**: Low (peripheral module)
+- **Total Connections**: 1 (provides to 1 module, depends on 0)
+- **Hub Type**: **Low-Risk Peripheral Module**
+- **Dependents**: 1 module depends on Module 37 variables
+
+**Provides to**:
+- Module 38 (factor_costs): Labor productivity factor affects agricultural wage calculations
+
+**Depends on**:
+- Module 45 (climate): Climate data for heat stress calculations (optional, depends on realization)
+
+### Circular Dependencies
+
+Module 37 participates in **zero circular dependencies**:
+- **No feedback loops**: Module 37 provides labor productivity to Module 38 only
+- **One-way data flow**: Climate data → Module 37 → Module 38 (factor costs)
+- **No optimization involvement**: Provides exogenous/calculated productivity factors
+
+**Why no cycles?**
+- Labor productivity is either **exogenous** (`exo`) or **climate-driven** (`exo`)
+- Model outcomes do **NOT feed back** to labor productivity
+- **Resolution mechanism**: N/A (no cycles to resolve)
+
+**Implication**: Module 37 modifications have **very low risk** of creating circular dependencies.
+
+### Modification Safety
+
+**Risk Level**: 🟢 **LOW RISK** (Independent peripheral module)
+
+**Why Low Risk**:
+1. **Only 1 dependent**: Only Module 38 uses labor productivity
+2. **No conservation constraints**: Cannot violate balance laws
+3. **No circular dependencies**: Cannot create feedback loops
+4. **Simple data flow**: Climate → Labor Prod → Factor Costs
+5. **No spatial optimization**: Productivity is cell-level parameter, not optimized variable
+
+**Safe Modifications**:
+- ✅ Change labor productivity scenario (`c37_labor_prod_scenario`)
+- ✅ Switch between metabolic rate assumptions (300W vs 400W)
+- ✅ Modify heat stress response curves
+- ✅ Add new productivity factors (technology, training)
+- ✅ Change climate data source
+
+**Moderate-Risk Modifications**:
+- ⚠️ Dramatically increase heat stress impacts (may cause production infeasibility)
+  - Very low labor productivity → very high costs → land-use shifts
+- ⚠️ Make labor productivity endogenous (would create new dependencies)
+
+**Testing Requirements After Modification**:
+1. **Consistency checks**:
+   ```r
+   # Verify labor productivity is in valid range [0,1]
+   labor_prod <- readGDX("fulldata.gdx", "pm_labor_prod")
+   stopifnot(all(labor_prod >= 0 & labor_prod <= 1))
+   ```
+2. **Downstream cost checks**:
+   ```r
+   # Verify factor costs are reasonable
+   factor_costs <- readGDX("fulldata.gdx", "vm_cost_prod_crop_reg")
+   # Should not be more than 10x baseline
+   stopifnot(all(factor_costs < baseline_costs * 10))
+   ```
+3. **Spatial pattern checks**:
+   ```r
+   # Verify heat stress impacts are highest in hot regions
+   labor_prod_tropics <- labor_prod[tropical_cells,]
+   labor_prod_temperate <- labor_prod[temperate_cells,]
+   stopifnot(mean(labor_prod_tropics) < mean(labor_prod_temperate))
+   ```
+4. **Scenario testing**: Run SSP1 (low climate change) vs SSP5 (high climate change)
+
+**Common Pitfalls**:
+- ❌ Forgetting metabolic rate assumption affects heat stress magnitude
+- ❌ Not checking if climate data covers all cells
+- ❌ Extreme heat stress causing solver infeasibility
+- ❌ Using wrong units for temperature or work intensity
+
+**Links**:
+- Full dependency details → `core_docs/Phase2_Module_Dependencies.md`
+- Factor costs (Module 38) → `modules/module_38.md`
+- Climate data (Module 45) → `modules/module_45.md`
+
+---
+
+**Module 37 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/37_*/off/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

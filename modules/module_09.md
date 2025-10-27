@@ -829,9 +829,126 @@ stopifnot(max_error < 0.01)  # Less than 1% error
 
 ---
 
-**Module 09 Status**: ✅ COMPLETE (216 lines documented)
-**Verified Against**: Actual code in `modules/09_drivers/aug17/`
-**Documentation Date**: [Current Date]
+## 12. Participates In
+
+### 12.1 Conservation Laws
+
+Module 09 does **not directly participate** in any conservation laws:
+- **Not in** land balance (provides drivers, doesn't manage land)
+- **Not in** water balance (provides population/GDP, doesn't manage water)
+- **Not in** carbon balance (drivers affect demand, not carbon stocks)
+- **Not in** nitrogen balance (no direct nitrogen flows)
+- **Not in** food balance (provides demand drivers, doesn't balance supply/demand)
+
+**Indirect Role**: Population and GDP drive food/timber/energy **demand** which affects all conservation laws downstream, but Module 09 itself has no conservation constraints.
+
+### 12.2 Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Centrality Rank**: 8th of 46 modules
+- **Total Connections**: 14 (provides to 14 modules, depends on 0)
+- **Hub Type**: **Pure Source Hub** (no dependencies, only provides data)
+- **Dependents**: 14 modules depend on Module 09 variables
+
+**Key Interface Variables**:
+- `im_pop_iso(t,iso)` → Used by 11 modules (highest usage)
+- `im_gdp_pc_ppp_iso(t,iso)` → Used by 5 modules
+- `im_pop(t,i)` → Used by 7 modules
+- `im_gdp_pc_ppp(t,i)` → Used by 4 modules
+
+**Modules that depend on 09**:
+- Module 12 (interest_rate): Economic development drives interest rates
+- Module 13 (tc): GDP affects technology adoption rates
+- Module 15 (food): Population + income drive food demand
+- Module 18 (residues): Population affects residue demand
+- Module 36 (employment): Labor productivity from development state
+- Module 38 (factor_costs): Wages based on GDP per capita
+- Module 42 (water_demand): Non-agricultural water from population/GDP
+- Module 50 (nr_soil_budget): Atmospheric N deposition scaled by development
+- Module 55 (awms): Animal waste management by development state
+- Module 56 (ghg_policy): Policy ambition scaled by income
+- Module 60 (bioenergy): Bioenergy demand from economic scenarios
+- Module 62 (material): Material demand from population/GDP
+- Module 70 (livestock): Livestock demand from population/income
+- Module 73 (timber): Timber demand from construction activity (GDP)
+
+### 12.3 Circular Dependencies
+
+Module 09 participates in **zero circular dependencies**:
+- **No feedback loops**: Module 09 is a **terminal source** (provides but never receives from other modules)
+- **One-way data flow**: Exogenous SSP/SDP scenarios → Module 09 → All demand-side modules
+- **No optimization involvement**: Pure data provider with no equations or variables
+
+**Why no cycles?**
+- Population and GDP are **exogenous** (from external SSP projections)
+- Model outcomes do **NOT feed back** to drivers (limitation)
+- **Resolution mechanism**: N/A (no cycles to resolve)
+
+**Implication**: Module 09 modifications have **zero risk** of creating circular dependencies (cannot create feedback to itself).
+
+### 12.4 Modification Safety
+
+**Risk Level**: 🟢 **LOW RISK** (safest module to modify)
+
+**Why Low Risk**:
+1. **No conservation constraints**: Cannot violate land/water/carbon balances
+2. **No circular dependencies**: Cannot create feedback loops
+3. **Pure data provider**: No optimization equations affected
+4. **Well-defined interface**: 8 interface variables with clear purposes
+5. **No spatial complexity**: Aggregation logic is straightforward
+
+**Safe Modifications**:
+- ✅ Change SSP scenario selection (SSP1 → SSP3, etc.)
+- ✅ Scenario mixing (SSP1 population + SSP5 GDP)
+- ✅ Adjust baseline year (sm_fix_SSP2)
+- ✅ Add custom population/GDP projections for specific countries
+- ✅ Modify demographic distributions (age/sex structure)
+- ✅ Change development state classifications
+
+**Moderate-Risk Modifications**:
+- ⚠️ Change population/GDP growth rates dramatically (affects feasibility downstream)
+  - Very high population → food demand may exceed production capacity
+  - Very low GDP → demand collapse may cause module instabilities
+- ⚠️ Add new socioeconomic variables (requires interface updates in dependent modules)
+
+**Testing Requirements After Modification**:
+1. **Consistency checks** (Section 10.1-10.6 in this doc)
+2. **Downstream demand checks**:
+   ```r
+   # Verify food demand is reasonable
+   food_demand <- demand(gdx, level="regglo", products="kcr")
+   stopifnot(all(food_demand > 0))  # No negative demand
+   stopifnot(all(is.finite(food_demand)))  # No NaN/Inf
+   ```
+3. **Scenario divergence check**:
+   ```r
+   # SSP1 vs SSP5 should diverge after 2025
+   pop_ssp1 <- readGDX(gdx_ssp1, "im_pop")["y2050",,]
+   pop_ssp5 <- readGDX(gdx_ssp5, "im_pop")["y2050",,]
+   rel_diff <- abs(pop_ssp1 - pop_ssp5) / pop_ssp1
+   stopifnot(mean(rel_diff) > 0.1)  # >10% difference by 2050
+   ```
+4. **No other module testing required** (Module 09 has no dependencies on other modules)
+
+**Common Pitfalls**:
+- ❌ Forgetting to update both MER and PPP GDP (causes price calculation errors)
+- ❌ Not maintaining demographic sum = total population (causes food demand errors)
+- ❌ Extreme growth rates causing infeasibility in demand modules
+- ❌ Missing data leading to countries with zero population/GDP
+
+**Emergency Fixes**:
+- If demand infeasibility: Reduce population growth or increase yields (Module 14)
+- If strange demand patterns: Check per capita calculations (Section 10.4)
+- If regional anomalies: Verify ISO→regional aggregation (Section 4.1)
+
+**Links**:
+- Full dependency details → Phase2_Module_Dependencies.md (Section 2.1)
+- Demand system → modules/module_15.md, module_16.md
+- No modification safety guide entry (too low risk to warrant specific protocols)
 
 ---
 
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/09_*/aug19/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

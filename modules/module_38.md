@@ -1581,3 +1581,58 @@ for (scen in scenarios) {
 ---
 
 **End of Module 38 Comprehensive Documentation**
+
+---
+
+## Participates In
+
+This section shows Module 38's role in system-level mechanisms. For complete details, see the linked documentation.
+
+### Conservation Laws
+
+Module 38 does **not directly participate** in any conservation laws as a primary enforcer.
+
+**Indirect Role**: Module 38 may affect production costs via factor costs, which influences other modules, but has no direct conservation constraints.
+
+### Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Centrality Rank**: Low-to-Medium (peripheral/intermediate module)
+- **Hub Type**: **Cost Component Provider**
+
+**Details**: See `core_docs/Phase2_Module_Dependencies.md` for complete dependency information.
+
+### Circular Dependencies
+
+Module 38 participates in **zero or minimal circular dependencies**.
+
+**Details**: See `cross_module/circular_dependency_resolution.md` for system-level cycles.
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+
+**Safe Modifications**:
+- ✅ Adjust module-specific parameters
+- ✅ Change scenario selections
+- ✅ Modify calculation methods within module
+
+**Testing Requirements**:
+1. Verify outputs are in expected ranges
+2. Check downstream modules that depend on this module's outputs
+3. Run full model to ensure no infeasibility
+
+**Links**:
+- Full dependency details → `core_docs/Phase2_Module_Dependencies.md`
+- Related modules → Check interface variables in module documentation
+
+---
+
+**Module 38 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/38_*/fixed_nov23/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

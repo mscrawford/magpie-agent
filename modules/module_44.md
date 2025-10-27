@@ -641,3 +641,45 @@ BII = (Σ biodiversity_stocks × biome_share) / total_biome_area
 **Verification date**: 2025-10-13
 **Verified by**: Claude (AI agent)
 **Source code version**: MAgPIE develop branch (commit 96d1a59a8)
+
+---
+
+## Participates In
+
+This section shows Module 44's role in system-level mechanisms.
+
+### Conservation Laws
+
+Module 44 does **not directly participate** in any conservation laws as a primary enforcer.
+
+**Indirect Role**: Provides biodiversity indicators (BII) based on land use patterns
+
+### Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Hub Type**: Biodiversity Indicator Provider
+
+**Details**: See `core_docs/Phase2_Module_Dependencies.md` for complete dependency information.
+
+### Circular Dependencies
+
+Module 44 participates in **zero or minimal circular dependencies**.
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+
+**Testing Requirements**: Verify outputs are in expected ranges and check downstream modules.
+
+**Links**: See `core_docs/Phase2_Module_Dependencies.md` for dependencies.
+
+---
+
+**Module 44 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/44_*/bii_target_apr24/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

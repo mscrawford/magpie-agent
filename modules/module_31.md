@@ -497,6 +497,58 @@ vm_land.lo(j,"past") = sum(consv_type, pm_land_conservation(t,j,"past",consv_typ
 
 ---
 
+## Participates In
+
+### Conservation Laws
+
+**Land Balance**: ✅ **CRITICAL PARTICIPANT** - Provides `vm_land(j,"past")` to Module 10 land balance. Pasture is one of 7 land types. Endogenous determination driven by livestock feed demand (Module 70). Conservation constraint: `vm_land(j,"past") ≥ pm_land_conservation(j,"past")` (Module 22).
+
+**Carbon Balance**: ✅ **PARTICIPANT** - Pasture carbon stocks assumed at natural vegetation level (limitation: does NOT respond to grazing intensity). Module 52 tracks pasture carbon. No dynamic carbon response to management.
+
+**Food Balance**: ✅ **PARTICIPANT** - Pasture provides livestock feed via `vm_prod(j,"pasture")`. Production capacity: `vm_prod ≤ vm_land × vm_yld` (rainfed only). Critical for livestock production chain (Module 70 demand → Module 31 supply).
+
+**Water Balance**: ❌ Does NOT participate - Pasture is rainfed only (not irrigated)
+
+**Nitrogen**: ⚠️ **INDIRECT** - Manure from livestock affects soil N (Module 55), but Module 31 itself has no N equations.
+
+**Cross-Reference**: `cross_module/land_balance_conservation.md` (Section 5.4), `cross_module/carbon_balance_conservation.md` (Section 3.2, "Pasture")
+
+---
+
+### Dependency Chains
+
+**Centrality**: ~20 of 46 modules, 6 connections (provides to 5-7, depends on 3)
+**Hub Type**: Processing Hub (land allocation + feed production)
+
+**Provides To**: Module 10 (Land), Module 11 (Costs), Module 17 (Production), Module 52 (Carbon), Module 70 (Livestock feed), Module 22 (Conservation)
+
+**Depends On**: Module 14 (Yields), Module 70 (Feed demand), Module 10 (Land availability)
+
+**Key Role**: Translates livestock feed demand into pasture land requirements.
+
+---
+
+### Circular Dependencies
+
+**Cycle**: Livestock ↔ Pasture ↔ Yields (1 documented)
+
+**Structure**: Module 70 (demand) ↔ Module 31 (supply) ↔ Module 14 (yield calibration)
+
+**Resolution**: Type 1 - Temporal Feedback (yields calibrated to historical pasture productivity)
+
+---
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+
+**Safe**: Adjusting yield parameters, pasture management costs, conservation targets
+**Dangerous**: Removing production capacity constraint (breaks food balance), hardcoding pasture area (prevents endogenous response to livestock demand)
+**Required Testing**: Land balance, food balance (livestock feed supply), carbon stocks
+**Common Issues**: Pasture expansion exceeds available land → adjust conservation constraints or livestock demand
+
+---
+
 ## Realizations
 
 ### 1. endo_jun13 (Active)
@@ -657,3 +709,10 @@ Module 31 takes yields exogenously from Module 14, missing feedbacks:
 **Limitations**: Does not explicitly model grazing system differences (extensive vs. intensive), pasture management options, degradation dynamics, or irrigated pastures. Management intensity distinction (managed pasture vs. rangeland) uses fixed LUH2 shares, not optimized. Calibration cost artifact (s31_fac_req_past) prevents overproduction in initial timestep only.
 
 **Quality**: 100% verified, zero errors, all equations and variables traced to source code with file:line citations.
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/31_*/static/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

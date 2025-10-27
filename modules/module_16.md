@@ -678,3 +678,84 @@ Module 16 treats waste as an unavoidable loss proportional to supply. This contr
 **Limitations**: Demands are largely exogenous (from other modules), with no price response, quality differentiation, or intertemporal dynamics within Module 16 itself. Waste and seed are calculated endogenously but using fixed shares, not optimized.
 
 **Quality**: 100% verified, zero errors, all equations and variables traced to source code with file:line citations.
+
+---
+
+## Participates In
+
+### Conservation Laws
+
+**Module 16 participates in 1 conservation law**: **Food Balance**
+
+**Role**: Calculates total regional supply requirements (`vm_supply`) which **must be met** by production + trade.
+
+**Food Balance Equation** (Module 21):
+```
+vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) ≥ vm_supply(i,k)
+```
+
+Module 16 determines the **demand side** (vm_supply), Module 17 provides **supply side** (vm_prod_reg), Module 21 **balances** via trade.
+
+**Links**: nitrogen_food_balance.md (Part 2, Sections 2.2-2.4)
+
+### Dependency Chains
+
+**Centrality**: Mid-range hub (provides to 1 major consumer [Module 21], depends on 7 modules)
+
+**Depends on**: Modules 09, 15, 18, 60, 62, 70, 73 (for demands)
+**Provides to**: Module 21 (trade) via `vm_supply(i,k)`
+
+**Role**: **Demand aggregator** - compiles all uses into total supply requirements
+
+### Circular Dependencies
+
+**Participates in 1 suspected cycle**: **C5: Demand-Trade-Production** (16-21-17)
+
+**Dependency chain**:
+```
+vm_supply(i,k) [16] → Regional demand
+    ↓
+Module 21 (trade) → Balances via trade flows
+    ↓
+vm_prod_reg(i,k) [17] → Regional production
+    ↓
+(If endogenous demand) Production affects prices → Demand [16]
+```
+
+**Resolution**: **Simultaneous equations** - all solved together in one optimization.
+
+**Note**: In standard MAgPIE, demand is largely exogenous (no price response), so feedback is weak. Module 16 passively aggregates demands from other modules.
+
+**Links**: circular_dependency_resolution.md (Section 8.2)
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK** (demand aggregator, largely passive)
+
+**Why Medium Risk**:
+- Food balance dependency (wrong supply → infeasibility)
+- 8 equations (one per product type) - moderate complexity
+- Waste/seed formulas create implicit iteration
+
+**Safe Modifications**:
+- ✅ Adjust waste or seed shares (via input data)
+- ✅ Add new demand sources (from new modules)
+- ✅ Change FAO balance flow adjustments
+
+**Moderate Risk**:
+- ⚠️ Change supply balance equation structure
+- ⚠️ Modify waste calculation logic (circular: waste depends on supply)
+
+**Testing After Modification**:
+1. **Food balance check**: Supply = Sum of all demands
+2. **Waste consistency**: Waste < total supply
+3. **Seed plausibility**: Seed demand reasonable vs. production
+
+**Links**: This document Sections on Limitations and Verification
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/16_*/sector_may15/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

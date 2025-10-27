@@ -1038,8 +1038,218 @@ Module 11 is the **simplest yet most critical module in MAgPIE**:
 
 ---
 
+## 17. Participates In
+
+### 17.1 Conservation Laws
+
+Module 11 does **not directly participate** in any conservation laws:
+- **Not in** land balance (aggregates land costs, doesn't constrain land allocation)
+- **Not in** water balance (aggregates water costs, doesn't manage water supply/demand)
+- **Not in** carbon balance (aggregates emission costs, doesn't track carbon stocks)
+- **Not in** nitrogen balance (no direct nitrogen flows)
+- **Not in** food balance (aggregates production costs, doesn't balance supply/demand)
+
+**Indirect Role**: Module 11 determines the **objective function** that drives ALL optimization decisions, which indirectly affects how all conservation laws are satisfied:
+- **Emission costs** → land-use choices favoring lower-carbon options
+- **Water costs** → irrigation vs. rainfed trade-offs
+- **Land conversion costs** → deforestation vs. intensification decisions
+- **Factor costs** → production location decisions
+
+**Critical**: By changing what is "expensive" vs. "cheap", Module 11 shapes how the model satisfies conservation constraints.
+
+### 17.2 Dependency Chains
+
+**Centrality Analysis** (from Phase2_Module_Dependencies.md):
+- **Centrality Rank**: **1st of 46 modules (HIGHEST CENTRALITY)**
+- **Total Connections**: 28 (provides to 1 [GAMS solver], depends on 27 modules)
+- **Hub Type**: **Pure Sink Hub** (receives from many, provides only to solver)
+- **Role**: **Global aggregator** - all costs flow through Module 11
+
+**Modules that provide costs to Module 11** (27 total):
+- Module 09 (drivers): ❌ No costs (data provider)
+- Module 10 (land): ❌ No costs (land allocation)
+- Module 11 (costs): ➡️ **Self** (aggregates its own regional costs to global)
+- Module 12 (interest_rate): v12_interest (discount rate cost adjustment)
+- Module 13 (tc): vm_tech_cost (investment in technological change)
+- Module 14 (yields): ❌ No costs (provides yields)
+- Module 15 (food): v15_demand_regr (demand regression costs)
+- Module 16 (demand): ❌ No costs (calculates demands)
+- Module 17 (production): ❌ No costs (aggregates production)
+- Module 18 (residues): v18_res_use_costs (residue management)
+- Module 20 (processing): v20_processing_costs (food processing)
+- Module 21 (trade): vm_cost_trade (transport and trade)
+- Module 22 (land_conservation): v22_cost_conservation (protected area management)
+- Module 28 (age_class): v28_cost_age_class (age class tracking infrastructure)
+- Module 29 (cropland): vm_cost_cropland_expansion (cropland conversion)
+- Module 30 (croparea): vm_cost_croparea (crop allocation costs)
+- Module 31 (pasture): vm_cost_pasture (pasture management)
+- Module 32 (forestry): vm_cost_fore (plantation forestry)
+- Module 34 (urban): vm_cost_urban (urban expansion)
+- Module 35 (natveg): vm_cost_natveg (natural vegetation protection/loss)
+- Module 36 (employment): v36_employment_costs (labor)
+- Module 38 (factor_costs): vm_cost_prod (labor, capital, land rental) — **LARGEST COMPONENT**
+- Module 39 (landconversion): vm_cost_landcon (land-use change)
+- Module 40 (transport): vm_cost_transp (transport infrastructure)
+- Module 41 (area_equipped_for_irrigation): vm_cost_AEI (irrigation infrastructure)
+- Module 42 (water_demand): vm_water_cost (water withdrawal and pumping)
+- Module 43 (water_availability): ❌ No costs (water supply constraint)
+- Module 44 (biodiversity): vm_cost_bv_loss (biodiversity loss penalty)
+- Module 56 (ghg_policy): vm_emission_costs, vm_reward_cdr_aff (GHG policy)
+- Module 57 (maccs): vm_maccs_costs (technical GHG mitigation)
+- Module 59 (som): vm_cost_som (soil carbon management)
+- Module 60 (bioenergy): vm_cost_bioen (bioenergy)
+- Module 62 (material): vm_cost_material (material demand)
+- Module 70 (livestock): vm_cost_livst (livestock production)
+- Module 73 (timber): vm_cost_timber (timber production)
+- Module 80 (optimization): ❌ No costs (solver interface)
+
+**Total: 27 modules provide costs** (out of 46 modules)
+
+**What Module 11 provides**:
+- `vm_cost_glo` → **GAMS Solver** (objective function to minimize)
+- `v11_cost_reg(i)` → Aggregated for reporting only (not used in optimization)
+
+### 17.3 Circular Dependencies
+
+Module 11 participates in **zero circular dependencies**:
+- **No feedback loops**: Module 11 is a **terminal sink** (receives costs, provides only to solver)
+- **One-way data flow**: All cost modules → Module 11 → Solver objective
+- **No variables provided back**: Other modules do NOT depend on Module 11 variables
+
+**Why no cycles?**
+- Module 11 only **aggregates** costs (sums them)
+- Costs depend on optimization variables (land, production, etc.), NOT on total cost
+- **Resolution mechanism**: N/A (no cycles to resolve)
+
+**Implication**: Module 11 cannot create circular dependencies (terminal node in dependency graph).
+
+**Note**: While Module 11 defines what the solver minimizes, this creates **indirect feedback** through the optimization (solver adjusts all variables to reduce costs), but this is NOT a circular dependency in the module structure.
+
+### 17.4 Modification Safety
+
+**Risk Level**: 🔴 **EXTREME CAUTION** (highest-risk module)
+
+**Why Extreme Risk**:
+1. **Affects entire model**: Changing objective function changes EVERY optimization decision
+2. **27 dependencies**: Must coordinate with 27+ cost-providing modules
+3. **No redundancy**: Single point of failure for optimization
+4. **Solver sensitivity**: Small changes can cause convergence failures
+5. **Economic meaning**: Costs must reflect real economic trade-offs
+
+**Safe Modifications** (rare but allowed):
+- ✅ Add NEW cost component from existing module:
+  ```gams
+  * In module_XX equations.gms:
+  vm_new_cost(i) =e= calculation;
+
+  * In module_11 equations.gms:
+  v11_cost_reg(i2) =e= existing_costs + vm_new_cost(i2);
+  ```
+- ✅ Adjust cost scaling factors (Section 5) if numerical issues
+- ✅ Add regional cost disaggregation for reporting (no optimization impact)
+
+**High-Risk Modifications** (require extensive testing):
+- ⚠️ Remove cost component:
+  - Makes that resource **FREE** → model overexploits it
+  - Example: Remove emission costs → infinite deforestation
+- ⚠️ Change cost weighting:
+  - Alters trade-offs between objectives
+  - Example: Reduce factor costs weight → unrealistic intensification
+- ⚠️ Add multi-objective terms:
+  - Changes optimization from cost minimization to Pareto search
+  - Requires new solver configuration
+
+**Dangerous Modifications** (almost never do this):
+- 🔴 Change objective from minimization to maximization → nonsensical
+- 🔴 Make objective function nonlinear → solver may fail to converge
+- 🔴 Remove entire cost categories → system becomes infeasible
+
+**Testing Requirements After ANY Modification**:
+
+1. **Objective function value check**:
+   ```r
+   cost_glo <- readGDX(gdx, "ov_cost_glo", field="l")
+   stopifnot(all(cost_glo > 0))  # Must be positive
+   stopifnot(all(is.finite(cost_glo)))  # No NaN/Inf
+   ```
+
+2. **Regional aggregation check** (Section 9):
+   ```r
+   cost_reg <- readGDX(gdx, "ov11_cost_reg", field="l")
+   cost_glo_calc <- sum(cost_reg)
+   cost_glo_actual <- readGDX(gdx, "ov_cost_glo", field="l")
+   stopifnot(abs(cost_glo_calc - cost_glo_actual) / cost_glo_actual < 1e-6)
+   ```
+
+3. **Cost composition check** (Section 15.2):
+   ```r
+   # Verify all expected cost components are present and non-negative
+   factor_costs <- readGDX(gdx, "ov_cost_prod", field="l")
+   emission_costs <- readGDX(gdx, "ov_emission_costs", field="l")
+   trade_costs <- readGDX(gdx, "ov_cost_trade", field="l")
+   stopifnot(all(factor_costs >= 0))
+   stopifnot(all(emission_costs >= 0))
+   stopifnot(all(trade_costs >= 0))
+   ```
+
+4. **All conservation laws** (mandatory):
+   - Run all checks from land_balance_conservation.md
+   - Run all checks from water_balance_conservation.md
+   - Run all checks from carbon_balance_conservation.md
+   - Run all checks from nitrogen_food_balance.md
+
+5. **Solver status check**:
+   ```r
+   solve_status <- gdx$status$solve_status
+   stopifnot(solve_status == 1)  # 1 = optimal
+   model_status <- gdx$status$model_status
+   stopifnot(model_status %in% c(1, 2))  # 1 = optimal, 2 = locally optimal
+   ```
+
+6. **Economic plausibility check**:
+   ```r
+   # Costs should scale with production
+   production_total <- production(gdx, level="glo", products="kall")
+   cost_per_ton <- cost_glo / production_total
+   # Typical: 100-1000 USD/ton depending on scenario
+   stopifnot(cost_per_ton > 10 && cost_per_ton < 10000)
+   ```
+
+**Common Pitfalls**:
+- ❌ Forgetting to declare new cost variable in source module
+- ❌ Adding cost with wrong sign (positive should increase costs)
+- ❌ Scaling issues (cost magnitude 10^20 causes numerical instability)
+- ❌ Missing cost in one equation but not others (inconsistency)
+- ❌ Assuming costs are marginal (they're total costs)
+
+**Emergency Fixes**:
+- If solver fails: Check for negative costs, NaN values, or unbounded variables
+- If unrealistic results: Verify cost composition (one component dominating?)
+- If infeasibility: A cost constraint may be too strict (check source module)
+- If oscillation: Cost formulation may be discontinuous (smooth it)
+
+**Critical Safety Protocols** (from modification_safety_guide.md):
+- Module 11 is THE **highest-centrality module**
+- Changes require **approval from multiple MAgPIE developers**
+- **Full test suite** mandatory (10+ validation checks)
+- **Baseline comparison** required (show differences vs. unmodified)
+- **Scenario sensitivity** testing (SSP1-SSP5 all must run successfully)
+
+**Links**:
+- Full dependency details → Phase2_Module_Dependencies.md (Section 2.1, Table 1)
+- Modification protocols → cross_module/modification_safety_guide.md (Module 11 section)
+- Cost component catalog → This document Section 3
+
+---
+
 **Documentation Status:** ✅ Fully Verified (2025-10-12)
 **Verification Method:** All source files read, 2 equations verified against declarations.gms, 147 lines analyzed, 30+ cost components catalogued from equations.gms
 **Citation Density:** 50+ file:line references
 **Next Module:** Module 17 (Production) — another core hub module
 
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/11_*/default/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

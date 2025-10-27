@@ -833,3 +833,59 @@ sum(wat_dem, vm_watdem(wat_dem,j2)) =l= sum(wat_src, v43_watavail(wat_src,j2))
 
 **Documentation complete**: 2025-10-13
 **Module 43 Status**: Fully verified - Equation checked, all mechanisms documented, zero errors
+---
+
+## Participates In
+
+This section shows Module 43's role in system-level mechanisms.
+
+### Conservation Laws
+
+**Water Balance Conservation ⭐ PRIMARY ENFORCER**
+- **Role**: Enforces water balance constraint via q43_water equation
+- **Details**: `cross_module/water_balance_conservation.md`
+
+**Not in** land, carbon, nitrogen, or food balance
+
+### Dependency Chains
+
+**Centrality Analysis**:
+- **Centrality Rank**: Medium (water system enforcer)
+- **Hub Type**: Water Balance Enforcer
+
+**Provides to**: Module 11 (costs): Shadow prices on water constraint
+
+**Depends on**: Module 42 (water_demand): vm_watdem for all sectors
+
+**Details**: `core_docs/Phase2_Module_Dependencies.md`
+
+### Circular Dependencies
+
+**Croparea-Irrigation cycle**: Indirectly via Module 42 water demand
+
+**Details**: `cross_module/circular_dependency_resolution.md`
+
+### Modification Safety
+
+**Risk Level**: 🔴 **HIGH RISK** (Water balance enforcer)
+
+**Why**: Errors cause water infeasibility across model
+
+**Safe Modifications**: ✅ Adjust infeasibility buffer, ✅ Change water source scenarios
+
+**Testing**: Verify demand ≤ supply in all cells, check shadow prices reasonable
+
+**Links**:
+- Conservation law → `cross_module/water_balance_conservation.md`
+- Dependencies → `core_docs/Phase2_Module_Dependencies.md`
+
+---
+
+**Module 43 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/43_*/watavail_aug13/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

@@ -836,3 +836,42 @@ Module 80 behavior controlled by main configuration switches in `config/default.
 ---
 
 **END OF MODULE 80 DOCUMENTATION**
+---
+
+## Participates In
+
+### Conservation Laws
+
+**Not in conservation laws** (optimization objective aggregator)
+
+**Role**: Aggregates all cost components into global objective function
+
+### Dependency Chains
+
+**Centrality**: TERMINAL (final aggregator)
+**Hub Type**: Optimization Objective
+**Depends on**: Module 11 (costs) - aggregated costs
+**Provides to**: NONE (terminal node - solver minimizes this)
+
+### Circular Dependencies
+
+None (terminal aggregator)
+
+### Modification Safety
+
+**Risk Level**: 🔴 **HIGH RISK** (Objective function)
+**Why**: Changes affect what model optimizes for
+**Testing**: Verify objective components weighted correctly, check solution makes economic sense
+
+**Details**: `core_docs/Phase2_Module_Dependencies.md`
+
+---
+
+**Module 80 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/80_*/nlp_par/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

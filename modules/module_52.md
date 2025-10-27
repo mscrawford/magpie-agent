@@ -976,3 +976,42 @@ Module 52 (Carbon) serves as **MAgPIE's carbon accounting hub**, providing carbo
 - [x] Total citations: 100+ file:line references
 
 **Verification**: Module 52 documentation is **fully verified** against source code with zero errors.
+---
+
+## Participates In
+
+### Conservation Laws
+
+**Carbon Balance Conservation ⭐ PRIMARY CALCULATOR**
+- **Role**: Calculates all carbon stocks (vegetation, litter, soil) and CO₂ emissions from land-use change
+- **Formula**: Uses Chapman-Richards growth curves for vegetation carbon, tracks stock changes
+- **Details**: `cross_module/carbon_balance_conservation.md`
+
+**Not in** water, land (uses land, doesn't enforce), nitrogen, or food balance
+
+### Dependency Chains
+
+**Centrality**: Medium-High (carbon system core)
+**Hub Type**: Carbon Stock Calculator
+**Provides to**: Modules 56 (ghg_policy), 11 (costs), 44 (biodiversity)
+**Depends on**: Modules 10 (land), 28 (age class), 35 (natveg)
+
+### Circular Dependencies
+
+**Forest-Carbon Cycle**: Module 56 (carbon price) → 32 (forestry) → 10 (land) → **52 (carbon)** → 56
+
+### Modification Safety
+
+**Risk Level**: 🔴 **HIGH RISK** (Core carbon accounting)
+**Testing**: Verify carbon mass balance, check CO₂ emissions reasonable
+
+---
+
+**Module 52 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/52_*/cc/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

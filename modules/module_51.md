@@ -709,3 +709,59 @@ Emissions = 10 / (1-0.5) × (1-0.6) × 0.01
 
 **Documentation Complete**: Module 51 (Nitrogen) — 100% verified, zero errors
 **Last Updated**: 2025-10-12
+---
+
+## Participates In
+
+This section shows Module 51's role in system-level mechanisms.
+
+### Conservation Laws
+
+**Nitrogen Balance (Emissions)**
+- **Role**: Calculates nitrogen emissions (N₂O, NH₃, NOx) using IPCC factors
+- **Details**: `cross_module/nitrogen_food_balance.md`
+
+**Not in** land, water, carbon, or food balance
+
+### Dependency Chains
+
+**Centrality Analysis**:
+- **Centrality Rank**: Low-Medium (emissions calculator)
+- **Hub Type**: Nitrogen Emissions Calculator
+
+**Provides to**: Module 56 (ghg_policy): N₂O emissions for GHG accounting, Module 11 (costs): via emissions
+
+**Depends on**: Module 50 (nr_soil_budget): Nitrogen inputs, Module 14 (yields): Crop nitrogen content
+
+**Details**: `core_docs/Phase2_Module_Dependencies.md`
+
+### Circular Dependencies
+
+**None** (emissions are output, no feedback)
+
+**Details**: `cross_module/circular_dependency_resolution.md`
+
+### Modification Safety
+
+**Risk Level**: 🟢 **LOW RISK** (Emissions calculator)
+
+**Why**: Uses fixed IPCC emission factors, limited downstream dependencies
+
+**Safe Modifications**: ✅ Adjust emission factors, ✅ Change NUE assumptions
+
+**Testing**: Verify emissions in IPCC ranges, check N₂O contribution to GHG
+
+**Links**:
+- Conservation law → `cross_module/nitrogen_food_balance.md`
+- Dependencies → `core_docs/Phase2_Module_Dependencies.md`
+
+---
+
+**Module 51 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/51_*/n51_ipcc2006/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

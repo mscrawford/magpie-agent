@@ -1215,6 +1215,51 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 
 **Verification**: All 7 equations verified against source code. All formulas, dimensions, and parameter names confirmed exact. All interface variables cross-referenced with Phase 2 dependency documentation. Zero errors detected.
 
-**Documentation Date**: 2025-10-12
 **MAgPIE Version**: 4.x series
 **Lines Documented**: ~450 (fbask_jan16 realization)
+---
+
+## Participates In
+
+### Conservation Laws
+
+**Food Balance** (livestock products component)
+- **Role**: Calculates livestock production (meat, dairy, eggs) based on feed availability
+- **Indirect**: Affects food supply side of food balance
+- **Details**: `cross_module/nitrogen_food_balance.md`
+
+**Not in** land, water, carbon balance directly (though affects them via feed demand)
+
+### Dependency Chains
+
+**Centrality**: HIGH (Rank #6 - livestock production hub)
+**Hub Type**: Livestock Production & Feed Demand Calculator
+**Provides to**: 7 modules (production, costs, emissions, manure)
+**Depends on**: Modules 14 (yields), 17 (production), 70 (self - feed baskets)
+
+**Details**: `core_docs/Phase2_Module_Dependencies.md`
+
+### Circular Dependencies
+
+**Production-Yield-Livestock Cycle**:
+Module 17 (production) → 14 (yields) → **70 (livestock)** → 17
+
+**Resolution**: Feed conversion efficiencies and feed baskets resolved simultaneously
+
+**Details**: `cross_module/circular_dependency_resolution.md`
+
+### Modification Safety
+
+**Risk Level**: ⚠️ **MEDIUM-HIGH RISK** (Hub module with 7 dependents)
+**Testing**: Verify feed demand reasonable, check livestock production feasible
+
+---
+
+**Module 70 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/70_*/fbask_jan16/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

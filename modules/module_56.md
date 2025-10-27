@@ -1091,3 +1091,43 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 **Citation Density:** 80+ file:line references
 **Next Module:** Module 21 (Trade) or Module 30 (Crop) — core production/supply-demand hubs
 
+---
+
+## Participates In
+
+### Conservation Laws
+
+**GHG Policy (Carbon Pricing)**
+- **Role**: Implements carbon pricing and GHG policy constraints
+- **Not a conservation law** but creates economic incentives affecting land use
+- **Details**: `cross_module/circular_dependency_resolution.md`
+
+### Dependency Chains
+
+**Centrality**: HIGH (Rank #3 - policy hub)
+**Hub Type**: GHG Policy & Carbon Pricing Hub
+**Provides to**: 13 modules (carbon price signal affects many decisions)
+**Depends on**: Modules 52 (carbon stocks), 53 (methane), 51 (N₂O)
+
+### Circular Dependencies
+
+**Forest-Carbon Cycle**: **56 (ghg_policy)** → 32 (forestry) → 10 (land) → 52 (carbon) → 56
+**Resolution**: Temporal feedback - carbon price affects afforestation decisions
+
+**Details**: `cross_module/circular_dependency_resolution.md` Section 3.4
+
+### Modification Safety
+
+**Risk Level**: ⚠️ **MEDIUM-HIGH RISK** (Affects 13 modules)
+**Testing**: Verify carbon price impacts are economically reasonable
+
+---
+
+**Module 56 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/56_*/emis_policy/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

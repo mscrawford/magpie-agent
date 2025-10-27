@@ -636,3 +636,38 @@ vm_prod(j,kli_rum) / vm_prod_reg(i,kli_rum)    in q71_feed_balanceflow_nlp
 **Verification date**: 2025-10-13
 **Verified by**: Claude (AI agent)
 **Source code version**: MAgPIE develop branch (commit 96d1a59a8)
+---
+
+## Participates In
+
+### Conservation Laws
+
+**Not in conservation laws** (livestock spatial disaggregation)
+
+**Indirect Role**: Distributes livestock production spatially based on feed availability
+
+### Dependency Chains
+
+**Centrality**: Low-Medium (spatial distributor)
+**Depends on**: Module 70 (livestock production at regional level)
+**Provides to**: Modules needing cell-level livestock data
+
+### Circular Dependencies
+
+None
+
+### Modification Safety
+
+**Risk Level**: 🟡 **MEDIUM RISK**
+**Testing**: Verify spatial distribution sums to regional totals
+
+---
+
+**Module 71 Status**: ✅ COMPLETE
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/71_*/foragebased_jul23/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

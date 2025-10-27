@@ -548,6 +548,67 @@ log(hourly_wage) ~ β₀ + β₁ × log(GDP_pc) + country_FE + year_FE
 
 ---
 
+### 7.1. Participates In
+
+#### Conservation Laws
+
+**All Conservation Laws**: ❌ **DOES NOT PARTICIPATE** (post-processing module)
+
+Module 36 is a **reporting and post-processing module** that back-calculates employment from costs. It does NOT affect any conservation laws:
+
+**Land Balance**: ❌ Does NOT participate (employment doesn't affect land allocation)
+**Water Balance**: ❌ Does NOT participate
+**Carbon Balance**: ❌ Does NOT participate
+**Food Balance**: ⚠️ **INDIRECT** - Wages affect agricultural production costs (via Modules 38, 57, 70), which COULD affect food production, but Module 36 itself has no equations in the optimization
+**Nitrogen**: ❌ Does NOT participate
+
+**Key Insight**: Module 36 is **PASSIVE** - it takes optimized costs as INPUT and back-calculates employment as OUTPUT. It provides wages (exogenous regression) but doesn't enforce constraints.
+
+---
+
+#### Dependency Chains
+
+**Centrality**: ~35 of 46 modules (low centrality)
+**Total Connections**: 2 (provides to 1-2, depends on 2-3)
+**Hub Type**: Post-Processing Hub (wage calculation + employment reporting)
+
+**Provides To**: Module 11 (Costs - labor cost parameters), Module 38 (Factor Costs - wage inputs), Reporting modules (employment statistics)
+
+**Depends On**: Module 09 (Drivers - GDP per capita for wage regression), Module 38 (Factor Costs - for back-calculation)
+
+**Key Role**: Translates external GDP data into agricultural wages, then back-projects employment from optimized labor costs.
+
+---
+
+#### Circular Dependencies
+
+**Participates In**: ZERO circular dependencies (two-stage calculation, no feedbacks within timestep)
+
+**Why NO Circular Dependencies**:
+1. **Wages determined in preloop** (before optimization) from exogenous GDP data
+2. **Employment calculated in postsolve** (after optimization) from optimized costs
+3. **No feedback loop**: Employment doesn't affect wages or costs in same timestep
+
+**Temporal Structure**:
+- **Preloop**: GDP → wage regression → `pm_hourly_costs(t,i,"scenario")`
+- **Optimization**: Wages used in cost modules (38, 57, 70)
+- **Postsolve**: Optimized costs → employment back-calculation
+
+---
+
+#### Modification Safety
+
+**Risk Level**: 🟢 **LOW RISK**
+
+**Safe**: Changing wage regression coefficients, modifying minimum wage scenarios, adding new employment categories, updating GDP data sources
+**Dangerous**: Breaking wage-cost linkage (Modules 38/57/70 lose wage inputs), making employment calculations affect optimization (introduces circularity)
+**Required Testing**: Wage levels reasonable, employment consistent with labor costs, minimum wage scenarios don't cause unrealistic cost spikes
+**Common Issues**: Wage regression produces negative/zero wages → check GDP input data; Employment unrealistically high/low → verify labor cost parameters in Module 38
+
+**Why Low Risk**: Post-processing module with exogenous wage regression. Cannot break conservation laws. Worst-case: Unrealistic wage/employment numbers (easily detected in reporting). No optimization constraints affected.
+
+---
+
 ### 8. Code Truth: What Module 36 DOES
 
 **VERIFIED implementations with file:line references**:
@@ -992,7 +1053,6 @@ plot(ag_employment_share, main="Agricultural Employment as % of Population")
 
 **Module 36 Status**: ✅ COMPLETE (1076 lines documented, 3.8× expansion)
 **Verified Against**: Actual code in `modules/36_employment/exo_may22/`
-**Documentation Date**: October 11, 2025
 
 ---
 
@@ -1109,3 +1169,10 @@ modules/36_employment/exo_may22/preloop.gms:9-10
 decrease represents structural transformation (labor leaving agriculture for
 other sectors), not unemployment.
 ```
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/36_*/off/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

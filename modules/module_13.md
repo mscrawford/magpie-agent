@@ -320,3 +320,87 @@ Tau factor multiplies biophysical yields from LPJmL, directly increasing crop an
 - **File citations**: 60+
 
 **Status**: Fully verified against source code. All equations match declarations.gms:15-19, formulas match equations.gms:20-45.
+
+---
+
+## Participates In
+
+### Conservation Laws
+Module 13 does **not directly participate** in conservation laws, but **indirectly affects all** via τ factor:
+- Higher τ → Higher yields → Less land needed → **Land balance** affected
+- Higher yields → More water-efficient production → **Water balance** affected
+- Intensification costs affect land-use decisions → **Carbon balance** affected (deforestation vs. intensification trade-off)
+
+### Dependency Chains
+**Centrality**: High (critical yield modifier, part of production system)
+- **Depends on**: Modules 09 (GDP), 10 (land), 12 (interest rate)
+- **Provides to**: Modules 11 (costs), 14 (yields), 38 (factor costs)
+- **Role**: **Intensification driver** - determines agricultural productivity growth
+
+**Key variable**: `vm_tau` - **THE** technological change factor that scales all yields
+
+### Circular Dependencies
+
+**Module 13 participates in Cycle 1: Production-Yield-Livestock Triangle ⭐⭐⭐**
+
+**Dependency chain**:
+```
+vm_tau [13] → Scales yields
+    ↓
+vm_yld [14] → Affects production
+    ↓
+vm_prod [17/30] → Production levels
+    ↓
+Manure from livestock [70] → Soil fertility
+    ↓
+pm_yields_semi_calib [14] → **Feeds back to tau calculation** (via past production patterns)
+```
+
+**Resolution**: **Temporal Feedback**
+- Within timestep: τ is **optimized** based on costs vs. benefits
+- Across timesteps: Past production patterns influence future τ (15-year lag via `pm_interest`)
+- **Lagged variables** break circular dependency within optimization
+
+**Module 13's role**: Provides the **economic mechanism** for yield improvement. Model chooses τ level by balancing:
+- **Benefit**: Higher yields → less land needed → lower land costs
+- **Cost**: Investment in intensification (`vm_tech_cost`)
+
+**Links**: circular_dependency_resolution.md (Section 3.1), module_14.md (Section 21.3)
+
+### Modification Safety
+**Risk Level**: 🔴 **HIGH RISK** (affects entire production system, part of critical feedback loop)
+
+**Why High Risk**:
+1. **τ factor affects ALL crop/pasture yields** - errors propagate everywhere
+2. **Part of Cycle 1** - modifications can destabilize calibration
+3. **Cost-benefit trade-off** - wrong costs → unrealistic intensification
+4. **15-year lag** - temporal feedback can cause oscillations
+
+**Safe Modifications**:
+- ✅ Adjust TC cost scenarios (low/medium/high via `c13_tccost`)
+- ✅ Change GDP investment constraint (`s13_max_gdp_shr`)
+- ✅ Toggle historical tau trajectory (`s13_ignore_tau_historical`)
+
+**High-Risk Modifications**:
+- 🔴 Change τ cost equation structure (affects land-intensification trade-off)
+- 🔴 Modify 15-year lag mechanism (can cause temporal instability)
+- 🔴 Change τ doubling limit (unrealistic jumps or stagnation)
+
+**Testing After Modification**:
+1. **τ trajectory check**: Gradual growth, no oscillations
+   ```r
+   tau <- readGDX(gdx, "ov_tau", field="l")
+   # Should increase over time, no wild swings
+   ```
+2. **Yield calibration**: Still matches FAO targets (Module 14 check)
+3. **Investment plausibility**: TC costs reasonable vs. total agricultural costs
+4. **Cycle 1 stability**: Production-yield feedback stable (see module_14.md tests)
+
+**Links**: modification_safety_guide.md, circular_dependency_resolution.md (Section 3.1)
+
+---
+
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/13_*/endo_jun18/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)

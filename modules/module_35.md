@@ -632,6 +632,81 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 
 ---
 
+### 10.1. Participates In
+
+#### Conservation Laws
+
+**Land Balance**: ✅ **CRITICAL PARTICIPANT (RESIDUAL ALLOCATOR)** - Module 35 receives land NOT claimed by other modules: `vm_land(j,"primforest")`, `v35_secdforest(j,ac)`, `vm_land_other(j,othertype,ac)`. Three land types: primary forest, secondary forest (age-classes 1-15), other land (grassland, shrubland, etc.). **CRITICAL ROLE**: Natural vegetation is the **RESIDUAL** in land balance - it absorbs consequences of all other land use decisions. Conservation constraints must be met: NPI/NDC/protected area targets enforced via Module 22.
+
+**Carbon Balance**: ✅ **CRITICAL PARTICIPANT (DOMINANT POOL)** - Natural vegetation holds **LARGEST carbon stocks** in model. Chapman-Richards growth: `vegc(age) = A × (1-exp(-k×age))^m`. Three pools: vegetation (age-dependent), litter, soil. Disturbances (fire, shifting agriculture, generic shocks) trigger carbon loss. **Avoided deforestation** is major carbon mitigation strategy (via Module 56 policy constraints).
+
+**Food Balance**: ❌ Does NOT participate (natural vegetation does not supply food)
+
+**Water Balance**: ⚠️ **INDIRECT** - Natural vegetation changes affect water availability (deforestation reduces evapotranspiration)
+
+**Nitrogen**: ⚠️ **INDIRECT** - Forest N through soil carbon dynamics (Module 59)
+
+**Cross-Reference**: `cross_module/land_balance_conservation.md` (Section 5.7, "Module 35 Complex Age-Class Dynamics"), `cross_module/carbon_balance_conservation.md` (Sections 3.5-3.6, "Natural Vegetation Carbon")
+
+---
+
+#### Dependency Chains
+
+**Centrality**: **Rank 10 of 46** modules (HIGH centrality)
+**Total Connections**: **12** (provides to 5, depends on 7)
+**Hub Type**: Central Hub (land residual + carbon dynamics + conservation)
+
+**Provides To**: Module 10 (Land), Module 11 (Costs), Module 22 (Conservation - eligible restoration area), Module 32 (Forestry - max forest establishment potential), Module 52 (Carbon - natural vegetation carbon stocks), Module 56 (GHG policy - avoided deforestation potential), Module 73 (Timber - harvest production)
+
+**Depends On**: Module 10 (Land - available land after other allocations), Module 22 (Conservation - protection/restoration targets), Module 28 (Age Class - age-class structure), Module 32 (Forestry - land competition), Module 44 (Biodiversity - BII calculations reference), plus 2 others
+
+**Key Role**: **RESIDUAL LAND ALLOCATOR** + **LARGEST CARBON POOL** + **CONSERVATION ENFORCEMENT**
+
+---
+
+#### Circular Dependencies
+
+**Participates In**: **3+ circular dependency cycles** (one of most complex modules)
+
+**Cycle 1**: Land ↔ NatVeg ↔ Conservation (land-vegetation-protection triangle)
+**Resolution**: Type 2 - Simultaneous equations
+
+**Cycle 2**: NatVeg ↔ Forestry (land competition for afforestation)
+**Resolution**: Type 2 - Simultaneous equations
+
+**Cycle 3**: NatVeg ↔ Carbon ↔ GHG Policy (avoided deforestation)
+**Structure**: Module 35 → Module 52 (carbon stocks) → Module 56 (carbon pricing / avoided deforestation policy) → **back to Module 35** (deforestation constraints)
+**Resolution**: Type 1 + 2 (Temporal feedback + Simultaneous equations)
+
+**Risk**: Module 35 is central to **MOST COMPLEX FEEDBACK LOOP** in MAgPIE (5-module Forest-Carbon-Price cycle via Module 32). Changes can destabilize carbon accounting or land allocation.
+
+**Reference**: `cross_module/circular_dependency_resolution.md` (Sections 3.2, 3.4)
+
+---
+
+#### Modification Safety
+
+**Risk Level**: 🔴 **EXTREME RISK**
+
+**Justification**: Rank 10 of 46, 12 connections, 3+ circular cycles, CRITICAL for land balance (residual allocator), CRITICAL for carbon balance (largest natural carbon pool), CRITICAL for conservation policies, affects 7+ downstream modules including core modules 10, 52, 56
+
+**Safe**: Adjusting disturbance rates, changing age-class progression logic, modifying BII coefficients, updating harvest rules
+**Dangerous**: Removing residual land allocation (breaks land balance), hardcoding natural vegetation area (prevents land use change), changing age-class dynamics (affects carbon growth), modifying conservation enforcement (violates NPI/NDC targets)
+**Required Testing**: ALL 5 conservation laws (land is CRITICAL, carbon is CRITICAL), age-class dynamics convergence, conservation target feasibility, circular dependency cycles stable
+**Common Issues**: Conservation targets exceed available land (infeasibility) → reduce protection ambition; Age-class dynamics unstable (carbon stocks oscillate) → check disturbance rates and growth parameters; Deforestation unrealistic (too fast/slow) → adjust land competition costs
+
+**CRITICAL IMPORTANCE**: Module 35 is the **RESIDUAL ALLOCATOR** for land - it receives whatever land is NOT used by agriculture/forestry/urban. It also holds the **LARGEST CARBON STOCKS**. Any modification affects:
+- ✅ Land balance (CRITICAL - residual must absorb all other land use)
+- ✅ Carbon balance (CRITICAL - natural vegetation is dominant carbon pool)
+- ✅ Conservation policies (NPI/NDC/protected areas enforced here)
+- ✅ Avoided deforestation potential (climate mitigation)
+
+**File Complexity**: 1,085 lines across 9 files, 33 equations - one of the most complex modules in MAgPIE.
+
+**Reference**: `cross_module/modification_safety_guide.md` (HIGH RISK - Complex land and carbon dynamics)
+
+---
+
 ### 11. Typical Modifications
 
 #### 11.1 Increase Disturbance Rates
@@ -812,3 +887,7 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 
 ---
 
+**Last Verified**: 2025-10-13
+**Verified Against**: `../modules/35_*/pot_forest_feb21/*.gms`
+**Verification Method**: Equations cross-referenced with source code
+**Changes Since Last Verification**: None (stable)
