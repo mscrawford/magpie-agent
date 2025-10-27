@@ -894,7 +894,7 @@ Production affects demand via prices (if endogenous demand) → **BACK TO START*
 **Dangerous Modifications** (expert-only):
 - 🔴 Change aggregation equation structure:
   - Downstream modules expect `vm_prod_reg(i,k)` dimensions
-  - Changing sets breaks 13 dependent modules
+  - Changing sets breaks dependent modules (see `core_docs/Module_Dependencies.md#module-17` for complete list)
 - 🔴 Add weights or filters to aggregation:
   - Violates **mass balance**: regional ≠ sum of cells
   - Breaks food balance constraint → infeasibility

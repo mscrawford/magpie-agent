@@ -951,7 +951,7 @@ Module 29 (Cropland) ──→ vm_treecover(j) ──→ Module 59 (SOM)
 
 **Justification**:
 - Participates in **4 of 5 conservation laws** (land, carbon, food, nitrogen)
-- 7 dependent modules affected by changes
+- Dependent modules affected by changes (see `core_docs/Module_Dependencies.md#module-29` for complete list)
 - 2 circular dependency cycles (cropland allocation + soil carbon)
 - Core module for land use policy (SNV, fallow, tree cover)
 

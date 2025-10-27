@@ -348,6 +348,88 @@ User asks MAgPIE question
 
 ---
 
+## 🔗 LINK DON'T DUPLICATE
+
+**When updating or creating documentation, follow these rules to prevent information drift:**
+
+### Authoritative Sources (Single Source of Truth)
+
+**Never duplicate these - always link instead:**
+
+| Information Type | Authoritative Source | Link Format |
+|-----------------|---------------------|-------------|
+| Module equations, parameters, variables | `modules/module_XX.md` | `modules/module_XX.md#equation-name` |
+| Dependency counts & lists | `core_docs/Module_Dependencies.md` | `core_docs/Module_Dependencies.md#module-XX` |
+| Conservation law equations | `cross_module/*_balance.md` | `cross_module/land_balance_conservation.md#enforcement` |
+| GAMS syntax & patterns | `reference/GAMS_Phase*.md` | `reference/GAMS_Phase5_MAgPIE_Patterns.md#topic` |
+| Data file sources | `core_docs/Data_Flow.md` | `core_docs/Data_Flow.md#file-name` |
+
+### When to Link vs When to Duplicate
+
+**✅ ALWAYS LINK** (never duplicate):
+- Dependency counts ("Module X has 23 dependents") → link to `Module_Dependencies.md`
+- Equation formulas from other modules → link to authoritative `module_XX.md`
+- Data file sources and formats → link to `Data_Flow.md`
+- Exact numerical values that must stay synchronized
+
+**✅ LEGITIMATE DUPLICATION** (different contexts, different purposes):
+- **Conservation law equations** in both:
+  - `modules/module_XX.md` (technical doc: "This is equation 1 of Module X")
+  - `cross_module/*_balance.md` (system-level doc: "This is THE conservation constraint")
+- **Different levels of explanation**:
+  - Overview (high-level summary) vs Detailed (full technical specification)
+  - Pedagogical (teaching concept) vs Reference (looking up facts)
+
+### Examples
+
+❌ **WRONG** - Hardcoded dependency count:
+```markdown
+**Risk Level**: HIGH (Module 10 has 23 dependents)
+```
+
+✅ **CORRECT** - Link to authoritative source:
+```markdown
+**Risk Level**: HIGH (see `core_docs/Module_Dependencies.md#module-10` for dependency list)
+```
+
+❌ **WRONG** - Duplicate equation from another module:
+```markdown
+Module 29 uses land allocation:
+q10_land_area(j2) .. sum(land, vm_land(j2,land)) =e= ...
+```
+
+✅ **CORRECT** - Link to authoritative source:
+```markdown
+Module 29 uses land allocation from Module 10 (see `modules/module_10.md#equation-1`)
+```
+
+✅ **ACCEPTABLE** - Legitimate pedagogical duplication:
+```markdown
+# In module_10.md (technical documentation)
+**Equation 1**: q10_land_area enforces land conservation
+[full formula]
+
+# In cross_module/land_balance_conservation.md (system-level analysis)
+**The Core Conservation Constraint**: q10_land_area ensures total land remains constant
+[same formula shown for pedagogical clarity]
+```
+
+### Enforcement During Updates
+
+**Before adding information to documentation:**
+1. **Check if it already exists** - Search for existing coverage
+2. **Identify authoritative source** - Where does this information live?
+3. **Link don't duplicate** - Reference the authoritative source
+4. **If duplicating** - Ensure different context/purpose justifies it
+
+**Red flags that indicate duplication:**
+- Writing the same equation formula seen elsewhere
+- Listing dependency counts already in Module_Dependencies.md
+- Describing data files already documented in Data_Flow.md
+- Copying exact parameter descriptions from another module doc
+
+---
+
 ## ✓ QUICK RESPONSE CHECKLIST
 
 **Before sending ANY response:**

@@ -84,6 +84,64 @@ Read all integrated feedback files that haven't been compressed yet, looking for
 - Redundant corrections → Single authoritative statement
 - Module-specific feedback → Cross-module pattern documentation
 
+### 🚨 Duplication Detection (NEW - Link Don't Duplicate Enforcement):
+
+**CRITICAL**: Detect when documentation is duplicating information that should be linked instead.
+
+**Red Flags to Scan For**:
+
+1. **Hardcoded Dependency Counts**:
+   ```bash
+   grep -rn "\b[0-9]\+\s\+\(dependent\|dependents\|dependencies\)" modules/ core_docs/ cross_module/
+   ```
+   - **Problem**: Numbers like "Module 10 has 23 dependents" get stale
+   - **Fix**: Replace with link to `core_docs/Module_Dependencies.md#module-XX`
+
+2. **Duplicated Equation Formulas**:
+   ```bash
+   # Find equations that appear in multiple files
+   grep -rn "=e=\|=l=\|=g=" modules/ cross_module/ | cut -d: -f1 | sort | uniq -c | sort -rn
+   ```
+   - **Problem**: Same equation formula in multiple docs → maintenance burden
+   - **Check**: Is this legitimate pedagogical duplication or redundancy?
+   - **Legitimate**: module_XX.md (tech doc) + *_conservation.md (system analysis)
+   - **Redundant**: Same formula in multiple module docs
+
+3. **Duplicated Data File Descriptions**:
+   ```bash
+   grep -rn "f[0-9]\+_" modules/ | grep -i "source:\|format:\|contains:"
+   ```
+   - **Problem**: Data file info appears in multiple places
+   - **Fix**: Link to authoritative `core_docs/Data_Flow.md`
+
+4. **Duplicated Parameter Descriptions**:
+   - Look for exact same parameter definitions in multiple modules
+   - **Check**: Does each module define parameters from OTHER modules?
+   - **Fix**: Link to authoritative module_XX.md instead
+
+**Action When Duplications Found**:
+1. **Document the duplication** in compression proposal
+2. **Identify authoritative source** (which file owns this information?)
+3. **Propose links** to replace duplications
+4. **Check legitimacy** - Is this pedagogical duplication (acceptable) or redundancy (fix)?
+
+**Add to Compression Proposal**:
+```markdown
+## 🔗 Duplication Issues Found
+
+### Issue #1: Hardcoded Dependency Counts
+**Files Affected**: modules/module_11.md:1134, modules/module_17.md:897
+**Current**: "27 dependencies", "13 dependent modules"
+**Proposed**: Link to `core_docs/Module_Dependencies.md` instead
+**Rationale**: Numbers drift when model changes; authoritative source must be single
+
+### Issue #2: Equation Formula Duplication
+**Equation**: q10_land_area
+**Files**: module_10.md (line 39), modification_safety_guide.md (line 58)
+**Assessment**: LEGITIMATE - Different contexts (tech doc vs safety guide)
+**Action**: Keep both, ensure they stay synchronized
+```
+
 ---
 
 ## Step 3: Generate Synthesis Proposal

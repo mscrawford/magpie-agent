@@ -1131,7 +1131,7 @@ Module 11 participates in **zero circular dependencies**:
 
 **Why Extreme Risk**:
 1. **Affects entire model**: Changing objective function changes EVERY optimization decision
-2. **27 dependencies**: Must coordinate with 27+ cost-providing modules
+2. **Many dependencies**: Must coordinate with cost-providing modules (see `core_docs/Module_Dependencies.md#module-11` for complete list)
 3. **No redundancy**: Single point of failure for optimization
 4. **Solver sensitivity**: Small changes can cause convergence failures
 5. **Economic meaning**: Costs must reflect real economic trade-offs

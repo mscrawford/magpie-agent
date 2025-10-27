@@ -99,7 +99,7 @@ Now that you know the cycle, check the specific modules:
 **Example**: User asks "Can I modify Module 10 without affecting water?"
 - ✅ Read `module_10.md` (interface variables) → See vm_land exported
 - ✅ Read `Module_Dependencies.md` → Check Module 10 dependents
-- ✅ Read `modification_safety_guide.md` → Module 10 has 23 dependents including Module 42 (water)
+- ✅ Read `modification_safety_guide.md` → Module 10 has many dependents (see `Module_Dependencies.md#module-10`) including Module 42 (water)
 - ✅ STOP and answer: "No, Module 10 affects water through land allocation"
 
 ### Progressive Depth Strategy
