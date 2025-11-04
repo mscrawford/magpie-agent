@@ -531,7 +531,7 @@ global_total = sum(i, sum(k, production(i,k)));
 global_total = sum((i,k), production(i,k));
 ```
 
-**Performance**: Multi-index sum (single call) usually faster than nested.
+**Note**: Multi-index sum is more concise. Both forms are equivalent and compile to the same internal representation in GAMS.
 
 ### 4.3 prod - Product
 
