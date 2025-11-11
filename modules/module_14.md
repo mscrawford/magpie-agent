@@ -189,6 +189,12 @@ i14_modeled_yields_hist(t_past,i,knbe14)
 
 **What This Does:** Calculate area-weighted average LPJmL yield for each region and crop. If a crop has no area in a region, use total cropland as weights (proxy for missing data).
 
+**Division by Zero Protection (Bugfix 2025-09-22 & 2025-10-06):** The dual condition checks prevent division by zero in two edge cases:
+1. When crop-specific area is zero or very small (`fm_croparea < 0.00001`)
+2. When crop-specific area × yields = 0 (area exists but all yields are zero, or data mismatch)
+
+In either case, the calculation falls back to using total cropland area as weights. This handles FAO/LUH croparea mismatches with LPJmL yield data that could otherwise cause overestimated yields or division errors.
+
 **Citation:** `preloop.gms:60-66`
 
 #### Step 3b: Calculate Lambda (Calibration Mode Factor)
@@ -294,6 +300,8 @@ if ((s14_calib_ir2rf = 1),
 4. Re-calibrate to FAO regional totals to maintain production balance
 
 **Why Two-Stage Calibration:** Increasing irrigated yields without re-calibration would violate FAO regional yield constraint. The second calibration at lines 130-140 adjusts both irrigated and rainfed to maintain FAO totals.
+
+**Bugfix Note (2025-09-26):** The re-calibration step (lines 130-140) was corrected to use `i14_yields_calib` instead of `f14_yields` for total cropland weighting, ensuring consistency with the first-stage calibration. Additionally, the same division-by-zero protection (dual condition checks) from Step 3a is applied here to handle edge cases.
 
 **Control Switch:** `s14_calib_ir2rf = 1` enables this (default ON, `input.gms:15`)
 
