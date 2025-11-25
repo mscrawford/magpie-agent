@@ -80,7 +80,7 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 
 ## 📂 CRITICAL: Directory Structure & Path Resolution
 
-**Your working directory**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/`
+**Your working directory**: `magpie-agent/` (relative to the MAgPIE project root)
 
 **Directory layout**:
 ```
