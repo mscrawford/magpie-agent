@@ -56,9 +56,9 @@ feedback/pending/
 2. Validate against current code (is it still accurate?)
 3. **Route by feedback type** (from YAML frontmatter):
    - `correction` → Update `module_XX.md` (fixes errors in core docs!)
-   - `missing` → Update `module_XX.md` (adds missing content)
+   - `missing_content` → Update `module_XX.md` (adds missing content)
    - `warning` → Update `module_XX_notes.md` (user warnings)
-   - `lesson` → Update `module_XX_notes.md` (practical lessons)
+   - `lesson_learned` → Update `module_XX_notes.md` (practical lessons)
    - `global` → Update global lessons or CLAUDE.md
 4. Archive to `feedback/integrated/`
 5. Update appropriate timestamps (Last Verified vs. Last Feedback Integration)
@@ -141,7 +141,7 @@ Agent reads all `.md` files in `pending/` (excluding README.md)
 **Read type from feedback YAML frontmatter**:
 ```yaml
 ---
-type: correction | missing | warning | lesson | global
+type: correction | missing_content | warning | lesson_learned | global
 target: module_XX.md
 ---
 ```
@@ -156,7 +156,7 @@ target: module_XX.md
 
 **B. Warnings & Lessons** → `module_XX_notes.md` (user experience)
 - **warning**: Critical cautions about usage, modifications, pitfalls
-- **lesson**: Practical insights, best practices, real-world patterns
+- **lesson_learned**: Practical insights, best practices, real-world patterns
 - Updates "Last Feedback Integration" timestamp
 - Creates notes file if doesn't exist
 
@@ -167,12 +167,12 @@ target: module_XX.md
 
 ### Step 4: Integrate
 
-**For type=correction or type=missing**:
+**For type=correction or type=missing_content**:
 - Use Edit tool to update `module_XX.md`
 - Maintain module structure and verification standards
 - Update "Last Verified" timestamp
 
-**For type=warning or type=lesson**:
+**For type=warning or type=lesson_learned**:
 - Create or update `module_XX_notes.md`
 - Append to appropriate section (Warnings, Lessons, Examples)
 - Update "Last Feedback Integration" timestamp

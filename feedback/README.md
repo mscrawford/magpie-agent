@@ -204,8 +204,8 @@ Periodic integration session (/integrate-feedback all)
 Validation against current code
   ↓
 Type-based routing:
-  - corrections/missing → module_XX.md (fixes errors)
-  - warnings/lessons → module_XX_notes.md (user experience)
+  - correction/missing_content → module_XX.md (fixes errors)
+  - warning/lesson_learned → module_XX_notes.md (user experience)
   ↓
 Archive to feedback/integrated/
   ↓

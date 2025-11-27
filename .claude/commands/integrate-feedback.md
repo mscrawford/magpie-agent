@@ -69,18 +69,18 @@ cat feedback/pending/20251101_warning_module_10_land.md
 **Extract type from feedback header** (in YAML frontmatter):
 ```yaml
 ---
-type: correction | missing | warning | lesson | global
+type: correction | missing_content | warning | lesson_learned | global
 target: module_XX.md
 ---
 ```
 
 **Routing logic**:
 ```
-correction  → modules/module_XX.md (fixes errors in core docs)
-missing     → modules/module_XX.md (adds missing content to core docs)
-warning     → modules/module_XX_notes.md (user warnings and cautions)
-lesson      → modules/module_XX_notes.md (practical insights)
-global      → feedback/global/claude_lessons.md (system-wide lessons)
+correction      → modules/module_XX.md (fixes errors in core docs)
+missing_content → modules/module_XX.md (adds missing content to core docs)
+warning         → modules/module_XX_notes.md (user warnings and cautions)
+lesson_learned  → modules/module_XX_notes.md (practical insights)
+global          → feedback/global/claude_lessons.md (system-wide lessons)
 ```
 
 **Why this matters**:

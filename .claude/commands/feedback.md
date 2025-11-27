@@ -58,7 +58,7 @@ When using notes files, structure your response like this:
 ## Priority Rules for Notes Files
 
 1. **Warnings come first** - If user is asking about modifications, mention warnings BEFORE providing how-to
-2. **High-centrality modules** - Always mention if modules 10, 11, 17, or 56 are involved (they have 20+ dependents)
+2. **High-centrality modules** - Always mention if module 11 is involved (27 dependents) or modules 10, 17, 56 (13-15 dependents each)
 3. **Conservation laws** - Reference conservation law docs for land, water, carbon, food queries
 4. **Token efficiency** - Don't read entire notes file; skim sections and read only relevant parts
 
