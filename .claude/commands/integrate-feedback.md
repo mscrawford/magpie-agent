@@ -327,11 +327,25 @@ to consolidate accumulated feedback and reduce bloat.
 
 ---
 
+## Step 6: Deploy Changes (CRITICAL)
+
+**After integration is complete, you MUST deploy the changes to the parent directory.**
+
+```bash
+# Run the update command to sync changes to parent
+/update
+```
+
+**Why?** The integration only updates files in the `magpie-agent` repo. The `/update` command copies them to the parent `magpie` directory so the agent can actually use them.
+
+---
+
 ## 🎨 Integration Principles
 
 ### Validate Before Integrating
 
 **NEVER blindly integrate**:
+- ✅ **Prove it**: Use `grep` or `read_file` to find the specific code referenced
 - ✅ Check feedback against current code
 - ✅ Verify equation names/numbers are current
 - ✅ Confirm parameter names are accurate

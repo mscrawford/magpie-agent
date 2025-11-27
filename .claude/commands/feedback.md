@@ -116,9 +116,9 @@ See `feedback/README.md` and `feedback/WORKFLOW_GUIDE.md` for complete details.
 
 ---
 
-## 🔄 COMPLETE FEEDBACK WORKFLOW (CRITICAL!)
+## 🔄 FEEDBACK SUBMISSION WORKFLOW (STEP 1)
 
-**⚠️ Creating a feedback file is only STEP 1 - you MUST also integrate it!**
+**When you have feedback to submit, follow this workflow:**
 
 ### Step 1: Create Feedback File
 
@@ -129,98 +129,87 @@ Write: /path/to/magpie/magpie-agent/feedback/pending/YYYYMMDD_HHMMSS_type_target
 # Follow template structure (see feedback/templates/)
 ```
 
-### Step 2: Explain Proposed Changes to User
-
-**BEFORE integrating, tell the user:**
-
-> "I've documented this mistake in a feedback file. To prevent this from happening again, I propose the following changes:
->
-> 1. **Update [file/command]** to add [specific change]
-> 2. **Add [warning/check/example]** to [location]
-> 3. **Move feedback** from pending/ to integrated/
->
-> This will ensure future agents [benefit of the change].
->
-> May I proceed with integrating these changes?"
-
-**Wait for user approval before proceeding!**
-
-### Step 3: Integrate the Feedback
-
-**Determine where to integrate based on feedback type:**
-
-- **Global behavior/workflow** → Update CLAUDE.md or relevant `/command`
-- **Module-specific** → Update `module_XX_notes.md`
-- **GAMS patterns** → Update `reference/GAMS_Phase*.md`
-- **Cross-module** → Update `cross_module/*.md`
-- **Agent behavior** → Update `core_docs/AI_Agent_Behavior_Guide.md`
-
-**Examples:**
-- Git workflow mistake → Update `/update-claude-md` command
-- Module 52 misunderstanding → Update `modules/module_52_notes.md`
-- GAMS syntax error → Update `reference/GAMS_Phase2_Control_Structures.md`
-
-### Step 4: Move Feedback to Integrated
+### Step 2: Commit and Push Pending File
 
 ```bash
-# Move from pending to integrated
-mv feedback/pending/[file].md feedback/integrated/[file].md
-```
+# Stage ONLY the pending feedback file
+git add feedback/pending/[file].md
 
-### Step 5: Commit Everything Together
+# Commit
+git commit -m "Feedback: [description]
 
-```bash
-# Stage all changes (feedback + integrated changes)
-git add feedback/pending/[file].md feedback/integrated/[file].md [other changed files]
+- Type: [correction/warning/lesson/missing/global]
+- Target: [module/command]
+- Submitted for future integration"
 
-# Commit with descriptive message
-git commit -m "Integrate feedback: [description]
-
-- Created feedback documenting [issue]
-- Updated [files] to incorporate lessons learned
-- Moved feedback to integrated/
-- Future agents will now [benefit]"
+# Pull latest changes to avoid conflicts (rebase to keep history clean)
+git pull --rebase origin main
 
 # Push
 git push
 ```
 
+### Step 3: Notify User
+
+> "✅ **Feedback Submitted!**
+>
+> I've saved your feedback to the pending queue. It will be reviewed by a maintainer and integrated into the documentation during the next maintenance cycle.
+>
+> **Note**: This feedback won't be active in the agent until it is integrated."
+
 ---
 
-## ❌ WRONG: Creating Feedback Without Integrating
+## ⚠️ CRITICAL: DO NOT EDIT CORE DOCS
+
+**During the feedback submission step:**
+
+- ❌ **DO NOT** edit `modules/module_XX.md`
+- ❌ **DO NOT** edit `CLAUDE.md`
+- ❌ **DO NOT** move file to `integrated/`
+
+**Why?** Feedback must be reviewed by a human maintainer before changing the core documentation. The pending queue allows for this review.
+
+---
+
+## ⚙️ INTEGRATION WORKFLOW (STEP 2 - MAINTAINER ONLY)
+
+**To process pending feedback, use the `/integrate-feedback` command.**
+
+This separate process will:
+1. Read pending files
+2. Update documentation (CLAUDE.md, module notes, etc.)
+3. Move files from `pending/` to `integrated/`
+4. Commit the integration
+
+---
+
+## ✅ CORRECT: Submitting Feedback
+
+```bash
+# 1. Create pending file
+Write: feedback/pending/mistake.md
+
+# 2. Commit and Push
+git add feedback/pending/mistake.md
+git commit -m "Feedback: mistake"
+git push
+```
+
+## ❌ WRONG: Integrating Immediately
 
 **DON'T DO THIS:**
 ```bash
 # Create feedback
 Write: feedback/pending/mistake.md
-git add feedback/pending/mistake.md
-git commit -m "Created feedback"
-git push
-# STOP HERE ← WRONG! Feedback not integrated!
-```
-
-**Problem:** The feedback just sits in pending/ forever. Future agents won't benefit because the instructions haven't been updated!
-
-## ✅ CORRECT: Complete Feedback Loop
-
-```bash
-# 1. Create feedback
-Write: feedback/pending/20251023_mistake.md
-
-# 2. Explain to user what you'll change
-# (get approval)
-
-# 3. Integrate into actual instructions
-Edit: [appropriate file based on feedback type]
-
-# 4. Move to integrated
-mv feedback/pending/20251023_mistake.md feedback/integrated/
-
-# 5. Commit everything together
-git add feedback/integrated/20251023_mistake.md [changed files]
-git commit -m "Integrate feedback: [description]"
+# Edit docs immediately
+Edit: modules/module_10.md
+# Move to integrated
+mv feedback/pending/mistake.md feedback/integrated/
+# Push
 git push
 ```
+
+**Problem:** This bypasses the review process and modifies core documentation without approval.
 
 ---
 
