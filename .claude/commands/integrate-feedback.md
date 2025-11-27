@@ -27,27 +27,24 @@
 ## Step 1: Scan Pending Feedback
 
 ```bash
-# List pending feedback
-find feedback/pending/module_*/ -name "*.md" 2>/dev/null
+# List pending feedback (flat structure in pending/)
+ls feedback/pending/*.md 2>/dev/null | grep -v README.md
 
-# Count by module
-for dir in feedback/pending/module_*/; do
-  module=$(basename "$dir")
-  count=$(find "$dir" -name "*.md" | wc -l)
-  echo "$module: $count items"
-done
+# Count pending items
+ls feedback/pending/*.md 2>/dev/null | grep -v README.md | wc -l
 ```
 
 **Present to user**:
 ```
 📊 Pending Feedback Summary:
 
-Module 10: 3 items
-Module 52: 1 item
-Module 70: 2 items
-Global: 1 item
+Found 4 pending feedback items:
+- 20251101_warning_module_10_land.md
+- 20251102_correction_module_52_carbon.md
+- 20251105_lesson_module_70_feed.md
+- 20251110_global_agent_behavior.md
 
-Total: 7 pending items
+Total: 4 pending items
 ```
 
 ---
@@ -58,7 +55,7 @@ For each pending feedback file:
 
 ### 2a. Read the feedback
 ```bash
-cat feedback/pending/module_10/warning_land_infeasibility_2025-11-01.md
+cat feedback/pending/20251101_warning_module_10_land.md
 ```
 
 ### 2b. Validate against current code
@@ -69,9 +66,12 @@ cat feedback/pending/module_10/warning_land_infeasibility_2025-11-01.md
 
 ### 2c. Determine target file based on feedback type
 
-**Extract type from feedback header**:
-```markdown
-**Type**: correction | missing | warning | lesson | global
+**Extract type from feedback header** (in YAML frontmatter):
+```yaml
+---
+type: correction | missing | warning | lesson | global
+target: module_XX.md
+---
 ```
 
 **Routing logic**:
@@ -114,7 +114,7 @@ Present consolidated integration plan to user:
 **Outdated**: 1 (will skip with note)
 **Incorrect**: 0
 
-### Item 1: correction_dependency_count_2025-11-01.md
+### Item 1: 20251101_correction_module_10_dependency.md
 **Status**: ✅ VALID
 **Type**: correction
 **Target**: modules/module_10.md (core documentation)
@@ -122,7 +122,7 @@ Present consolidated integration plan to user:
 **Action**: Update dependency count from 23 → 24 dependents
 **Summary**: Module 80 now consumes vm_land, increasing dependent count
 
-### Item 2: warning_land_infeasibility_2025-11-02.md
+### Item 2: 20251102_warning_module_10_land.md
 **Status**: ✅ VALID
 **Type**: warning
 **Target**: modules/module_10_notes.md (user experience)
@@ -130,7 +130,7 @@ Present consolidated integration plan to user:
 **Action**: Add warning about land balance infeasibility
 **Summary**: Land balance infeasibility when modifying vm_land bounds
 
-### Item 3: lesson_age_class_2025-11-05.md
+### Item 3: 20251105_lesson_module_10_age_class.md
 **Status**: ✅ VALID
 **Type**: lesson
 **Target**: modules/module_10_notes.md (user experience)
@@ -138,7 +138,7 @@ Present consolidated integration plan to user:
 **Action**: Add lesson about age class distribution
 **Summary**: Age class distribution affects carbon calculations
 
-### Item 4: correction_equation_typo_2025-11-03.md
+### Item 4: 20251103_correction_module_10_equation.md
 **Status**: ⚠️ OUTDATED
 **Reason**: Equation was fixed in recent code update
 **Action**: Skip integration, archive with note
@@ -221,7 +221,7 @@ If file exists, append to appropriate section:
 
 ### Land Balance Infeasibility (2025-11-01)
 [Warning content from pending feedback]
-**Source**: feedback 20251101_warning_land_infeasibility
+**Source**: feedback 20251102_warning_module_10_land
 **Contributed by**: [optional - username if available]
 ```
 
@@ -251,12 +251,12 @@ Content:
 
 ## Integrated Items
 
-### 1. warning_land_infeasibility_2025-11-01.md
+### 1. 20251102_warning_module_10_land.md
 **Status**: ✅ Integrated
 **Section**: Warnings & Common Mistakes
 [Original feedback content]
 
-### 2. lesson_age_class_2025-11-05.md
+### 2. 20251105_lesson_module_10_age_class.md
 **Status**: ✅ Integrated
 **Section**: Lessons Learned
 [Original feedback content]
@@ -265,7 +265,7 @@ Content:
 
 ## Skipped Items
 
-### 3. correction_dependency_count_2025-11-03.md
+### 3. 20251103_correction_module_10_equation.md
 **Status**: ⚠️ Outdated
 **Reason**: Dependency count changed 23→24
 [Original feedback content]
@@ -273,9 +273,9 @@ Content:
 
 ### 4d. Remove from pending
 ```bash
-rm feedback/pending/module_10/warning_land_infeasibility_2025-11-01.md
-rm feedback/pending/module_10/lesson_age_class_2025-11-05.md
-rm feedback/pending/module_10/correction_dependency_count_2025-11-03.md
+rm feedback/pending/20251102_warning_module_10_land.md
+rm feedback/pending/20251105_lesson_module_10_age_class.md
+rm feedback/pending/20251103_correction_module_10_equation.md
 ```
 
 ### 4e. Update module footers
@@ -291,7 +291,7 @@ rm feedback/pending/module_10/correction_dependency_count_2025-11-03.md
 ---
 **Last Verified**: [When Module XX code was last verified]
 **Last Feedback Integration**: 2025-10-26
-**Pending feedback**: 0 items in feedback/pending/module_10/
+**Pending feedback**: 0 items in feedback/pending/
 ```
 
 ---

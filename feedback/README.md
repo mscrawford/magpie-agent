@@ -19,10 +19,9 @@ All feedback gets integrated into the documentation, making the agent smarter ov
 
 ```
 feedback/
-├── pending/              ← NEW: Staged feedback awaiting validation & integration
+├── pending/              ← Staged feedback awaiting validation & integration
 │   ├── README.md         ← Staged workflow documentation
-│   ├── global/           ← System-wide feedback (agent behavior)
-│   └── module_XX/        ← Module-specific feedback (created as needed)
+│   └── *.md              ← Feedback files (flat structure with timestamps)
 ├── integrated/           ← Archive of validated & integrated feedback
 ├── global/               ← System-wide lessons (claude_lessons.md)
 ├── templates/            ← Easy-to-fill submission templates
@@ -138,8 +137,6 @@ Feedback now flows through a **staged validation process** to maintain stability
    ```bash
    /integrate-feedback              # Interactive mode
    # OR
-   /integrate-feedback module_10    # Single module
-   # OR
    /integrate-feedback all          # All pending feedback
    ```
 
@@ -179,20 +176,19 @@ Feedback now flows through a **staged validation process** to maintain stability
 ## 📊 Where Feedback Goes
 
 ### Module-Specific Feedback
-- **Submission**: `feedback/pending/module_XX/` (e.g., `pending/module_10/warning_land_2025-10-26.md`)
-- **After Integration**: `modules/module_XX_notes.md`
+- **Submission**: `feedback/pending/` (e.g., `pending/20251026_143000_warning_module_10.md`)
+- **After Integration**: `modules/module_XX_notes.md` (for warnings/lessons) or `modules/module_XX.md` (for corrections)
 - **Contains:** Warnings, lessons, corrections specific to that module
 - **Agent reads:** When answering questions about Module XX (if how-to/troubleshooting)
-- **Core docs unchanged**: `modules/module_XX.md` stays stable (verified against code)
 
 ### Global Feedback
-- **Submission**: `feedback/pending/global/`
+- **Submission**: `feedback/pending/` (e.g., `pending/20251026_150000_global_agent_behavior.md`)
 - **After Integration**: `feedback/global/claude_lessons.md`
 - **Contains:** Agent behavior improvements, workflow enhancements
 - **Used to update:** CLAUDE.md (agent instructions)
 
 ### Cross-Module Feedback
-- **Submission**: `feedback/pending/global/` (mark as cross-module in content)
+- **Submission**: `feedback/pending/` (mark as cross-module in content)
 - **After Integration**: `feedback/global/cross_module_lessons.md`
 - **Contains:** Interactions between modules, system-level insights
 
@@ -201,7 +197,7 @@ Feedback now flows through a **staged validation process** to maintain stability
 ```
 User submits feedback
   ↓
-feedback/pending/module_XX/ (or global/)
+feedback/pending/YYYYMMDD_HHMMSS_type_target.md
   ↓
 Periodic integration session (/integrate-feedback all)
   ↓

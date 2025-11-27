@@ -27,7 +27,7 @@
 
 **When to use**: Weekly or monthly, whenever feedback accumulates
 
-**Input**: `feedback/pending/module_*/` (new submissions)
+**Input**: `feedback/pending/*.md` (new submissions)
 **Output**: Updated docs + `feedback/integrated/` archives
 
 **Example workflow**:
@@ -36,7 +36,7 @@
 scripts/submit_feedback.sh
 
 # Later (weekly/monthly):
-/integrate-feedback module_10
+/integrate-feedback all
 
 # Result: Warnings added to module_10_notes.md
 ```
@@ -72,7 +72,7 @@ scripts/submit_feedback.sh
 ┌─────────────────────────────────────────────────────────────┐
 │ STEP 1: Users submit feedback (anytime)                     │
 │ scripts/submit_feedback.sh                                   │
-│ → feedback/pending/module_10/warning_*.md                   │
+│ → feedback/pending/20251101_143000_warning_module_10.md     │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -185,7 +185,7 @@ Do you have new feedback submissions?
 ### Example 1: Weekly Workflow
 ```bash
 # Monday: 5 users submitted feedback over the weekend
-ls feedback/pending/module_10/  # → 5 new files
+ls feedback/pending/*.md | grep -v README  # → 5 new files
 
 # Use integrate command
 /integrate-feedback all

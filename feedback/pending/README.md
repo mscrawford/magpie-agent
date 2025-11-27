@@ -8,14 +8,17 @@
 
 ```
 feedback/pending/
-├── README.md          ← You are here
-├── global/            ← System-wide lessons, agent behavior feedback
-│   └── [feedback_files]
-└── module_XX/         ← Module-specific feedback (created as needed)
-    └── [feedback_files]
+├── README.md                              ← You are here
+└── YYYYMMDD_HHMMSS_type_target.md        ← Feedback files (flat structure)
 ```
 
-**Module directories are created on-demand** when feedback is submitted for that module.
+**Feedback files use a flat structure** with timestamps and type in the filename.
+
+**Example files**:
+- `20251101_143022_warning_module_10.md`
+- `20251102_091500_correction_module_52.md`
+- `20251105_160830_lesson_module_70.md`
+- `20251110_142200_global_agent_behavior.md`
 
 ---
 
@@ -27,7 +30,7 @@ feedback/pending/
 ./scripts/submit_feedback.sh
 ```
 
-**Creates**: `feedback/pending/module_XX/type_description_DATE.md`
+**Creates**: `feedback/pending/YYYYMMDD_HHMMSS_type_target.md`
 
 **Core docs**: UNTOUCHED (remain stable)
 
@@ -44,15 +47,14 @@ feedback/pending/
 
 **Command**:
 ```bash
-/integrate-feedback module_10     # Single module
 /integrate-feedback all           # All pending feedback
 /integrate-feedback               # Interactive mode
 ```
 
 **Process**:
-1. Read all pending feedback for module
+1. Read all pending feedback files
 2. Validate against current code (is it still accurate?)
-3. **Route by feedback type**:
+3. **Route by feedback type** (from YAML frontmatter):
    - `correction` → Update `module_XX.md` (fixes errors in core docs!)
    - `missing` → Update `module_XX.md` (adds missing content)
    - `warning` → Update `module_XX_notes.md` (user warnings)
@@ -81,7 +83,7 @@ feedback/pending/
 - Updated by: `warning`/`lesson` feedback types
 - Source: User feedback, real-world experience
 - Last Feedback Integration: [timestamp]
-- Pending feedback: [count] items in `feedback/pending/module_XX/`
+- Pending feedback: [count] items in `feedback/pending/`
 
 **Key Insight**: Type-based routing ensures corrections reach authoritative docs, preventing "notes purgatory"!
 
@@ -89,20 +91,20 @@ feedback/pending/
 
 ## 📝 Feedback File Naming
 
-**Pattern**: `{type}_{description}_{DATE}.md`
+**Pattern**: `{YYYYMMDD}_{HHMMSS}_{type}_{target}.md`
 
 **Types**:
-- `warning_` - Caution about common mistakes
-- `lesson_` - Practical lessons from experience
-- `correction_` - Documentation error corrections
-- `missing_` - Information gaps in docs
-- `global_` - System-wide improvements
+- `warning` - Caution about common mistakes
+- `lesson_learned` - Practical lessons from experience
+- `correction` - Documentation error corrections
+- `missing` - Information gaps in docs
+- `global` - System-wide improvements
 
 **Examples**:
-- `warning_land_infeasibility_2025-11-01.md`
-- `lesson_age_class_carbon_2025-11-05.md`
-- `correction_equation_formula_2025-11-10.md`
-- `missing_water_limitation_2025-11-15.md`
+- `20251101_143022_warning_module_10.md`
+- `20251105_091530_lesson_learned_module_52.md`
+- `20251110_160845_correction_module_70.md`
+- `20251115_142200_global_agent_behavior.md`
 
 ---
 
@@ -110,14 +112,11 @@ feedback/pending/
 
 **Count pending items**:
 ```bash
-# For specific module
-ls feedback/pending/module_10/ | wc -l
-
-# For all modules
-find feedback/pending/module_* -type f | wc -l
+# Count all pending feedback
+ls feedback/pending/*.md 2>/dev/null | grep -v README.md | wc -l
 
 # List all pending
-find feedback/pending/ -name "*.md" -not -name "README.md"
+ls feedback/pending/*.md 2>/dev/null | grep -v README.md
 ```
 
 **Review pending items**:
@@ -130,7 +129,7 @@ find feedback/pending/ -name "*.md" -not -name "README.md"
 ## ⚙️ Integration Process Details
 
 ### Step 1: Read Pending Feedback
-Agent reads all `.md` files in `pending/module_XX/`
+Agent reads all `.md` files in `pending/` (excluding README.md)
 
 ### Step 2: Validate
 - Check if feedback still applies to current code
@@ -139,9 +138,12 @@ Agent reads all `.md` files in `pending/module_XX/`
 
 ### Step 3: Route by Feedback Type
 
-**Read type from feedback header**:
-```markdown
-**Type**: correction | missing | warning | lesson | global
+**Read type from feedback YAML frontmatter**:
+```yaml
+---
+type: correction | missing | warning | lesson | global
+target: module_XX.md
+---
 ```
 
 **Routing decision**:
