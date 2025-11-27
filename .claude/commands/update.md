@@ -82,7 +82,12 @@ git pull origin main --no-edit
 # Copy CLAUDE.md to parent magpie directory
 cp CLAUDE.md ../CLAUDE.md
 
+# Ensure parent .claude directory exists
+mkdir -p ../.claude
+
 # Copy slash commands to parent .claude directory
+# (Remove existing commands first to ensure clean sync)
+rm -rf ../.claude/commands
 cp -r .claude/commands ../.claude/
 
 # Sync settings from parent (if it exists and is newer)
