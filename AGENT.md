@@ -46,10 +46,9 @@ I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 wo
 
 🚀 Available Commands:
   guide              - Complete capabilities guide (start here!)
-  update             - Pull latest docs and sync AGENT.md
-  feedback           - User feedback system (submit/review/search)
-  integrate-feedback - Process pending feedback (maintainers)
-  update-agent-md    - Git workflow for updating AI docs
+  sync               - Sync documentation with MAgPIE code changes
+  update             - Pull latest agent documentation
+  feedback           - Submit feedback to improve the agent
   bootstrap          - First-time setup (if needed)
 
 💡 Or just ask me anything about MAgPIE!
@@ -84,18 +83,18 @@ When updating this AGENT.md file, use `command: update-agent-md` for detailed wo
 
 ### Available Commands
 
-| Command | Purpose |
-|---------|---------|
-| `guide` | Complete capabilities guide (start here!) |
-| `update` | Pull latest docs and sync AGENT.md to parent |
-| `sync` | Check MAgPIE develop branch for code changes and update docs |
-| `feedback` | Learn about and use the feedback system |
-| `integrate-feedback` | Process pending feedback (maintainers) |
-| `update-agent-md` | Git workflow for AI documentation updates |
-| `bootstrap` | First-time setup for new installations |
-| `validate` | Check documentation consistency |
-| `validate-module` | Validate specific module documentation |
-| `compress-documentation` | Consolidate accumulated feedback |
+| Command | Purpose | Who Uses It |
+|---------|---------|-------------|
+| `guide` | Complete capabilities guide | Everyone |
+| `sync` | Check MAgPIE code for changes, update docs | Everyone |
+| `update` | Pull latest agent documentation | Everyone |
+| `feedback` | Submit feedback to improve the agent | Everyone |
+| `bootstrap` | First-time setup | New users |
+| `validate` | Check documentation consistency | Maintainers |
+| `validate-module` | Validate specific module docs | Maintainers |
+| `integrate-feedback` | Process pending feedback | Maintainers |
+| `compress-documentation` | Consolidate feedback (quarterly) | Maintainers |
+| `update-agent-md` | Git workflow for doc updates | Maintainers |
 
 ### How Commands Work
 

@@ -321,8 +321,8 @@ command: integrate-feedback all  # This adds new feedback
 
 - `feedback/README.md` - Complete feedback system overview
 - `feedback/pending/README.md` - Staged workflow details
-- `.claude/commandscommand: integrate-feedback.md` - Integration command details
-- `.claude/commandscommand: compress-documentation.md` - Compression command details
+- `agent/commandscommand: integrate-feedback.md` - Integration command details
+- `agent/commandscommand: compress-documentation.md` - Compression command details
 - `scripts/submit_feedback.sh` - How to submit feedback
 
 ---

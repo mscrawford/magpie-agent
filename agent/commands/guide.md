@@ -201,55 +201,60 @@ Automated feedback integration with git workflow:
 
 ## 🚀 Available Commands
 
-Quick access to specialized help:
+### For Everyone
 
-### `guide` (this guide)
-**Purpose**: Show complete capabilities guide
-**Use**: Boot-time orientation or quick reference
+| Command | What It Does |
+|---------|-------------|
+| `guide` | Show this capabilities guide |
+| `sync` | Check MAgPIE code for changes, update documentation |
+| `update` | Pull latest agent documentation from repository |
+| `feedback` | Submit feedback to improve the agent |
+| `bootstrap` | First-time setup for new installations |
+
+### For Maintainers
+
+| Command | What It Does |
+|---------|-------------|
+| `validate` | Check documentation consistency across all files |
+| `validate-module` | Validate a specific module's documentation |
+| `integrate-feedback` | Process pending user feedback |
+| `compress-documentation` | Consolidate accumulated feedback (quarterly) |
+| `update-agent-md` | Git workflow for documentation updates |
+
+---
+
+## Command Details
+
+### `guide`
+Show this comprehensive capabilities guide. Use at session start or for quick reference.
+
+### `sync`
+**Most important for keeping docs accurate!**
+
+Checks MAgPIE develop branch for code changes and updates documentation:
+- Compares against last sync commit
+- Identifies GAMS equation/parameter changes
+- Updates affected module_XX.md files
+- Logs sync status in `project/sync_log.json`
+
+**Use**: After MAgPIE code updates, or weekly maintenance.
 
 ### `update`
-**Purpose**: Pull latest documentation and re-deploy AGENT.md
-**Use**:
-- Start of session (get latest updates)
-- After team members update docs
-- Before answering questions (ensure current info)
-
-**What it does**:
-- Pulls from magpie-agent repo
+Pulls latest agent documentation from the magpie-agent repository:
+- Fetches from git remote
 - Handles merge conflicts
 - Copies AGENT.md to parent directory
 - Reports what changed
 
-### `sync`
-**Purpose**: Check MAgPIE develop branch for code changes
-**Use**:
-- After MAgPIE code updates
-- To verify documentation is current
-- Weekly maintenance
-
-**What it does**:
-- Compares against last sync commit
-- Identifies GAMS changes needing doc updates
-- Updates affected module documentation
-- Logs sync status
+**Use**: Start of session, or after team members update docs.
 
 ### `feedback`
-**Purpose**: Learn about the user feedback system
-**Use**:
-- Understand notes files (module_XX_notes.md)
-- Learn when to read feedback
-- Submit your own feedback
-- Integration workflow
+Learn about and use the feedback system:
+- How to submit corrections, warnings, lessons
+- Understanding notes files (module_XX_notes.md)
+- When feedback gets integrated
 
-### `update-agent-md`
-**Purpose**: Git workflow for AI documentation updates
-**Use**: When updating AGENT.md or other AI docs
-
-**Critical rules**:
-- All AI docs live in magpie-agent directory
-- Commit from magpie-agent repo only
-- Never commit AI docs from main MAgPIE repo
-- Copy AGENT.md to parent for convenience
+**Use**: When you find errors or have insights to share.
 
 ---
 

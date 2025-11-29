@@ -266,7 +266,7 @@ Original files are in `feedback/integrated/` with compression markers:
 
 ## 📚 See Also
 
-- `.claude/commands/compress-feedback.md` - Complete workflow details
+- `agent/commands/compress-feedback.md` - Complete workflow details
 - `feedback/README.md` - Feedback system overview
 - `scripts/compress_feedback.sh` - Helper script reference
 - `AGENT.md` - Agent behavior documentation

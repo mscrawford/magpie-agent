@@ -197,7 +197,7 @@ Run `command: feedback status module_10` for details on specific module
 
 ### Template 2: command: feedback-status Command
 
-**File**: `.claude/commandscommand: feedback-status.md`
+**File**: `agent/commandscommand: feedback-status.md`
 
 ```markdown
 # Feedback Status Command
@@ -278,11 +278,11 @@ Include:
 
 **To implement Phase 1 (recommended)**:
 
-1. Update `.claude/commandscommand: integrate-feedback.md`:
+1. Update `agent/commandscommand: integrate-feedback.md`:
    - Add Step 4d: "Add status footer to archived feedback"
    - Include template with status, date, target file, validation notes
 
-2. Create `.claude/commandscommand: feedback-status.md`:
+2. Create `agent/commandscommand: feedback-status.md`:
    - Command to list pending and integrated feedback
    - Show summary counts and recent integrations
 
