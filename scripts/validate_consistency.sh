@@ -273,32 +273,39 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 print_section "5/6" "Checking entry point consistency..."
 
-# START_HERE should point to CURRENT_STATE
-if grep -q "CURRENT_STATE.json" START_HERE.md 2>/dev/null; then
-    check_pass "START_HERE.md points to CURRENT_STATE.json"
+# README should point to CURRENT_STATE.json for project work
+if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
+    check_pass "README.md points to CURRENT_STATE.json"
 else
-    check_error "START_HERE.md doesn't reference CURRENT_STATE.json"
+    check_warning "README.md doesn't reference CURRENT_STATE.json"
 fi
 
-# README should point to START_HERE
-if grep -q "START_HERE" README.md 2>/dev/null; then
-    check_pass "README.md points to START_HERE.md"
+# README should point to AGENT.md for AI setup
+if grep -q "AGENT.md" README.md 2>/dev/null; then
+    check_pass "README.md points to AGENT.md"
 else
-    check_warning "README.md doesn't reference START_HERE.md"
+    check_warning "README.md doesn't reference AGENT.md"
 fi
 
-# RULES_OF_THE_ROAD should point to CURRENT_STATE
-if grep -q "CURRENT_STATE" RULES_OF_THE_ROAD.md 2>/dev/null; then
-    check_pass "RULES_OF_THE_ROAD.md points to CURRENT_STATE.json"
+# AGENT.md should have command system
+if grep -q "command:" AGENT.md 2>/dev/null || grep -q "run command" AGENT.md 2>/dev/null; then
+    check_pass "AGENT.md has command system"
 else
-    check_warning "RULES_OF_THE_ROAD.md doesn't reference CURRENT_STATE.json"
+    check_warning "AGENT.md may not have command system"
 fi
 
-# AGENT.md should separate contexts
-if grep -q "Context 1.*MAgPIE" AGENT.md && grep -q "Context 2.*Documentation Project" AGENT.md; then
-    check_pass "AGENT.md correctly separates contexts"
+# AGENT.md should reference sync tracking
+if grep -q "sync_log.json" AGENT.md 2>/dev/null || grep -q "sync" AGENT.md 2>/dev/null; then
+    check_pass "AGENT.md references sync tracking"
 else
-    check_warning "AGENT.md may not clearly separate MAgPIE vs. documentation project contexts"
+    check_warning "AGENT.md may not reference sync tracking"
+fi
+
+# project/sync_log.json should exist
+if [ -f "project/sync_log.json" ]; then
+    check_pass "project/sync_log.json exists"
+else
+    check_error "project/sync_log.json missing (run sync command)"
 fi
 
 # =======================

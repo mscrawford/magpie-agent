@@ -358,10 +358,10 @@ New documentation project session
 
 **Example conflict resolution:**
 ```
-module_52_notes.md says: "Chapman-Richards has 3 parameters"
-module_52.md says: "Chapman-Richards: C(age) = A × (1-exp(-k×age))^m (3 parameters)"
+module_XX_notes.md says: "Equation has 3 parameters"
+module_XX.md says: "Equation: f(x) = A × (1-exp(-k×x))^m (3 parameters)"
 
-Action: Trust module_52.md (higher precedence)
+Action: Trust module_XX.md (higher precedence)
 Reason: Notes may be outdated, main doc is verified against code
 ```
 
