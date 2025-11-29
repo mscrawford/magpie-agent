@@ -1,6 +1,6 @@
 ---
 type: correction
-target: [e.g., module_70.md, CLAUDE.md, Core_Architecture.md]
+target: [e.g., module_70.md, AGENT.md, Core_Architecture.md]
 severity: [high|medium|low]
 date: YYYY-MM-DD
 author: [optional - your name or username]

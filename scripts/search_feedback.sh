@@ -44,10 +44,10 @@ fi
 # Search in global lessons
 echo "🌍 Global Lessons:"
 echo "──────────────────"
-if [ -f "feedback/global/claude_lessons.md" ]; then
-  if grep -qi "$SEARCH_TERM" "feedback/global/claude_lessons.md"; then
-    echo "✓ Found in: claude_lessons.md"
-    grep -i -n -C 1 "$SEARCH_TERM" "feedback/global/claude_lessons.md" | head -5
+if [ -f "feedback/global/agent_lessons.md" ]; then
+  if grep -qi "$SEARCH_TERM" "feedback/global/agent_lessons.md"; then
+    echo "✓ Found in: agent_lessons.md"
+    grep -i -n -C 1 "$SEARCH_TERM" "feedback/global/agent_lessons.md" | head -5
     echo ""
   else
     echo "  (none found)"

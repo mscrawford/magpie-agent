@@ -547,8 +547,8 @@ Each phase (4-8) will produce:
 
 ### Integration Points
 
-**CLAUDE.md Enhancement**:
-Periodically update `CLAUDE.md` with:
+**AGENT.md Enhancement**:
+Periodically update `AGENT.md` with:
 - New decision trees
 - Updated query routing logic
 - Refined prompt patterns

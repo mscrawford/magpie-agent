@@ -2,12 +2,12 @@
 
 **Purpose**: Consolidate accumulated feedback to reduce documentation bloat and improve organization
 
-**When to use**: Quarterly, or when notes files feel verbose/redundant (AFTER multiple `/integrate-feedback` sessions)
+**When to use**: Quarterly, or when notes files feel verbose/redundant (AFTER multiple `command: integrate-feedback` sessions)
 
 **What it compresses**:
 - ✅ `module_XX_notes.md` (user experience - warnings, lessons, examples)
-- ✅ `CLAUDE.md` (agent instructions - if bloated)
-- ✅ `feedback/global/claude_lessons.md` (global lessons)
+- ✅ `AGENT.md` (agent instructions - if bloated)
+- ✅ `feedback/global/agent_lessons.md` (global lessons)
 - ❌ **NEVER** `module_XX.md` (core docs - facts are sacred!)
 
 **What it does**:
@@ -16,14 +16,14 @@
 - Reorganizes scattered guidance into logical sections
 - Preserves ALL unique insights (no information loss)
 
-**Prerequisites**: You MUST have integrated feedback first (use `/integrate-feedback`)
+**Prerequisites**: You MUST have integrated feedback first (use `command: integrate-feedback`)
 
 ---
 
 ## 🎯 Quick Start
 
 ```bash
-/compress-documentation     # Analyze and compress integrated feedback
+command: compress-documentation     # Analyze and compress integrated feedback
 ```
 
 ---
@@ -32,8 +32,8 @@
 
 **COMPRESS** (user experience, can be reorganized):
 - ✅ `modules/module_XX_notes.md` - User warnings, lessons, examples
-- ✅ `CLAUDE.md` - Agent behavioral guidance (if verbose)
-- ✅ `feedback/global/claude_lessons.md` - System-wide lessons
+- ✅ `AGENT.md` - Agent behavioral guidance (if verbose)
+- ✅ `feedback/global/agent_lessons.md` - System-wide lessons
 
 **NEVER COMPRESS** (code truth, facts are sacred):
 - ❌ `modules/module_XX.md` - Core technical documentation (verified against code)
@@ -73,7 +73,7 @@ Read all integrated feedback files that haven't been compressed yet, looking for
 - Similar lessons learned from different users
 
 ### Documentation Bloat Indicators:
-- CLAUDE.md sections growing too long (>500 lines for a section)
+- AGENT.md sections growing too long (>500 lines for a section)
 - Repetitive examples or warnings
 - Overlapping guidance in multiple sections
 - Verbose explanations that could be condensed
@@ -210,7 +210,7 @@ Potential line reduction: ~220 lines (35%)
 Files affected:
   - modules/module_10_notes.md
   - modules/module_70_notes.md
-  - feedback/global/claude_lessons.md
+  - feedback/global/agent_lessons.md
 
 Themes identified:
   - Module 10 modification safety: 3 feedback files
@@ -292,7 +292,7 @@ Use Edit tool to replace scattered content with consolidated version
     {
       "theme": "SSP2 testing best practices",
       "source_files": ["20251016_lesson_ssp2_testing.md", "20251019_lesson_ssp2_stability.md"],
-      "target_files": ["feedback/global/claude_lessons.md"],
+      "target_files": ["feedback/global/agent_lessons.md"],
       "line_reduction": 60
     }
   ],
@@ -328,7 +328,7 @@ Themes addressed:
 Files updated:
 - modules/module_10_notes.md (warnings consolidated)
 - modules/module_70_notes.md (lessons unified)
-- feedback/global/claude_lessons.md (testing patterns added)
+- feedback/global/agent_lessons.md (testing patterns added)
 
 All original feedback preserved with compression markers.
 Compression ID: compress_20251026_150000"
@@ -352,7 +352,7 @@ After completing compression:
 **Files modified**:
 - modules/module_10_notes.md (3 warnings → 1 comprehensive safety section)
 - modules/module_70_notes.md (2 lessons → 1 unified best practice)
-- feedback/global/claude_lessons.md (3 scattered lessons → 1 testing guide)
+- feedback/global/agent_lessons.md (3 scattered lessons → 1 testing guide)
 
 **Compression metadata**:
 - Compression ID: compress_20251026_150000
@@ -415,7 +415,7 @@ See feedback W001, W003, W007 for detailed incidents.
 💡 L009: Start testing with SSP2 baseline (45 lines)
 ```
 
-**After** (in feedback/global/claude_lessons.md, 70 lines):
+**After** (in feedback/global/agent_lessons.md, 70 lines):
 ```markdown
 ## Testing Best Practices (L001, L005, L009)
 
@@ -523,7 +523,7 @@ Before completing compression:
 - [ ] Documentation more readable?
 - [ ] No information lost?
 - [ ] NO changes to module_XX.md (core docs)?
-- [ ] ONLY changes to module_XX_notes.md, CLAUDE.md, global lessons?
+- [ ] ONLY changes to module_XX_notes.md, AGENT.md, global lessons?
 - [ ] Compression metadata complete?
 - [ ] User approved changes?
 
@@ -546,12 +546,12 @@ Before completing compression:
 **After compression, you can**:
 1. ✅ Continue using the improved documentation
 2. ⏸️ Wait for more feedback to accumulate
-3. 🔄 Eventually run `/integrate-feedback` again (when new feedback arrives)
+3. 🔄 Eventually run `command: integrate-feedback` again (when new feedback arrives)
 
 **The workflow is**:
 ```
-Submit feedback → /integrate-feedback (weekly) → [Repeat] →
-/compress-documentation (quarterly) → [Repeat integration]
+Submit feedback → command: integrate-feedback (weekly) → [Repeat] →
+command: compress-documentation (quarterly) → [Repeat integration]
 ```
 
 **Compression frequency**: Only when needed (quarterly or when bloat is noticeable)
@@ -562,7 +562,7 @@ Submit feedback → /integrate-feedback (weekly) → [Repeat] →
 
 - `feedback/README.md` - Complete feedback system overview
 - `feedback/WORKFLOW_GUIDE.md` - When to use which command
-- `/integrate-feedback` - Integration command (use BEFORE compression)
+- `command: integrate-feedback` - Integration command (use BEFORE compression)
 - `CONSOLIDATION_PLAN.md` - Phase 2, Task 2.1
 - `scripts/submit_feedback.sh` - Submission script
 

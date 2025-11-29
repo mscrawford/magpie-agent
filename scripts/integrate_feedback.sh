@@ -162,8 +162,8 @@ fi
 # ============================================================================
 
 # Determine destination (paths relative to magpie-agent root)
-if [[ "$TARGET" == "CLAUDE.md" ]] || [[ "$TARGET" == "global" ]] || [[ "$TARGET" == "system-wide" ]] || [[ "$TARGET" == *"AI_Agent_Behavior"* ]]; then
-  DEST="feedback/global/claude_lessons.md"
+if [[ "$TARGET" == "AGENT.md" ]] || [[ "$TARGET" == "global" ]] || [[ "$TARGET" == "system-wide" ]] || [[ "$TARGET" == *"AI_Agent_Behavior"* ]]; then
+  DEST="feedback/global/agent_lessons.md"
   echo "→ This is GLOBAL feedback (affects agent behavior)"
   echo "→ Will be added to: $DEST"
   echo ""
@@ -174,7 +174,7 @@ if [[ "$TARGET" == "CLAUDE.md" ]] || [[ "$TARGET" == "global" ]] || [[ "$TARGET"
     cat > "$DEST" <<'EOF'
 # Global Lessons for Agent Behavior
 
-**📌 System-wide feedback affecting CLAUDE.md and agent workflow**
+**📌 System-wide feedback affecting AGENT.md and agent workflow**
 
 Last updated: DATE_PLACEHOLDER
 
@@ -314,7 +314,7 @@ case $TYPE in
     ;;
   global)
     echo "   → Choose appropriate section in global lessons file"
-    echo "   → May require updating CLAUDE.md or AI_Agent_Behavior_Guide.md"
+    echo "   → May require updating AGENT.md or AI_Agent_Behavior_Guide.md"
     ;;
 esac
 

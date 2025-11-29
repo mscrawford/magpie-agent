@@ -1,4 +1,4 @@
-# Claude Agent Lessons - System-Wide Learnings
+# AI Agent Lessons - System-Wide Learnings
 
 **Last Updated**: 2025-11-27
 **Purpose**: Accumulated lessons about agent behavior, patterns, and improvements

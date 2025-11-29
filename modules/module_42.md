@@ -925,7 +925,7 @@ Regional EFP share = (100+50) / (100+50+50) = 150/200 = **0.75** (75%)
 - Formula verification: All formulas checked against source code
 - File citations: 60+ specific file:line references
 - Verification date: 2025-10-12
-- Verified by: Claude Code AI Documentation Project
+- Verified by: AI Documentation Project
 - Status: ✓ Fully Verified - Zero Errors
 ---
 

@@ -35,7 +35,7 @@ echo "[1] Correction (something is wrong in the docs)"
 echo "[2] Warning (don't do this - warn other users)"
 echo "[3] Lesson learned (practical insight from experience)"
 echo "[4] Missing content (something should be documented)"
-echo "[5] Global feedback (agent behavior or CLAUDE.md)"
+echo "[5] Global feedback (agent behavior or AGENT.md)"
 echo ""
 read -p "Select [1-5]: " TYPE
 
@@ -53,8 +53,8 @@ echo ""
 # Get target document
 if [ "$TEMPLATE" = "global" ]; then
   echo "Global feedback affects:"
-  echo "  - CLAUDE.md (agent instructions and behavior)"
-  echo "  - feedback/global/claude_lessons.md (system-wide lessons)"
+  echo "  - AGENT.md (agent instructions and behavior)"
+  echo "  - feedback/global/agent_lessons.md (system-wide lessons)"
   echo "  - System-wide workflow"
   echo ""
   read -p "Target document (or 'system-wide'): " TARGET
@@ -63,7 +63,7 @@ else
   echo "  - module_70.md (specific module)"
   echo "  - Phase1_Core_Architecture.md"
   echo "  - land_balance_conservation.md"
-  echo "  - CLAUDE.md"
+  echo "  - AGENT.md"
   echo ""
   read -p "Target document: " TARGET
 fi

@@ -10,16 +10,16 @@
 - Routes warnings/lessons → `module_XX_notes.md` (user experience)
 - Archives integrated feedback for later compression
 
-**What it does NOT do**: Compress or consolidate documentation (use `/compress-documentation` for that)
+**What it does NOT do**: Compress or consolidate documentation (use `command: compress-documentation` for that)
 
 ---
 
 ## 🎯 Quick Start
 
 ```bash
-/integrate-feedback module_10     # Single module
-/integrate-feedback all           # All pending feedback
-/integrate-feedback               # Interactive mode
+command: integrate-feedback module_10     # Single module
+command: integrate-feedback all           # All pending feedback
+command: integrate-feedback               # Interactive mode
 ```
 
 ---
@@ -80,7 +80,7 @@ correction      → modules/module_XX.md (fixes errors in core docs)
 missing_content → modules/module_XX.md (adds missing content to core docs)
 warning         → modules/module_XX_notes.md (user warnings and cautions)
 lesson_learned  → modules/module_XX_notes.md (practical insights)
-global          → feedback/global/claude_lessons.md (system-wide lessons)
+global          → feedback/global/agent_lessons.md (system-wide lessons)
 ```
 
 **Why this matters**:
@@ -147,7 +147,7 @@ Present consolidated integration plan to user:
 
 **Integration changes**:
 - Update: modules/module_10.md (1 correction applied)
-- Create/update: modules/module_10_notes.md (1 warning, 1 lesson added)
+- Createcommand: update: modules/module_10_notes.md (1 warning, 1 lesson added)
 - Archive to: feedback/integrated/20251026_batch_module_10.md
 - Update timestamps:
   - module_10.md: Last Verified: 2025-10-26
@@ -321,7 +321,7 @@ After processing all modules:
 
 **Pending feedback remaining**: 1 global item
 
-Next step: Feedback is integrated! Come back later and use /compress-documentation
+Next step: Feedback is integrated! Come back later and use command: compress-documentation
 to consolidate accumulated feedback and reduce bloat.
 ```
 
@@ -333,10 +333,10 @@ to consolidate accumulated feedback and reduce bloat.
 
 ```bash
 # Run the update command to sync changes to parent
-/update
+command: update
 ```
 
-**Why?** The integration only updates files in the `magpie-agent` repo. The `/update` command copies them to the parent `magpie` directory so the agent can actually use them.
+**Why?** The integration only updates files in the `magpie-agent` repo. The `command: update` command copies them to the parent `magpie` directory so the agent can actually use them.
 
 ---
 
@@ -420,12 +420,12 @@ Before completing integration:
 **After integration, you can**:
 1. ✅ Continue using the documentation (feedback is now integrated!)
 2. ⏸️ Wait for more feedback to accumulate (weeks/months)
-3. 🗜️ Eventually run `/compress-documentation` when notes feel bloated
+3. 🗜️ Eventually run `command: compress-documentation` when notes feel bloated
 
 **The workflow is**:
 ```
-Submit feedback → /integrate-feedback (weekly) → [Repeat] →
-/compress-documentation (quarterly) → [Repeat]
+Submit feedback → command: integrate-feedback (weekly) → [Repeat] →
+command: compress-documentation (quarterly) → [Repeat]
 ```
 
 ---
@@ -435,9 +435,9 @@ Submit feedback → /integrate-feedback (weekly) → [Repeat] →
 - `feedback/README.md` - Complete feedback system overview
 - `feedback/pending/README.md` - Staged workflow details
 - `feedback/WORKFLOW_GUIDE.md` - When to use which command
-- `/compress-documentation` - Consolidation command (use AFTER integration)
+- `command: compress-documentation` - Consolidation command (use AFTER integration)
 - `scripts/submit_feedback.sh` - Submission script
 
 ---
 
-**Remember**: This command integrates individual feedback items. It does NOT compress or consolidate. Use `/compress-documentation` for that (after multiple integration sessions).
+**Remember**: This command integrates individual feedback items. It does NOT compress or consolidate. Use `command: compress-documentation` for that (after multiple integration sessions).

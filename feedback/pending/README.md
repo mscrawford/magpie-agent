@@ -41,14 +41,14 @@ feedback/pending/
 
 ---
 
-### 2. **Validation & Integration** (Periodic, via `/integrate-feedback`)
+### 2. **Validation & Integration** (Periodic, via `command: integrate-feedback`)
 
 **When**: Periodic sessions (weekly, monthly, or as needed)
 
 **Command**:
 ```bash
-/integrate-feedback all           # All pending feedback
-/integrate-feedback               # Interactive mode
+command: integrate-feedback all           # All pending feedback
+command: integrate-feedback               # Interactive mode
 ```
 
 **Process**:
@@ -59,7 +59,7 @@ feedback/pending/
    - `missing_content` → Update `module_XX.md` (adds missing content)
    - `warning` → Update `module_XX_notes.md` (user warnings)
    - `lesson_learned` → Update `module_XX_notes.md` (practical lessons)
-   - `global` → Update global lessons or CLAUDE.md
+   - `global` → Update global lessons or AGENT.md
 4. Archive to `feedback/integrated/`
 5. Update appropriate timestamps (Last Verified vs. Last Feedback Integration)
 6. Delete from pending/
@@ -161,7 +161,7 @@ target: module_XX.md
 - Creates notes file if doesn't exist
 
 **C. Global Feedback** → System-wide docs
-- Updates `feedback/global/claude_lessons.md` or `CLAUDE.md`
+- Updates `feedback/global/agent_lessons.md` or `AGENT.md`
 
 **Why this matters**: Corrections reach authoritative docs instead of getting stuck in "notes purgatory"!
 
@@ -225,7 +225,7 @@ target: module_XX.md
 ```
 correction/missing → module_XX.md (authoritative source gets fixed!)
 warning/lesson     → module_XX_notes.md (user wisdom)
-global             → system-wide docs (CLAUDE.md, claude_lessons.md)
+global             → system-wide docs (AGENT.md, agent_lessons.md)
 ```
 
 **Result**: Corrections actually fix documentation errors instead of being buried in notes files.
@@ -245,7 +245,7 @@ Every module knows:
 
 **Why**: Pending files are submitted by users and should be preserved as-is until integration
 
-**Instead**: Use `/integrate-feedback` to validate and integrate
+**Instead**: Use `command: integrate-feedback` to validate and integrate
 
 ### DO NOT Integrate Without Validation
 
@@ -292,8 +292,8 @@ Every module knows:
 - `CONSOLIDATION_PLAN.md` - Phase 2, Task 2.1 details
 - `CURRENT_STATE.json` - Project status
 - `scripts/submit_feedback.sh` - Submission script
-- `/integrate-feedback` command - Integration command
-- `/compress-documentation` command - Compression command (use AFTER integration)
+- `command: integrate-feedback` command - Integration command
+- `command: compress-documentation` command - Compression command (use AFTER integration)
 
 ---
 

@@ -12,7 +12,7 @@
 
 ### Step 1: Route the Query (5 seconds)
 
-Read the Quick Reference table in CLAUDE.md → This involves circular dependencies between carbon and forestry.
+Read the Quick Reference table in AGENT.md → This involves circular dependencies between carbon and forestry.
 
 **Decision**: Check `cross_module/circular_dependency_resolution.md` first.
 
@@ -288,11 +288,11 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 
 **How to mention** (pick one style, keep it brief):
 ```
-📝 Spot an error or have insights to share? Use /feedback to help improve the documentation!
+📝 Spot an error or have insights to share? Say "run command: feedback" to help improve the documentation!
 ```
 Or:
 ```
-💡 Your question revealed interesting details - consider using /feedback to document this for others!
+💡 Your question revealed interesting details - consider using "run command: feedback" to document this for others!
 ```
 
 **Goal**: Encourage quality feedback without being annoying. Users should feel invited, not pestered.
@@ -313,12 +313,12 @@ Or:
 3. **Cross-Module**: `cross_module/*.md` (system-level analysis, derived from modules)
 4. **Architecture**: `core_docs/Phase*.md` (overview and reference)
 5. **Module Notes**: `modules/module_XX_notes.md` (user experience, warnings - may lag behind code changes)
-6. **Workflow**: `CLAUDE.md` (routing logic, not facts about modules)
+6. **Workflow**: `AGENT.md` (routing logic, not facts about modules)
 
 **Read in this order:**
 ```
 User asks MAgPIE question
-  → CLAUDE.md (you're reading it - tells you WHERE to look)
+  → AGENT.md (you're reading it - tells you WHERE to look)
   → modules/module_XX.md (FACTS about the module)
   → module_XX_notes.md (WARNINGS/LESSONS if how-to/troubleshooting)
   → cross_module/*.md (SYSTEM-LEVEL if safety/dependencies)
@@ -353,7 +353,7 @@ New documentation project session
 2. **Trust higher-precedence source** (code > module docs > cross-module > notes)
 3. **Create feedback** if notes contradict main docs:
    ```bash
-   # Use /feedback command to report inconsistency
+   # Use feedback command to report inconsistency
    ```
 
 **Example conflict resolution:**

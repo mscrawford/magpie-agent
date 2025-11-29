@@ -1,6 +1,6 @@
 ---
 type: global
-target: [CLAUDE.md, AI_Agent_Behavior_Guide.md, or "system-wide"]
+target: [AGENT.md, AI_Agent_Behavior_Guide.md, or "system-wide"]
 priority: [high|medium|low]
 date: YYYY-MM-DD
 author: [optional - your name or username]
@@ -30,7 +30,7 @@ Examples:
 
 [What should change? Be specific about where in the system]
 
-If updating CLAUDE.md:
+If updating AGENT.md:
 - Which section to modify
 - Exact text to add/change
 

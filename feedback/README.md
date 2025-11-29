@@ -23,7 +23,7 @@ feedback/
 │   ├── README.md         ← Staged workflow documentation
 │   └── *.md              ← Feedback files (flat structure with timestamps)
 ├── integrated/           ← Archive of validated & integrated feedback
-├── global/               ← System-wide lessons (claude_lessons.md)
+├── global/               ← System-wide lessons (agent_lessons.md)
 ├── templates/            ← Easy-to-fill submission templates
 └── README.md             ← You are here
 ```
@@ -37,8 +37,8 @@ feedback/
 | Task | Command | When |
 |------|---------|------|
 | Submit feedback | `scripts/submit_feedback.sh` | Anytime you have feedback |
-| Process pending feedback | `/integrate-feedback all` | Weekly/monthly |
-| Reduce bloat | `/compress-documentation` | Quarterly (optional) |
+| Process pending feedback | `command: integrate-feedback` | Weekly/monthly |
+| Reduce bloat | `command: compress-documentation` | Quarterly (optional) |
 
 **📖 New user?** See [WORKFLOW_GUIDE.md](WORKFLOW_GUIDE.md) for complete workflow explanation
 
@@ -135,9 +135,9 @@ Feedback now flows through a **staged validation process** to maintain stability
 
 1. **Scan pending feedback**:
    ```bash
-   /integrate-feedback              # Interactive mode
+   command: integrate-feedback              # Interactive mode
    # OR
-   /integrate-feedback all          # All pending feedback
+   command: integrate-feedback all          # All pending feedback
    ```
 
 2. **Agent validates** each item:
@@ -183,9 +183,9 @@ Feedback now flows through a **staged validation process** to maintain stability
 
 ### Global Feedback
 - **Submission**: `feedback/pending/` (e.g., `pending/20251026_150000_global_agent_behavior.md`)
-- **After Integration**: `feedback/global/claude_lessons.md`
+- **After Integration**: `feedback/global/agent_lessons.md`
 - **Contains:** Agent behavior improvements, workflow enhancements
-- **Used to update:** CLAUDE.md (agent instructions)
+- **Used to update:** AGENT.md (agent instructions)
 
 ### Cross-Module Feedback
 - **Submission**: `feedback/pending/` (mark as cross-module in content)
@@ -199,7 +199,7 @@ User submits feedback
   ↓
 feedback/pending/YYYYMMDD_HHMMSS_type_target.md
   ↓
-Periodic integration session (/integrate-feedback all)
+Periodic integration session (command: integrate-feedback)
   ↓
 Validation against current code
   ↓
@@ -222,7 +222,7 @@ Before marking feedback as integrated:
 - [ ] Unique ID assigned (W001, L001, C001, etc.)
 - [ ] Date and source recorded
 - [ ] If correction: main doc also updated
-- [ ] If global: CLAUDE.md or workflow updated
+- [ ] If global: AGENT.md or workflow updated
 - [ ] Cross-references added
 - [ ] "Last updated" date refreshed
 - [ ] Feedback moved to `integrated/`
@@ -281,17 +281,17 @@ This feedback system enables:
 
 The feedback system uses **two sequential commands**:
 
-### `/integrate-feedback` - Process Pending Submissions
+### `command: integrate-feedback` - Process Pending Submissions
 
 **Purpose**: Validate and integrate new user feedback
 
 **When to use**: Weekly or monthly, whenever feedback accumulates
 
-**Command**:
+**Invocation**:
 ```bash
-/integrate-feedback module_10     # Single module
-/integrate-feedback all           # All pending feedback
-/integrate-feedback               # Interactive mode
+run command: integrate-feedback module_10     # Single module
+run command: integrate-feedback all           # All pending feedback
+run command: integrate-feedback               # Interactive mode
 ```
 
 **What it does**:
@@ -307,29 +307,29 @@ The feedback system uses **two sequential commands**:
 
 ---
 
-### `/compress-documentation` - Reduce Bloat (Optional)
+### `command: compress-documentation` - Reduce Bloat (Optional)
 
 **Purpose**: Consolidate accumulated feedback to reduce bloat
 
 **When to use**: Quarterly, or when notes files feel verbose (AFTER multiple integrations)
 
-**Command**:
+**Invocation**:
 ```bash
-/compress-documentation     # Analyze and compress integrated feedback
+run command: compress-documentation     # Analyze and compress integrated feedback
 ```
 
 **What it does**:
 1. ✅ Analyzes patterns in `integrated/` feedback
 2. ✅ Identifies consolidation opportunities (redundant warnings, scattered lessons)
 3. ✅ Proposes before/after with line reductions
-4. ✅ Updates `module_XX_notes.md`, `CLAUDE.md`, global lessons (with approval)
+4. ✅ Updates `module_XX_notes.md`, `AGENT.md`, global lessons (with approval)
 5. ✅ Maintains traceability with feedback IDs
 6. ✅ Tracks compression metadata
 
 **What gets compressed**:
 - ✅ `module_XX_notes.md` - User warnings, lessons, examples
-- ✅ `CLAUDE.md` - Agent behavioral guidance (if bloated)
-- ✅ `feedback/global/claude_lessons.md` - System-wide lessons
+- ✅ `AGENT.md` - Agent behavioral guidance (if bloated)
+- ✅ `feedback/global/agent_lessons.md` - System-wide lessons
 - ❌ **NEVER** `module_XX.md` - Core docs (facts are sacred!)
 
 **What compression does**:
@@ -349,23 +349,23 @@ The feedback system uses **two sequential commands**:
 
 **They are SEQUENTIAL, not alternatives**: Integrate first (always), then compress later (sometimes).
 
-1. **Regular Integration** (weekly/monthly): `/integrate-feedback all`
+1. **Regular Integration** (weekly/monthly): `command: integrate-feedback`
    - Keeps `pending/` clean
    - Validates and integrates user feedback
    - Updates core docs (corrections) and notes files (warnings/lessons)
 
-2. **Periodic Compression** (quarterly, optional): `/compress-documentation`
+2. **Periodic Compression** (quarterly, optional): `command: compress-documentation`
    - Reduces bloat in notes files and agent guidance
    - Organizes feedback into coherent sections
    - Maintains quality while reducing redundancy
 
 **Timeline example**:
 ```
-Week 1-4: Submit feedback → /integrate-feedback
-Week 5-8: Submit feedback → /integrate-feedback
-Week 9-12: Submit feedback → /integrate-feedback
-Month 3: Notes feeling bloated → /compress-documentation
-Month 4+: Back to /integrate-feedback (cycle continues)
+Week 1-4: Submit feedback → command: integrate-feedback
+Week 5-8: Submit feedback → command: integrate-feedback
+Week 9-12: Submit feedback → command: integrate-feedback
+Month 3: Notes feeling bloated → command: compress-documentation
+Month 4+: Back to integrate-feedback (cycle continues)
 ```
 
 **📖 See [WORKFLOW_GUIDE.md](WORKFLOW_GUIDE.md) for detailed workflow explanation and decision tree**

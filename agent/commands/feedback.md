@@ -1,6 +1,10 @@
-# User Feedback System
+# Feedback Command
 
-**MAgPIE developers can improve agent performance through feedback!**
+**Purpose**: Learn about and use the user feedback system
+
+**When user says**: "run command: feedback", "how do I give feedback", "feedback system", etc.
+
+---
 
 ## What Are Notes Files?
 
@@ -62,6 +66,8 @@ When using notes files, structure your response like this:
 3. **Conservation laws** - Reference conservation law docs for land, water, carbon, food queries
 4. **Token efficiency** - Don't read entire notes file; skim sections and read only relevant parts
 
+---
+
 ## Submitting Feedback (For Users)
 
 MAgPIE developers can improve the agent by submitting feedback:
@@ -84,7 +90,7 @@ MAgPIE developers can improve the agent by submitting feedback:
 
 **⏱️ When will my feedback be integrated?**
 - Feedback accumulates in `feedback/pending/`
-- Integration happens **weekly or monthly** via `/integrate-feedback`
+- Integration happens **weekly or monthly** via `command: integrate-feedback`
 - You'll see your corrections in `module_XX.md` or warnings/lessons in `module_XX_notes.md`
 - Timeline: Typically integrated within 1-4 weeks of submission
 
@@ -124,7 +130,7 @@ See `feedback/README.md` and `feedback/WORKFLOW_GUIDE.md` for complete details.
 
 ```bash
 # Write feedback file to pending/
-Write: /path/to/magpie/magpie-agent/feedback/pending/YYYYMMDD_HHMMSS_type_target.md
+# File: feedback/pending/YYYYMMDD_HHMMSS_type_target.md
 
 # Follow template structure (see feedback/templates/)
 ```
@@ -164,7 +170,7 @@ git push
 **During the feedback submission step:**
 
 - ❌ **DO NOT** edit `modules/module_XX.md`
-- ❌ **DO NOT** edit `CLAUDE.md`
+- ❌ **DO NOT** edit `AGENT.md`
 - ❌ **DO NOT** move file to `integrated/`
 
 **Why?** Feedback must be reviewed by a human maintainer before changing the core documentation. The pending queue allows for this review.
@@ -173,11 +179,11 @@ git push
 
 ## ⚙️ INTEGRATION WORKFLOW (STEP 2 - MAINTAINER ONLY)
 
-**To process pending feedback, use the `/integrate-feedback` command.**
+**To process pending feedback, use `command: integrate-feedback`.**
 
 This separate process will:
 1. Read pending files
-2. Update documentation (CLAUDE.md, module notes, etc.)
+2. Update documentation (AGENT.md, module notes, etc.)
 3. Move files from `pending/` to `integrated/`
 4. Commit the integration
 
@@ -187,7 +193,7 @@ This separate process will:
 
 ```bash
 # 1. Create pending file
-Write: feedback/pending/mistake.md
+# Write to: feedback/pending/mistake.md
 
 # 2. Commit and Push
 git add feedback/pending/mistake.md
@@ -200,9 +206,9 @@ git push
 **DON'T DO THIS:**
 ```bash
 # Create feedback
-Write: feedback/pending/mistake.md
+# Write to: feedback/pending/mistake.md
 # Edit docs immediately
-Edit: modules/module_10.md
+# Edit: modules/module_10.md
 # Move to integrated
 mv feedback/pending/mistake.md feedback/integrated/
 # Push

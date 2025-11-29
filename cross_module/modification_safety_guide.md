@@ -1027,7 +1027,7 @@ library(magpie4)
 ### 8.3 Getting Help
 
 **Internal Resources**:
-1. Check `CLAUDE.md` (project instructions)
+1. Check `AGENT.md` (project instructions)
 2. Search `magpie-agent/` documentation
 3. Review module code with line numbers cited in docs
 

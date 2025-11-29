@@ -91,7 +91,7 @@ Date: 2025-10-26
 [3/6] Checking cross-references...
 ✓ All 47 module references valid
 ✓ All 12 Phase document references valid
-❌ Broken reference: module_65_notes.md referenced in CLAUDE.md:890 but file doesn't exist
+❌ Broken reference: module_65_notes.md referenced in AGENT.md:890 but file doesn't exist
 
 [4/6] Checking duplicate equations...
 ✓ q70_feed: Consistent definition across 2 files
@@ -104,7 +104,7 @@ Date: 2025-10-26
 ✓ START_HERE.md points to CURRENT_STATE.json
 ✓ README.md points to START_HERE.md
 ✓ RULES_OF_THE_ROAD.md points to CURRENT_STATE.json
-✓ CLAUDE.md correctly separates contexts
+✓ AGENT.md correctly separates contexts
 
 [6/6] Checking file counts...
 ✓ Module docs: 46 files (matches inventory)
@@ -211,7 +211,7 @@ If file counts changed:
 
 **Example finding:**
 ```
-❌ Broken reference: module_65_notes.md referenced in CLAUDE.md:890 but file doesn't exist
+❌ Broken reference: module_65_notes.md referenced in AGENT.md:890 but file doesn't exist
 ```
 
 **How to fix:**
@@ -298,7 +298,7 @@ If file counts changed:
 
 ```bash
 # 1. Update documentation
-# (add module_XX_notes.md, update CLAUDE.md, etc.)
+# (add module_XX_notes.md, update AGENT.md, etc.)
 
 # 2. Validate
 ./scripts/validate_consistency.sh
@@ -337,7 +337,7 @@ If file counts changed:
 
 **Example 3: Broken reference after file rename**
 - module_70_notes.md renamed
-- CLAUDE.md still references old name
+- AGENT.md still references old name
 - Validation catches broken link
 
 ### What Validation Misses
@@ -431,7 +431,7 @@ If file counts changed:
 - `DOCUMENTATION_ECOSYSTEM_MAP.md` - Complete inventory of all files
 - `CONSISTENCY_MANAGEMENT_SUMMARY.md` - Consistency strategy overview
 - `/compress-feedback` - Consolidate redundant documentation
-- `CLAUDE.md` (lines 978-1085) - Document precedence hierarchy
+- `AGENT.md` (lines 978-1085) - Document precedence hierarchy
 - `scripts/validate_consistency.sh` - Validation script details
 
 ---

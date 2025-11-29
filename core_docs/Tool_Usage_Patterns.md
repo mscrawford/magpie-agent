@@ -1,8 +1,8 @@
 # Tool Usage Patterns for MAgPIE Agent
 
-**Purpose**: Best practices for using Claude Code tools effectively and reliably when working with MAgPIE
+**Purpose**: Best practices for using AI assistant tools effectively and reliably when working with MAgPIE
 
-**Last Updated**: 2024-10-24
+**Last Updated**: 2025-11-29
 
 ---
 
@@ -14,11 +14,11 @@
 
 ---
 
-## 🔧 Bash Tool: Command Execution
+## 🔧 Shell/Bash Tools: Command Execution
 
 ### Working Directory Awareness
 
-**CRITICAL**: The Bash tool maintains session state - working directory persists across calls.
+**CRITICAL**: Shell tools typically maintain session state - working directory persists across calls.
 
 #### The Problem
 
@@ -454,13 +454,14 @@ Glob(pattern="**/*")
 
 ```
 /magpie/                          ← Parent: Main MAgPIE project
-├── .claude/
-├── CLAUDE.md                     ← DEPLOYED copy (don't edit)
+├── AGENT.md                      ← DEPLOYED copy (don't edit)
 ├── modules/                      ← GAMS modules (actual code)
 │   ├── 50_nr_soil_budget/
 │   └── ...
 └── magpie-agent/                 ← Current working directory
-    ├── CLAUDE.md                 ← SOURCE (edit this)
+    ├── AGENT.md                  ← SOURCE (edit this)
+    ├── agent/
+    │   └── commands/             ← Command definitions
     ├── modules/                  ← AI documentation (NOT GAMS!)
     │   ├── module_50.md
     │   └── ...
@@ -475,15 +476,15 @@ Glob(pattern="**/*")
 ```bash
 # AI docs (current repo):
 ./modules/module_50.md                          # ✅ Relative
-/Users/turnip/.../magpie-agent/modules/module_50.md  # ✅ Absolute (safer)
+/path/to/magpie-agent/modules/module_50.md      # ✅ Absolute (safer)
 
 # GAMS code (parent repo):
 ../modules/50_nr_soil_budget/                   # ✅ Relative
-/Users/turnip/.../magpie/modules/50_nr_soil_budget/  # ✅ Absolute (safer)
+/path/to/magpie/modules/50_nr_soil_budget/      # ✅ Absolute (safer)
 
-# Deployed CLAUDE.md:
-../CLAUDE.md                                    # ✅ Relative
-/Users/turnip/.../magpie/CLAUDE.md             # ✅ Absolute (safer)
+# Deployed AGENT.md:
+../AGENT.md                                     # ✅ Relative
+/path/to/magpie/AGENT.md                        # ✅ Absolute (safer)
 ```
 
 ### Disambiguation: modules/ Ambiguity
@@ -704,13 +705,13 @@ find . -name "AI_Agent_Behavior_Guide.md"
 
 ## 📚 Related Documentation
 
-- **CLAUDE.md**: General agent instructions and workflows
-- **AI_Agent_Behavior_Guide.md**: Response patterns and query routing
+- **AGENT.md**: General agent instructions and workflows
+- **Response_Guidelines.md**: Response patterns and query routing
 - **feedback/integrated/20251024_220843_global_bash_directory_navigation.md**: Detailed analysis of directory navigation errors
 
 ---
 
 **Document Status**: ✅ Complete
 **Created**: 2024-10-24
-**Triggered by**: Directory navigation error during feedback integration
+**Updated**: 2025-11-29 (model-agnostic refactor)
 **Purpose**: Prevent tool usage errors and improve reliability

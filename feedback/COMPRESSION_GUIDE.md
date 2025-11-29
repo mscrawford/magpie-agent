@@ -2,7 +2,7 @@
 
 ## 🎯 What is Feedback Compression?
 
-As the MAgPIE agent receives feedback and improves, documentation files (CLAUDE.md, module notes, etc.) can grow too long. **Compression** synthesizes integrated feedback into streamlined documentation while preserving all unique insights.
+As the MAgPIE agent receives feedback and improves, documentation files (AGENT.md, module notes, etc.) can grow too long. **Compression** synthesizes integrated feedback into streamlined documentation while preserving all unique insights.
 
 **Goal**: Keep docs concise and navigable WITHOUT sacrificing the integrity of user feedback.
 
@@ -12,7 +12,7 @@ As the MAgPIE agent receives feedback and improves, documentation files (CLAUDE.
 
 ### Indicators You Need Compression:
 
-- ✅ CLAUDE.md sections exceeding 500 lines
+- ✅ AGENT.md sections exceeding 500 lines
 - ✅ Multiple warnings/lessons about the same topic
 - ✅ Feedback accumulation > 20-30 integrated items
 - ✅ Documentation feeling repetitive or verbose
@@ -102,7 +102,7 @@ git checkout backup-pre-compression-YYYYMMDD_HHMMSS
 - Water allocation warnings (3 items)
 
 **Current state:**
-- CLAUDE.md: 1,200 lines (Section "Warnings" has 400 lines)
+- AGENT.md: 1,200 lines (Section "Warnings" has 400 lines)
 - module_10_notes.md: 350 lines (8 separate warnings)
 - module_52_notes.md: 200 lines (4 corrections about same equation)
 
@@ -142,7 +142,7 @@ Approve? [y/n/partial]
 
 **Results:**
 - Total reduction: ~300 lines → ~105 lines (65% overall)
-- Files modified: CLAUDE.md, module_10_notes.md, module_52.md, AI_Agent_Behavior_Guide.md
+- Files modified: AGENT.md, module_10_notes.md, module_52.md, AI_Agent_Behavior_Guide.md
 - Unique insights preserved: 42 (100%)
 - Feedback items marked compressed: 25
 - Metadata created: `.compression_metadata.json`
@@ -269,7 +269,7 @@ Original files are in `feedback/integrated/` with compression markers:
 - `.claude/commands/compress-feedback.md` - Complete workflow details
 - `feedback/README.md` - Feedback system overview
 - `scripts/compress_feedback.sh` - Helper script reference
-- `CLAUDE.md` - Agent behavior documentation
+- `AGENT.md` - Agent behavior documentation
 
 ---
 

@@ -1,9 +1,9 @@
-# MAgPIE Model - Key Systems Reference
+# MAgPIE Model - AI Agent Instructions
 
-**📍 FILE LOCATION NOTE**: You are reading the SOURCE file in `/magpie/magpie-agent/CLAUDE.md`
+**📍 FILE LOCATION NOTE**: You are reading the SOURCE file in `/magpie/magpie-agent/AGENT.md`
 - ✅ **THIS IS THE CORRECT FILE TO EDIT** for AI documentation updates
-- ⚠️ A deployed copy exists at `../CLAUDE.md` (parent directory) - DO NOT EDIT that one
-- 🔄 Changes here automatically deploy to parent via `/update` command
+- ⚠️ A deployed copy may exist at `../AGENT.md` (parent directory) - DO NOT EDIT that one
+- 🔄 Changes here deploy to parent via `run command: update`
 - 📝 Always commit changes to the magpie-agent repo, not the main MAgPIE repo
 
 ---
@@ -30,7 +30,7 @@
 **🎬 At the start of each session:**
 
 1. **FIRST**: Check if this is a fresh installation:
-   - If `../.claude/commands/` is missing → run `/bootstrap` command for setup
+   - If `../AGENT.md` is missing → run `command: bootstrap` for setup
    - If already exists → proceed to greeting
 
 2. **THEN**: Greet the user warmly and present available capabilities:
@@ -41,16 +41,16 @@
 I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 words of comprehensive documentation covering all 46 modules, architecture, dependencies, and GAMS programming.
 
 🎯 First time here?
-   Type this → /guide
-   (Slash commands start with / and show you what I can do)
+   Say: "run command: guide"
+   (Commands help you access specialized features)
 
 🚀 Available Commands:
-  /guide              - Complete capabilities guide (start here!)
-  /update             - Pull latest docs and sync CLAUDE.md
-  /feedback           - User feedback system (submit/review/search)
-  /integrate-feedback - Process pending feedback (maintainers)
-  /update-claude-md   - Git workflow for updating AI docs
-  /bootstrap          - First-time setup (if needed)
+  guide              - Complete capabilities guide (start here!)
+  update             - Pull latest docs and sync AGENT.md
+  feedback           - User feedback system (submit/review/search)
+  integrate-feedback - Process pending feedback (maintainers)
+  update-agent-md    - Git workflow for updating AI docs
+  bootstrap          - First-time setup (if needed)
 
 💡 Or just ask me anything about MAgPIE!
   • "How does livestock work?"
@@ -60,7 +60,7 @@ I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 wo
 
 📚 I check comprehensive AI docs FIRST (30 seconds) before reading raw GAMS code.
 
-New user? → Type /guide to see everything I can do!
+New user? → Say "run command: guide" to see everything I can do!
 ```
 
 **If working on the MAgPIE AI Documentation Project:**
@@ -73,8 +73,37 @@ New user? → Type /guide to see everything I can do!
 **📍 CRITICAL - Documentation Project Rule:**
 When working on the documentation project, update ONLY `project/CURRENT_STATE.json` (all status, plans, progress). Do NOT update README.md, project/README.md, or modules/README.md (static reference docs).
 
-**📍 CRITICAL - Git Workflow for CLAUDE.md:**
-When updating this CLAUDE.md file, use the `/update-claude-md` command for detailed workflow instructions.
+**📍 CRITICAL - Git Workflow for AGENT.md:**
+When updating this AGENT.md file, use `command: update-agent-md` for detailed workflow instructions.
+
+---
+
+## 🎮 COMMAND SYSTEM
+
+**Commands** are agent instructions stored in `agent/commands/`. When a user says "run command: X" or similar, read and execute `agent/commands/X.md`.
+
+### Available Commands
+
+| Command | Purpose |
+|---------|---------|
+| `guide` | Complete capabilities guide (start here!) |
+| `update` | Pull latest docs and sync AGENT.md to parent |
+| `feedback` | Learn about and use the feedback system |
+| `integrate-feedback` | Process pending feedback (maintainers) |
+| `update-agent-md` | Git workflow for AI documentation updates |
+| `bootstrap` | First-time setup for new installations |
+| `validate` | Check documentation consistency |
+| `validate-module` | Validate specific module documentation |
+| `compress-documentation` | Consolidate accumulated feedback |
+
+### How Commands Work
+
+1. User says: "run command: update" (or "execute update command", etc.)
+2. Agent reads: `agent/commands/update.md`
+3. Agent follows instructions in that file
+4. Agent reports results to user
+
+**Command files contain detailed step-by-step instructions** - always read them before executing.
 
 ---
 
@@ -85,19 +114,16 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 **Directory layout**:
 ```
 /magpie/                          ← Parent: Main MAgPIE project (git repo #1)
-├── .claude/
-│   ├── commands/                 ← Copied from magpie-agent (auto-updated via /update)
-│   └── settings.local.json
-├── CLAUDE.md                     ← DEPLOYED copy (DO NOT EDIT - auto-updated via /update)
+├── AGENT.md                      ← DEPLOYED copy (DO NOT EDIT - auto-updated via update command)
 ├── modules/                      ← GAMS modules (actual MAgPIE code)
 │   ├── 14_yields/
 │   ├── 70_livestock/
 │   └── ...
 ├── main.gms                      ← MAgPIE entry point
 └── magpie-agent/                 ← YOU ARE HERE (git repo #2)
-    ├── .claude/
-    │   └── commands/             ← SOURCE slash commands (edit here)
-    ├── CLAUDE.md                 ← SOURCE instructions (edit here)
+    ├── AGENT.md                  ← SOURCE instructions (edit here)
+    ├── agent/
+    │   └── commands/             ← Command definitions (edit here)
     ├── modules/                  ← AI documentation (NOT GAMS code)
     │   ├── module_14.md
     │   ├── module_70.md
@@ -118,8 +144,8 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 3. **Important distinctions**:
    - `modules/` in current dir = AI documentation (markdown)
    - `../modules/` in parent dir = MAgPIE GAMS code
-   - `CLAUDE.md` in current dir = SOURCE (edit this)
-   - `../CLAUDE.md` in parent dir = DEPLOYED (auto-copied, don't edit)
+   - `AGENT.md` in current dir = SOURCE (edit this)
+   - `../AGENT.md` in parent dir = DEPLOYED (auto-copied, don't edit)
 
 4. **Git operations**:
    - For AI docs: commit from current directory (magpie-agent repo)
@@ -144,7 +170,7 @@ When updating this CLAUDE.md file, use the `/update-claude-md` command for detai
 
 **For cross-cutting questions** ("How does X affect Y?" "What depends on Z?"):
 1. **First, check** `core_docs/Query_Patterns_Reference.md` for query patterns
-2. **Check** `feedback/global/claude_lessons.md` for system-wide lessons (if applicable)
+2. **Check** `feedback/global/agent_lessons.md` for system-wide lessons (if applicable)
 3. **Then check**:
    - `Core_Architecture.md` for model structure and overview
    - `Module_Dependencies.md` for dependencies and interactions
@@ -187,7 +213,7 @@ MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized
 | **Data_Flow.md** | "Where does this data come from?" |
 | **Query_Patterns_Reference.md** | Complex query patterns, parameterization vs. mechanistic modeling |
 | **Response_Guidelines.md** | Token efficiency, examples, quality checklist, complete workflows |
-| **Tool_Usage_Patterns.md** | Best practices for Claude Code tools (Bash, Read, Write, paths) |
+| **Tool_Usage_Patterns.md** | Best practices for AI agent tools (file operations, shell commands, paths) |
 
 ### Module Documentation (~20,000+ lines)
 **Location**: `modules/`
@@ -315,11 +341,11 @@ Other IAMs may use different approaches:
 
 - Each `module_XX.md` may have a `module_XX_notes.md` with warnings, lessons, corrections, and examples
 - Always read notes files when answering about a module
-- **For complete details on the feedback system, use the `/feedback` command.**
+- **For complete details on the feedback system, say "run command: feedback".**
 
 **Occasionally remind users** (sparingly):
 ```
-📝 Spot an error or have insights to share? Use /feedback to help improve the documentation!
+📝 Spot an error or have insights to share? Say "run command: feedback" to help improve the documentation!
 ```
 
 ---
@@ -330,7 +356,7 @@ Other IAMs may use different approaches:
 
 ```
 User asks MAgPIE question
-  → CLAUDE.md (tells you WHERE to look)
+  → AGENT.md (tells you WHERE to look)
   → modules/module_XX.md (FACTS about the module)
   → module_XX_notes.md (WARNINGS/LESSONS - always check)
   → Query_Patterns_Reference.md (for complex query patterns)
@@ -456,6 +482,38 @@ Module 29 uses land allocation from Module 10 (see `modules/module_10.md#equatio
 - **Parameterization detection** → `core_docs/Query_Patterns_Reference.md` (Pattern 4 + Appendix)
 - **Complete example walkthrough** → `core_docs/Response_Guidelines.md` (carbon pricing → forest growth)
 - **Document role hierarchy** → `core_docs/Response_Guidelines.md` (precedence, conflicts, quality assurance)
-- **First-time setup** → `/bootstrap` command
+- **First-time setup** → `command: bootstrap`
 
 **The AI documentation exists to make your job easier AND more accurate. Use it!**
+
+---
+
+## 🔧 MODEL-SPECIFIC SETUP
+
+This agent is designed to work with any AI assistant. To set up for your specific tool:
+
+### For Any AI Assistant
+
+1. **Point your AI to this file** - Configure your AI tool to read `AGENT.md` (or `magpie-agent/AGENT.md`) at session start
+2. **Deploy to parent** - Copy `AGENT.md` to the MAgPIE root directory for convenience
+3. **Commands** - Tell the agent "run command: X" to execute commands from `agent/commands/`
+
+### Tool-Specific Notes
+
+**Claude Code**: Configure to read `AGENT.md` as project instructions.
+
+**GitHub Copilot**: Point to this file in your workspace settings.
+
+**Cursor**: Add this file to your AI context.
+
+**Other tools**: Consult your tool's documentation for how to provide context files.
+
+### First-Time Setup
+
+```bash
+cd /path/to/magpie/magpie-agent
+# Deploy AGENT.md to parent directory
+cp AGENT.md ../AGENT.md
+```
+
+Then configure your AI tool to read `AGENT.md` from the MAgPIE root directory.

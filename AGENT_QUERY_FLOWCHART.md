@@ -274,7 +274,7 @@ Agent Path:
 3. Answer with equations and limitations
 4. Cite: 🟡 "Based on module_70.md and module_70_notes.md"
 
-Tokens: ~19K (16K CLAUDE.md + 3K module doc)
+Tokens: ~19K (16K AGENT.md + 3K module doc)
 Time: 30-60 seconds
 ```
 
@@ -344,7 +344,7 @@ Time: 3-4 minutes
 | Conservation laws   | balance docs                 | ~21K         | 2min   |
 | Architecture        | Core_Architecture            | ~26K         | 3min   |
 
-**Key principle**: Agent loads 16K CLAUDE.md always, then reads only what's needed for the specific question.
+**Key principle**: Agent loads 16K AGENT.md always, then reads only what's needed for the specific question.
 
 ---
 

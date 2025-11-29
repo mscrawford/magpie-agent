@@ -4,7 +4,7 @@
 
 If you're a MAgPIE developer looking to use the AI documentation, **you don't need anything in this folder**. Go back to the parent directory and see:
 - `README.md` - Project overview and how to get started
-- `CLAUDE.md` - AI agent instructions
+- `AGENT.md` - AI agent instructions
 - `modules/` - Module documentation
 - `core_docs/` - Architecture documentation
 - `feedback/` - User feedback system
@@ -68,7 +68,8 @@ magpie-agent/
 │   └── CURRENT_STATE.json ← EVERYTHING: status, plans, history, next steps
 │
 ├── README.md              ← User-facing: project overview
-├── CLAUDE.md              ← User-facing: AI agent instructions
+├── AGENT.md               ← User-facing: AI agent instructions
+├── agent/                 ← Agent commands
 ├── modules/               ← User-facing: module documentation
 ├── core_docs/             ← User-facing: architecture docs
 ├── feedback/              ← User-facing: user feedback system

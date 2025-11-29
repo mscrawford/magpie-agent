@@ -1,4 +1,12 @@
-# 🤖 MAgPIE Agent - Complete Capabilities Guide
+# Guide Command
+
+**Purpose**: Show complete capabilities of the MAgPIE Agent
+
+**When user says**: "run command: guide", "show guide", "what can you do?", etc.
+
+---
+
+## 🤖 MAgPIE Agent - Complete Capabilities Guide
 
 Welcome to the **magpie-agent** - your specialized AI assistant for the MAgPIE land-use model!
 
@@ -164,13 +172,13 @@ Help improve the agent by sharing your experience:
 ./scripts/search_feedback.sh "Module 70"
 ```
 
-See `/feedback` command for complete details.
+Say "run command: feedback" for complete details.
 
 ---
 
 ### 6. **Integrate Feedback Automatically**
 
-New! Automated feedback integration with git workflow:
+Automated feedback integration with git workflow:
 
 ```bash
 ./scripts/integrate_feedback.sh feedback/pending/[file].md
@@ -191,18 +199,16 @@ New! Automated feedback integration with git workflow:
 
 ---
 
-## 🚀 Slash Commands
+## 🚀 Available Commands
 
 Quick access to specialized help:
 
-### `/guide` (this guide)
+### `guide` (this guide)
 **Purpose**: Show complete capabilities guide
 **Use**: Boot-time orientation or quick reference
 
-**Note**: Don't confuse with built-in `/help` (Claude Code help) - use `/guide` for MAgPIE Agent capabilities.
-
-### `/update`
-**Purpose**: Pull latest documentation and re-deploy CLAUDE.md
+### `update`
+**Purpose**: Pull latest documentation and re-deploy AGENT.md
 **Use**:
 - Start of session (get latest updates)
 - After team members update docs
@@ -211,10 +217,10 @@ Quick access to specialized help:
 **What it does**:
 - Pulls from magpie-agent repo
 - Handles merge conflicts
-- Copies CLAUDE.md to parent directory
+- Copies AGENT.md to parent directory
 - Reports what changed
 
-### `/feedback`
+### `feedback`
 **Purpose**: Learn about the user feedback system
 **Use**:
 - Understand notes files (module_XX_notes.md)
@@ -222,22 +228,15 @@ Quick access to specialized help:
 - Submit your own feedback
 - Integration workflow
 
-**Covers**:
-- What are notes files?
-- When to use them
-- How to submit feedback
-- AI agent feedback creation
-- Complete integration workflow
-
-### `/update-claude-md`
+### `update-agent-md`
 **Purpose**: Git workflow for AI documentation updates
-**Use**: When updating CLAUDE.md or other AI docs
+**Use**: When updating AGENT.md or other AI docs
 
 **Critical rules**:
 - All AI docs live in magpie-agent directory
 - Commit from magpie-agent repo only
 - Never commit AI docs from main MAgPIE repo
-- Copy CLAUDE.md to parent for convenience
+- Copy AGENT.md to parent for convenience
 
 ---
 
@@ -248,38 +247,18 @@ Located in `scripts/` directory:
 ### `submit_feedback.sh`
 **Purpose**: Interactive feedback submission
 **Usage**: `./scripts/submit_feedback.sh`
-**Features**:
-- Choose feedback type (1-5)
-- Auto-fill template
-- Pre-populate metadata
-- Open in editor
 
 ### `review_feedback.sh`
 **Purpose**: Review pending feedback
 **Usage**: `./scripts/review_feedback.sh`
-**Features**:
-- List all pending items
-- Show metadata (type, target, date)
-- Count pending submissions
 
 ### `search_feedback.sh`
 **Purpose**: Search feedback and notes files
 **Usage**: `./scripts/search_feedback.sh "search term"`
-**Features**:
-- Search module notes
-- Search global lessons
-- Search pending feedback
-- Search integrated archive
 
 ### `integrate_feedback.sh`
 **Purpose**: Integrate feedback with git automation
 **Usage**: `./scripts/integrate_feedback.sh feedback/pending/[file].md`
-**Features**:
-- Auto git pull before integration
-- Merge conflict detection
-- Auto commit with metadata
-- Auto push to remote
-- Manual mode with --no-git flag
 
 ---
 
@@ -307,12 +286,6 @@ Located in `scripts/` directory:
 - Fundamentals to best practices
 - MAgPIE-specific patterns
 - Debugging and optimization
-
-**User Feedback**:
-- Notes files for modules 10, 52, 70
-- Global lessons
-- Integrated feedback archive
-- Continuous improvement system
 
 ---
 
@@ -349,28 +322,14 @@ Located in `scripts/` directory:
 ---
 
 ### Example 3: Update Documentation
-**You**: `/update`
+**You**: "run command: update"
 
 **Agent will**:
 1. Pull latest from magpie-agent repo
-2. Copy CLAUDE.md to parent
+2. Copy AGENT.md to parent
 3. Report: "Updated files: module_70_notes.md (added new warning), GAMS_Phase2.md (syntax examples)"
 
 **Time**: 10 seconds
-
----
-
-### Example 4: Submit Feedback
-**You**: `./scripts/submit_feedback.sh`
-
-**Script will**:
-1. Ask: "What type of feedback?" (correction, warning, lesson, missing, global)
-2. Ask: "Target document?"
-3. Create template
-4. Open in editor
-5. Provide git commit instructions
-
-**Time**: 2 minutes to submit, helps all future users!
 
 ---
 
@@ -407,7 +366,7 @@ When you encounter:
 **Your feedback will**:
 - Be reviewed and integrated
 - Update notes files (module_XX_notes.md)
-- Improve agent instructions (CLAUDE.md)
+- Improve agent instructions (AGENT.md)
 - Help future users avoid the same issues
 - Build institutional knowledge
 
@@ -416,14 +375,13 @@ When you encounter:
 ## 📞 Getting Help
 
 **For questions about the agent itself**:
-- Use `/guide` (this comprehensive guide)
+- Say "run command: guide" (this comprehensive guide)
 - Read `README.md` in magpie-agent/
-- Check `START_HERE.md` for project orientation
-- Review `RULES_OF_THE_ROAD.md` for session protocol
+- Check `project/CURRENT_STATE.json` for project status
 
 **For questions about MAgPIE**:
 - Just ask! The agent has comprehensive documentation
-- Use Quick Reference table in CLAUDE.md
+- Use Quick Reference table in AGENT.md
 - Check module index for module numbers
 
 **For issues or suggestions**:
@@ -442,8 +400,8 @@ When you encounter:
 4. **Request code** - "Show me the equation" for implementation details
 
 ### For Learning
-1. **Start with /guide** - Understand capabilities
-2. **Use /update** regularly - Stay current
+1. **Start with guide** - Understand capabilities
+2. **Run update regularly** - Stay current
 3. **Read notes files** - Learn from others' experience
 4. **Ask "what if" questions** - Explore consequences safely
 
@@ -455,29 +413,11 @@ When you encounter:
 
 ---
 
-## 📈 Success Metrics
-
-**The agent helps you**:
-- ⚡ Get answers in 30 seconds instead of 5 minutes
-- 🎯 Avoid common mistakes (user feedback warnings)
-- 🛡️ Modify safely (dependency and safety analysis)
-- 📚 Learn GAMS efficiently (comprehensive reference)
-- 🔄 Build institutional knowledge (feedback system)
-
-**Documentation coverage**:
-- ✅ 100% of modules (46/46)
-- ✅ All conservation laws documented
-- ✅ All circular dependencies explained
-- ✅ Complete GAMS reference
-- ✅ Growing user feedback library
-
----
-
 ## 🚀 Ready to Start!
 
 **First steps**:
 1. **Ask a question** - Try the agent on something you're working on
-2. **Run /update** - Get the latest documentation
+2. **Run update** - Get the latest documentation
 3. **Explore documentation** - Browse modules/ or core_docs/
 4. **Submit feedback** - Share your first experience
 

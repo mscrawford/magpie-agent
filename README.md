@@ -2,7 +2,7 @@
 
 **MAgPIE AI Documentation System**
 
-Comprehensive, AI-optimized documentation for the MAgPIE land-use model.
+Comprehensive, AI-optimized documentation for the MAgPIE land-use model. Works with any AI assistant.
 
 **⚠️ FOR CURRENT STATUS: See `project/CURRENT_STATE.json` ⚠️**
 
@@ -10,7 +10,7 @@ Comprehensive, AI-optimized documentation for the MAgPIE land-use model.
 
 ## 🚀 Quick Start
 
-### For New Claude Sessions
+### For New AI Sessions
 
 **Working on documentation project? Read these in order:**
 
@@ -19,10 +19,10 @@ Comprehensive, AI-optimized documentation for the MAgPIE land-use model.
 3. **Ask user**: "What should I work on?"
 
 **🚨 CRITICAL: When working on the project, update ONLY `project/CURRENT_STATE.json` 🚨**
-- **DO NOT** update README.md, CLAUDE.md, or any other file with project status
+- **DO NOT** update README.md, AGENT.md, or any other file with project status
 - **ALL** project information goes in the JSON (status, plans, handoffs, next steps)
 
-**Using MAgPIE with Claude Code? You're all set!** Claude automatically reads `CLAUDE.md` which contains all AI instructions for answering MAgPIE questions.
+**Using MAgPIE with an AI assistant?** Configure your AI to read `AGENT.md` which contains all instructions for answering MAgPIE questions.
 
 ---
 
@@ -34,30 +34,35 @@ cd /path/to/your/magpie/
 git clone git@github.com:mscrawford/magpie-nest.git magpie-agent
 ```
 
-### 2. ⚠️ IMPORTANT: Copy CLAUDE.md to MAgPIE root
+### 2. ⚠️ IMPORTANT: Deploy AGENT.md to MAgPIE root
 
-**Claude Code needs `CLAUDE.md` in the working directory** (the MAgPIE root) to automatically read it.
+**Your AI assistant needs `AGENT.md` in the working directory** (the MAgPIE root) to read it.
 
-**Option A: Symlink** (recommended - stays in sync):
 ```bash
 cd /path/to/your/magpie/
-ln -s magpie-agent/CLAUDE.md CLAUDE.md
+cp magpie-agent/AGENT.md AGENT.md
 ```
 
-**Option B: Copy** (simpler, but needs manual updates):
-```bash
-cd /path/to/your/magpie/
-cp magpie-agent/CLAUDE.md CLAUDE.md
-```
+### 3. Configure Your AI Assistant
 
-### 3. Verify Setup
+Point your AI tool to read `AGENT.md` at session start. Tool-specific instructions:
+
+**Claude Code**: Add AGENT.md to your project context or workspace settings.
+
+**GitHub Copilot**: Point to AGENT.md in your workspace configuration.
+
+**Cursor**: Add AGENT.md to your AI context settings.
+
+**Other tools**: Consult your tool's documentation for providing context files.
+
+### 4. Verify Setup
 ```bash
 # You should now have:
-ls -la CLAUDE.md          # ← In MAgPIE root (symlink or copy)
-ls -la magpie-agent/       # ← Full documentation repo
+ls -la AGENT.md           # ← In MAgPIE root
+ls -la magpie-agent/      # ← Full documentation repo
 ```
 
-Now Claude Code will automatically use the comprehensive documentation when working with MAgPIE! 🎉
+Now your AI assistant will use the comprehensive documentation when working with MAgPIE! 🎉
 
 ---
 
@@ -95,7 +100,10 @@ See `project/CURRENT_STATE.json` → `current_initiative` for active projects
 ```
 magpie-agent/
 ├── README.md                  ← You are here (project overview)
-├── CLAUDE.md                  ← AI agent instructions (SOURCE - edit here)
+├── AGENT.md                   ← AI agent instructions (SOURCE - edit here)
+│
+├── agent/                     ← AGENT COMMANDS
+│   └── commands/              ← Command definitions (guide, update, feedback, etc.)
 │
 ├── project/                   ← PROJECT MANAGEMENT (maintainers only)
 │   ├── README.md              ← What's in this folder
@@ -130,11 +138,8 @@ magpie-agent/
 │
 ├── feedback/                  ← User Feedback System
 │   ├── README.md              System overview
-│   ├── global/claude_lessons.md
+│   ├── global/agent_lessons.md
 │   └── integrated/            Archived feedback
-│
-├── .claude/                   ← Slash Commands
-│   └── commands/              /guide, /update, /feedback, etc.
 │
 └── archive/                   ← Historical session logs
 ```
@@ -153,7 +158,7 @@ magpie-agent/
 
 ## 🎯 Session Continuity Protocol
 
-**This ensures any Claude can pick up the project instantly and maintain quality standards.**
+**This ensures any AI assistant can pick up the project instantly and maintain quality standards.**
 
 ### Starting a New Session
 
@@ -174,7 +179,7 @@ magpie-agent/
 - Check `current_initiative` and `phase_3` sections in the JSON for active work
 
 **Path B: MAgPIE Question Support**
-- Follow instructions in `CLAUDE.md` (AI agent workflow)
+- Follow instructions in `AGENT.md` (AI agent workflow)
 - Check AI docs FIRST before reading GAMS code
 - Use feedback system to improve documentation
 
@@ -251,7 +256,7 @@ Update `project/CURRENT_STATE.json` with:
 
 **DO NOT UPDATE**:
 - README.md (this file - static reference)
-- CLAUDE.md (agent instructions - only update for new workflows)
+- AGENT.md (agent instructions - only update for new workflows)
 - modules/README.md (static reference)
 
 **Step 2: Archive Session Files (1 minute)**
@@ -296,7 +301,7 @@ mv *_2025-10-*.md archive/
 
 ## 💡 How to Use This Documentation
 
-### For New Claude Sessions
+### For New AI Sessions
 
 1. Read this README (2 min)
 2. Check `project/CURRENT_STATE.json` (1 min)
@@ -320,7 +325,7 @@ mv *_2025-10-*.md archive/
 
 ### For AI Agents
 
-- **Query routing**: `CLAUDE.md` (Advanced Query Patterns section)
+- **Query routing**: `AGENT.md` (Advanced Query Patterns section)
 - **Response patterns**: Module-specific sections in each `module_XX.md`
 - **Quality standards**: This README (Quality Checklist section)
 - **Verification**: `reference/Verification_Protocol.md`
@@ -385,7 +390,7 @@ dot -Tpng core_dependencies.dot -o core_dependencies.png
 
 **NEVER UPDATE THESE FILES WITH PROJECT STATUS:**
 - ❌ This README (static reference - DO NOT TOUCH)
-- ❌ CLAUDE.md (AI instructions - DO NOT TOUCH)
+- ❌ AGENT.md (AI instructions - DO NOT TOUCH)
 - ❌ project/README.md (static reference - DO NOT TOUCH)
 - ❌ modules/README.md (static overview - DO NOT TOUCH)
 - ❌ **NO HANDOFF DOCUMENTS** - everything goes in CURRENT_STATE.json
@@ -394,7 +399,7 @@ dot -Tpng core_dependencies.dot -o core_dependencies.png
 **After EVERY session:**
 1. Update `project/CURRENT_STATE.json` with ALL progress/plans/status
 2. Archive dated log files if any (usually none needed - use the JSON!)
-3. **DO NOT** update status in README, CLAUDE.md, or create handoff docs
+3. **DO NOT** update status in README, AGENT.md, or create handoff docs
 
 ---
 
@@ -402,9 +407,9 @@ dot -Tpng core_dependencies.dot -o core_dependencies.png
 
 MAgPIE developers can improve agent performance through feedback!
 
-- Use `/feedback` command for complete system overview
+- Say "run command: feedback" for complete system overview
 - Submit feedback about agent behavior, documentation errors, or suggestions
-- Review and compress integrated feedback with `/compress-feedback`
+- Review and compress integrated feedback with `command: compress-documentation`
 
 See `feedback/README.md` for details.
 
@@ -428,7 +433,7 @@ See `feedback/README.md` for details.
 - **Solution**: Mark module as needing verification, document the discrepancy
 
 **Problem**: Need to understand agent workflow
-- **Solution**: Read `CLAUDE.md` for complete AI instructions
+- **Solution**: Read `AGENT.md` for complete AI instructions
 
 **Problem**: File paths or tool usage issues
 - **Solution**: Check `core_docs/Tool_Usage_Patterns.md`
@@ -440,7 +445,7 @@ See `feedback/README.md` for details.
 1. **100% Code Truth**: Describe only what IS implemented
 2. **Complete Coverage**: All 46 modules documented
 3. **Full Verification**: Every equation, formula, parameter checked
-4. **AI-Optimized**: Easy for any Claude to understand and use
+4. **AI-Optimized**: Easy for any AI assistant to understand and use
 5. **Maintainable**: Clear structure, version control, protocols
 
 ---
@@ -482,7 +487,7 @@ See `feedback/README.md` for details.
 
 **You are a key part of trying to improve the MAgPIE model and address the crises of climate change and unsustainable land-use. Thank you!**
 
-**Goal**: Make it effortless for the next Claude (or yourself tomorrow) to pick up instantly.
+**Goal**: Make it effortless for the next AI session (or yourself tomorrow) to pick up instantly.
 
 **How**:
 - Keep `project/CURRENT_STATE.json` current
@@ -490,7 +495,7 @@ See `feedback/README.md` for details.
 - Use the quality checklist
 - Follow Code Truth principles
 
-**If future Claude is confused**: This protocol needs improvement → submit feedback!
+**If future AI is confused**: This protocol needs improvement → submit feedback!
 
 ---
 

@@ -182,7 +182,7 @@ print_section "3/6" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
-    CLAUDE.md \
+    AGENT.md \
     core_docs/*.md \
     cross_module/*.md \
     2>/dev/null | grep -oE "module_[0-9][0-9](_notes)?\.md" | sort -u)
@@ -197,7 +197,7 @@ for ref in $MODULE_REFS; do
         ((BROKEN_REFS++))
         check_error "Broken reference: $ref referenced but doesn't exist"
         # Find where it's referenced
-        REFS_IN=$(grep -l "$ref" CLAUDE.md core_docs/*.md cross_module/*.md 2>/dev/null | tr '\n' ' ')
+        REFS_IN=$(grep -l "$ref" AGENT.md core_docs/*.md cross_module/*.md 2>/dev/null | tr '\n' ' ')
         log "    → Referenced in: $REFS_IN"
     fi
 done
@@ -207,7 +207,7 @@ if [ $BROKEN_REFS -eq 0 ]; then
 fi
 
 # Check Phase document references (architecture docs in core_docs/)
-PHASE_REFS_CORE=$(grep -r "Phase[123]_[A-Za-z_]+\.md" CLAUDE.md modules/*.md 2>/dev/null | \
+PHASE_REFS_CORE=$(grep -r "Phase[123]_[A-Za-z_]+\.md" AGENT.md modules/*.md 2>/dev/null | \
     grep -oE "Phase[123]_[A-Za-z_]+\.md" | sort -u)
 
 BROKEN_PHASE_REFS=0
@@ -223,7 +223,7 @@ for ref in $PHASE_REFS_CORE; do
 done
 
 # Check GAMS reference documents (in reference/ directory)
-GAMS_REFS=$(grep -r "GAMS_Phase[0-9]" CLAUDE.md modules/*.md 2>/dev/null | \
+GAMS_REFS=$(grep -r "GAMS_Phase[0-9]" AGENT.md modules/*.md 2>/dev/null | \
     grep -oE "GAMS_Phase[0-9]_[A-Za-z_]+\.md" | sort -u)
 
 BROKEN_GAMS_REFS=0
@@ -294,11 +294,11 @@ else
     check_warning "RULES_OF_THE_ROAD.md doesn't reference CURRENT_STATE.json"
 fi
 
-# CLAUDE.md should separate contexts
-if grep -q "Context 1.*MAgPIE" CLAUDE.md && grep -q "Context 2.*Documentation Project" CLAUDE.md; then
-    check_pass "CLAUDE.md correctly separates contexts"
+# AGENT.md should separate contexts
+if grep -q "Context 1.*MAgPIE" AGENT.md && grep -q "Context 2.*Documentation Project" AGENT.md; then
+    check_pass "AGENT.md correctly separates contexts"
 else
-    check_warning "CLAUDE.md may not clearly separate MAgPIE vs. documentation project contexts"
+    check_warning "AGENT.md may not clearly separate MAgPIE vs. documentation project contexts"
 fi
 
 # =======================

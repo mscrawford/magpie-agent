@@ -1,14 +1,14 @@
 # Feedback Workflow Guide
 
 **For**: MAgPIE developers using the feedback system
-**Purpose**: Understand when to use `/integrate-feedback` vs `/compress-documentation`
+**Purpose**: Understand when to use `command: integrate-feedback` vs `command: compress-documentation`
 
 ---
 
 ## 🎯 Quick Answer
 
-**Use `/integrate-feedback`** (weekly/monthly) to process new user submissions
-**Use `/compress-documentation`** (quarterly) to reduce bloat AFTER multiple integrations
+**Use `command: integrate-feedback`** (weekly/monthly) to process new user submissions
+**Use `command: compress-documentation`** (quarterly) to reduce bloat AFTER multiple integrations
 
 **They are SEQUENTIAL, not alternatives**: You integrate first (always), then compress later (sometimes).
 
@@ -16,7 +16,7 @@
 
 ## 📊 The Two Commands
 
-### `/integrate-feedback` - Process New Submissions
+### `command: integrate-feedback` - Process New Submissions
 
 **What it does**:
 - Takes new feedback from `feedback/pending/`
@@ -36,14 +36,14 @@
 scripts/submit_feedback.sh
 
 # Later (weekly/monthly):
-/integrate-feedback all
+command: integrate-feedback all
 
 # Result: Warnings added to module_10_notes.md
 ```
 
 ---
 
-### `/compress-documentation` - Reduce Bloat
+### `command: compress-documentation` - Reduce Bloat
 
 **What it does**:
 - Analyzes accumulated feedback in `feedback/integrated/`
@@ -59,7 +59,7 @@ scripts/submit_feedback.sh
 **Example workflow**:
 ```bash
 # After 10+ integration sessions over 3 months:
-/compress-documentation
+command: compress-documentation
 
 # Result: 3 similar warnings merged into 1 comprehensive section
 ```
@@ -77,7 +77,7 @@ scripts/submit_feedback.sh
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ STEP 2: Weekly/monthly integration                          │
-│ /integrate-feedback all                                      │
+│ command: integrate-feedback all                                      │
 │ → Validates feedback                                        │
 │ → Updates module_10_notes.md                                │
 │ → Archives to feedback/integrated/                          │
@@ -85,7 +85,7 @@ scripts/submit_feedback.sh
                             ↓ (repeat 10+ times)
 ┌─────────────────────────────────────────────────────────────┐
 │ STEP 3: Quarterly compression (optional)                    │
-│ /compress-documentation                                      │
+│ command: compress-documentation                                      │
 │ → Analyzes feedback/integrated/                             │
 │ → Merges 3 similar warnings → 1 comprehensive version       │
 │ → Reduces bloat in module_10_notes.md                       │
@@ -95,34 +95,34 @@ scripts/submit_feedback.sh
 ```
 
 **Timeline example**:
-- Week 1: Submit feedback → `/integrate-feedback`
-- Week 2: Submit feedback → `/integrate-feedback`
-- Week 3: Submit feedback → `/integrate-feedback`
+- Week 1: Submit feedback → `command: integrate-feedback`
+- Week 2: Submit feedback → `command: integrate-feedback`
+- Week 3: Submit feedback → `command: integrate-feedback`
 - ...
-- Month 3: Notes files getting long → `/compress-documentation`
-- Month 4: Submit feedback → `/integrate-feedback` (cycle continues)
+- Month 3: Notes files getting long → `command: compress-documentation`
+- Month 4: Submit feedback → `command: integrate-feedback` (cycle continues)
 
 ---
 
 ## ❓ When to Use Which Command
 
-### Use `/integrate-feedback` when:
+### Use `command: integrate-feedback` when:
 - ✅ New feedback has accumulated in `feedback/pending/`
 - ✅ You want to add user submissions to documentation
 - ✅ You're doing weekly/monthly maintenance
 - ✅ You want corrections to reach `module_XX.md`
 - ✅ You want warnings/lessons to reach `module_XX_notes.md`
 
-### Use `/compress-documentation` when:
+### Use `command: compress-documentation` when:
 - ✅ After multiple integration sessions (10+)
 - ✅ Notes files feel bloated or redundant
 - ✅ Similar warnings are scattered across files
 - ✅ Quarterly documentation cleanup time
 - ⚠️ **ONLY AFTER** you've integrated feedback (not before!)
 
-### DON'T use `/compress-documentation` when:
+### DON'T use `command: compress-documentation` when:
 - ❌ You have pending feedback that hasn't been integrated yet
-- ❌ You just want to process new submissions (use `/integrate-feedback`)
+- ❌ You just want to process new submissions (use `command: integrate-feedback`)
 - ❌ Notes files are short and organized
 - ❌ Less than 3 months since last compression
 
@@ -132,8 +132,8 @@ scripts/submit_feedback.sh
 
 ### ✅ COMPRESS (user experience):
 - `modules/module_XX_notes.md` - User warnings, lessons, examples
-- `CLAUDE.md` - Agent behavioral guidance (if bloated)
-- `feedback/global/claude_lessons.md` - System-wide lessons
+- `AGENT.md` - Agent behavioral guidance (if bloated)
+- `feedback/global/agent_lessons.md` - System-wide lessons
 
 ### ❌ NEVER COMPRESS (code truth):
 - `modules/module_XX.md` - Core technical documentation
@@ -151,21 +151,21 @@ scripts/submit_feedback.sh
 
 ```
 Do you have new feedback submissions?
-├─ YES → Use /integrate-feedback
+├─ YES → Use command: integrate-feedback
 │         │
 │         └─ After integration, do notes files feel bloated?
-│            ├─ YES → Consider /compress-documentation
+│            ├─ YES → Consider command: compress-documentation
 │            └─ NO → Done! Wait for more feedback
 │
 └─ NO → Do notes files have redundant content?
-         ├─ YES → Use /compress-documentation
+         ├─ YES → Use command: compress-documentation
          └─ NO → Nothing to do! Wait for feedback
 ```
 
 **Simplified**:
-1. New feedback? → `/integrate-feedback`
-2. Notes bloated? → `/compress-documentation`
-3. Both? → `/integrate-feedback` FIRST, THEN `/compress-documentation`
+1. New feedback? → `command: integrate-feedback`
+2. Notes bloated? → `command: compress-documentation`
+3. Both? → `command: integrate-feedback` FIRST, THEN `command: compress-documentation`
 
 ---
 
@@ -173,8 +173,8 @@ Do you have new feedback submissions?
 
 | Command | Frequency | Input | Output | Purpose |
 |---------|-----------|-------|--------|---------|
-| `/integrate-feedback` | Weekly/monthly | `pending/` | `integrated/` + notes | Add new feedback |
-| `/compress-documentation` | Quarterly | `integrated/` | Consolidated notes | Reduce bloat |
+| `command: integrate-feedback` | Weekly/monthly | `pending/` | `integrated/` + notes | Add new feedback |
+| `command: compress-documentation` | Quarterly | `integrated/` | Consolidated notes | Reduce bloat |
 
 **Remember**: Integrate (always) → Compress (sometimes)
 
@@ -188,7 +188,7 @@ Do you have new feedback submissions?
 ls feedback/pending/*.md | grep -v README  # → 5 new files
 
 # Use integrate command
-/integrate-feedback all
+command: integrate-feedback all
 
 # Result:
 # - 5 items validated and integrated
@@ -211,7 +211,7 @@ wc -l modules/module_10_notes.md  # → 320 lines (was 80)
 # - 4 examples of dependency chains
 
 # Use compress command
-/compress-documentation
+command: compress-documentation
 
 # Claude proposes:
 # - Merge 3 land warnings → 1 comprehensive section (90 → 60 lines)
@@ -231,19 +231,19 @@ wc -l modules/module_10_notes.md  # → 320 lines (was 80)
 ```bash
 # ❌ WRONG: Compressing before integrating
 ls feedback/pending/module_10/  # → 5 new files
-/compress-documentation  # ← WRONG! Nothing to compress yet
+command: compress-documentation  # ← WRONG! Nothing to compress yet
 
 # ✅ CORRECT: Integrate first, compress later
-/integrate-feedback all  # Process pending first
+command: integrate-feedback all  # Process pending first
 # ... wait for more feedback over weeks/months ...
-/compress-documentation  # Then compress when needed
+command: compress-documentation  # Then compress when needed
 ```
 
 ---
 
 ## 🔍 How to Tell If You Need Compression
 
-**Signs you need `/compress-documentation`**:
+**Signs you need `command: compress-documentation`**:
 - ✅ Multiple warnings saying similar things
 - ✅ Lessons scattered across different sections
 - ✅ Examples that could be grouped under patterns
@@ -261,13 +261,13 @@ ls feedback/pending/module_10/  # → 5 new files
 
 ## 🚀 Best Practices
 
-### For Integration (`/integrate-feedback`):
+### For Integration (`command: integrate-feedback`):
 1. **Do it regularly** (weekly or monthly) to avoid backlog
 2. **Review the proposal** before approving (validate feedback)
 3. **Check routing** (corrections → core docs, warnings → notes)
 4. **Verify timestamps** are updated correctly
 
-### For Compression (`/compress-documentation`):
+### For Compression (`command: compress-documentation`):
 1. **Wait for accumulation** (10+ integrations before compressing)
 2. **Review ALL proposals** carefully before approving
 3. **Verify no information loss** (all unique insights preserved?)
@@ -286,33 +286,33 @@ ls feedback/pending/module_10/  # → 5 new files
 ### Mistake 1: Compressing Before Integrating
 ```bash
 # ❌ WRONG
-/compress-documentation  # Nothing integrated yet!
+command: compress-documentation  # Nothing integrated yet!
 
 # ✅ CORRECT
-/integrate-feedback all  # Process pending feedback first
+command: integrate-feedback all  # Process pending feedback first
 ```
 
 ### Mistake 2: Over-Compressing
 ```bash
 # ❌ WRONG: Compressing after every integration
-/integrate-feedback all
-/compress-documentation  # Too soon! Only 1 integration
+command: integrate-feedback all
+command: compress-documentation  # Too soon! Only 1 integration
 
 # ✅ CORRECT: Compress quarterly or when bloated
-/integrate-feedback all  # Week 1
-/integrate-feedback all  # Week 2
+command: integrate-feedback all  # Week 1
+command: integrate-feedback all  # Week 2
 # ... (weeks pass) ...
-/compress-documentation  # Month 3 - now it's worth it
+command: compress-documentation  # Month 3 - now it's worth it
 ```
 
 ### Mistake 3: Confusing the Commands
 ```bash
 # ❌ WRONG: Using compress to add new feedback
 # New feedback arrives...
-/compress-documentation  # This won't add it!
+command: compress-documentation  # This won't add it!
 
 # ✅ CORRECT: Use integrate for new feedback
-/integrate-feedback all  # This adds new feedback
+command: integrate-feedback all  # This adds new feedback
 ```
 
 ---
@@ -321,8 +321,8 @@ ls feedback/pending/module_10/  # → 5 new files
 
 - `feedback/README.md` - Complete feedback system overview
 - `feedback/pending/README.md` - Staged workflow details
-- `.claude/commands/integrate-feedback.md` - Integration command details
-- `.claude/commands/compress-documentation.md` - Compression command details
+- `.claude/commandscommand: integrate-feedback.md` - Integration command details
+- `.claude/commandscommand: compress-documentation.md` - Compression command details
 - `scripts/submit_feedback.sh` - How to submit feedback
 
 ---
@@ -352,4 +352,4 @@ A: Yes, but integrate first, THEN compress (if needed).
 
 ---
 
-**Remember**: `/integrate-feedback` (weekly) adds new content. `/compress-documentation` (quarterly) organizes accumulated content. They work together to keep documentation fresh AND readable.
+**Remember**: `command: integrate-feedback` (weekly) adds new content. `command: compress-documentation` (quarterly) organizes accumulated content. They work together to keep documentation fresh AND readable.

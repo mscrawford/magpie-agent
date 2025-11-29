@@ -1,16 +1,18 @@
-# Update MAgPIE Agent Documentation
+# Update Command
 
-This command pulls the latest changes from the magpie-agent repository and re-deploys CLAUDE.md.
+**Purpose**: Pull latest changes from magpie-agent repository and re-deploy AGENT.md
+
+**When user says**: "run command: update", "update the docs", "pull latest", etc.
+
+---
 
 ## What This Does
 
 1. **Checks current repository status** - Verifies we're in the magpie-agent directory
 2. **Pulls latest changes** - Fetches and merges from origin/main
 3. **Handles conflicts** - Provides guidance if merge conflicts occur
-4. **Re-deploys CLAUDE.md** - Copies updated CLAUDE.md to parent magpie directory
-5. **Re-deploys slash commands** - Copies .claude/commands/ to parent directory
-6. **Syncs settings** - Copies parent settings.local.json if newer
-7. **Verifies deployment** - Confirms files are in sync
+4. **Re-deploys AGENT.md** - Copies updated AGENT.md to parent magpie directory
+5. **Verifies deployment** - Confirms files are in sync
 
 ## When to Use This
 
@@ -68,7 +70,7 @@ git pull origin main --no-edit
   2. Remove conflict markers (<<<<<<, =======, >>>>>>>)
   3. Run: git add <resolved-files>
   4. Run: git commit
-  5. Re-run /update command
+  5. Re-run update command
   ```
 - Exit and wait for user to resolve
 
@@ -76,28 +78,14 @@ git pull origin main --no-edit
 - Restore them: `git stash pop`
 - If conflicts during restore, provide guidance
 
-### Step 4: Re-deploy CLAUDE.md and Slash Commands
+### Step 4: Re-deploy AGENT.md
 
 ```bash
-# Copy CLAUDE.md to parent magpie directory
-cp CLAUDE.md ../CLAUDE.md
+# Copy AGENT.md to parent magpie directory
+cp AGENT.md ../AGENT.md
 
-# Ensure parent .claude directory exists
-mkdir -p ../.claude
-
-# Copy slash commands to parent .claude directory
-# (Remove existing commands first to ensure clean sync)
-rm -rf ../.claude/commands
-cp -r .claude/commands ../.claude/
-
-# Sync settings from parent (if it exists and is newer)
-if [ -f ../.claude/settings.local.json ]; then
-  cp ../.claude/settings.local.json .claude/settings.local.json
-fi
-
-# Verify the copies
-ls -lh ../CLAUDE.md
-ls -lh ../.claude/commands/
+# Verify the copy
+ls -lh ../AGENT.md
 ```
 
 ### Step 5: Report Status
@@ -114,13 +102,11 @@ Show a summary:
 ✅ Pulled latest changes from origin/main
 
 📝 Files updated:
-   - CLAUDE.md
-   - .claude/commands/ (slash commands)
+   - AGENT.md
    - [list other changed files from git pull]
 
 📋 Deployed to parent directory:
-   - CLAUDE.md → /Users/turnip/Documents/Work/Workspace/magpie/CLAUDE.md
-   - Slash commands → /Users/turnip/Documents/Work/Workspace/magpie/.claude/commands/
+   - AGENT.md → ../AGENT.md
 
 🎯 Status: Ready to use latest documentation
 
@@ -141,7 +127,7 @@ Before executing, verify:
 ```
 ❌ Error: Not in magpie-agent directory
 Current: [show pwd]
-Expected: /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+Expected: .../magpie/magpie-agent
 
 Please navigate to magpie-agent directory first.
 ```
@@ -161,7 +147,7 @@ Please check your internet connection and try again.
 ### Error: Permission issues
 ```
 ❌ Error: Cannot write to parent directory
-Check file permissions for: /Users/turnip/Documents/Work/Workspace/magpie/
+Check file permissions for the parent magpie directory.
 ```
 
 ## Notes

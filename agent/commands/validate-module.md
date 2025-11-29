@@ -1,6 +1,6 @@
 # Validate Module Documentation
 
-**Usage**: `/validate-module XX` or `/validate-module all`
+**Usage**: `command: validate-module XX` or `command: validate-module all`
 
 **Purpose**: Comprehensive validation of module documentation quality, structure, links, and freshness.
 
@@ -13,8 +13,8 @@
 ### Step 1: Parse Command Arguments
 
 Extract the module number from the command:
-- `/validate-module 10` → validate module_10.md
-- `/validate-module all` → validate all 46 modules
+- `command: validate-module 10` → validate module_10.md
+- `command: validate-module all` → validate all 46 modules
 
 ### Step 2: Run Validation Checks
 
@@ -197,7 +197,7 @@ Checks: 25
 
 ---
 
-## Step 4: For `/validate-module all`
+## Step 4: For `command: validate-module all`
 
 When validating all modules:
 
@@ -259,7 +259,7 @@ When validating all modules:
 
 ## Example Usage
 
-**User**: `/validate-module 10`
+**User**: `command: validate-module 10`
 
 **Agent response:**
 "Let me validate Module 10 documentation..."
@@ -272,7 +272,7 @@ When validating all modules:
 
 ---
 
-**User**: `/validate-module all`
+**User**: `command: validate-module all`
 
 **Agent response:**
 "Validating all 46 modules... this will take ~5 minutes."
@@ -341,7 +341,7 @@ Required headers (must appear in order):
 ```
 ❌ Error: Module number must be 09-80 (with gaps)
 Valid modules: 09, 10, 11, ..., 80
-Use `/validate-module all` to validate all modules.
+Use `command: validate-module all` to validate all modules.
 ```
 
 **If module file missing:**
