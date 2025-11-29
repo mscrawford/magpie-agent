@@ -220,6 +220,19 @@ Quick access to specialized help:
 - Copies AGENT.md to parent directory
 - Reports what changed
 
+### `sync`
+**Purpose**: Check MAgPIE develop branch for code changes
+**Use**:
+- After MAgPIE code updates
+- To verify documentation is current
+- Weekly maintenance
+
+**What it does**:
+- Compares against last sync commit
+- Identifies GAMS changes needing doc updates
+- Updates affected module documentation
+- Logs sync status
+
 ### `feedback`
 **Purpose**: Learn about the user feedback system
 **Use**:

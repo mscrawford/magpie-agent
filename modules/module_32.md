@@ -385,8 +385,10 @@ q32_cost_establishment(i2)..
      * sum(ct,pm_interest(ct,i2)/(1+pm_interest(ct,i2)))
    + sum((ct,kforestry), v32_prod_forestry_future(i2) * p32_forestry_product_dist(ct,i2,kforestry)
          * im_timber_prod_cost(kforestry))
-     / ((1+sum(ct,pm_interest(ct,i2))**sum(ct, p32_rotation_regional(ct,i2)*5)));
+     / ((1+sum(ct,pm_interest(ct,i2)))**sum(ct, p32_rotation_regional(ct,i2)*5));
 ```
+
+**Note**: The discounting formula `(1+interest)**years` correctly applies compound discounting. Fixed in commit 9ccd6290d (2025-11-28).
 
 **Components**:
 1. **Upfront establishment**: Area × establishment cost × annuity factor
@@ -1258,7 +1260,7 @@ abline(v=rot_age, col="red", lty=2)  # Rotation age
 
 ---
 
-**Last Verified**: 2025-10-13
+**Last Verified**: 2025-11-29 (synced equation fix from commit 9ccd6290d)
 **Verified Against**: `../modules/32_*/dynamic_may24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

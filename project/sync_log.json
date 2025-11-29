@@ -1,0 +1,122 @@
+{
+  "_comment": "Tracks synchronization between MAgPIE codebase and agent documentation",
+  "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
+  
+  "sync_status": {
+    "last_sync_date": "2025-11-29",
+    "last_sync_commit": "3e0478c83",
+    "last_sync_commit_date": "2025-11-28",
+    "last_sync_commit_message": "Merge pull request #855 from mscrawford/bugfix/forestry-discounting",
+    "synced_by": "AI agent",
+    "magpie_branch": "develop"
+  },
+  
+  "pending_review": {
+    "_comment": "Commits that have been identified but not yet integrated into documentation",
+    "commits": []
+  },
+  
+  "recent_syncs": [
+    {
+      "date": "2025-11-29",
+      "commit_range": "up to 3e0478c83",
+      "changes_reviewed": [
+        {
+          "commit": "9ccd6290d",
+          "date": "2025-11-28",
+          "description": "Fix parenthesis placement in forestry discounting formula",
+          "modules_affected": ["32_forestry"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "Updated module_32.md with corrected equation formula"
+        },
+        {
+          "commit": "1a705cc96",
+          "date": "2025-11-20",
+          "description": "sleep comments",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Code comments only, no doc update needed"
+        },
+        {
+          "commit": "4c430c065",
+          "date": "2025-11-18",
+          "description": "withr::defer remove f32_max_aff_area.cs4",
+          "modules_affected": ["32_forestry"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "R preprocessing change, not GAMS model logic"
+        },
+        {
+          "commit": "8ec852148",
+          "date": "2025-11-14",
+          "description": "update scenario and FSEC cfg csv",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Configuration files only"
+        },
+        {
+          "commit": "525f782c7",
+          "date": "2025-11-13",
+          "description": "update inputdata and changelog",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Input data version bump"
+        }
+      ],
+      "summary": "Reviewed 5 substantive commits. Updated module_32.md with forestry discounting fix."
+    }
+  ],
+  
+  "documentation_baseline": {
+    "_comment": "When core documentation was last fully verified against code",
+    "modules_verified_date": "2025-10-13",
+    "modules_verified_commit": "unknown - pre-tracking",
+    "cross_module_verified_date": "2025-10-22",
+    "notes": "Module documentation created before sync tracking was implemented"
+  },
+  
+  "module_sync_status": {
+    "_comment": "Track which modules may need updates based on code changes",
+    "potentially_stale": [],
+    "recently_updated": [
+      {
+        "module": "32_forestry",
+        "update_date": "2025-11-29",
+        "reason": "Synced equation fix from commit 9ccd6290d",
+        "commit": "9ccd6290d"
+      }
+    ],
+    "verified_current": []
+  },
+  
+  "sync_workflow": {
+    "description": "How to keep documentation in sync with MAgPIE code",
+    "steps": [
+      "1. Run 'git log develop --oneline -N' to see recent commits",
+      "2. Identify commits that affect GAMS modules (not just R scripts, configs)",
+      "3. For each relevant commit, check if it changes equations, parameters, or logic",
+      "4. Update this sync_log.json with findings",
+      "5. If doc updates needed, update the relevant module_XX.md files",
+      "6. Mark updates complete in this log"
+    ],
+    "triggers_for_doc_update": [
+      "New or modified equations (*.gms files)",
+      "Changed parameters or their domains",
+      "New interface variables",
+      "Modified module dependencies",
+      "Renamed or restructured modules"
+    ],
+    "no_doc_update_needed": [
+      "R preprocessing scripts (*.R)",
+      "Configuration files (*.cfg, *.csv)",
+      "Input data version bumps",
+      "Changelog updates",
+      "Comments-only changes",
+      "Test configuration changes"
+    ]
+  }
+}

@@ -88,6 +88,7 @@ When updating this AGENT.md file, use `command: update-agent-md` for detailed wo
 |---------|---------|
 | `guide` | Complete capabilities guide (start here!) |
 | `update` | Pull latest docs and sync AGENT.md to parent |
+| `sync` | Check MAgPIE develop branch for code changes and update docs |
 | `feedback` | Learn about and use the feedback system |
 | `integrate-feedback` | Process pending feedback (maintainers) |
 | `update-agent-md` | Git workflow for AI documentation updates |
@@ -517,3 +518,42 @@ cp AGENT.md ../AGENT.md
 ```
 
 Then configure your AI tool to read `AGENT.md` from the MAgPIE root directory.
+
+---
+
+## 🔄 KEEPING DOCUMENTATION IN SYNC
+
+The agent documentation must stay synchronized with the MAgPIE codebase. Use `command: sync` to check for updates.
+
+### Sync Tracking
+
+**Location**: `project/sync_log.json`
+
+This file tracks:
+- Last sync date and commit hash
+- Commits reviewed and their documentation status
+- Modules that may need updates
+
+### When to Sync
+
+- **At session start**: Check if develop branch has new commits
+- **After MAgPIE updates**: When team pulls new code
+- **Periodically**: Weekly sync recommended
+
+### Sync Workflow
+
+1. **Check status**: `command: sync`
+2. **Review commits**: Agent identifies GAMS changes
+3. **Update docs**: Agent updates affected module_XX.md files
+4. **Log sync**: Agent updates sync_log.json
+
+### What Triggers Doc Updates
+
+| Change Type | Update Needed? |
+|-------------|---------------|
+| Equation changes (*.gms) | ✅ YES |
+| New/modified parameters | ✅ YES |
+| Interface variable changes | ✅ YES |
+| R preprocessing (*.R) | ❌ NO |
+| Config files (*.cfg) | ❌ NO |
+| Changelog/version bumps | ❌ NO |
