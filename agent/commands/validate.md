@@ -13,7 +13,7 @@ With 82+ documentation files (~65,000 lines), information about modules, depende
 - Equation parameter counts (e.g., Chapman-Richards has 3 parameters)
 - Cross-references to files that don't exist
 - Duplicate equation definitions with different formulas
-- Entry point consistency (START_HERE, README, etc.)
+- Entry point consistency (README, AGENT.md, sync_log.json)
 
 ---
 
@@ -59,9 +59,10 @@ Run validation:
    - Flags discrepancies
 
 5. **Entry Point Consistency**
-   - Checks START_HERE.md, README.md, RULES_OF_THE_ROAD.md
-   - Verifies they all point to CURRENT_STATE.json correctly
-   - Flags conflicting instructions
+   - Checks README.md and AGENT.md
+   - Verifies README points to CURRENT_STATE.json and AGENT.md
+   - Verifies AGENT.md has command system and sync tracking
+   - Checks sync_log.json exists
 
 6. **File Count Audit**
    - Counts files in each category
@@ -74,7 +75,7 @@ Run validation:
 
 ```
 === MAgPIE Documentation Consistency Validation ===
-Date: 2025-10-26
+Date: [current date]
 
 [1/6] Checking dependency counts...
 ✓ Module 10: 23 dependents (consistent across 4 files)
@@ -101,10 +102,11 @@ Date: 2025-10-26
     → (Descriptions semantically equivalent but phrased differently - low risk)
 
 [5/6] Checking entry point consistency...
-✓ START_HERE.md points to CURRENT_STATE.json
-✓ README.md points to START_HERE.md
-✓ RULES_OF_THE_ROAD.md points to CURRENT_STATE.json
-✓ AGENT.md correctly separates contexts
+✓ README.md points to CURRENT_STATE.json
+✓ README.md points to AGENT.md
+✓ AGENT.md has command system
+✓ AGENT.md references sync tracking
+✓ project/sync_log.json exists
 
 [6/6] Checking file counts...
 ✓ Module docs: 46 files (matches inventory)

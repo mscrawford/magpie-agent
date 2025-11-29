@@ -64,10 +64,9 @@ AGENT.md is now deployed to the parent directory.
 
 🚀 Available Commands:
   guide              - Complete capabilities guide (start here!)
-  update             - Pull latest docs and sync AGENT.md
-  feedback           - User feedback system
-  integrate-feedback - Process pending feedback (maintainers)
-  update-agent-md    - Git workflow instructions
+  sync               - Sync docs with MAgPIE code changes
+  update             - Pull latest agent documentation
+  feedback           - Submit feedback to improve the agent
 
 🎯 You can now use all magpie-agent features!
 
@@ -108,4 +107,4 @@ test -f ../AGENT.md && echo "✅ AGENT.md deployed" || echo "❌ AGENT.md missin
 ls agent/commands/*.md | wc -l
 ```
 
-Expected: AGENT.md deployed, 9 command files present
+Expected: AGENT.md deployed, 10 command files present

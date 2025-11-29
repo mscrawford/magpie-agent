@@ -77,7 +77,7 @@ Thresholds:
 - ⚠️ **Aging**: 3-6 months old (consider re-verification)
 - 🔴 **Stale**: > 6 months old (re-verification recommended)
 
-Calculate age from today's date (2025-10-26).
+Calculate age from today's date.
 
 #### **Check 5: Participates In Structure**
 
