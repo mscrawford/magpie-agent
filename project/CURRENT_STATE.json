@@ -2,16 +2,28 @@
   "_comment": "🚨 THIS IS THE SINGLE SOURCE OF TRUTH FOR ALL PROJECT STATUS 🚨",
   "_instructions": "Update this file after completing work. Do NOT update START_HERE.md, README.md, RULES_OF_THE_ROAD.md, or modules/README.md with status information.",
   "project": "MAgPIE AI Documentation",
-  "last_updated": "2025-10-26T12:00:00Z",
-  "version": "2.4",
+  "last_updated": "2025-11-29T12:18:00Z",
+  "version": "3.0",
 
   "current_phase": {
-    "phase": 2,
-    "name": "Cross-Module Analysis & Patterns",
-    "description": "Document module interactions, conservation laws, and dependency resolution",
+    "phase": 3,
+    "name": "Model-Agnostic Agent & Sync Tracking",
+    "description": "Refactored agent to be model-agnostic, added code sync tracking system",
     "status": "complete",
-    "started": "2025-10-13",
-    "completed": "2025-10-22"
+    "started": "2025-11-29",
+    "completed": "2025-11-29"
+  },
+
+  "phase_3_completed": {
+    "name": "Model-Agnostic Refactor & Sync Tracking",
+    "completion_date": "2025-11-29",
+    "achievement": "Agent now works with any AI model, sync tracking keeps docs current with MAgPIE code",
+    "deliverables": [
+      "AGENT.md (renamed from CLAUDE.md, model-agnostic)",
+      "agent/commands/ (10 command files, moved from .claude/)",
+      "project/sync_log.json (tracks sync with MAgPIE develop branch)",
+      "agent/commands/sync.md (new sync command)"
+    ]
   },
 
   "phase_1_completed": {
@@ -69,9 +81,35 @@
     "documentation_gaps": [],
     "needs_verification": [],
     "technical_debt": [
-      "Some modules use outdated citation formats",
-      "Cross-references between modules not fully mapped"
+      "Some modules use outdated citation formats"
     ]
+  },
+
+  "last_session": {
+    "date": "2025-11-29",
+    "session": "model_agnostic_refactor",
+    "accomplished": [
+      "✅ Refactored agent to be model-agnostic (works with any AI model)",
+      "✅ Renamed CLAUDE.md → AGENT.md throughout codebase",
+      "✅ Moved .claude/commands/ → agent/commands/ (10 command files)",
+      "✅ Created sync tracking system (project/sync_log.json)",
+      "✅ Added sync command for keeping docs current with MAgPIE code",
+      "✅ Synced with MAgPIE develop branch (commit 3e0478c83)",
+      "✅ Updated module_32.md with forestry discounting equation fix",
+      "✅ Updated validation script for current structure",
+      "✅ Fixed all command files for consistent terminology",
+      "✅ Ran full validation - all 20 checks pass",
+      "✅ Fixed README git clone URL (magpie-nest → magpie-agent)",
+      "✅ Deployed AGENT.md to parent directory"
+    ],
+    "deliverables": [
+      "AGENT.md (model-agnostic entry point)",
+      "agent/commands/sync.md (new sync command)",
+      "project/sync_log.json (sync tracking)",
+      "Updated all 10 command files",
+      "Updated validation script"
+    ],
+    "notes": "🎉 MODEL-AGNOSTIC REFACTOR COMPLETE! Agent now works with Claude, GPT, Copilot, Cursor, or any AI assistant. Sync tracking system ensures documentation stays current with MAgPIE code changes. Commands invoked via 'run command: X' pattern instead of slash commands."
   },
 
   "previous_session": {
@@ -611,7 +649,7 @@
       "solution_3": "compress-documentation.md explicitly lists: ✅ notes/lessons, ❌ NEVER core docs",
       "issue_4": "Documentation written for AI agent, not human users",
       "solution_4": "WORKFLOW_GUIDE.md is user-facing with decision tree, examples, FAQ"
-    ],
+    },
     "key_improvements": [
       "Clear sequential relationship: /integrate-feedback (weekly) → /compress-documentation (quarterly)",
       "Type-based routing maintained in both commands (corrections → module.md, warnings → notes.md)",
