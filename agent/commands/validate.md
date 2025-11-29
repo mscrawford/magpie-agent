@@ -291,7 +291,7 @@ If file counts changed:
 # (manual fixes based on report)
 
 # 3. Then compress
-# Use /compress-feedback command
+# Use command: compress-documentation
 ```
 
 **Why:** Compression consolidates content. Validate ensures you're consolidating *correct* content.
@@ -432,7 +432,7 @@ If file counts changed:
 
 - `DOCUMENTATION_ECOSYSTEM_MAP.md` - Complete inventory of all files
 - `CONSISTENCY_MANAGEMENT_SUMMARY.md` - Consistency strategy overview
-- `/compress-feedback` - Consolidate redundant documentation
+- `command: compress-documentation` - Consolidate redundant documentation
 - `AGENT.md` (lines 978-1085) - Document precedence hierarchy
 - `scripts/validate_consistency.sh` - Validation script details
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # compress_feedback.sh
-# Helper script for /compress-feedback command workflow
+# Helper script for command: compress-documentation workflow
 # Supports the AI agent in tracking compression metadata and managing state
 
 set -e
@@ -120,7 +120,7 @@ record_compression() {
     echo "  - Consolidation details"
     echo "  - Line reduction metrics"
     echo
-    echo "Use the template provided in /compress-feedback command."
+    echo "Use the template provided in command: compress-documentation."
     echo
 }
 
@@ -177,11 +177,11 @@ WORKFLOW:
   1. Run: $0 status          # Check current state
   2. Run: $0 list            # See uncompressed feedback
   3. Run: $0 backup          # Create safety backup
-  4. Use: /compress-feedback # Let AI agent do compression
+  4. Use: command: compress-documentation  # Let AI agent do compression
   5. AI agent updates metadata automatically
 
 SEE ALSO:
-  - .claude/commands/compress-feedback.md (full workflow)
+  - agent/commands/compress-documentation.md (full workflow)
   - feedback/README.md (feedback system overview)
 
 EOF

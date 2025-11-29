@@ -1,6 +1,6 @@
 ---
 type: global
-target: [AGENT.md, AI_Agent_Behavior_Guide.md, or "system-wide"]
+target: [AGENT.md, or "system-wide"]
 priority: [high|medium|low]
 date: YYYY-MM-DD
 author: [optional - your name or username]

@@ -1,6 +1,6 @@
 # Module Documentation
 
-**⚠️ FOR CURRENT STATUS: See `../CURRENT_STATE.json` ⚠️**
+**⚠️ FOR CURRENT STATUS: See `../project/CURRENT_STATE.json` ⚠️**
 
 **⚠️ THIS IS A STATIC REFERENCE DOCUMENT - DO NOT UPDATE STATUS HERE ⚠️**
 
@@ -16,7 +16,7 @@ This directory contains comprehensive documentation for MAgPIE's 46 modules. All
 **Archived State**: `../completed_phases/PHASE_1_MODULES_COMPLETE_2025-10-13.json`
 **Current Phase**: Project has moved to Phase 2 (Cross-Module Analysis)
 
-**For current project status**, see: `../CURRENT_STATE.json`
+**For current project status**, see: `../project/CURRENT_STATE.json`
 
 ---
 
@@ -24,7 +24,7 @@ This directory contains comprehensive documentation for MAgPIE's 46 modules. All
 
 **✅ ALL 46 MODULES COMPLETE AND FULLY VERIFIED**
 
-**👉 For detailed module information and project status, see `../CURRENT_STATE.json` 👈**
+**👉 For detailed module information and project status, see `../project/CURRENT_STATE.json` 👈**
 
 Achievements:
 - ✅ 46/46 modules documented (100%)
@@ -105,7 +105,7 @@ Each module documentation includes:
 4. Use "Common Modifications" section as starting point
 
 ### For AI Agents
-- Use `../core_docs/AI_Agent_Behavior_Guide.md` for query routing
+- Use `AGENT.md` for query routing
 - Check verification status before citing module details
 - Always cite file:line from module documentation
 
@@ -113,7 +113,7 @@ Each module documentation includes:
 
 ## Module Categories (Reference)
 
-**Category Organization** (for reference only, see `../CURRENT_STATE.json` for completion status):
+**Category Organization** (for reference only, see `../project/CURRENT_STATE.json` for completion status):
 
 - **Drivers & Land**: Modules 09, 10
 - **Economics**: Modules 12, 36, 37, 38, 39
@@ -137,7 +137,7 @@ ls -1 module_*.md | wc -l
 ls -1 module_*.md
 
 # Check module status
-cat ../CURRENT_STATE.json | grep -A 10 "\"XX\""
+cat ../project/CURRENT_STATE.json | grep -A 10 "\"XX\""
 
 # Verify equation count for module XX
 grep "^[ ]*qXX_" ../../modules/XX_*/*/declarations.gms | wc -l
@@ -156,14 +156,14 @@ grep "^[ ]*qXX_" ../../modules/XX_*/*/declarations.gms | wc -l
 - Emergent behaviors (solver patterns, constraint binding)
 
 **For New Sessions**:
-1. **Check `../CURRENT_STATE.json` for Phase 2 priorities** ← Start here!
-2. Read `../RULES_OF_THE_ROAD.md` for protocol
-3. Work on cross-module analysis tasks from `CURRENT_STATE.json`
+1. **Check `../project/CURRENT_STATE.json` for priorities** ← Start here!
+2. Read `AGENT.md` for agent behavior
+3. Work on tasks from `CURRENT_STATE.json`
 
-**All priorities and next steps are tracked in `../CURRENT_STATE.json` (not in this file)**
+**All priorities and next steps are tracked in `../project/CURRENT_STATE.json` (not in this file)**
 
 ---
 
 **Quality Standard**: "Code Truth" - Describe only what IS implemented in the code
 
-**This is a STATIC reference document. For current project status, module counts, and priorities, see `../CURRENT_STATE.json`**
+**This is a STATIC reference document. For current project status, module counts, and priorities, see `../project/CURRENT_STATE.json`**

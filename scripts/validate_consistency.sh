@@ -86,7 +86,7 @@ print_section "1/6" "Checking dependency counts..."
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
     modules/module_10.md \
     modules/module_10_notes.md \
-    core_docs/Phase2_Module_Dependencies.md \
+    core_docs/Module_Dependencies.md \
     cross_module/modification_safety_guide.md \
     2>/dev/null | grep -oE "[0-9]+ dependent" | grep -oE "[0-9]+" | sort -u)
 
@@ -97,13 +97,13 @@ elif [ "$COUNT_10" -eq 0 ]; then
     check_warning "Module 10: No dependency count found in expected files"
 else
     check_warning "Module 10: Inconsistent counts found: $(echo $MODULE_10_REFS | tr '\n' ' ')"
-    log "    → Check: modules/module_10.md, modules/module_10_notes.md, Phase2_Module_Dependencies.md, modification_safety_guide.md"
+    log "    → Check: modules/module_10.md, modules/module_10_notes.md, Module_Dependencies.md, modification_safety_guide.md"
 fi
 
 # Check Module 11
 MODULE_11_REFS=$(grep -r "Module 11.*dependents\|11.*dependents" \
     modules/module_11.md \
-    core_docs/Phase2_Module_Dependencies.md \
+    core_docs/Module_Dependencies.md \
     2>/dev/null | grep -oE "[0-9]+ dependent" | grep -oE "[0-9]+" | sort -u)
 
 COUNT_11=$(echo "$MODULE_11_REFS" | wc -l | tr -d ' ')
@@ -118,7 +118,7 @@ fi
 # Check Module 17
 MODULE_17_REFS=$(grep -r "Module 17.*dependents\|17.*dependents" \
     modules/module_17.md \
-    core_docs/Phase2_Module_Dependencies.md \
+    core_docs/Module_Dependencies.md \
     cross_module/modification_safety_guide.md \
     2>/dev/null | grep -oE "[0-9]+ dependent" | grep -oE "[0-9]+" | sort -u)
 

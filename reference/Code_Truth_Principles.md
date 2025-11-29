@@ -92,7 +92,7 @@ Before answering any MAgPIE question, verify:
 - [ ] Is model reality separated from nature?
 - [ ] **Did I distinguish "parameterized" from "implemented"?** (See pattern below)
 - [ ] **Did I check if defaults are ever changed?** (See warning signs below)
-- [ ] **If I found an error, did I report it to the user?** (See error protocol in AI_Agent_Behavior_Guide.md)
+- [ ] **If I found an error, did I report it to the user?** (See error protocol in AGENT.md)
 
 ### ⚠️ Critical Pattern: "Parameterized vs. Implemented"
 
@@ -157,7 +157,7 @@ s29_treecover_target = 0  ! Disabled by default
 - Offer to create bug report
 - Do NOT attempt to "fix" unless explicitly requested
 
-**See full Error Reporting Protocol in AI_Agent_Behavior_Guide.md**
+**See full Error Reporting Protocol in AGENT.md**
 
 ---
 

@@ -31,7 +31,7 @@
   Read module_XX.md     Read Query_Patterns            │
          │              Reference.md (Pattern 2)        │
          ▼                     │                        ▼
-  Read module_XX_       Read Phase2_Module      Read Query_Patterns
+  Read module_XX_       Read Module_             Read Query_Patterns
   notes.md              Dependencies.md         Reference.md
   (warnings)                   │                (Pattern 1 + Appendix)
          │                     ▼                        │
@@ -76,7 +76,7 @@
   (Pattern 3)                     safety_guide.md            *_balance_
          │                                   │               conservation.md
          ▼                                   ▼                         │
-  Trace 5 steps:                  Read Phase2_Module          ┌────────┴────────┐
+  Trace 5 steps:                  Read Module_                ┌────────┴────────┐
   1. Initial state                Dependencies.md             │                 │
   2. Transition                          │                    ▼                 ▼
   3. Convergence                         ▼               Land balance    Water balance

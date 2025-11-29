@@ -32,12 +32,12 @@
 
 ### Level 2: Status Command (Easy Addition)
 
-**Create `command: feedback-status` command** (or enhance existing `/feedback`):
+**Create `command: feedback-status` command** (or enhance existing `command: feedback`):
 
 ```bash
-command: feedback-status
+run command: feedback-status
 # Or
-command: feedback status
+run command: feedback status
 ```
 
 **Output**:

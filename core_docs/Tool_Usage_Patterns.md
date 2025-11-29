@@ -42,7 +42,7 @@ ls /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/core_docs/
 
 # ✅ BUILD FROM KNOWN BASE:
 # If working directory is /magpie/magpie-agent/:
-ls $(pwd)/core_docs/AI_Agent_Behavior_Guide.md
+ls $(pwd)/core_docs/AGENT.md
 
 # ✅ For files in parent MAgPIE repo:
 ls /Users/turnip/Documents/Work/Workspace/magpie/modules/50_nr_soil_budget/
@@ -56,7 +56,7 @@ pwd
 # Output: /Users/turnip/.../magpie/magpie-agent
 
 # THEN use relative paths
-ls core_docs/AI_Agent_Behavior_Guide.md  # ✅ Now safe
+ls core_docs/AGENT.md  # ✅ Now safe
 ```
 
 #### ✅ SOLUTION 3: Avoid cd Commands
@@ -80,7 +80,7 @@ ls /foo/bar/files/
 
 ```bash
 # Command fails
-wc -l core_docs/AI_Agent_Behavior_Guide.md
+wc -l core_docs/AGENT.md
 # Error: No such file or directory
 
 # ❌ WRONG CONCLUSION:
@@ -91,17 +91,17 @@ wc -l core_docs/AI_Agent_Behavior_Guide.md
 
 ```bash
 # Method 1: Absolute path
-ls /Users/turnip/.../magpie-agent/core_docs/AI_Agent_Behavior_Guide.md
+ls /Users/turnip/.../magpie-agent/core_docs/AGENT.md
 
 # Method 2: Find from known root
-find /Users/turnip/.../magpie-agent -name "AI_Agent_Behavior_Guide.md" -type f
+find /Users/turnip/.../magpie-agent -name "AGENT.md" -type f
 
 # Method 3: Check git tracking
 git ls-tree -r HEAD --name-only | grep "AI_Agent_Behavior_Guide"
 
 # Method 4: Check both possible locations
-ls core_docs/AI_Agent_Behavior_Guide.md 2>/dev/null || \
-ls magpie-agent/core_docs/AI_Agent_Behavior_Guide.md 2>/dev/null || \
+ls core_docs/AGENT.md 2>/dev/null || \
+ls magpie-agent/core_docs/AGENT.md 2>/dev/null || \
 echo "Not found in expected locations - verifying with find..."
 
 # Method 5: Ask user if uncertain
@@ -582,12 +582,12 @@ cd /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
 
 ```bash
 # ❌ ONE failed attempt:
-ls core_docs/AI_Agent_Behavior_Guide.md
+ls core_docs/AGENT.md
 # Error → "File doesn't exist"
 
 # ✅ VERIFY with multiple methods:
 pwd  # Where am I?
-find . -name "AI_Agent_Behavior_Guide.md"
+find . -name "AGENT.md"
 git ls-tree -r HEAD --name-only | grep "AI_Agent_Behavior"
 ```
 
@@ -647,11 +647,11 @@ Edit(old_string="    some code here", ...)
 
 ### Example 1: The Directory Navigation Error (2024-10-24)
 
-**What happened**: Failed to find `core_docs/AI_Agent_Behavior_Guide.md`
+**What happened**: Failed to find `core_docs/AGENT.md`
 
 **Mistake**:
 ```bash
-wc -l core_docs/AI_Agent_Behavior_Guide.md
+wc -l core_docs/AGENT.md
 # Error: No such file or directory
 # Concluded: "File doesn't exist"
 ```
@@ -664,15 +664,15 @@ wc -l core_docs/AI_Agent_Behavior_Guide.md
 **Correct approach**:
 ```bash
 # Method 1: Absolute path
-wc -l /Users/turnip/.../magpie-agent/core_docs/AI_Agent_Behavior_Guide.md
+wc -l /Users/turnip/.../magpie-agent/core_docs/AGENT.md
 
 # Method 2: Verify location first
 pwd  # Shows: /magpie (not expected /magpie-agent)
 # Now understand why relative path failed
 
 # Method 3: Find it
-find . -name "AI_Agent_Behavior_Guide.md"
-# Shows: ./magpie-agent/core_docs/AI_Agent_Behavior_Guide.md
+find . -name "AGENT.md"
+# Shows: ./magpie-agent/core_docs/AGENT.md
 # (The ./magpie-agent/ prefix reveals you're in parent dir)
 ```
 

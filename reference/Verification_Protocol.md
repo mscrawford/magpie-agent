@@ -88,7 +88,7 @@ Explicitly state what the module does **NOT** do:
 
 ### Step 6: Final Quality Check (5 min)
 
-Use the checklist from `RULES_OF_THE_ROAD.md`:
+Use the checklist from `AGENT.md`:
 
 - [ ] Cited file:line for every claim
 - [ ] Used exact variable names

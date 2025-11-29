@@ -59,9 +59,9 @@ As the MAgPIE agent receives feedback and improves, documentation files (AGENT.m
 
 ### Step 4: Run AI Compression
 
-**In Claude Code:**
+**Tell your AI assistant:**
 ```
-/compress-feedback
+run command: compress-documentation
 ```
 
 **The AI will:**
@@ -116,7 +116,7 @@ git checkout backup-pre-compression-YYYYMMDD_HHMMSS
 
 **Proposal #2: Unify SSP2 Testing Guidance**
 - Source: 3 lessons scattered across module_70, module_14, module_17 notes
-- Target: New "Testing Best Practices" section in AI_Agent_Behavior_Guide.md
+- Target: New "Testing Best Practices" section in AGENT.md
 - Reduction: ~80 lines → ~30 lines (63% reduction)
 - Preserves: All scenario comparisons, all stability notes
 
@@ -142,7 +142,7 @@ Approve? [y/n/partial]
 
 **Results:**
 - Total reduction: ~300 lines → ~105 lines (65% overall)
-- Files modified: AGENT.md, module_10_notes.md, module_52.md, AI_Agent_Behavior_Guide.md
+- Files modified: AGENT.md, module_10_notes.md, module_52.md, AGENT.md
 - Unique insights preserved: 42 (100%)
 - Feedback items marked compressed: 25
 - Metadata created: `.compression_metadata.json`
@@ -266,7 +266,7 @@ Original files are in `feedback/integrated/` with compression markers:
 
 ## 📚 See Also
 
-- `agent/commands/compress-feedback.md` - Complete workflow details
+- `agent/commands/compress-documentation.md` - Complete workflow details
 - `feedback/README.md` - Feedback system overview
 - `scripts/compress_feedback.sh` - Helper script reference
 - `AGENT.md` - Agent behavior documentation

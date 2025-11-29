@@ -273,7 +273,7 @@ This feedback system enables:
 - See templates for detailed examples
 - Run `./scripts/submit_feedback.sh` for guided submission
 - Check `modules/module_70_notes.md` for example of integrated feedback
-- Read `RULES_OF_THE_ROAD.md` for project guidelines
+- Read `AGENT.md` for project guidelines
 
 ---
 
