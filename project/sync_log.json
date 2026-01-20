@@ -3,20 +3,73 @@
   "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
   
   "sync_status": {
-    "last_sync_date": "2025-11-29",
-    "last_sync_commit": "3e0478c83",
-    "last_sync_commit_date": "2025-11-28",
-    "last_sync_commit_message": "Merge pull request #855 from mscrawford/bugfix/forestry-discounting",
+    "last_sync_date": "2026-01-20",
+    "last_sync_commit": "ba821a980",
+    "last_sync_commit_date": "2026-01-13",
+    "last_sync_commit_message": "Merge pull request #860 from pascal-sauer/develop",
     "synced_by": "AI agent",
     "magpie_branch": "develop"
   },
   
   "pending_review": {
     "_comment": "Commits that have been identified but not yet integrated into documentation",
-    "commits": []
+    "commits": [
+      {
+        "commit": "480e300b1",
+        "date": "2025-12-19",
+        "description": "f_btc2 - conservation tau for croparea",
+        "modules_affected": ["13_tc", "14_yields", "29_cropland"],
+        "doc_update_needed": true,
+        "doc_update_status": "pending",
+        "notes": "Major rework: new tautype dimension, v13_tau_core/v13_tau_consv variables, p13_croparea_consv_tau_factor, q13_tau_consv equation. Module 13, 14, 29 documentation needs update."
+      },
+      {
+        "commit": "a6f114383",
+        "date": "2026-01-03",
+        "description": "bugfix residues for 2nd gen off",
+        "modules_affected": ["60_bioenergy", "32_forestry"],
+        "doc_update_needed": false,
+        "doc_update_status": "n/a",
+        "notes": "Presolve bug fix for historical time steps, adds conditional for residue assumptions"
+      }
+    ]
   },
   
   "recent_syncs": [
+    {
+      "date": "2026-01-20",
+      "commit_range": "3e0478c83..ba821a980",
+      "changes_reviewed": [
+        {
+          "commit": "480e300b1",
+          "date": "2025-12-19",
+          "description": "f_btc2 - conservation tau for croparea implementation",
+          "modules_affected": ["13_tc", "14_yields", "29_cropland"],
+          "doc_update_needed": true,
+          "doc_update_status": "pending",
+          "notes": "Major feature: new tautype dimension (crop/past), v13_tau_core, v13_tau_consv, q13_tau, q13_tau_consv equations. Needs module doc updates."
+        },
+        {
+          "commit": "a6f114383",
+          "date": "2026-01-03",
+          "description": "bugfix residues for 2nd gen off",
+          "modules_affected": ["60_bioenergy", "32_forestry"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Presolve conditional for historical time steps"
+        },
+        {
+          "commit": "ba821a980",
+          "date": "2026-01-13",
+          "description": "PR template updates",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "GitHub workflow changes only"
+        }
+      ],
+      "summary": "Identified major module 13_tc rework (conservation tau). Modules 13, 14, 29 flagged for doc update. Other changes are config/workflow updates."
+    },
     {
       "date": "2025-11-29",
       "commit_range": "up to 3e0478c83",
@@ -83,7 +136,23 @@
   
   "module_sync_status": {
     "_comment": "Track which modules may need updates based on code changes",
-    "potentially_stale": [],
+    "potentially_stale": [
+      {
+        "module": "13_tc",
+        "reason": "Major rework in f_btc2 - new tautype dimension, conservation tau equations",
+        "commit": "480e300b1"
+      },
+      {
+        "module": "14_yields",
+        "reason": "Changes to input.gms and equations related to tautype",
+        "commit": "480e300b1"
+      },
+      {
+        "module": "29_cropland",
+        "reason": "Presolve changes for conservation croparea",
+        "commit": "480e300b1"
+      }
+    ],
     "recently_updated": [
       {
         "module": "32_forestry",
@@ -92,8 +161,8 @@
         "commit": "9ccd6290d"
       }
     ],
-    "verified_current": "all_46_modules",
-    "last_full_audit": "2025-11-29"
+    "verified_current": "43_of_46_modules",
+    "last_full_audit": "2026-01-20"
   },
   
   "sync_workflow": {
