@@ -45,7 +45,7 @@ Module 14 implements only 2 equations, but relies on extensive preloop calibrati
 ```gams
 q14_yield_crop(j2,kcr,w) ..
  vm_yld(j2,kcr,w) =e= sum(ct,i14_yields_calib(ct,j2,kcr,w)) *
-                        sum((cell(i2,j2), supreg(h2,i2)), vm_tau(h2,"crop") / fm_tau1995(h2));
+                         vm_tau(j2,"crop") / sum((cell(i2,j2), supreg(h2,i2)), fm_tau1995(h2));
 ```
 
 **What This Equation Does:**
@@ -55,16 +55,18 @@ Calculates cellular crop yields by scaling calibrated baseline yields (`i14_yiel
 **Mathematical Structure:**
 
 ```
-Yield(j,crop,water) = CalibratedYield(j,crop,water) × (τ_current / τ_1995)
+Yield(j,crop,water) = CalibratedYield(j,crop,water) × (τ_current(j) / τ_1995(h))
 ```
 
 **Components:**
 
 - **vm_yld(j,kcr,w)**: Output yield variable (tDM/ha/yr) for cell j, crop kcr, water system w
 - **i14_yields_calib(ct,j,kcr,w)**: Calibrated baseline yields from preloop (see Section 3)
-- **vm_tau(h,"crop")**: Current technological change factor from Module 13 (≥1, starts at 1 in 1995)
-- **fm_tau1995(h)**: Regional τ factor in baseline year 1995
-- **Dimensions:** j (cells), kcr (crops), w (rainfed/irrigated), h (regions)
+- **vm_tau(j2,"crop")**: Current technological change factor from Module 13 at cluster level (≥1, starts at 1 in 1995)
+- **fm_tau1995(h)**: Regional τ factor in baseline year 1995 (at super-region level for normalization)
+- **Dimensions:** j (cells/clusters), kcr (crops), w (rainfed/irrigated), h (super-regions)
+
+**f_btc2 Change:** As of commit 480e300b1, `vm_tau` is now defined at cluster level (j) rather than super-region level (h). This allows spatial heterogeneity in intensification rates, particularly for differentiating conservation priority areas with lower intensification.
 
 **Conceptual Meaning:**
 
@@ -83,7 +85,7 @@ q14_yield_past(j2,w) ..
  vm_yld(j2,"pasture",w) =e=
  sum(ct,(i14_yields_calib(ct,j2,"pasture",w))
  * sum(cell(i2,j2),pm_past_mngmnt_factor(ct,i2)))
- * (1 + s14_yld_past_switch*(sum((cell(i2,j2), supreg(h2,i2)), pcm_tau(h2, "crop")/fm_tau1995(h2)) - 1));
+ * (1 + s14_yld_past_switch*(sum((cell(i2,j2), supreg(h2,i2)), pcm_tau(j2, "crop")/fm_tau1995(h2)) - 1));
 ```
 
 **What This Equation Does:**
@@ -93,7 +95,7 @@ Calculates pasture yields using calibrated baseline, an exogenous management fac
 **Mathematical Structure:**
 
 ```
-PastureYield(j,w) = CalibratedPastureYield(j,w) × ManagementFactor × [1 + spillover × (τ_crop_prev/τ_1995 - 1)]
+PastureYield(j,w) = CalibratedPastureYield(j,w) × ManagementFactor × [1 + spillover × (τ_crop_prev(j)/τ_1995(h) - 1)]
 ```
 
 **Components:**
@@ -102,8 +104,10 @@ PastureYield(j,w) = CalibratedPastureYield(j,w) × ManagementFactor × [1 + spil
 - **i14_yields_calib(ct,j,"pasture",w)**: Calibrated pasture baseline from preloop
 - **pm_past_mngmnt_factor(ct,i)**: Exogenous pasture management factor from Module 70 (livestock demand-driven)
 - **s14_yld_past_switch**: Spillover parameter (default 0.25, range 0-1) (`input.gms:24`)
-- **pcm_tau(h,"crop")**: Previous time step's crop τ factor (not current time step!)
+- **pcm_tau(j2,"crop")**: Previous time step's crop τ factor at cluster level (not current time step!)
 - **Interpretation:** 25% of crop sector intensification benefits pasture yields
+
+**f_btc2 Change:** `pcm_tau` is now at cluster level (j) rather than super-region level (h), consistent with the change to `vm_tau`.
 
 **Key Difference from Crop Equation:**
 
@@ -1541,7 +1545,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 
 ---
 
-**Last Verified**: 2025-10-13
-**Verified Against**: `../modules/14_*/managementcalib_aug19/*.gms`
+**Last Verified**: 2026-01-20
+**Verified Against**: `../modules/14_yields/managementcalib_aug19/*.gms` (origin/develop branch)
 **Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Changes Since Last Verification**: f_btc2 update - vm_tau and pcm_tau now at cluster level (j) instead of super-region (h) in equations q14_yield_crop and q14_yield_past

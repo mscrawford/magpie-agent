@@ -13,26 +13,7 @@
   
   "pending_review": {
     "_comment": "Commits that have been identified but not yet integrated into documentation",
-    "commits": [
-      {
-        "commit": "480e300b1",
-        "date": "2025-12-19",
-        "description": "f_btc2 - conservation tau for croparea",
-        "modules_affected": ["13_tc", "14_yields", "29_cropland"],
-        "doc_update_needed": true,
-        "doc_update_status": "pending",
-        "notes": "Major rework: new tautype dimension, v13_tau_core/v13_tau_consv variables, p13_croparea_consv_tau_factor, q13_tau_consv equation. Module 13, 14, 29 documentation needs update."
-      },
-      {
-        "commit": "a6f114383",
-        "date": "2026-01-03",
-        "description": "bugfix residues for 2nd gen off",
-        "modules_affected": ["60_bioenergy", "32_forestry"],
-        "doc_update_needed": false,
-        "doc_update_status": "n/a",
-        "notes": "Presolve bug fix for historical time steps, adds conditional for residue assumptions"
-      }
-    ]
+    "commits": []
   },
   
   "recent_syncs": [
@@ -46,8 +27,8 @@
           "description": "f_btc2 - conservation tau for croparea implementation",
           "modules_affected": ["13_tc", "14_yields", "29_cropland"],
           "doc_update_needed": true,
-          "doc_update_status": "pending",
-          "notes": "Major feature: new tautype dimension (crop/past), v13_tau_core, v13_tau_consv, q13_tau, q13_tau_consv equations. Needs module doc updates."
+          "doc_update_status": "complete",
+          "notes": "Updated module_13.md and module_14.md with conservation tau feature, cluster-level vm_tau, new equations q13_tau and q13_tau_consv"
         },
         {
           "commit": "a6f114383",
@@ -68,7 +49,7 @@
           "notes": "GitHub workflow changes only"
         }
       ],
-      "summary": "Identified major module 13_tc rework (conservation tau). Modules 13, 14, 29 flagged for doc update. Other changes are config/workflow updates."
+      "summary": "Updated module_13.md and module_14.md for f_btc2 conservation tau feature. Module 29 had only whitespace changes (no doc update needed). Other changes were config/workflow updates."
     },
     {
       "date": "2025-11-29",
@@ -136,24 +117,20 @@
   
   "module_sync_status": {
     "_comment": "Track which modules may need updates based on code changes",
-    "potentially_stale": [
+    "potentially_stale": [],
+    "recently_updated": [
       {
         "module": "13_tc",
-        "reason": "Major rework in f_btc2 - new tautype dimension, conservation tau equations",
+        "update_date": "2026-01-20",
+        "reason": "f_btc2 conservation tau feature - new equations, cluster-level vm_tau",
         "commit": "480e300b1"
       },
       {
         "module": "14_yields",
-        "reason": "Changes to input.gms and equations related to tautype",
+        "update_date": "2026-01-20",
+        "reason": "f_btc2 - vm_tau now at cluster level (j) instead of super-region (h)",
         "commit": "480e300b1"
       },
-      {
-        "module": "29_cropland",
-        "reason": "Presolve changes for conservation croparea",
-        "commit": "480e300b1"
-      }
-    ],
-    "recently_updated": [
       {
         "module": "32_forestry",
         "update_date": "2025-11-29",
@@ -161,7 +138,7 @@
         "commit": "9ccd6290d"
       }
     ],
-    "verified_current": "43_of_46_modules",
+    "verified_current": "all_46_modules",
     "last_full_audit": "2026-01-20"
   },
   

@@ -2,8 +2,8 @@
 
 **Status**: Fully Verified
 **Realization**: `endo_jan22` (active), `exo` (prescriptive alternative)
-**Equations**: 3
-**Core Mechanism**: Endogenous land use intensification via tau factors
+**Equations**: 5
+**Core Mechanism**: Endogenous land use intensification via tau factors with conservation area differentiation
 
 ---
 
@@ -12,6 +12,8 @@
 Module 13 implements endogenous technological change and land use intensification through the tau factor (τ) framework. The module calculates the cost of investments needed to increase agricultural yields via land use intensification, creating an endogenous feedback loop where the optimization balances intensification costs against land expansion costs.
 
 **Key Innovation**: The model shifts investment costs 15 years into the future using interest rates, representing the research lag between investment and yield improvement (realization.gms:8-36, Dietrich et al. 2014).
+
+**Conservation Area Feature**: Since the f_btc2 update, the module distinguishes between regular cropland (`v13_tau_core`) and cropland within conservation priority areas (`v13_tau_consv`), allowing reduced intensification in conservation areas.
 
 ---
 
@@ -24,7 +26,7 @@ Module 13 implements endogenous technological change and land use intensificatio
 ```gams
 q13_cost_tc(i2, tautype) ..
   v13_cost_tc(i2, tautype) =e= sum(ct, pc13_land(i2, tautype) *
-                     i13_tc_factor(ct) * sum(supreg(h2,i2),vm_tau(h2,tautype))**
+                     i13_tc_factor(ct) * sum(supreg(h2,i2),v13_tau_core(h2,tautype))**
                      i13_tc_exponent(ct) * (1+pm_interest(ct,i2))**15);
 ```
 *Source*: `equations.gms:20-23`
@@ -32,7 +34,7 @@ q13_cost_tc(i2, tautype) ..
 **Formula Breakdown**:
 - `pc13_land(i2, tautype)`: Regional agricultural area (mio ha) from previous timestep
 - `i13_tc_factor(ct)`: Regression factor (USD17MER per ha) - scenario-dependent
-- `vm_tau(h2,tautype) ** i13_tc_exponent(ct)`: Power function representing investment-yield ratio
+- `v13_tau_core(h2,tautype) ** i13_tc_exponent(ct)`: Power function representing investment-yield ratio
 - `(1+pm_interest(ct,i2))**15`: 15-year time shift to account for research lag
 
 **Key Insight**: The power function captures the increasing marginal cost of intensification - higher current τ values mean exponentially more expensive additional intensification (equations.gms:10-11, figure reference).
@@ -49,13 +51,13 @@ q13_cost_tc(i2, tautype) ..
 
 ```gams
 q13_tech_cost(i2, tautype) ..
- v13_tech_cost(i2, tautype) =e= sum(supreg(h2,i2), vm_tau(h2,tautype)/pcm_tau(h2,tautype)-1) * v13_cost_tc(i2,tautype)
+ v13_tech_cost(i2, tautype) =e= sum(supreg(h2,i2), v13_tau_core(h2,tautype)/pc13_tau(h2,tautype)-1) * v13_cost_tc(i2,tautype)
                                * sum(ct,pm_interest(ct,i2)/(1+pm_interest(ct,i2)));
 ```
 *Source*: `equations.gms:40-42`
 
 **Formula Breakdown**:
-- `vm_tau(h2,tautype)/pcm_tau(h2,tautype) - 1`: Intensification rate (τ_current / τ_previous - 1)
+- `v13_tau_core(h2,tautype)/pc13_tau(h2,tautype) - 1`: Intensification rate (τ_current / τ_previous - 1)
 - `v13_cost_tc(i2,tautype)`: Unit cost from q13_cost_tc
 - `pm_interest(ct,i2)/(1+pm_interest(ct,i2))`: Annuity factor for infinite time horizon
 
@@ -82,6 +84,47 @@ q13_tech_cost_sum(i2) ..
 
 ---
 
+### 4. Overall Tau at Cluster Level (q13_tau)
+
+**Purpose**: Calculate weighted average tau at cluster level, combining regular and conservation cropland
+
+```gams
+q13_tau(j2,tautype)..
+    vm_tau(j2,tautype) =e= sum((ct, cell(i2,j2), supreg(h2,i2)), 
+        (1-p13_cropland_consv_shr(ct,j2)) * v13_tau_core(h2,tautype) 
+        + p13_cropland_consv_shr(ct,j2) * v13_tau_consv(h2,tautype));
+```
+*Source*: `equations.gms:47-51`
+
+**Formula Breakdown**:
+- `p13_cropland_consv_shr(ct,j2)`: Share of cropland in conservation priority areas at cluster j
+- `v13_tau_core(h2,tautype)`: Tau for regular cropland (super-region level)
+- `v13_tau_consv(h2,tautype)`: Tau for conservation cropland (can be lower)
+- Output `vm_tau(j2,tautype)`: Weighted average at cluster level for use in yield calculations
+
+**Key Change (f_btc2)**: The output variable `vm_tau` is now at cluster level (j) rather than super-region level (h), allowing spatial variation in intensification based on conservation area shares.
+
+---
+
+### 5. Conservation Area Tau (q13_tau_consv)
+
+**Purpose**: Link conservation area tau to core tau via a reduction factor
+
+```gams
+q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year(ct)) < s13_croparea_consv_start)..
+ v13_tau_consv(h2,tautype) =e= p13_croparea_consv_tau_factor(h2) * v13_tau_core(h2,tautype);
+```
+*Source*: `equations.gms:56-57`
+
+**Formula Breakdown**:
+- `p13_croparea_consv_tau_factor(h2)`: Regional factor (default 0.8) to reduce intensification in conservation areas
+- `v13_tau_core(h2,tautype)`: Core tau value
+- Conditional: Only active when `c13_croparea_consv_tau_increase = 1` or before conservation start year
+
+**Purpose**: Allows modeling of lower land use intensity in biodiversity-sensitive or conservation priority areas, with tau increases either allowed (equation active) or frozen (tau fixed at presolve).
+
+---
+
 ## Interface Variables
 
 ### Inputs (from other modules)
@@ -90,6 +133,7 @@ q13_tech_cost_sum(i2) ..
 |----------|----------|---------|--------|
 | `pm_interest(t,i)` | Module 12 (Interest Rate) | Regional interest rates for time shifting and annuity | declarations.gms:26 |
 | `pcm_land(j,land)` | Module 10 (Land) | Previous timestep land areas for cost scaling | presolve.gms:9-10 |
+| `pm_land_conservation(t,j,land,consv_type)` | Module 22 (Conservation) | Conservation area shares for tau differentiation | presolve.gms:41 |
 
 ---
 
@@ -97,10 +141,12 @@ q13_tech_cost_sum(i2) ..
 
 | Variable | Consumer | Purpose | Source |
 |----------|----------|---------|--------|
-| `vm_tau(h,tautype)` | Module 14 (Yields), Module 38 (Factor Costs) | Land use intensity factor that multiplies biophysical yields | declarations.gms:9 |
+| `vm_tau(j,tautype)` | Module 14 (Yields), Module 38 (Factor Costs) | Land use intensity factor at cluster level | declarations.gms:13 |
 | `vm_tech_cost(i)` | Module 11 (Costs) | Annualized technology costs for objective function | declarations.gms:10 |
 
 **Critical Role**: `vm_tau` is the central mechanism linking intensification investments (Module 13) to yield improvements (Module 14) and production costs (Module 38), creating the core tradeoff between land expansion and intensification.
+
+**Spatial Level Change**: As of f_btc2, `vm_tau` is defined at cluster level (j) rather than super-region level (h), enabling spatial heterogeneity in intensification rates based on conservation area shares.
 
 ---
 
@@ -145,6 +191,27 @@ q13_tech_cost_sum(i2) ..
 - `low`, `medium` (default), `high`: Selects TC cost scenario from input tables
 - Applied after historical SSP2 period (`preloop.gms:8-16`)
 
+**c13_croparea_consv** (`input.gms:12`):
+- `0` (default): No croparea conservation differentiation
+- `1`: Enable conservation area tau differentiation
+
+**c13_croparea_consv_tau_increase** (`input.gms:13`):
+- `1` (default): Allow tau increases in conservation areas (via equation q13_tau_consv)
+- `0`: Freeze tau in conservation areas at initial level
+
+**s13_croparea_consv_tau_factor** (`input.gms:14`):
+- Default: `0.8` (20% lower intensification in conservation areas)
+- Applied via `p13_croparea_consv_tau_factor(h)` after country weighting
+
+**s13_croparea_consv_shr** (`input.gms:16`):
+- Default: `0` (use conservation areas from Module 22)
+- Alternative: Direct share of cropland subject to conservation management
+
+**s13_croparea_consv_start / s13_croparea_consv_target** (`input.gms:18-19`):
+- Start year: `2025` (default)
+- Target year: `2030` (default)
+- Sigmoid interpolation between these years
+
 ---
 
 ## Presolve Logic and Bounds
@@ -152,25 +219,49 @@ q13_tech_cost_sum(i2) ..
 ### Tau Bounds (`presolve.gms:12-19`)
 
 **Lower Bound**:
-- Historical periods with `s13_ignore_tau_historical = 0`: `vm_tau.lo = f13_tau_historical(t,h)`
-- All other periods: `vm_tau.lo = pcm_tau(h,tautype)` (cannot decrease from previous level)
+- Historical periods with `s13_ignore_tau_historical = 0`: `v13_tau_core.lo = f13_tau_historical(t,h)` (crop) or `f13_pastr_tau_hist(t,h)` (pasture)
+- All other periods: `v13_tau_core.lo = pc13_tau(h,tautype)` (cannot decrease from previous level)
 
 **Upper Bound**:
-- `vm_tau.up = 2 * pcm_tau(h,tautype)` (maximum doubling per timestep)
+- `v13_tau_core.up = 2 * pc13_tau(h,tautype)` (maximum doubling per timestep)
 
-**Rationale**: Prevents unrealistic jumps in intensification rates. Tau can only stay constant or increase, with a maximum doubling constraint to reflect realistic adoption timescales (presolve.gms:19,28).
+**Rationale**: Prevents unrealistic jumps in intensification rates. Tau can only stay constant or increase, with a maximum doubling constraint to reflect realistic adoption timescales (presolve.gms:19).
 
 ---
 
-### Initial Values (`presolve.gms:22-26`)
+### Conservation Area Share Calculation (`presolve.gms:36-58`)
+
+**When `c13_croparea_consv = 1`**:
+1. Conservation share from Module 22: `p13_cropland_consv_shr = pm_land_conservation / pcm_land`
+2. Country weighting applied for regional heterogeneity
+3. Optional fixed share via `s13_croparea_consv_shr`
+
+**Country Weighting**:
+- `p13_country_weight(i)`: Based on available cropland area per country
+- `p13_croparea_consv_tau_factor(h)`: Country-weighted reduction factor at super-region level
+
+---
+
+### Conservation Tau Initialization (`presolve.gms:66-70`)
+
+**First timestep**: `pc13_tau_consv = p13_croparea_consv_tau_factor × pc13_tau("crop")`
+
+**When `c13_croparea_consv_tau_increase = 0` and past start year**:
+- `v13_tau_consv.fx = pc13_tau_consv` (frozen at previous level, no optimization)
+
+---
+
+### Initial Values (`presolve.gms:74-82`)
 
 **First timestep** (ord(t) = 1):
-- `vm_tau.l = pcm_tau` (start at 1995 historical value)
+- `v13_tau_core.l = pc13_tau` (start at 1995 historical value)
+- `v13_tau_consv.l = pc13_tau_consv`
+- `vm_tau.l = weighted average based on conservation shares`
 
 **Subsequent timesteps**:
-- `vm_tau.l = pcm_tau × (1 + pc13_tcguess)^m_yeardiff(t)` (warm start using previous solution's growth rate)
+- Warm start using previous solution's growth rate via `pc13_tcguess`
 
-**Warm Start Purpose**: Helps solver find solutions more efficiently by providing educated guess based on previous optimization results (presolve.gms:21-26).
+**Warm Start Purpose**: Helps solver find solutions more efficiently by providing educated guess based on previous optimization results.
 
 ---
 
@@ -192,13 +283,16 @@ vm_tech_cost.l(i) = vm_tech_cost.up(i)
 
 ## Postsolve Updates
 
-### Tau Carryover (`postsolve.gms:8-14`)
+### Tau Carryover (`postsolve.gms:8-16`)
 
 **After each timestep**:
-1. Update intensification rate guess: `pc13_tcguess = (vm_tau.l / pcm_tau)^(1/m_yeardiff) - 1`
-2. Update previous tau: `pcm_tau = vm_tau.l`
+1. Update intensification rate guess: `pc13_tcguess = (v13_tau_core.l / pc13_tau)^(1/m_yeardiff) - 1`
+2. Update previous tau values:
+   - `pc13_tau = v13_tau_core.l`
+   - `pc13_tau_consv = v13_tau_consv.l`
+   - `pcm_tau = vm_tau.l`
 
-**Purpose**: Carry forward optimized tau values to next timestep as lower bound and warm start. The guess calculation converts absolute change into annualized growth rate (postsolve.gms:10-14).
+**Purpose**: Carry forward optimized tau values to next timestep as lower bound and warm start. The guess calculation converts absolute change into annualized growth rate (postsolve.gms:10-16).
 
 ---
 
@@ -312,14 +406,14 @@ Tau factor multiplies biophysical yields from LPJmL, directly increasing crop an
 
 ## Verification Summary
 
-- **Equations verified**: 3/3 (100%)
-- **Interface variables verified**: 4/4 (vm_tau, vm_tech_cost, pm_interest, pcm_land)
+- **Equations verified**: 5/5 (100%) - q13_cost_tc, q13_tech_cost, q13_tech_cost_sum, q13_tau, q13_tau_consv
+- **Interface variables verified**: 6/6 (vm_tau, vm_tech_cost, v13_tau_core, v13_tau_consv, pm_interest, pcm_land, pm_land_conservation)
 - **Input files catalogued**: 6
-- **Configuration switches verified**: 3 (s13_ignore_tau_historical, s13_max_gdp_shr, c13_tccost)
+- **Configuration switches verified**: 9 (including new conservation switches)
 - **Limitations identified**: 15
 - **File citations**: 60+
 
-**Status**: Fully verified against source code. All equations match declarations.gms:15-19, formulas match equations.gms:20-45.
+**Status**: Fully verified against source code. Updated for f_btc2 conservation tau feature (commit 480e300b1).
 
 ---
 
@@ -400,7 +494,7 @@ pm_yields_semi_calib [14] → **Feeds back to tau calculation** (via past produc
 
 ---
 
-**Last Verified**: 2025-10-13
-**Verified Against**: `../modules/13_*/endo_jun18/*.gms`
+**Last Verified**: 2026-01-20
+**Verified Against**: `../modules/13_tc/endo_jan22/*.gms` (origin/develop branch)
 **Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Changes Since Last Verification**: f_btc2 update - conservation tau differentiation (v13_tau_core, v13_tau_consv, q13_tau, q13_tau_consv), vm_tau now at cluster level (j)
