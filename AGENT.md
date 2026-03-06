@@ -34,6 +34,8 @@
    - If already exists → proceed to context check
 
 2. **THEN**: Run the **session startup checklist** (see `agent/helpers/session_startup.md`):
+   - **Pull latest magpie-agent** (teammates may have pushed improvements)
+   - **Fetch MAgPIE develop** (detect new commits without changing working tree)
    - Check MAgPIE version & git branch
    - Check documentation sync freshness (commits since last sync)
    - Check for recent model runs in `output/`

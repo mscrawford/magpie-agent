@@ -14,6 +14,21 @@ This helper gives the agent **situational awareness** about the user's MAgPIE en
 
 Run these checks at the beginning of every session. Report a brief status line to the user in your greeting.
 
+### 0. Pull Latest Agent & MAgPIE Code
+
+**Do this silently before anything else:**
+
+```bash
+# Pull latest magpie-agent (teammates may have pushed improvements)
+cd magpie-agent/ && git pull --rebase origin main 2>/dev/null
+# Re-deploy AGENT.md if it changed
+cp AGENT.md ../AGENT.md 2>/dev/null
+# Fetch latest MAgPIE develop (so we can detect new commits)
+cd .. && git fetch origin develop --quiet 2>/dev/null
+```
+
+**Why**: Team members push corrections, new helpers, and lessons learned to magpie-agent. Without this step, you'd be working with stale documentation. The MAgPIE fetch (not pull) lets us count new commits without changing the user's working tree.
+
 ### 1. MAgPIE Version & Branch
 
 ```bash
@@ -34,9 +49,10 @@ cd .. && git --no-pager log --oneline -1
 
 ```bash
 # Last sync point (from magpie-agent)
-python3 -c "import json; d=json.load(open('project/sync_log.json')); s=d['sync_status']; print(f'Last sync: {s[\"last_sync_date\"]} at commit {s[\"last_sync_commit\"]}')"
-# Commits since last sync
-cd .. && git --no-pager log --oneline ce6e1a89a..HEAD | wc -l
+LAST_SYNC=$(python3 -c "import json; d=json.load(open('project/sync_log.json')); print(d['sync_status']['last_sync_commit'])" 2>/dev/null)
+echo "Last sync commit: ${LAST_SYNC}"
+# Commits since last sync (use the dynamic value, NOT a hardcoded hash)
+cd .. && git --no-pager log --oneline ${LAST_SYNC}..HEAD 2>/dev/null | wc -l
 ```
 
 **Staleness assessment:**
