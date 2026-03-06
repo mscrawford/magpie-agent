@@ -400,7 +400,7 @@ TimberYield [tDM/ha] = CarbonDensity [tC/ha] / CarbonFraction × AbovegroundFrac
 
 Where:
 - **CarbonDensity:** Vegetation carbon from Module 52 (tC/ha)
-- **CarbonFraction:** 0.5 tC/tDM (`s14_carbon_fraction`, `input.gms:29`)
+- **CarbonFraction:** 0.5 tC/tDM (`s14_carbon_fraction`, `input.gms:22`)
 - **AbovegroundFraction:** Root-to-shoot ratio, varies by forest type (0.75-0.8, `f14_aboveground_fraction.csv`)
 - **BCE:** IPCC Biomass Conversion and Expansion factor (1.4-1.6, `f14_ipcc_bce.cs3`)
 
@@ -487,7 +487,7 @@ pm_timber_yield(t,j,ac,land_natveg)$(pm_timber_yield(t,j,ac,land_natveg) < s14_m
 **What These Do:**
 
 1. **Positive constraint:** Ensure all timber yields ≥ 0.0001 tDM/ha (prevents division by zero in harvest calculations)
-2. **Minimum harvest threshold:** Natural vegetation yields < 10 tDM/ha are set to 0 (too sparse to economically harvest, `s14_minimum_wood_yield`, `input.gms:21`)
+2. **Minimum harvest threshold:** Natural vegetation yields < 10 tDM/ha are set to 0 (too sparse to economically harvest, `s14_minimum_wood_yield`, `input.gms:19`)
 
 **Citation:** `presolve.gms:62-65`
 

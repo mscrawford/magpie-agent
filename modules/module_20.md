@@ -236,7 +236,7 @@ vm_cost_processing(i2) =e=
 
 1. **Standard processing costs** (first term):
    - Demand for primary product × conversion factor × unit cost
-   - Unit costs are route-specific: `i20_processing_unitcosts(ksd,kpr)` `input.gms:25-28`
+   - Unit costs are route-specific: `f20_processing_unitcosts(ksd,kpr)` `input.gms:25-28` (copied to `i20_processing_unitcosts` in `preloop.gms:11`)
    - Costs from literature and expert estimates `equations.gms:105-108`
 
 2. **SCP costs** (second term):
@@ -350,7 +350,7 @@ i20_processing_shares(t_all,i,"scp",kpr) = f20_scp_processing_shares(kpr,"%c20_s
 i20_processing_unitcosts("scp",kpr) = 0
 ```
 
-**Why zero?**: Standard processing costs are zeroed out for SCP to avoid double-counting, since SCP costs are explicitly calculated using `f20_scp_unitcosts` in `q20_processing_costs` `equations.gms:120`.
+**Why zero?**: Standard processing costs are zeroed out for SCP to avoid double-counting, since SCP costs are explicitly calculated using `f20_scp_unitcosts` in `q20_processing_costs` `equations.gms:115`.
 
 **Rationale**: SCP hydrogen has no feedstock costs (no land requirement), so it needs separate accounting to avoid zero-cost production `preloop.gms:13-15`.
 
@@ -401,7 +401,7 @@ i20_processing_unitcosts("scp",kpr) = 0
 
 **Data sources**: Literature (e.g., Adanacioglu et al. 2011, Pikaar et al. 2018, Valco et al. 2016) and expert estimates `equations.gms:107-108`.
 
-**Special case**: SCP costs set to zero to avoid double-counting with `f20_scp_unitcosts` `preloop.gms:16`.
+**Special case**: SCP costs set to zero to avoid double-counting with `f20_scp_unitcosts` `preloop.gms:13`.
 
 ### Processing Balanceflow `equations.gms:62`
 
@@ -523,7 +523,7 @@ v20_secondary_substitutes.up(i2,"brans",kcereals20) = Inf
 
 **What it means**: Secondary products are treated as homogeneous within categories (all "oils" are equivalent) `equations.gms:127-129`.
 
-**Partial correction**: Quality cost adjustments for oils `f20_quality_cost` provide some differentiation `equations.gms:130-132`.
+**Partial correction**: Quality cost adjustments for oils `f20_quality_cost` provide some differentiation `equations.gms:142-132`.
 
 **What it does NOT model**:
 - Consumer preferences for specific oil types beyond price
@@ -598,7 +598,7 @@ v20_secondary_substitutes.up(i2,"brans",kcereals20) = Inf
 
 ### 10. No Dynamic Learning
 
-**What it means**: Processing costs (`i20_processing_unitcosts`) are static parameters `input.gms:25-28`.
+**What it means**: Processing costs (`f20_processing_unitcosts`, copied to `i20_processing_unitcosts` in preloop) are static parameters `input.gms:25-28`.
 
 **What it does NOT model**:
 - Learning-by-doing cost reductions

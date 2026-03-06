@@ -328,14 +328,14 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
   - `land`: Land types
   - `c_pools`: Carbon pools (vegc, litc, soilc)
   - `stockType`: Stock type ("actual")
-- **Usage**: Equation q52_emis_co2_actual (equations.gms:19)
+- **Usage**: Equation q52_emis_co2_actual (equations.gms:16)
 - **Provider**: Modules 30 (Cropland), 31 (Pasture), 32 (Forestry), 34 (Urban), 35 (Natural Vegetation) calculate and report carbon stocks by land type
 
 **2. pcm_carbon_stock** (Module 56 declarations.gms)
 - **Declaration**: `pcm_carbon_stock(j,land,c_pools,stockType)`
 - **Description**: **Previous** timestep carbon stock (mio. tC)
 - **Dimensions**: Same as vm_carbon_stock
-- **Usage**: Equation q52_emis_co2_actual (equations.gms:19)
+- **Usage**: Equation q52_emis_co2_actual (equations.gms:16)
 - **Update**: Module 56 stores current vm_carbon_stock as next timestep's pcm_carbon_stock
 
 ### Variables Written by Module 52
@@ -347,7 +347,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
   - `i`: Regions
   - `emis_source`: Emission sources (includes emis_oneoff)
   - `pollutants`: Pollutants (includes "co2_c")
-- **Usage**: Written by equation q52_emis_co2_actual (equations.gms:17)
+- **Usage**: Written by equation q52_emis_co2_actual (equations.gms:16)
 - **Consumers**: Module 56 (GHG Policy) for carbon pricing and emission constraints
 
 ### Parameters Provided by Module 52

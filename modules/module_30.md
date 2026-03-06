@@ -503,7 +503,7 @@ The `simple_apr24` realization uses a **simplified, rule-based-only** approach t
 | Crop-group sets | `rotamax30` / `rotamin30` (29 max + 6 min groups) | `crpmax30` / `crpmin30` subsets of `crp30` (20 crop-rotation types) |
 | Water dimension | Summed across `w` | Separate constraint **per** `w` (rainfed and irrigated independently) |
 | Share parameters | `i30_rotation_rules(ct,rota30)` — time-varying via scenario fader | `f30_rotation_max_shr(crp30)` / `f30_rotation_min_shr(crp30)` — static from CSV input |
-| On/off switch | `s30_implementation` scalar | `c30_rotation_constraints` compile-time switch (`input.gms:14`) |
+| On/off switch | `s30_implementation` scalar | `c30_rotation_constraints` compile-time switch (`input.gms:24`) |
 
 #### q30_rotation_max (simple_apr24) — Maximum Rotational Share
 **Location**: `simple_apr24/equations.gms:34-36`

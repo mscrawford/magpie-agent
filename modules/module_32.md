@@ -100,8 +100,8 @@ Default: `s32_npi_ndc_reversal = Inf` (no reversal)
 - **Optimization variable**: Area determined by carbon price vs. establishment costs
 - **Planning horizon**: 50 years default (`s32_planning_horizon = 50`, `input.gms:27`)
 - **CDR provision**: Provides projected carbon sequestration to Module 56
-- **Growth curve**: Natural vegetation OR plantation (switch `s32_aff_plantation`) (`presolve.gms:52-56`)
-- **Protection duration**: Until end of planning horizon (`s32_aff_prot = 0`) OR forever (`s32_aff_prot = 1`) (`presolve.gms:150-155`)
+- **Growth curve**: Natural vegetation OR plantation (switch `s32_aff_plantation`) (`presolve.gms:58-56`)
+- **Protection duration**: Until end of planning horizon (`s32_aff_prot = 0`) OR forever (`s32_aff_prot = 1`) (`presolve.gms:156-159`)
 
 **CDR calculation** (`equations.gms:36-39`):
 ```gams
@@ -411,7 +411,7 @@ sum(ct, p32_aff_pol_timestep(ct,j2)) * vm_natforest_reduction(j2) =e= 0;
 **Translation**: If NPI/NDC afforestation required, then natural forest reduction must be zero
 **Purpose**: Ensure policy afforestation doesn't come at expense of existing natural forests
 
-**q32_aff_est** (`equations.gms:47`):
+**q32_aff_est** (`equations.gms:46`):
 ```gams
 q32_aff_est(j2) ..
 sum(ac_est, v32_land(j2,"aff",ac_est)) =l= sum(ac, v32_land(j2,"aff",ac))

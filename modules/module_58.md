@@ -458,13 +458,13 @@ $macro m58_LandMerge(land,landForestry,set)
 - **Type**: Positive variable
 - **Purpose**: Absorbs infeasibilities when scaling factors predict expansion > available peatland
 - **Penalty**: s58_balance_penalty = 1e6 USD17MER (input.gms:16)
-- **Appears in**: q58_peatlandMan (equations.gms:49), q58_peatland_cost (equations.gms:75)
+- **Appears in**: q58_peatlandMan (equations.gms:46), q58_peatland_cost (equations.gms:71)
 
 **v58_balance2(j,manPeat58)** - Balance term 2 (declarations.gms:55)
 - **Type**: Positive variable
 - **Purpose**: Absorbs infeasibilities when scaling factors predict reduction > available drained peatland
 - **Penalty**: s58_balance_penalty = 1e6 USD17MER
-- **Appears in**: q58_peatlandMan (equations.gms:50), q58_peatland_cost (equations.gms:75)
+- **Appears in**: q58_peatlandMan (equations.gms:46), q58_peatland_cost (equations.gms:71)
 
 **Rationale**: High penalty ensures these variables are only used as last resort when peatland dynamics are infeasible. They should be zero in feasible solutions.
 

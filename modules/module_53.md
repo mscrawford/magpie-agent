@@ -386,38 +386,38 @@ Module 53 uses interface variables declared in other modules.
 **1. vm_feed_intake** (Module 70: Livestock)
 - **Declaration**: `vm_feed_intake(i,kli,kall)` (Module 70 declarations.gms)
 - **Description**: Feed intake by livestock type and feed type (tDM per year)
-- **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:23,25,27)
+- **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:21,25,27)
 - **Provider**: Module 70 (Livestock) calculates feed demand based on livestock productivity
 
 **2. fm_attributes** (Core data)
 - **Declaration**: `fm_attributes(attributes,kall)` (Core declarations or Module 09)
 - **Description**: Attributes of commodities (ge=gross energy, nr=nitrogen, dm=dry matter, etc.)
-- **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:24,26,28)
+- **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:21,26,28)
 - **Unit**: GJ/tDM for gross energy
 - **Provider**: Core data files, potentially Module 09 (Drivers)
 
 **3. vm_manure** (Module 55: AWMS)
 - **Declaration**: `vm_manure(i,kli,awms_conf,npk)` (Module 55 declarations.gms)
 - **Description**: Manure by livestock type, management system, and nutrient (tN or tP or tK per year)
-- **Usage**: Equation q53_emissionbal_ch4_awms (equations.gms:50)
+- **Usage**: Equation q53_emissionbal_ch4_awms (equations.gms:48)
 - **Provider**: Module 55 (AWMS) calculates manure from feed intake minus animal products
 
 **4. vm_area** (Module 30: Croparea or Module 17: Production)
 - **Declaration**: `vm_area(j,kcr,w)` (Module 30 or 17 declarations.gms)
 - **Description**: Cropland area by crop type and water management (Mha)
-- **Usage**: Equation q53_emissionbal_ch4_rice (equations.gms:61)
+- **Usage**: Equation q53_emissionbal_ch4_rice (equations.gms:59)
 - **Provider**: Module 30 (Croparea) or Module 17 (Production)
 
 **5. vm_res_ag_burn** (Module 18: Residues)
 - **Declaration**: `vm_res_ag_burn(i,kcr,attributes)` (Module 18 declarations.gms)
 - **Description**: Agricultural residues burned by crop type (tDM or tN per year)
-- **Usage**: Equation q53_emissions_resid_burn (equations.gms:72)
+- **Usage**: Equation q53_emissions_resid_burn (equations.gms:70)
 - **Provider**: Module 18 (Residues) determines residue allocation (field, removal, burning, etc.)
 
 **6. im_maccs_mitigation** (Module 57: MACCs)
 - **Declaration**: `im_maccs_mitigation(t,i,emis_source,pollutants)` (Module 57 declarations.gms)
 - **Description**: Technical mitigation fraction for emission source and pollutant (0 to 1)
-- **Usage**: Equations q53_emissionbal_ch4_ent_ferm, q53_emissionbal_ch4_awms, q53_emissionbal_ch4_rice (equations.gms:29,52,63)
+- **Usage**: Equations q53_emissionbal_ch4_ent_ferm, q53_emissionbal_ch4_awms, q53_emissionbal_ch4_rice (equations.gms:59,52,63)
 - **Provider**: Module 57 (MACCs) calculates mitigation based on GHG price and MACC curves
 
 ### Variables Written by Module 53

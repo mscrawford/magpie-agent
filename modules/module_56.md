@@ -1107,7 +1107,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 4. **CDR buffer not mechanically enforced**: Carbon Dioxide Removal (CDR) is constrained by `sm_cdr_target` (default = 0, unconstrained), but this only sets a policy floor. Under-delivery of CDR pledges is not penalized — the constraint is soft and voluntary.
 
-5. **50-year price foresight cap**: Maximum anticipation period is limited to 50 years (`s56_cprice_red_factor = 0` eliminates any price foresight by default). Afforestation investments that sequester carbon over 100+ years see only the first 50 years of carbon revenue at best.
+5. **50-year price foresight cap**: Maximum anticipation period is limited to 50 years. The CO2 price reduction factor `s56_cprice_red_factor` (default = 1, full price applied) scales the carbon price incentive — setting it to 0 eliminates price foresight entirely. Afforestation investments that sequester carbon over 100+ years see only the first 50 years of carbon revenue at best.
 
 ---
 

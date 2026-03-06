@@ -549,8 +549,8 @@ vm_bioenergy_utility(i)  // mio. USD17MER per yr (negative cost)
 fm_attributes("ge",kall)  // GJ per tDM
 ```
 - Converts mass-based demand (`vm_dem_bioen`, tDM) to energy-based demand (GJ)
-- Used in `q60_bioenergy` to ensure energy equivalence (`equations.gms:17`)
-- Used in `q60_bioenergy_incentive` to calculate energy-based subsidies (`equations.gms:74-75`)
+- Used in `q60_bioenergy` to ensure energy equivalence (`equations.gms:16`)
+- Used in `q60_bioenergy_incentive` to calculate energy-based subsidies (`equations.gms:73-75`)
 
 **2. Population** (from Module 09):
 ```

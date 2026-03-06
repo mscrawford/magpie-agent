@@ -334,7 +334,7 @@ vm_tech_cost.l(i) = vm_tech_cost.up(i)
 
 7. **No Diminishing Returns Over Time**: Power function parameters are time-varying (input files) but structure assumes same functional form throughout, no accounting for technology frontier effects (input.gms:30-40).
 
-8. **GDP Constraint is Optional**: Without `s13_max_gdp_shr`, model may choose unrealistically high investments if land expansion is severely constrained (input.gms:11, presolve.gms:30-42).
+8. **GDP Constraint is Optional**: Without `s13_max_gdp_shr`, model may choose unrealistically high investments if land expansion is severely constrained (input.gms:11, presolve.gms:21-42).
 
 9. **No Direct Link to R&D**: Costs represent implementation investments, not research and development explicitly - the 15-year lag is an aggregate proxy (equations.gms:26-32).
 
