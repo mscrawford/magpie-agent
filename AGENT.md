@@ -401,6 +401,8 @@ MAgPIE has **comprehensive AI-readable documentation** (~290,000 words) organize
 | **Query_Patterns_Reference.md** | Complex query patterns, parameterization vs. mechanistic modeling |
 | **Response_Guidelines.md** | Token efficiency, examples, quality checklist, complete workflows |
 | **Tool_Usage_Patterns.md** | Best practices for AI agent tools (file operations, shell commands, paths) |
+| **Bug_Taxonomy.md** | 11 recurring doc error patterns, prevention strategies, improvement flywheel |
+| **Verification_Protocol.md** | Step-by-step module verification, accuracy checks (in `reference/`) |
 
 ### Module Documentation (~48,000 lines)
 **Location**: `modules/`
@@ -432,6 +434,8 @@ Question Type                              → Check Here First
 "Is X modeled mechanistically?"            → Query_Patterns_Reference.md
 "How do I write efficient responses?"      → Response_Guidelines.md
 "Tool usage best practices?"               → Tool_Usage_Patterns.md
+"Common doc errors to avoid?"              → Bug_Taxonomy.md
+"How to verify module docs?"               → reference/Verification_Protocol.md
 "Is land/water/carbon conserved?"          → cross_module/*_balance.md
 "Is it safe to modify module X?"           → cross_module/modification_safety_guide.md
 "How do I set up scenario X?"              → agent/helpers/ (auto-loaded)
@@ -527,6 +531,22 @@ Other IAMs may use different approaches:
 - Advisory/troubleshooting text is highest-risk for hallucinated variable names
 - See `core_docs/Bug_Taxonomy.md` for the full error pattern catalog
 
+**For file:line citations — the #1 source of documentation bugs:**
+- NEVER fabricate line numbers. If you haven't read the file THIS session, don't cite line numbers
+- Always verify the realization directory name exists: `ls ../modules/XX_name/`
+- "Verified Against" footer lines must reference ACTUAL directory names, not plausible-sounding ones
+- Metadata/footer sections receive less review — they are the HIGHEST risk for errors
+
+**For realization and equation names:**
+- NEVER construct a realization name from keywords + date (e.g., don't invent `croparea_nov24`)
+- Always verify with `ls ../modules/XX_name/` to see actual realization directories
+- Equation names must come from `declarations.gms` or `equations.gms`, not from inference
+
+**After writing or editing ANY module documentation:**
+- Run `bash scripts/validate_consistency.sh` to verify all checks pass (17 checks, 32 sub-checks)
+- The validator catches: wrong variable names, equation names, realization names, stale citations
+- Fix any failures before committing. See `core_docs/Bug_Taxonomy.md` for error pattern guidance
+
 **For complete warning signs, response checklist, and quality guidelines:**
 - See `core_docs/Response_Guidelines.md`
 
@@ -574,6 +594,12 @@ User asks MAgPIE question
   → cross_module/*.md (SYSTEM-LEVEL if safety/dependencies)
   → core_docs/ (ARCHITECTURE if structural question)
   → reference/GAMS_Phase*.md (GAMS CODE if writing/debugging code)
+
+User asks to WRITE or EDIT module documentation
+  → reference/Verification_Protocol.md (verification steps)
+  → core_docs/Bug_Taxonomy.md (11 error patterns to avoid)
+  → AGENT.md Critical Warnings (top lessons)
+  → After editing: run scripts/validate_consistency.sh
 ```
 
 **DO NOT read** (noise for MAgPIE questions):
