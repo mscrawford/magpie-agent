@@ -521,6 +521,12 @@ Other IAMs may use different approaches:
 - See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix
 - Apply three-check verification (equation structure, parameter source, dynamic feedback)
 
+**For GAMS variable names — verify prefixes carefully:**
+- `vm_` (interface variable) vs `v{N}_` (local variable) vs `pm_` (interface parameter) vs `s{N}_` (scalar)
+- NEVER invent a variable name — always copy from `declarations.gms` or `input.gms`
+- Advisory/troubleshooting text is highest-risk for hallucinated variable names
+- See `core_docs/Bug_Taxonomy.md` for the full error pattern catalog
+
 **For complete warning signs, response checklist, and quality guidelines:**
 - See `core_docs/Response_Guidelines.md`
 

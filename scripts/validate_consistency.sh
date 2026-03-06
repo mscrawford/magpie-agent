@@ -80,7 +80,7 @@ cd "$AGENT_DIR"
 # ===========================
 # Check 1: Dependency Counts
 # ===========================
-print_section "1/13" "Checking dependency counts..."
+print_section "1/14" "Checking dependency counts..."
 
 # Check Module 10
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
@@ -134,7 +134,7 @@ fi
 # =====================================
 # Check 2: Equation Parameter Counts
 # =====================================
-print_section "2/13" "Checking equation parameters..."
+print_section "2/14" "Checking equation parameters..."
 
 # Chapman-Richards parameters
 CR_PARAMS=$(grep -r "Chapman-Richards\|Chapman Richards" \
@@ -178,7 +178,7 @@ fi
 # ============================
 # Check 3: Cross-References
 # ============================
-print_section "3/13" "Checking cross-references..."
+print_section "3/14" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
@@ -246,7 +246,7 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/13" "Checking duplicate equations..."
+print_section "4/14" "Checking duplicate equations..."
 
 # Check for common equations mentioned in multiple places
 # q70_feed
@@ -271,7 +271,7 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 # Check 5: Entry Point Consistency
 # =================================
-print_section "5/13" "Checking entry point consistency..."
+print_section "5/14" "Checking entry point consistency..."
 
 # README should point to CURRENT_STATE.json for project work
 if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
@@ -311,7 +311,7 @@ fi
 # =======================
 # Check 6: File Counts
 # =======================
-print_section "6/13" "Checking file counts..."
+print_section "6/14" "Checking file counts..."
 
 # Count module docs
 MODULE_COUNT=$(ls -1 modules/module_*.md 2>/dev/null | grep -v "_notes" | wc -l | tr -d ' ')
@@ -348,7 +348,7 @@ fi
 # ==========================================
 # Check 7: Convention Linter (stale formats)
 # ==========================================
-print_section "7/13" "Checking naming conventions..."
+print_section "7/14" "Checking naming conventions..."
 
 # Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
 STALE_CMD_COUNT=0
@@ -360,7 +360,7 @@ while IFS= read -r file; do
     esac
     # Count "command: X" outside of "When user says" lines and "Unknown command:" patterns
     HITS=$(grep -c "command:" "$file" 2>/dev/null | tr -d ' ')
-    SAFE=$(grep -c "When user says\|Unknown command:\|the command:\|COMMAND SYSTEM\|# Command" "$file" 2>/dev/null | tr -d ' ')
+    SAFE=$(grep -c "When user says\|Unknown command:\|the command:\|COMMAND SYSTEM\|# Command\|e.g., .command:.\|renamed .e.g" "$file" 2>/dev/null | tr -d ' ')
     # In AGENT.md, "run command:" in trigger descriptions is intentional
     if [ "$(basename "$file")" = "AGENT.md" ]; then
         SAFE=$((SAFE + $(grep -c '"run command:' "$file" 2>/dev/null | tr -d ' ')))
@@ -414,7 +414,7 @@ fi
 # ==============================================
 # Check 8: Markdown Link Validator (key files)
 # ==============================================
-print_section "8/13" "Checking markdown link targets..."
+print_section "8/14" "Checking markdown link targets..."
 
 BROKEN_LINKS=0
 
@@ -467,7 +467,7 @@ fi
 # ==============================================
 # Check 9: Trigger Keyword Sync
 # ==============================================
-print_section "9/13" "Checking helper trigger keyword sync..."
+print_section "9/14" "Checking helper trigger keyword sync..."
 
 TRIGGER_ISSUES=0
 
@@ -515,7 +515,7 @@ fi
 # =============================================
 # Check 10: AGENT.md Deployment Freshness
 # =============================================
-print_section "10/13" "Checking AGENT.md deployment..."
+print_section "10/14" "Checking AGENT.md deployment..."
 
 if [ -f "../AGENT.md" ]; then
     if diff -q AGENT.md ../AGENT.md > /dev/null 2>&1; then
@@ -530,7 +530,7 @@ fi
 # =============================================
 # Check 11: Anti-Hardcoding Guard
 # =============================================
-print_section "11/13" "Checking for hardcoded values in mechanism files..."
+print_section "11/14" "Checking for hardcoded values in mechanism files..."
 
 HARDCODED_ISSUES=0
 
@@ -556,7 +556,7 @@ fi
 # ================================================
 # Check 12: Path prefix check (magpie-agent/)
 # ================================================
-print_section "12/13" "Checking for stale path prefixes..."
+print_section "12/14" "Checking for stale path prefixes..."
 
 # Files inside magpie-agent/ should not use magpie-agent/ as a path prefix
 # (since the working directory IS magpie-agent/, this creates double-nesting)
@@ -585,7 +585,7 @@ fi
 # ================================================
 # Check 13: Unclosed code blocks
 # ================================================
-print_section "13/13" "Checking for unclosed code blocks..."
+print_section "13/14" "Checking for unclosed code blocks..."
 
 UNCLOSED=0
 for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./feedback/archive/*"); do
@@ -600,6 +600,28 @@ done
 
 if [ "$UNCLOSED" -eq 0 ]; then
     check_pass "All code blocks properly closed"
+fi
+
+# Check 14: GAMS Variable Name Verification
+# ==========================================
+print_section "14/14" "Checking GAMS variable names in docs..."
+
+GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.sh"
+if [ -x "$GAMS_CHECK_SCRIPT" ]; then
+    GAMS_OUTPUT=$("$GAMS_CHECK_SCRIPT" --summary-only 2>&1)
+    GAMS_EXIT=$?
+    if [ $GAMS_EXIT -eq 0 ]; then
+        ACCURACY=$(echo "$GAMS_OUTPUT" | grep "Accuracy:" | head -1)
+        check_pass "GAMS variable names verified: $ACCURACY"
+    else
+        MISMATCH_COUNT=$(echo "$GAMS_OUTPUT" | grep -oE "Found [0-9]+ variable" | grep -oE "[0-9]+")
+        check_error "GAMS variable name mismatches: $MISMATCH_COUNT variables in docs not found in code"
+        echo "$GAMS_OUTPUT" | grep "^  " | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "GAMS variable checker not found or not executable: $GAMS_CHECK_SCRIPT"
 fi
 
 # ============

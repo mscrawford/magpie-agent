@@ -76,6 +76,25 @@ For variables/parameters received from other modules:
 cat core_docs/Module_Dependencies.md | grep "vm_varname"
 ```
 
+### Step 4b: Verify Variable Name Accuracy (5 min)
+
+Check that all GAMS variable names in the documentation are correct:
+
+```bash
+# Run automated checker for a specific module
+scripts/check_gams_variables.sh --module XX
+```
+
+**Common error patterns** (see `core_docs/Bug_Taxonomy.md`):
+
+1. **Prefix confusion**: `vm_` vs `v{N}_`, `pm_` vs `s{N}_`, `fm_` vs `p{N}_`
+2. **Suffix truncation**: Dropping `_ac`, `_iso`, `_reg` from compound names
+3. **Hallucinated names**: Advisory text invents plausible but non-existent variables
+4. **Conceptual pseudo-code**: Using "intuitive" names instead of actual GAMS identifiers
+
+**Rule**: Every backtick-quoted variable name MUST exist in `declarations.gms` or `input.gms`.
+If using a conceptual name, annotate: "(conceptual, not actual GAMS variable)".
+
 ### Step 5: Document Limitations (10 min)
 
 Explicitly state what the module does **NOT** do:

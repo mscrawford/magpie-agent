@@ -9,7 +9,7 @@
 
 1. **Yield calibration is critical**: Module 14 uses `tau` factors (technological change multipliers) from Module 13. If `tc` realization is `off`, yields are static — all scenario results reflect only land-use change, not productivity improvements.
 
-2. **managementcalib vs. kcalibrated**: The `managementcalib_aug19` realization applies a calibration correction (`p14_yields_calib`) that adjusts model yields to match FAO data. Without this calibration, results can diverge significantly from observed production patterns.
+2. **managementcalib vs. kcalibrated**: The `managementcalib_aug19` realization applies a calibration correction (`i14_yields_calib`) that adjusts model yields to match FAO data. Without this calibration, results can diverge significantly from observed production patterns.
 
 ## 💡 Tips
 
