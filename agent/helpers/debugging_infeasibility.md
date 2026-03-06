@@ -165,3 +165,5 @@ MAgPIE has 13 slack variables with high penalty costs. When they activate, the m
 ## Lessons Learned
 <!-- APPEND-ONLY: Add new entries at the bottom. Never remove old ones. -->
 <!-- Format: - YYYY-MM-DD: [lesson] (source: [user feedback | session experience]) -->
+- 2026-03-06: Module 57 — `s57_implicit_emis_factor=0` causes guaranteed division-by-zero in equations.gms:40,50. Very small values (e.g. 0.0001) destabilize solver by inflating the MACC cost correction term 100×. Also: `s57_maxmac_*` at step 201 causes `1/(1-mitigation)` blowup when mitigation→1.0 (equations.gms:38,48). (source: deep validation agent analysis)
+- 2026-03-06: Module 58 — `s58_rewetting_switch=0` + `s58_rewetting_exo=1` = guaranteed infeasibility (upper bound=0 vs mandate for positive rewetted area). Also: `s58_annual_rewetting_limit=0` + any exo=1 = guaranteed infeasibility. And: `s58_rewet_exo_target_value≥1.0` with default rate limit (0.02/yr) is likely infeasible — max achievable ~50% by 2050 from 2025. Silent bug: `s58_fix_peatland` set to non-timestep year (e.g. 2019) → p58_peatland_ref never populated → targets silently zeroed. (source: deep validation agent analysis)

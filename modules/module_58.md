@@ -1966,7 +1966,7 @@ Indirectly via Module 52 (carbon)
 
 ---
 
-**Last Verified**: 2025-10-13
+**Last Verified**: 2026-03-06 (4 formulas corrected, full scalar analysis verified)
 **Verified Against**: `../modules/58_*/on/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

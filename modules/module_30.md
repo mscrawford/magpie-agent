@@ -1719,7 +1719,7 @@ vm_area.fx(j,kbe30,w) = 0;  * In presolve
 
 ---
 
-**Last Verified**: 2025-10-13
+**Last Verified**: 2026-03-06 (added simple_apr24 realization equations, comparison table)
 **Verified Against**: `../modules/30_*/croparea_nov24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

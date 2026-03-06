@@ -1029,7 +1029,7 @@ None (SOM dynamics are slow, no optimization feedbacks)
 
 ---
 
-**Last Verified**: 2025-10-13
+**Last Verified**: 2026-03-06 (section split, 8/8 equations documented)
 **Verified Against**: `../modules/59_*/static_jan19/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

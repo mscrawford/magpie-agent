@@ -1330,7 +1330,7 @@ Module 17 (production) → 14 (yields) → **70 (livestock)** → 17
 
 ---
 
-**Last Verified**: 2025-10-13
+**Last Verified**: 2026-03-06 (sticky realization added, 8/8 equations documented)
 **Verified Against**: `../modules/70_*/fbask_jan16/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

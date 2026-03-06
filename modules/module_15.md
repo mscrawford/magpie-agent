@@ -1564,7 +1564,7 @@ if(s15_exo_diet == 1) {
 
 ---
 
-**Last Verified**: 2025-07-15
+**Last Verified**: 2026-03-06 (equations expanded (BMI, food demand), counts corrected 18/18)
 **Verified Against**: `modules/15_food/anthro_iso_jun22/*.gms`
 **Verification Method**: All 18 equations cross-referenced with declarations.gms and equations.gms; counts corrected from prior 15→18
 **Changes Since Last Verification**: Equation count corrected (15→18), 3 abbreviated BMI equations expanded with full code

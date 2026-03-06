@@ -1359,7 +1359,7 @@ abline(v=rot_age, col="red", lty=2)  # Rotation age
 
 ---
 
-**Last Verified**: 2025-11-29 (synced equation fix from commit 9ccd6290d)
+**Last Verified**: 2026-03-06 (11 equations added (31/31 fully documented))
 **Verified Against**: `../modules/32_*/dynamic_may24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

@@ -870,7 +870,7 @@ This section shows Module 10's role in system-level mechanisms. For complete det
 
 ---
 
-**Last Verified**: 2025-10-13
+**Last Verified**: 2026-03-06 (equations validated, hypothetical examples flagged)
 **Verified Against**: `../modules/10_*/landmatrix_dec18/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
