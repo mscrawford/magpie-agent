@@ -249,7 +249,7 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 
 **Before sending ANY response about MAgPIE code:**
 
-- [ ] **🎯 CHECKED AI DOCS FIRST** (magpie-agent/modules/module_XX.md or core_docs/)
+- [ ] **🎯 CHECKED AI DOCS FIRST** (modules/module_XX.md or core_docs/)
 - [ ] **Stated documentation source** (🟡 module docs / 🟢 verified in code / 🟠 code only)
 - [ ] **Cited file:line** for every factual claim (or reference module doc line numbers)
 - [ ] **Used exact variable names** (vm_land, not "land variable")

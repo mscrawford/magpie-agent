@@ -429,7 +429,7 @@ value_B(t) = value_A(t) + adjustment;
 - Module B refines
 - Iterate if necessary
 
-**See**: `magpie-agent/cross_module/circular_dependency_resolution.md` for complete documentation.
+**See**: `cross_module/circular_dependency_resolution.md` for complete documentation.
 
 ---
 

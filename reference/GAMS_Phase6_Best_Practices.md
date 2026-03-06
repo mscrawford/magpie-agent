@@ -642,7 +642,7 @@ value_A(t) = value_B(t-1) * factor;
 value_B(t) = value_A(t) + adjustment;
 ```
 
-**See**: `magpie-agent/cross_module/circular_dependency_resolution.md`
+**See**: `cross_module/circular_dependency_resolution.md`
 
 ### 5.7 Macro Expansion Issues
 
