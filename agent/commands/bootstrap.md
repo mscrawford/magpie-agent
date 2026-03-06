@@ -63,14 +63,14 @@ After successful bootstrap:
 AGENT.md is now deployed to the parent directory.
 
 🚀 Available Commands:
-  guide              - Complete capabilities guide (start here!)
-  sync               - Sync docs with MAgPIE code changes
-  update             - Pull latest agent documentation
-  feedback           - Submit feedback to improve the agent
+  /guide              - Complete capabilities guide (start here!)
+  /sync               - Sync docs with MAgPIE code changes
+  /update             - Pull latest agent documentation
+  /feedback           - Submit feedback to improve the agent
 
 🎯 You can now use all magpie-agent features!
 
-Try: "run command: guide" to see everything I can do.
+Try: "/guide" to see everything I can do.
 ```
 
 ---

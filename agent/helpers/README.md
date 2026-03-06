@@ -18,7 +18,7 @@ Each helper is a **self-improving document**: its "Lessons Learned" section accu
 
 ### Auto-Load Rules
 
-Each helper defines its own trigger patterns. The master routing is in `CLAUDE.md` under the `## Auto-Loading Helpers` section.
+Each helper defines its own trigger patterns. The master routing is in `AGENT.md` under the `## Auto-Loading Context Helpers` section.
 
 | Trigger Pattern | Helper File | Description |
 |----------------|-------------|-------------|
@@ -28,7 +28,7 @@ Each helper defines its own trigger patterns. The master routing is in `CLAUDE.m
 | "diet", "EAT-Lancet", "food demand change", "livestock reduction" | `scenario_diet_change.md` | Configuring diet change scenarios |
 | "modify", "change", "what breaks", "impact of changing" | `modification_impact_analysis.md` | Assessing modification safety and impacts |
 | "model output", "run results", "fulldata.gdx", "what does this mean" | `interpreting_outputs.md` | Understanding model outputs |
-| "which realization", "choose realization", "difference between" | `realization_selection.md` | Comparing and choosing realizations |
+| "which realization", "choose realization", "realization comparison", "default realization", "switch realization", "alternative realization" | `realization_selection.md` | Comparing and choosing realizations |
 | "add crop", "new crop type", "extend crops" | `adding_new_crop.md` | Cross-module walkthrough for adding crops |
 
 ### When NOT to auto-load

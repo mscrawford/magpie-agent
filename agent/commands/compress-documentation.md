@@ -2,7 +2,7 @@
 
 **Purpose**: Consolidate accumulated feedback to reduce documentation bloat and improve organization
 
-**When to use**: Quarterly, or when notes files feel verbose/redundant (AFTER multiple `command: integrate-feedback` sessions)
+**When to use**: Quarterly, or when notes files feel verbose/redundant (AFTER multiple `/integrate-feedback` sessions)
 
 **What it compresses**:
 - ✅ `module_XX_notes.md` (user experience - warnings, lessons, examples)
@@ -16,14 +16,14 @@
 - Reorganizes scattered guidance into logical sections
 - Preserves ALL unique insights (no information loss)
 
-**Prerequisites**: You MUST have integrated feedback first (use `command: integrate-feedback`)
+**Prerequisites**: You MUST have integrated feedback first (use `/integrate-feedback`)
 
 ---
 
 ## 🎯 Quick Start
 
 ```bash
-command: compress-documentation     # Analyze and compress integrated feedback
+/compress-documentation     # Analyze and compress integrated feedback
 ```
 
 ---
@@ -242,7 +242,7 @@ For each approved proposal:
 ```bash
 # Create backup branch
 git checkout -b backup-pre-compression-$(date +%Y%m%d_%H%M%S)
-git checkout develop  # or current branch
+git checkout main  # Back to main branch
 ```
 
 ### 5b. Update documentation files
@@ -546,12 +546,12 @@ Before completing compression:
 **After compression, you can**:
 1. ✅ Continue using the improved documentation
 2. ⏸️ Wait for more feedback to accumulate
-3. 🔄 Eventually run `command: integrate-feedback` again (when new feedback arrives)
+3. 🔄 Eventually run `/integrate-feedback` again (when new feedback arrives)
 
 **The workflow is**:
 ```
-Submit feedback → command: integrate-feedback (weekly) → [Repeat] →
-command: compress-documentation (quarterly) → [Repeat integration]
+Submit feedback → /integrate-feedback (weekly) → [Repeat] →
+/compress-documentation (quarterly) → [Repeat integration]
 ```
 
 **Compression frequency**: Only when needed (quarterly or when bloat is noticeable)
@@ -562,8 +562,7 @@ command: compress-documentation (quarterly) → [Repeat integration]
 
 - `feedback/README.md` - Complete feedback system overview
 - `feedback/WORKFLOW_GUIDE.md` - When to use which command
-- `command: integrate-feedback` - Integration command (use BEFORE compression)
-- `CONSOLIDATION_PLAN.md` - Phase 2, Task 2.1
+- `/integrate-feedback` - Integration command (use BEFORE compression)
 - `scripts/submit_feedback.sh` - Submission script
 
 ---

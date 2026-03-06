@@ -339,12 +339,12 @@ When the user's question matches a trigger pattern, **silently read the helper f
 
 | User intent detected | Load this helper | Trigger keywords |
 |---------------------|-----------------|-----------------|
-| Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "modelstat", "GAMS error", "solver error", "abort", "no feasible solution" |
-| Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "carbon budget" |
-| Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "safe to modify", "can I change", "extend", "add to module" |
+| Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort" |
+| Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget" |
+| Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "impact of changing", "safe to modify", "can I change", "extend", "add to module" |
 | Setting up diet/food scenarios | `agent/helpers/scenario_diet_change.md` | "diet", "EAT-Lancet", "food demand", "livestock reduction", "food waste", "dietary change", "BMI", "food scenario" |
 | Understanding model outputs | `agent/helpers/interpreting_outputs.md` | "model output", "run results", "fulldata.gdx", "postsolve", "report.mif", "understand results" |
-| Choosing between realizations | `agent/helpers/realization_selection.md` | "which realization", "choose realization", "realization comparison", "default realization", "switch realization" |
+| Choosing between realizations | `agent/helpers/realization_selection.md` | "which realization", "choose realization", "realization comparison", "default realization", "switch realization", "alternative realization" |
 | Adding a new crop/commodity | `agent/helpers/adding_new_crop.md` | "add crop", "new crop type", "add commodity", "extend crop set", "new product" |
 
 ### Sync freshness badges

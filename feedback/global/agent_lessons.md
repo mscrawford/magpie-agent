@@ -40,9 +40,9 @@ When using bash commands, always `cd` to the correct directory explicitly. Don't
 The claim "multi-index sum is faster than nested sum" had NO official GAMS documentation support. Never assert performance differences without citing official sources. Both `sum((i,j), expr)` and `sum(i, sum(j, expr))` are mathematically equivalent; GAMS documentation makes no speed comparison. When uncertain, state "both are valid" without performance ranking.
 *Source: 20251104 correction_gams_sum_performance*
 
-### 6. CLAUDE.md Organization Matters
-The CLAUDE.md file serves as the agent's primary instruction set. Keep it organized with clear section headers, prioritize the most important rules at the top (MOST IMPORTANT RULE section), and always link to detailed docs rather than duplicating content. The document hierarchy (CLAUDE.md → module docs → core docs → GAMS code) must be respected.
-*Source: 20251023 global_CLAUDE.md*
+### 6. AGENT.md Organization Matters
+The AGENT.md file (formerly CLAUDE.md) serves as the agent's primary instruction set. Keep it organized with clear section headers, prioritize the most important rules at the top (MOST IMPORTANT RULE section), and always link to detailed docs rather than duplicating content. The document hierarchy (AGENT.md → module docs → core docs → GAMS code) must be respected.
+*Source: 20251023 global_CLAUDE.md (file renamed to AGENT.md)*
 
 ---
 

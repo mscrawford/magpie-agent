@@ -19,17 +19,34 @@ Run these checks at the beginning of every session. Report a brief status line t
 **Do this silently before anything else:**
 
 ```bash
+# Determine working directory (could be magpie/ or magpie-agent/)
+if [ -f "AGENT.md" ] && [ -d "agent/helpers" ]; then
+  # Already in magpie-agent/
+  AGENT_DIR="."
+  MAGPIE_DIR=".."
+elif [ -d "magpie-agent" ]; then
+  # In magpie/ parent directory
+  AGENT_DIR="magpie-agent"
+  MAGPIE_DIR="."
+else
+  echo "Warning: Cannot determine magpie-agent location"
+fi
+
 # Pull latest magpie-agent (teammates may have pushed improvements)
-cd magpie-agent/ && git pull --rebase origin main 2>/dev/null
+cd "$AGENT_DIR" && git pull --rebase origin main 2>/dev/null
 # Re-deploy AGENT.md if it changed
-cp AGENT.md ../AGENT.md 2>/dev/null
+cp AGENT.md "$MAGPIE_DIR/AGENT.md" 2>/dev/null
 # Fetch latest MAgPIE develop (so we can detect new commits)
-cd .. && git fetch origin develop --quiet 2>/dev/null
+cd "$MAGPIE_DIR" && git fetch origin develop --quiet 2>/dev/null
 ```
 
 **Why**: Team members push corrections, new helpers, and lessons learned to magpie-agent. Without this step, you'd be working with stale documentation. The MAgPIE fetch (not pull) lets us count new commits without changing the user's working tree.
 
+**Note**: The script handles both possible working directories (magpie/ or magpie-agent/) since the AI tool may start in either location.
+
 ### 1. MAgPIE Version & Branch
+
+**Note**: Steps 1-5 assume the agent's working directory is `magpie-agent/` (as stated in AGENT.md). All `../` paths point to the parent MAgPIE directory.
 
 ```bash
 # Check version

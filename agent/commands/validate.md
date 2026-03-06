@@ -66,7 +66,7 @@ Run validation:
 
 6. **File Count Audit**
    - Counts files in each category
-   - Compares to DOCUMENTATION_ECOSYSTEM_MAP.md inventory
+   - Compares to expected file inventory
    - Flags if counts have changed (new files added?)
 
 ---
@@ -113,7 +113,7 @@ Date: [current date]
 ✓ Notes files: 3 files (matches inventory)
 ✓ Cross-module: 6 files (matches inventory)
 ⚠️  Feedback integrated: 8 files (inventory says 5 - updated recently?)
-    → Update DOCUMENTATION_ECOSYSTEM_MAP.md count
+    → Note: file counts have changed since last validation
 
 === Summary ===
 Total checks: 127
@@ -173,7 +173,7 @@ Detailed report saved to: validation_report_20251026_143022.txt
 
 If file counts changed:
 ```bash
-# Update DOCUMENTATION_ECOSYSTEM_MAP.md with new counts
+# Update file count records
 # Document what was added/removed
 ```
 
@@ -291,7 +291,7 @@ If file counts changed:
 # (manual fixes based on report)
 
 # 3. Then compress
-# Use command: compress-documentation
+# Use /compress-documentation
 ```
 
 **Why:** Compression consolidates content. Validate ensures you're consolidating *correct* content.
@@ -316,7 +316,7 @@ If file counts changed:
 
 # 2. Review warnings (even if no errors)
 
-# 3. Update DOCUMENTATION_ECOSYSTEM_MAP.md if file counts changed
+# 3. Update file count records if needed
 
 # 4. Consider compression if duplicates found
 ```
@@ -386,7 +386,6 @@ If file counts changed:
 **Solution:**
 - Review warnings manually
 - Add exceptions to validation script for known acceptable cases
-- Update DOCUMENTATION_ECOSYSTEM_MAP.md to document why variation is okay
 
 ### Issue: "False positives"
 
@@ -430,10 +429,8 @@ If file counts changed:
 
 ## 📚 See Also
 
-- `DOCUMENTATION_ECOSYSTEM_MAP.md` - Complete inventory of all files
-- `CONSISTENCY_MANAGEMENT_SUMMARY.md` - Consistency strategy overview
-- `command: compress-documentation` - Consolidate redundant documentation
-- `AGENT.md` (lines 978-1085) - Document precedence hierarchy
+- `/compress-documentation` - Consolidate redundant documentation
+- `AGENT.md` - Document precedence hierarchy and link rules
 - `scripts/validate_consistency.sh` - Validation script details
 
 ---
