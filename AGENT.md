@@ -106,9 +106,10 @@ Check if you made **any** of these changes during the session:
 - Discovered and recorded a user correction
 - Updated `feedback/global/agent_lessons.md`
 
-If YES → show the user what changed (step 1 above), then **commit and push** to the magpie-agent repo:
+If YES → show the user what changed (step 1 above), then **pull, commit, and push** to the magpie-agent repo:
 ```bash
 cd magpie-agent/
+git pull --rebase origin main   # ← CRITICAL: merge teammates' changes first
 git add -A
 git commit -m "learn: session learnings — [brief description]
 
@@ -116,6 +117,8 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
 git push origin main
 ```
 **Ask the user before pushing** — they may want to review the changes first.
+
+**If `git pull --rebase` creates a merge conflict**: Show the user the conflicting file(s) and ask how to resolve. For append-only files (notes, lessons), the resolution is almost always "keep both entries."
 
 ### 3. Flag Documentation Gaps
 If during the session you noticed:
@@ -362,6 +365,11 @@ When reporting documentation sync status, use these badges:
 - Helpers complement module docs (task-oriented vs. fact-oriented)
 
 ### Capturing corrections and new knowledge
+
+**Before appending any lesson, correction, or warning**, check the target file for duplicates:
+- Search for key terms from what you're about to record
+- If a substantially similar entry already exists, **skip the append** (another session already captured it)
+- If a related-but-different entry exists, add yours with a note: `(see also: [date] entry above)`
 
 **When a user corrects you** ("No, that's wrong" / "Actually it works like X"):
 1. **Immediately** append the correction to the relevant helper's `## Lessons Learned` or to `modules/module_XX_notes.md`
