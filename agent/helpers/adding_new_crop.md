@@ -119,7 +119,7 @@ See the **Required Input Data** table below. The most critical and hardest to ob
 | `f14_kcr_pollinator_dependence` | `(kcr)` | `modules/14_yields/input/f14_kcr_pollinator_dependence.csv` | 14 |
 | `fm_croparea` (historical area) | `(t_all,j,w,kcr)` | `modules/30_croparea/*/input/f30_croparea_w_initialisation.cs3` | 30 |
 | `fm_attributes` (DM/GE/NR/P/K/WM/C) | `(attributes,kall)` | `modules/16_demand/sector_may15/input/fm_attributes.cs3` | 16 |
-| `fm_nutrition_attributes` (kcal/protein) | `(t_all,kall,nutrition)` | `modules/15_food/anthro_iso_jun22/input/fm_nutrition_attributes.cs3` | 15 |
+| `fm_nutrition_attributes` (kcal/protein) | `(t_all,kall,nutrition)` | `modules/15_food/input/f15_nutrition_attributes.cs3` | 15 |
 
 ### Secondary Data (needed for full model runs)
 
