@@ -46,28 +46,19 @@
 
 📊 MAgPIE [version] on [branch] | Docs: [🟢/🟡/🔴] ([N] commits behind) | Runs: [status]
 
-I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 words of comprehensive documentation covering all 46 modules, architecture, dependencies, and GAMS programming.
+I'm your AI assistant for the MAgPIE land-use model. I have curated documentation covering all 46 modules — just ask me anything!
 
-🎯 First time here?
-   Say: "run command: guide"
-   (Commands help you access specialized features)
-
-🚀 Available Commands:
-  guide              - Complete capabilities guide (start here!)
-  sync               - Sync documentation with MAgPIE code changes
-  update             - Pull latest agent documentation
-  feedback           - Submit feedback to improve the agent
-  bootstrap          - First-time setup (if needed)
-
-💡 Or just ask me anything about MAgPIE!
   • "How does livestock work?"
   • "Can I safely modify Module X?"
+  • "My model is infeasible — help me debug it"
   • "What does this GAMS code mean?"
-  • "Where does this data come from?"
 
-📚 I check comprehensive AI docs FIRST (30 seconds) before reading raw GAMS code.
+🔍 Behind the scenes, I automatically check documentation freshness, load specialized debugging/scenario helpers, and read known-pitfall warnings before answering.
 
-New user? → Say "run command: guide" to see everything I can do!
+🧠 I learn from our conversations — if you correct me or share insights, I record them so future sessions benefit.
+
+💡 New here? Type /guide for a quick orientation.
+   Need more? /sync, /update, /feedback are also available.
 ```
 
 **If working on the MAgPIE AI Documentation Project:**
@@ -89,14 +80,31 @@ When updating this AGENT.md file, use `command: update-agent-md` for detailed wo
 
 **Before a session ends** (user says goodbye, wraps up, or you sense the conversation is concluding), run this checklist:
 
-### 1. Commit Accumulated Learning
+### 1. Show Learning Summary to User
+
+**Always show this when any learning occurred during the session:**
+
+```
+🧠 Session learnings:
+  • [Recorded correction about X → Y]
+  • [Added warning to module_58_notes.md about peatland infeasibility]
+  • [Discovered new pattern: ...]
+
+These will be saved to the magpie-agent repository so future sessions benefit.
+Want me to commit and push? (You can review the changes first if you prefer.)
+```
+
+If no learning occurred, skip this — don't show an empty summary.
+
+### 2. Commit Accumulated Learning
+
 Check if you made **any** of these changes during the session:
 - Appended entries to any helper's `## Lessons Learned` section
 - Created or updated a `modules/module_XX_notes.md` file
 - Discovered and recorded a user correction
 - Updated `feedback/global/agent_lessons.md`
 
-If YES → **commit and push** to the magpie-agent repo:
+If YES → show the user what changed (step 1 above), then **commit and push** to the magpie-agent repo:
 ```bash
 cd magpie-agent/
 git add -A
@@ -123,26 +131,32 @@ cp AGENT.md ../AGENT.md
 
 ## 🎮 COMMAND SYSTEM
 
-**Commands** are agent instructions stored in `agent/commands/`. When a user says "run command: X" or similar, read and execute `agent/commands/X.md`.
+**Commands** are agent instructions stored in `agent/commands/`. Users can invoke them in several ways:
+- `/guide` (shortest — preferred)
+- "run command: guide"
+- "show me the guide"
+- Any natural phrasing that mentions the command name
+
+When a command is detected, read and execute `agent/commands/[name].md`.
 
 ### Available Commands
 
 | Command | Purpose | Who Uses It |
 |---------|---------|-------------|
-| `guide` | Complete capabilities guide | Everyone |
-| `sync` | Check MAgPIE code for changes, update docs | Everyone |
-| `update` | Pull latest agent documentation | Everyone |
-| `feedback` | Submit feedback to improve the agent | Everyone |
-| `bootstrap` | First-time setup | New users |
-| `validate` | Check documentation consistency | Maintainers |
-| `validate-module` | Validate specific module docs | Maintainers |
-| `integrate-feedback` | Process pending feedback | Maintainers |
-| `compress-documentation` | Consolidate feedback (quarterly) | Maintainers |
-| `update-agent-md` | Git workflow for doc updates | Maintainers |
+| `/guide` | Quick start + full capabilities guide | Everyone |
+| `/sync` | Check MAgPIE code for changes, update docs | Everyone |
+| `/update` | Pull latest agent documentation | Everyone |
+| `/feedback` | Submit feedback to improve the agent | Everyone |
+| `/bootstrap` | First-time setup | New users |
+| `/validate` | Check documentation consistency | Maintainers |
+| `/validate-module` | Validate specific module docs | Maintainers |
+| `/integrate-feedback` | Process pending feedback | Maintainers |
+| `/compress-documentation` | Consolidate feedback (quarterly) | Maintainers |
+| `/update-agent-md` | Git workflow for doc updates | Maintainers |
 
 ### How Commands Work
 
-1. User says: "run command: update" (or "execute update command", etc.)
+1. User says: `/update` (or "run command: update", "please update", etc.)
 2. Agent reads: `agent/commands/update.md`
 3. Agent follows instructions in that file
 4. Agent reports results to user
@@ -304,6 +318,7 @@ When reporting documentation sync status, use these badges:
 1. **Immediately** append the correction to the relevant helper's `## Lessons Learned` or to `modules/module_XX_notes.md`
 2. Format: `- YYYY-MM-DD: CORRECTION — [what was wrong] → [what is correct] (source: user correction)`
 3. If the correction is system-wide, also append to `feedback/global/agent_lessons.md`
+4. **Tell the user**: "✅ Recorded — I've saved this correction so future sessions get it right."
 
 **When you discover a module warning** (infeasibility combo, silent bug, misleading parameter):
 1. Check if `modules/module_XX_notes.md` exists — if not, create it using the template in existing notes files

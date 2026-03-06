@@ -169,11 +169,16 @@ git push
 
 **During the feedback submission step:**
 
-- ❌ **DO NOT** edit `modules/module_XX.md`
-- ❌ **DO NOT** edit `AGENT.md`
+- ❌ **DO NOT** edit `modules/module_XX.md` (main documentation — requires review)
+- ❌ **DO NOT** edit `AGENT.md` (agent instructions — requires review)
 - ❌ **DO NOT** move file to `integrated/`
 
-**Why?** Feedback must be reviewed by a human maintainer before changing the core documentation. The pending queue allows for this review.
+**What you CAN edit immediately** (no review needed):
+- ✅ `modules/module_XX_notes.md` — append warnings, corrections, lessons
+- ✅ `agent/helpers/*.md` `## Lessons Learned` sections — append new entries
+- ✅ `feedback/global/agent_lessons.md` — append system-wide lessons
+
+**Why the distinction?** Notes files and Lessons Learned sections are **append-only logs** of practical experience. They supplement core docs without changing authoritative content. Core docs (`module_XX.md`, `AGENT.md`) define the canonical truth and require human review before modification.
 
 ---
 
