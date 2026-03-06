@@ -32,12 +32,12 @@
 
 ### Level 2: Status Command (Easy Addition)
 
-**Create `command: feedback-status` command** (or enhance existing `command: feedback`):
+**Create `/feedback-status` command** (or enhance existing `/feedback`):
 
 ```bash
-run command: feedback-status
+run /feedback-status
 # Or
-run command: feedback status
+run /feedback status
 ```
 
 **Output**:
@@ -55,7 +55,7 @@ run command: feedback status
 
 ⏱️ **Next integration**: Typically weekly/monthly (check with maintainer)
 
-Run `command: feedback status module_10` for details on specific module
+Run `/feedback status module_10` for details on specific module
 ```
 
 **Benefits**:
@@ -68,7 +68,7 @@ Run `command: feedback status module_10` for details on specific module
 
 ### Level 3: Integration Report (Medium Effort)
 
-**Automatically generate integration report after `command: integrate-feedback`**:
+**Automatically generate integration report after `/integrate-feedback`**:
 
 **File**: `feedback/integrated/INTEGRATION_REPORT_2025-10-26.md`
 
@@ -140,17 +140,17 @@ Run `command: feedback status module_10` for details on specific module
 ### Phase 1: Quick Wins (Implement Now)
 
 1. **Add status footers to integration workflow**
-   - Update `command: integrate-feedback` to append status footer to archived files
+   - Update `/integrate-feedback` to append status footer to archived files
    - Include: status, date, target file, validation notes
    - Effort: ~15 minutes (just template addition)
 
-2. **Create `command: feedback-status` command**
+2. **Create `/feedback-status` command**
    - List pending feedback (read feedback/pending/)
    - List recently integrated (read feedback/integrated/ with status)
    - Show summary counts
    - Effort: ~30 minutes (simple script)
 
-3. **Update `command: integrate-feedback` to generate integration report**
+3. **Update `/integrate-feedback` to generate integration report**
    - Create INTEGRATION_REPORT_YYYY-MM-DD.md after each integration session
    - Include all integrated/skipped items with details
    - Effort: ~20 minutes (part of integration workflow)
@@ -195,9 +195,9 @@ Run `command: feedback status module_10` for details on specific module
 - `❌ Rejected` - Feedback incorrect or not applicable
 - `⏸️ Deferred` - Valid but waiting for related changes
 
-### Template 2: command: feedback-status Command
+### Template 2: /feedback-status Command
 
-**File**: `agent/commandscommand: feedback-status.md`
+**File**: `agent/commands/ feedback-status.md`
 
 ```markdown
 # Feedback Status Command
@@ -207,10 +207,10 @@ Check the status of your submitted feedback.
 ## Usage
 
 ```bash
-command: feedback-status              # Overview of all feedback
-command: feedback-status module_10    # Details for specific module
-command: feedback-status pending      # Show only pending items
-command: feedback-status integrated   # Show only integrated items
+/feedback-status              # Overview of all feedback
+/feedback-status module_10    # Details for specific module
+/feedback-status pending      # Show only pending items
+/feedback-status integrated   # Show only integrated items
 ```
 
 ## What It Shows
@@ -235,7 +235,7 @@ command: feedback-status integrated   # Show only integrated items
 
 ### Template 3: Integration Report Generator
 
-**Add to `command: integrate-feedback` Step 5**:
+**Add to `/integrate-feedback` Step 5**:
 
 ```markdown
 ### Step 6: Generate Integration Report
@@ -278,11 +278,11 @@ Include:
 
 **To implement Phase 1 (recommended)**:
 
-1. Update `agent/commandscommand: integrate-feedback.md`:
+1. Update `agent/commands/ integrate-feedback.md`:
    - Add Step 4d: "Add status footer to archived feedback"
    - Include template with status, date, target file, validation notes
 
-2. Create `agent/commandscommand: feedback-status.md`:
+2. Create `agent/commands/ feedback-status.md`:
    - Command to list pending and integrated feedback
    - Show summary counts and recent integrations
 

@@ -61,7 +61,7 @@ As the MAgPIE agent receives feedback and improves, documentation files (AGENT.m
 
 **Tell your AI assistant:**
 ```
-run command: compress-documentation
+/compress-documentation
 ```
 
 **The AI will:**

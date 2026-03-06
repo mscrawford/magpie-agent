@@ -47,7 +47,7 @@ feedback/pending/
 
 **Command**:
 ```bash
-command: integrate-feedback all           # All pending feedback
+/integrate-feedback all           # All pending feedback
 command: integrate-feedback               # Interactive mode
 ```
 

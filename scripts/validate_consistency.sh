@@ -288,7 +288,7 @@ else
 fi
 
 # AGENT.md should have command system
-if grep -q "command:" AGENT.md 2>/dev/null || grep -q "run command" AGENT.md 2>/dev/null; then
+if grep -q "COMMAND SYSTEM" AGENT.md 2>/dev/null || grep -q "/guide" AGENT.md 2>/dev/null; then
     check_pass "AGENT.md has command system"
 else
     check_warning "AGENT.md may not have command system"

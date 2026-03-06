@@ -221,12 +221,12 @@ NUTRIENT BALANCE
 
 ## Module Cross-References
 
-- [Module 14: Yields](../modules/module_14.md) — Yield calibration pipeline, LPJmL input processing
-- [Module 17: Production](../modules/module_17.md) — Spatial aggregation (cluster → region)
-- [Module 29: Cropland](../modules/module_29.md) — Total cropland envelope
-- [Module 30: Croparea](../modules/module_30.md) — Per-crop area allocation, rotation constraints
-- [Module 15: Food Demand](../modules/module_15.md) — Regression-based food demand
-- [Module 20: Processing](../modules/module_20.md) — Primary → secondary product conversion
+- [Module 14: Yields](../../modules/module_14.md) — Yield calibration pipeline, LPJmL input processing
+- [Module 17: Production](../../modules/module_17.md) — Spatial aggregation (cluster → region)
+- [Module 29: Cropland](../../modules/module_29.md) — Total cropland envelope
+- [Module 30: Croparea](../../modules/module_30.md) — Per-crop area allocation, rotation constraints
+- [Module 15: Food Demand](../../modules/module_15.md) — Regression-based food demand
+- [Module 20: Processing](../../modules/module_20.md) — Primary → secondary product conversion
 - [Data Flow](../core_docs/Data_Flow.md) — Input data pipeline and preprocessing
 
 ---

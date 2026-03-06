@@ -37,8 +37,8 @@ feedback/
 | Task | Command | When |
 |------|---------|------|
 | Submit feedback | `scripts/submit_feedback.sh` | Anytime you have feedback |
-| Process pending feedback | `command: integrate-feedback` | Weekly/monthly |
-| Reduce bloat | `command: compress-documentation` | Quarterly (optional) |
+| Process pending feedback | `/integrate-feedback` | Weekly/monthly |
+| Reduce bloat | `/compress-documentation` | Quarterly (optional) |
 
 **📖 New user?** See [WORKFLOW_GUIDE.md](WORKFLOW_GUIDE.md) for complete workflow explanation
 
@@ -135,9 +135,9 @@ Feedback now flows through a **staged validation process** to maintain stability
 
 1. **Scan pending feedback**:
    ```bash
-   command: integrate-feedback              # Interactive mode
+   /integrate-feedback              # Interactive mode
    # OR
-   command: integrate-feedback all          # All pending feedback
+   /integrate-feedback all          # All pending feedback
    ```
 
 2. **Agent validates** each item:
@@ -199,7 +199,7 @@ User submits feedback
   ↓
 feedback/pending/YYYYMMDD_HHMMSS_type_target.md
   ↓
-Periodic integration session (command: integrate-feedback)
+Periodic integration session (/integrate-feedback)
   ↓
 Validation against current code
   ↓
@@ -281,7 +281,7 @@ This feedback system enables:
 
 The feedback system uses **two sequential commands**:
 
-### `command: integrate-feedback` - Process Pending Submissions
+### `/integrate-feedback` - Process Pending Submissions
 
 **Purpose**: Validate and integrate new user feedback
 
@@ -289,9 +289,9 @@ The feedback system uses **two sequential commands**:
 
 **Invocation**:
 ```bash
-run command: integrate-feedback module_10     # Single module
-run command: integrate-feedback all           # All pending feedback
-run command: integrate-feedback               # Interactive mode
+run /integrate-feedback module_10     # Single module
+run /integrate-feedback all           # All pending feedback
+run /integrate-feedback               # Interactive mode
 ```
 
 **What it does**:
@@ -307,7 +307,7 @@ run command: integrate-feedback               # Interactive mode
 
 ---
 
-### `command: compress-documentation` - Reduce Bloat (Optional)
+### `/compress-documentation` - Reduce Bloat (Optional)
 
 **Purpose**: Consolidate accumulated feedback to reduce bloat
 
@@ -315,7 +315,7 @@ run command: integrate-feedback               # Interactive mode
 
 **Invocation**:
 ```bash
-run command: compress-documentation     # Analyze and compress integrated feedback
+run /compress-documentation     # Analyze and compress integrated feedback
 ```
 
 **What it does**:
@@ -349,22 +349,22 @@ run command: compress-documentation     # Analyze and compress integrated feedba
 
 **They are SEQUENTIAL, not alternatives**: Integrate first (always), then compress later (sometimes).
 
-1. **Regular Integration** (weekly/monthly): `command: integrate-feedback`
+1. **Regular Integration** (weekly/monthly): `/integrate-feedback`
    - Keeps `pending/` clean
    - Validates and integrates user feedback
    - Updates core docs (corrections) and notes files (warnings/lessons)
 
-2. **Periodic Compression** (quarterly, optional): `command: compress-documentation`
+2. **Periodic Compression** (quarterly, optional): `/compress-documentation`
    - Reduces bloat in notes files and agent guidance
    - Organizes feedback into coherent sections
    - Maintains quality while reducing redundancy
 
 **Timeline example**:
 ```
-Week 1-4: Submit feedback → command: integrate-feedback
-Week 5-8: Submit feedback → command: integrate-feedback
-Week 9-12: Submit feedback → command: integrate-feedback
-Month 3: Notes feeling bloated → command: compress-documentation
+Week 1-4: Submit feedback → /integrate-feedback
+Week 5-8: Submit feedback → /integrate-feedback
+Week 9-12: Submit feedback → /integrate-feedback
+Month 3: Notes feeling bloated → /compress-documentation
 Month 4+: Back to integrate-feedback (cycle continues)
 ```
 

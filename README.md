@@ -407,7 +407,7 @@ dot -Tpng core_dependencies.dot -o core_dependencies.png
 
 MAgPIE developers can improve agent performance through feedback!
 
-- Say "run command: feedback" for complete system overview
+- Say "/feedback" for complete system overview
 - Submit feedback about agent behavior, documentation errors, or suggestions
 - Review and compress integrated feedback with `command: compress-documentation`
 

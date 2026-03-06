@@ -288,11 +288,11 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 
 **How to mention** (pick one style, keep it brief):
 ```
-📝 Spot an error or have insights to share? Say "run command: feedback" to help improve the documentation!
+📝 Spot an error or have insights to share? Say "/feedback" to help improve the documentation!
 ```
 Or:
 ```
-💡 Your question revealed interesting details - consider using "run command: feedback" to document this for others!
+💡 Your question revealed interesting details - consider using "/feedback" to document this for others!
 ```
 
 **Goal**: Encourage quality feedback without being annoying. Users should feel invited, not pestered.

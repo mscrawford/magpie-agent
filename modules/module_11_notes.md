@@ -7,20 +7,20 @@
 
 ## ⚠️ Warnings & Common Mistakes
 
-*No warnings submitted yet. Use `run command: feedback` to contribute.*
+*No warnings submitted yet. Type `/feedback` to contribute.*
 
 ---
 
 ## 💡 Lessons Learned
 
-*No lessons submitted yet. Use `run command: feedback` to contribute.*
+*No lessons submitted yet. Type `/feedback` to contribute.*
 
 ---
 
 ## 🧪 Real-World Examples
 
-*No examples submitted yet. Use `run command: feedback` to contribute.*
+*No examples submitted yet. Type `/feedback` to contribute.*
 
 ---
 
-**Contributing**: Found something useful? Use `run command: feedback` to share your experience!
+**Contributing**: Found something useful? Type `/feedback` to share your experience!

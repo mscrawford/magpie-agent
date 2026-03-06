@@ -177,9 +177,9 @@ Rscript output.R output=comparison_validation outputdir=output/run1,output/run2
 
 ## Module Cross-References
 
-- **Debugging infeasibilities**: See `helpers/debugging_infeasibility.md`
-- **Carbon pricing scenarios**: See `helpers/scenario_carbon_pricing.md`
-- **Impact analysis**: See `helpers/modification_impact_analysis.md`
+- **Debugging infeasibilities**: See `debugging_infeasibility.md` (same directory)
+- **Carbon pricing scenarios**: See `scenario_carbon_pricing.md` (same directory)
+- **Impact analysis**: See `modification_impact_analysis.md` (same directory)
 - **Core architecture (execution flow)**: See `core_docs/Core_Architecture.md`
 - **Data flow (input→output pipeline)**: See `core_docs/Data_Flow.md`
 - **Output scripts**: `scripts/output/` directory; see `scripts/output/INFO.yml` for index
@@ -188,8 +188,8 @@ Rscript output.R output=comparison_validation outputdir=output/run1,output/run2
 
 ## Related Helpers & Docs
 
-- **Infeasibility diagnosis** → `agent/helpers/debugging_infeasibility.md` (when runs fail)
-- **Scenario setup** → `agent/helpers/scenario_carbon_pricing.md`, `scenario_diet_change.md`
+- **Infeasibility diagnosis** → `debugging_infeasibility.md` (when runs fail)
+- **Scenario setup** → `scenario_carbon_pricing.md`, `scenario_diet_change.md`
 - **Conservation balances** → `cross_module/land_balance_conservation.md` (verify land totals)
 
 ---
