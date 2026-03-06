@@ -13,8 +13,7 @@
 This directory contains comprehensive documentation for MAgPIE's 46 modules. All documentation follows the "Code Truth" principle: describing ONLY what IS implemented in the code, verified against source files.
 
 **Completion Status**: 46/46 modules (100%) - All fully verified ✅
-**Archived State**: `../completed_phases/PHASE_1_MODULES_COMPLETE_2025-10-13.json`
-**Current Phase**: Project has moved to Phase 2 (Cross-Module Analysis)
+**Current Phase**: See `../project/CURRENT_STATE.json` for current status
 
 **For current project status**, see: `../project/CURRENT_STATE.json`
 
@@ -31,7 +30,7 @@ Achievements:
 - ✅ All modules fully verified (every equation checked)
 - ✅ Zero errors or rejected modules
 - ✅ 100% Code Truth compliance
-- ✅ Archived to: `../completed_phases/PHASE_1_MODULES_COMPLETE_2025-10-13.json`
+- ✅ Archived to: `../project/CURRENT_STATE.json`
 
 ---
 

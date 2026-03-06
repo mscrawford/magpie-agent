@@ -20,14 +20,13 @@ Run these checks at the beginning of every session. Report a brief status line t
 
 ```bash
 # Determine working directory (could be magpie/ or magpie-agent/)
+# Use absolute paths to avoid cd breaking relative references
 if [ -f "AGENT.md" ] && [ -d "agent/helpers" ]; then
-  # Already in magpie-agent/
-  AGENT_DIR="."
-  MAGPIE_DIR=".."
+  AGENT_DIR="$(pwd)"
+  MAGPIE_DIR="$(cd .. && pwd)"
 elif [ -d "magpie-agent" ]; then
-  # In magpie/ parent directory
-  AGENT_DIR="magpie-agent"
-  MAGPIE_DIR="."
+  AGENT_DIR="$(cd magpie-agent && pwd)"
+  MAGPIE_DIR="$(pwd)"
 else
   echo "Warning: Cannot determine magpie-agent location"
 fi
@@ -35,7 +34,7 @@ fi
 # Pull latest magpie-agent (teammates may have pushed improvements)
 cd "$AGENT_DIR" && git pull --rebase origin main 2>/dev/null
 # Re-deploy AGENT.md if it changed
-cp AGENT.md "$MAGPIE_DIR/AGENT.md" 2>/dev/null
+cp "$AGENT_DIR/AGENT.md" "$MAGPIE_DIR/AGENT.md" 2>/dev/null
 # Fetch latest MAgPIE develop (so we can detect new commits)
 cd "$MAGPIE_DIR" && git fetch origin develop --quiet 2>/dev/null
 ```
@@ -49,12 +48,10 @@ cd "$MAGPIE_DIR" && git fetch origin develop --quiet 2>/dev/null
 **Note**: Steps 1-5 assume the agent's working directory is `magpie-agent/` (as stated in AGENT.md). All `../` paths point to the parent MAgPIE directory.
 
 ```bash
-# Check version
+# From magpie-agent/ directory:
 cat ../CITATION.cff | grep "^version:" | head -1
-# Check branch
-cd .. && git rev-parse --abbrev-ref HEAD
-# Check current commit
-cd .. && git --no-pager log --oneline -1
+git -C .. rev-parse --abbrev-ref HEAD
+git -C .. --no-pager log --oneline -1
 ```
 
 **What to look for:**
@@ -69,7 +66,7 @@ cd .. && git --no-pager log --oneline -1
 LAST_SYNC=$(python3 -c "import json; d=json.load(open('project/sync_log.json')); print(d['sync_status']['last_sync_commit'])" 2>/dev/null)
 echo "Last sync commit: ${LAST_SYNC}"
 # Commits since last sync (use the dynamic value, NOT a hardcoded hash)
-cd .. && git --no-pager log --oneline ${LAST_SYNC}..HEAD 2>/dev/null | wc -l
+git -C .. --no-pager log --oneline ${LAST_SYNC}..HEAD 2>/dev/null | wc -l
 ```
 
 **Staleness assessment:**

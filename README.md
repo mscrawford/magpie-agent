@@ -103,7 +103,7 @@ magpie-agent/
 ├── AGENT.md                   ← AI agent instructions (SOURCE - edit here)
 │
 ├── agent/                     ← AGENT COMMANDS
-│   └── commands/              ← Command definitions (guide, update, feedback, etc.)
+│   └── commands/              ← Command definitions (guide, sync, feedback, etc.)
 │
 ├── project/                   ← PROJECT MANAGEMENT (maintainers only)
 │   ├── README.md              ← What's in this folder

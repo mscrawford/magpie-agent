@@ -1,6 +1,6 @@
 # Helper: Debugging Model Infeasibility
 
-**Auto-load triggers**: "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "abort"
+**Auto-load triggers**: "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort"
 **Last updated**: 2026-03-06
 **Lessons count**: 2 entries
 

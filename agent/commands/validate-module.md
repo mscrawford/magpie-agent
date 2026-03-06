@@ -347,7 +347,7 @@ Use `/validate-module all` to validate all modules.
 **If module file missing:**
 ```
 ❌ Error: modules/module_XX.md not found
-Expected location: /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_XX.md
+Expected location: <magpie-agent>/modules/module_XX.md
 ```
 
 **If validation fails catastrophically:**

@@ -336,7 +336,6 @@ fi
 # Count feedback integrated
 FEEDBACK_COUNT=$(ls -1 feedback/integrated/*.md 2>/dev/null | wc -l | tr -d ' ')
 check_pass "Feedback integrated: $FEEDBACK_COUNT files"
-log "    → Update DOCUMENTATION_ECOSYSTEM_MAP.md if this changed"
 
 # Count GAMS reference docs
 GAMS_COUNT=$(ls -1 reference/GAMS_Phase*.md 2>/dev/null | wc -l | tr -d ' ')
@@ -356,7 +355,7 @@ STALE_CMD_COUNT=0
 while IFS= read -r file; do
     # Skip archived/historical files and this script's own source
     case "$file" in
-        ./feedback/integrated/*|./project/completed_phases/*) continue ;;
+        ./feedback/integrated/*|./feedback/archive/*|./reference/archive/*) continue ;;
         ./scripts/validate_consistency.sh) continue ;; # self-references are check logic, not stale format
     esac
     # Count "command: X" outside of "When user says" lines and "Unknown command:" patterns
@@ -371,7 +370,7 @@ while IFS= read -r file; do
         STALE_CMD_COUNT=$((STALE_CMD_COUNT + BAD))
         log "    ⚠️  $file: ~$BAD possible stale 'command:' refs"
     fi
-done < <(find . -name "*.md" -not -path "./.git/*" -not -path "./feedback/integrated/*" -not -path "./project/completed_phases/*" 2>/dev/null)
+done < <(find . -name "*.md" -not -path "./.git/*" -not -path "./feedback/integrated/*" -not -path "./feedback/archive/*" -not -path "./reference/archive/*" 2>/dev/null)
 
 # Also check shell scripts (excluding this script itself)
 while IFS= read -r file; do
@@ -395,7 +394,8 @@ fi
 CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/null \
     | grep -v ".git" \
     | grep -v "feedback/integrated/" \
-    | grep -v "project/completed_phases/" \
+    | grep -v "feedback/archive/" \
+    | grep -v "reference/archive/" \
     | grep -v "feedback/global/agent_lessons.md" \
     | grep -v "scripts/validate_consistency.sh" \
     | grep -v "agent/commands/validate.md" \
@@ -472,6 +472,7 @@ print_section "9/11" "Checking helper trigger keyword sync..."
 TRIGGER_ISSUES=0
 
 # For each keyword-triggered helper, check it appears in AGENT.md routing table
+# AND that keywords match between AGENT.md and the helper's Auto-load triggers
 for helper in agent/helpers/*.md; do
     [ -f "$helper" ] || continue
     BASENAME=$(basename "$helper")
@@ -483,16 +484,30 @@ for helper in agent/helpers/*.md; do
     if ! grep -q "$BASENAME" AGENT.md 2>/dev/null; then
         TRIGGER_ISSUES=$((TRIGGER_ISSUES + 1))
         log "    ❌ $BASENAME not found in AGENT.md routing table"
+        continue
     fi
     # Check if helper has Auto-load triggers line
     if ! grep -q "Auto-load triggers" "$helper" 2>/dev/null; then
         TRIGGER_ISSUES=$((TRIGGER_ISSUES + 1))
         log "    ⚠️  $BASENAME missing Auto-load triggers declaration"
+        continue
+    fi
+    # Compare keyword sets between AGENT.md and helper
+    AGENT_KEYWORDS=$(grep "$BASENAME" AGENT.md | grep -oE '"[^"]*"' | sort)
+    HELPER_KEYWORDS=$(grep "Auto-load triggers" "$helper" | grep -oE '"[^"]*"' | sort)
+    if [ "$AGENT_KEYWORDS" != "$HELPER_KEYWORDS" ]; then
+        TRIGGER_ISSUES=$((TRIGGER_ISSUES + 1))
+        # Find which keywords differ
+        ONLY_AGENT=$(comm -23 <(echo "$AGENT_KEYWORDS") <(echo "$HELPER_KEYWORDS") | tr '\n' ' ')
+        ONLY_HELPER=$(comm -13 <(echo "$AGENT_KEYWORDS") <(echo "$HELPER_KEYWORDS") | tr '\n' ' ')
+        log "    ⚠️  $BASENAME keyword mismatch:"
+        [ -n "$ONLY_AGENT" ] && log "        Only in AGENT.md: $ONLY_AGENT"
+        [ -n "$ONLY_HELPER" ] && log "        Only in helper:   $ONLY_HELPER"
     fi
 done
 
 if [ "$TRIGGER_ISSUES" -eq 0 ]; then
-    check_pass "All helpers registered in AGENT.md with trigger declarations"
+    check_pass "All helpers registered in AGENT.md with matching trigger keywords"
 else
     check_warning "$TRIGGER_ISSUES trigger sync issues found (see above)"
 fi
@@ -566,11 +581,11 @@ if [ $ERRORS -gt 0 ] || [ $WARNINGS -gt 0 ]; then
     log "1. Code truth (actual GAMS files)"
     log "2. Module docs (modules/module_XX.md)"
     log "3. Cross-module (cross_module/*.md)"
-    log "4. Architecture (core_docs/Phase*.md)"
+    log "4. Architecture (core_docs/*.md)"
     log "5. Notes (modules/module_XX_notes.md)"
     log ""
     log "Fix errors first, then review warnings to determine if action needed."
-    log "See DOCUMENTATION_ECOSYSTEM_MAP.md for authoritative sources."
+    log "See AGENT.md and core_docs/Response_Guidelines.md for authoritative sources."
 fi
 
 # Exit code

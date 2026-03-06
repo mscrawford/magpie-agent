@@ -2,7 +2,7 @@
 
 **Purpose**: Check for MAgPIE code changes and update documentation accordingly
 
-**When user says**: "run command: sync", "sync with develop", "check for updates", etc.
+**When user says**: "/sync", "sync with develop", "check for updates", etc.
 
 ---
 
@@ -113,8 +113,8 @@ Present a summary:
 ✨ Sync Complete!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📅 Previous sync: 2025-11-29 (commit 3e0478c83)
-📅 Current sync: 2025-MM-DD (commit <new_hash>)
+📅 Previous sync: <date> (commit <hash>)
+📅 Current sync: <date> (commit <hash>)
 
 📝 Commits reviewed: X
    - Y commits with GAMS changes
@@ -140,7 +140,7 @@ If no new commits since last sync:
 ```
 ✅ Documentation is up to date!
 
-Last sync: 2025-11-29 (commit 3e0478c83)
+Last sync: <date> (commit <hash>)
 No new commits on develop branch since last sync.
 ```
 

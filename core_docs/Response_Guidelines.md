@@ -311,7 +311,7 @@ Or:
 1. **Code Truth**: `../modules/XX_name/realization/*.gms` (actual GAMS code)
 2. **Module Docs**: `modules/module_XX.md` (SINGLE SOURCE OF TRUTH - verified against code)
 3. **Cross-Module**: `cross_module/*.md` (system-level analysis, derived from modules)
-4. **Architecture**: `core_docs/Phase*.md` (overview and reference)
+4. **Architecture**: `core_docs/*.md` (overview and reference)
 5. **Module Notes**: `modules/module_XX_notes.md` (user experience, warnings - may lag behind code changes)
 6. **Workflow**: `AGENT.md` (routing logic, not facts about modules)
 
@@ -322,7 +322,7 @@ User asks MAgPIE question
   → modules/module_XX.md (FACTS about the module)
   → module_XX_notes.md (WARNINGS/LESSONS if how-to/troubleshooting)
   → cross_module/*.md (SYSTEM-LEVEL if safety/dependencies)
-  → core_docs/Phase*.md (ARCHITECTURE if structural question)
+  → core_docs/*.md (ARCHITECTURE if structural question)
   → reference/GAMS_Phase*.md (GAMS CODE if writing/debugging code)
 ```
 

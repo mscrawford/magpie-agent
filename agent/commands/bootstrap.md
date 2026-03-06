@@ -2,7 +2,7 @@
 
 **Purpose**: Complete first-time setup for a new magpie-agent installation
 
-**When user says**: "run command: bootstrap", "first time setup", "initialize agent", etc.
+**When user says**: "/bootstrap", "first time setup", "initialize agent", etc.
 
 ---
 

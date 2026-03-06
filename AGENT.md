@@ -138,7 +138,6 @@ cp AGENT.md ../AGENT.md
 
 **Commands** are agent instructions stored in `agent/commands/`. Users can invoke them in several ways:
 - `/guide` (shortest — preferred)
-- "run command: guide"
 - "show me the guide"
 - Any natural phrasing that mentions the command name
 
@@ -159,7 +158,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 
 ### How Commands Work
 
-1. User says: `/sync` (or "run command: sync", "sync with develop", etc.)
+1. User says: `/sync` (or "sync with develop", "check for updates", etc.)
 2. Agent reads: `agent/commands/sync.md`
 3. Agent follows instructions in that file
 4. Agent reports results to user
@@ -346,7 +345,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 | Setting up diet/food scenarios | `agent/helpers/scenario_diet_change.md` | "diet", "EAT-Lancet", "food demand", "livestock reduction", "food waste", "dietary change", "BMI", "food scenario" |
 | Understanding model outputs | `agent/helpers/interpreting_outputs.md` | "model output", "run results", "fulldata.gdx", "postsolve", "report.mif", "understand results" |
 | Choosing between realizations | `agent/helpers/realization_selection.md` | "which realization", "choose realization", "realization comparison", "default realization", "switch realization", "alternative realization" |
-| Adding a new crop/commodity | `agent/helpers/adding_new_crop.md` | "add crop", "new crop type", "add commodity", "extend crop set", "new product" |
+| Adding a new crop/commodity | `agent/helpers/adding_new_crop.md` | "add crop", "new crop type", "add commodity", "extend crop set", "new product", "crop type" |
 
 ### Sync freshness badges
 
