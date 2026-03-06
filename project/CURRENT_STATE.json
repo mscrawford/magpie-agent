@@ -79,37 +79,52 @@
     ]
   },
   "known_issues": [
-    "Set name verification not yet attempted (next audit angle)",
-    "File:line citation accuracy not yet verified",
-    "41/46 modules still need deep GAMS variable name verification beyond automated check"
+    "Stripped line numbers leave bare file.gms references - could be re-verified against current code",
+    "Content accuracy of citations not verified (line exists but does it contain what docs claim?)"
   ],
   "last_session": {
     "date": "2026-03-07",
-    "focus": "Iterative quality flywheel: equation and realization name verification",
+    "focus": "Complete audit flywheel: all 5 novel audit angles executed",
     "commits": [
       "a5880c1 (GAMS variable checker + Bug Taxonomy)",
-      "739f346 (equation + realization verification)"
+      "739f346 (equation + realization verification, Checks 15-16)",
+      "5ec5cc3 (state update)",
+      "6506a11 (file:line citation verification, Check 17)"
     ],
     "accomplishments": [
-      "Fixed 4 wrong equation names (q11_cost_tc, q15_bmi_shr, q30_land_snv, q30_treecover)",
-      "Fixed 12 wrong realization names in 'Verified Against' footers across 12 module docs",
-      "Built scripts/check_gams_equations.sh (269 equations verified at 100%)",
-      "Built scripts/check_gams_realizations.sh (67 realizations verified at 100%)",
-      "Integrated as Checks 15-16 in validator (now 16 checks, 31 sub-checks, all passing)",
-      "Added Patterns 8-9 to Bug_Taxonomy.md",
-      "Committed GAMS variable checker + Bug Taxonomy from previous session (Check 14)"
+      "Committed GAMS variable checker from previous session (Check 14, 773 vars)",
+      "Fixed 4 wrong equation names, built Check 15 (269 equations verified)",
+      "Fixed 12 wrong realization names, built Check 16 (67 realizations verified)",
+      "Set name audit: 0 bugs (51 sets verified, too distinctive to hallucinate)",
+      "Fixed 151 stale file:line citations (largest bug class), built Check 17 (2230 citations verified)",
+      "Bug Taxonomy now has 11 patterns, Audit Angles Registry fully populated",
+      "Validator: 17 checks, 32 sub-checks, all passing at 100%"
     ],
     "bugs_fixed": {
       "equation_names": 4,
       "realization_names": 12,
-      "total_this_session": 16,
-      "cumulative_across_sessions": "33+ (17 variables + 16 equations/realizations)"
+      "file_line_citations": 151,
+      "total_this_session": 167,
+      "cumulative": "184+ (17 prev + 167 this session)"
     },
     "meta_lessons": [
+      "File:line citations are the highest-volume bug class (151 of 184 total bugs)",
       "Verification footer lines are ironically the least verified content",
-      "AI invents plausible-sounding realization names by combining keywords with dates",
-      "Equation name hallucination follows same pattern as variable name hallucination"
-    ]
+      "Wrong realization names cascade: wrong name \u2192 wrong file sizes \u2192 all line citations invalid",
+      "Set names are too distinctive to hallucinate (0 bugs in 51 checked)",
+      "AI constructs plausible citation line numbers that sound right but point past EOF"
+    ],
+    "validator_state": {
+      "total_checks": 17,
+      "total_sub_checks": 32,
+      "all_passing": true,
+      "verified_counts": {
+        "variables": 773,
+        "equations": 269,
+        "realizations": 67,
+        "citations": 2230
+      }
+    }
   },
   "previous_session": {
     "date": "2026-03-06",
@@ -824,10 +839,9 @@
     "notes": "\ud83c\udf89 PHASE 2 COMPLETE! Module self-containment achieved: (1) Staged feedback workflow enables continuous user feedback while keeping core docs stable. (2) All 46 modules have 'Participates In' sections linking to system-level documentation. (3) All 46 modules have standardized 'Last Verified' timestamps tracking code verification. (4) /validate-module command enables comprehensive quality assurance for module documentation. Modules are now self-contained with clear structure, timestamps, cross-references, and validation capabilities. Ready for Phase 3: Link-Don't-Duplicate Enforcement, or project can be considered complete pending user priorities."
   },
   "next_steps": [
-    "Set name verification audit (next angle in flywheel)",
-    "File:line citation verification (do cited lines contain what docs claim?)",
-    "Consider adding checker scripts to CI/CD or pre-commit hooks",
-    "Continue iterative improvement cycle"
+    "Content-level citation verification (does the cited line contain what docs say it does?)",
+    "Consider CI/CD integration for validator",
+    "Explore new audit angles (e.g., parameter value accuracy, config switch descriptions)"
   ],
   "previous_session_5": {
     "date": "2025-10-22",
