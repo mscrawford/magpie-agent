@@ -727,6 +727,6 @@ File exists (`scaling.gms`) but is empty except for headers.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/18_*/dual_oct16/*.gms`
+**Verified Against**: `../modules/18_*/flexreg_apr16/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

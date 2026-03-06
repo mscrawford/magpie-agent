@@ -1095,6 +1095,6 @@ Module 29 (Cropland) ──→ vm_treecover(j) ──→ Module 59 (SOM)
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/29_*/cropland_apr16/*.gms`
+**Verified Against**: `../modules/29_*/detail_apr24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

@@ -9,7 +9,7 @@
 
 1. **s15_exo_diet default is 0**: This means ALL EAT-Lancet diet settings (s15_exo_waste, s15_exo_*_substitution, etc.) are SILENTLY IGNORED unless you set `s15_exo_diet=1`. This is the #1 mistake in diet scenario setup.
 
-2. **BMI equations use cumulative normal distributions**: The q15_bmi_shr equations compute population shares in BMI categories using `p15_bmi_shr_regr` regression parameters. These are NOT simple linear relationships — unexpected BMI results may be due to nonlinear threshold effects.
+2. **BMI equations use cumulative normal distributions**: The q15_bmi_shr_* equations (q15_bmi_shr_verylow through q15_bmi_shr_veryhigh, plus q15_bmi_shr_agg) compute population shares in BMI categories using `p15_bmi_shr_regr` regression parameters. These are NOT simple linear relationships — unexpected BMI results may be due to nonlinear threshold effects.
 
 3. **18 equations fully documented** (validated 2026-03-06): All equations in `anthro_iso_jun22` realization verified against GAMS code.
 

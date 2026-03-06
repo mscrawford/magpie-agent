@@ -1018,6 +1018,6 @@ Key input variables from other modules are documented in the Dependencies sectio
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/73_*/static_jan21/*.gms`
+**Verified Against**: `../modules/73_*/default/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

@@ -9,7 +9,7 @@
 
 1. **Multiple realizations with different crop allocation approaches**: The `simple_apr24` realization (default) uses simplified allocation. Check which realization is active — they differ in how crop types are distributed across cells.
 
-2. **3 equations added in simple_apr24**: q30_land_snv, q30_treecover, q30_rotation_penalty were documented during deep validation. These handle semi-natural vegetation on cropland, tree cover requirements, and rotation constraints respectively.
+2. **Realization differences**: `simple_apr24` has 9 equations (q30_prod, q30_betr_missing, q30_cost, q30_rotation_max, q30_rotation_min, q30_carbon, q30_bv_ann, q30_bv_per, q30_crop_reg). `detail_apr24` adds rotation penalties (q30_rotation_penalty) and finer rotation rules (q30_rotation_max2, q30_rotation_min2, q30_rotation_max_irrig). Check which realization is active before debugging rotation constraints.
 
 ## 💡 Tips
 

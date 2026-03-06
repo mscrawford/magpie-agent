@@ -80,7 +80,7 @@ cd "$AGENT_DIR"
 # ===========================
 # Check 1: Dependency Counts
 # ===========================
-print_section "1/14" "Checking dependency counts..."
+print_section "1/16" "Checking dependency counts..."
 
 # Check Module 10
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
@@ -134,7 +134,7 @@ fi
 # =====================================
 # Check 2: Equation Parameter Counts
 # =====================================
-print_section "2/14" "Checking equation parameters..."
+print_section "2/16" "Checking equation parameters..."
 
 # Chapman-Richards parameters
 CR_PARAMS=$(grep -r "Chapman-Richards\|Chapman Richards" \
@@ -178,7 +178,7 @@ fi
 # ============================
 # Check 3: Cross-References
 # ============================
-print_section "3/14" "Checking cross-references..."
+print_section "3/16" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
@@ -246,7 +246,7 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/14" "Checking duplicate equations..."
+print_section "4/16" "Checking duplicate equations..."
 
 # Check for common equations mentioned in multiple places
 # q70_feed
@@ -271,7 +271,7 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 # Check 5: Entry Point Consistency
 # =================================
-print_section "5/14" "Checking entry point consistency..."
+print_section "5/16" "Checking entry point consistency..."
 
 # README should point to CURRENT_STATE.json for project work
 if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
@@ -311,7 +311,7 @@ fi
 # =======================
 # Check 6: File Counts
 # =======================
-print_section "6/14" "Checking file counts..."
+print_section "6/16" "Checking file counts..."
 
 # Count module docs
 MODULE_COUNT=$(ls -1 modules/module_*.md 2>/dev/null | grep -v "_notes" | wc -l | tr -d ' ')
@@ -348,7 +348,7 @@ fi
 # ==========================================
 # Check 7: Convention Linter (stale formats)
 # ==========================================
-print_section "7/14" "Checking naming conventions..."
+print_section "7/16" "Checking naming conventions..."
 
 # Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
 STALE_CMD_COUNT=0
@@ -414,7 +414,7 @@ fi
 # ==============================================
 # Check 8: Markdown Link Validator (key files)
 # ==============================================
-print_section "8/14" "Checking markdown link targets..."
+print_section "8/16" "Checking markdown link targets..."
 
 BROKEN_LINKS=0
 
@@ -467,7 +467,7 @@ fi
 # ==============================================
 # Check 9: Trigger Keyword Sync
 # ==============================================
-print_section "9/14" "Checking helper trigger keyword sync..."
+print_section "9/16" "Checking helper trigger keyword sync..."
 
 TRIGGER_ISSUES=0
 
@@ -515,7 +515,7 @@ fi
 # =============================================
 # Check 10: AGENT.md Deployment Freshness
 # =============================================
-print_section "10/14" "Checking AGENT.md deployment..."
+print_section "10/16" "Checking AGENT.md deployment..."
 
 if [ -f "../AGENT.md" ]; then
     if diff -q AGENT.md ../AGENT.md > /dev/null 2>&1; then
@@ -530,7 +530,7 @@ fi
 # =============================================
 # Check 11: Anti-Hardcoding Guard
 # =============================================
-print_section "11/14" "Checking for hardcoded values in mechanism files..."
+print_section "11/16" "Checking for hardcoded values in mechanism files..."
 
 HARDCODED_ISSUES=0
 
@@ -556,7 +556,7 @@ fi
 # ================================================
 # Check 12: Path prefix check (magpie-agent/)
 # ================================================
-print_section "12/14" "Checking for stale path prefixes..."
+print_section "12/16" "Checking for stale path prefixes..."
 
 # Files inside magpie-agent/ should not use magpie-agent/ as a path prefix
 # (since the working directory IS magpie-agent/, this creates double-nesting)
@@ -585,7 +585,7 @@ fi
 # ================================================
 # Check 13: Unclosed code blocks
 # ================================================
-print_section "13/14" "Checking for unclosed code blocks..."
+print_section "13/16" "Checking for unclosed code blocks..."
 
 UNCLOSED=0
 for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./feedback/archive/*"); do
@@ -604,7 +604,7 @@ fi
 
 # Check 14: GAMS Variable Name Verification
 # ==========================================
-print_section "14/14" "Checking GAMS variable names in docs..."
+print_section "14/16" "Checking GAMS variable names in docs..."
 
 GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.sh"
 if [ -x "$GAMS_CHECK_SCRIPT" ]; then
@@ -622,6 +622,50 @@ if [ -x "$GAMS_CHECK_SCRIPT" ]; then
     fi
 else
     check_warning "GAMS variable checker not found or not executable: $GAMS_CHECK_SCRIPT"
+fi
+
+# Check 15: GAMS Equation Name Verification
+# ==========================================
+print_section "15/16" "Checking GAMS equation names in docs..."
+
+EQ_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_equations.sh"
+if [ -x "$EQ_CHECK_SCRIPT" ]; then
+    EQ_OUTPUT=$("$EQ_CHECK_SCRIPT" 2>&1)
+    EQ_EXIT=$?
+    if [ $EQ_EXIT -eq 0 ]; then
+        EQ_ACCURACY=$(echo "$EQ_OUTPUT" | grep "Accuracy:" | head -1)
+        check_pass "GAMS equation names verified: $EQ_ACCURACY"
+    else
+        EQ_MISMATCH_COUNT=$(echo "$EQ_OUTPUT" | grep -oE "[0-9]+ mismatches" | grep -oE "[0-9]+")
+        check_error "GAMS equation name mismatches: $EQ_MISMATCH_COUNT equations in docs not found in code"
+        echo "$EQ_OUTPUT" | grep "^  " | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "GAMS equation checker not found or not executable: $EQ_CHECK_SCRIPT"
+fi
+
+# Check 16: GAMS Realization Name Verification
+# =============================================
+print_section "16/16" "Checking GAMS realization names in docs..."
+
+REAL_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_realizations.sh"
+if [ -x "$REAL_CHECK_SCRIPT" ]; then
+    REAL_OUTPUT=$("$REAL_CHECK_SCRIPT" 2>&1)
+    REAL_EXIT=$?
+    if [ $REAL_EXIT -eq 0 ]; then
+        REAL_ACCURACY=$(echo "$REAL_OUTPUT" | grep "Accuracy:" | head -1)
+        check_pass "GAMS realization names verified: $REAL_ACCURACY"
+    else
+        REAL_MISMATCH_COUNT=$(echo "$REAL_OUTPUT" | grep -oE "[0-9]+ mismatches" | grep -oE "[0-9]+")
+        check_error "GAMS realization name mismatches: $REAL_MISMATCH_COUNT names in docs not found as directories"
+        echo "$REAL_OUTPUT" | grep "^  " | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "GAMS realization checker not found or not executable: $REAL_CHECK_SCRIPT"
 fi
 
 # ============

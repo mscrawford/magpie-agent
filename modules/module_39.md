@@ -1185,6 +1185,6 @@ Module 39 participates in **zero or minimal circular dependencies**.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/39_*/maccs_aug22/*.gms`
+**Verified Against**: `../modules/39_*/calib/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

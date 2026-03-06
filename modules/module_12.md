@@ -796,7 +796,7 @@ if(all_countries_selected) {
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/12_*/glo_jan16/*.gms`
+**Verified Against**: `../modules/12_*/select_apr20/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
 

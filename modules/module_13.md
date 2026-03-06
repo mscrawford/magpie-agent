@@ -373,7 +373,7 @@ vm_tech_cost.l(i) = vm_tech_cost.up(i)
 
 ```
 Module 13 (vm_tech_cost)
-  → Module 11 (Costs, q11_cost_tc)
+  → Module 11 (Costs, q11_cost_reg)
   → Objective Function (vm_cost_glo)
 ```
 

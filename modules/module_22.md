@@ -1570,7 +1570,7 @@ Data sources:
 ---
 
 **Last Verified**: 2026-03-06 (synced China PA data from PR #857, WDPA numbers updated)
-**Verified Against**: `../modules/22_*/land_feb18/*.gms`
+**Verified Against**: `../modules/22_*/area_based_apr22/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
 

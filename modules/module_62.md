@@ -913,6 +913,6 @@ None
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/62_*/material_feb21/*.gms`
+**Verified Against**: `../modules/62_*/exo_flexreg_apr16/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

@@ -1088,7 +1088,7 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 ---
 
 **Last Verified**: 2026-03-06 (21 equations added (32/32 fully documented))
-**Verified Against**: `../modules/35_*/pot_forest_feb21/*.gms`
+**Verified Against**: `../modules/35_*/pot_forest_may24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
 

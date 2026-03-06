@@ -1651,6 +1651,6 @@ Module 38 participates in **zero or minimal circular dependencies**.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/38_*/fixed_nov23/*.gms`
+**Verified Against**: `../modules/38_*/sticky_feb18/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

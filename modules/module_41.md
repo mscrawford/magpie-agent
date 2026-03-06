@@ -1054,6 +1054,6 @@ Module 41 participates in **zero or minimal circular dependencies**.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/41_*/endo_aug13/*.gms`
+**Verified Against**: `../modules/41_*/endo_apr13/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

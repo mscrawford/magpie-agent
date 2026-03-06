@@ -901,6 +901,6 @@ This section shows Module 43's role in system-level mechanisms.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/43_*/watavail_aug13/*.gms`
+**Verified Against**: `../modules/43_*/total_water_aug13/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

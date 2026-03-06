@@ -173,6 +173,41 @@ codebase changes.
 
 ---
 
+### Pattern 8: Stale Realization Names in Verification Footers
+
+**What it looks like**: "Verified Against" footer lines reference realization directories
+that no longer exist (e.g., `glo_jan16` instead of `select_apr20`).
+
+**Why it happens**: AI-generated documentation was created when a different realization
+was active, or the AI invented plausible-sounding realization names by combining module
+keywords with date suffixes. The verification footer was never actually verified.
+
+**Examples**:
+- `../modules/12_*/glo_jan16/*.gms` → actual: `select_apr20`
+- `../modules/38_*/fixed_nov23/*.gms` → actual: `sticky_feb18`
+- `../modules/73_*/static_jan21/*.gms` → actual: `default`
+
+**Prevention**: ✅ Automated — Check 16 (check_gams_realizations.sh)
+
+**Root cause insight**: This is a variation of **hallucination**, but specifically in
+metadata/footer sections that receive less human review than main content. 12 of 15
+mismatches were in "Verified Against" lines — ironic because these are the lines
+meant to prove the document was verified.
+
+### Pattern 9: Wrong Equation Names
+
+**What it looks like**: Equation names (q{N}_*) in docs don't match actual GAMS declarations.
+
+**Examples**:
+- `q11_cost_tc` → actual: `q11_cost_reg` (the equation where vm_tech_cost feeds in)
+- `q30_land_snv`, `q30_treecover` → no such equations exist in either realization
+- `q15_bmi_shr` → should be `q15_bmi_shr_*` (family of equations)
+
+**Why it happens**: AI constructs plausible equation names from context (cost + tc → q11_cost_tc)
+rather than looking up the actual declaration. Similar to Pattern 2 but for equations instead of variables.
+
+**Prevention**: ✅ Automated — Check 15 (check_gams_equations.sh)
+
 ## Audit Angles Registry
 
 Track which audit angles have been attempted, their yield, and when to repeat.
@@ -184,9 +219,9 @@ Track which audit angles have been attempted, their yield, and when to repeat.
 | Cross-references | Previous | Multiple | ✅ Check 3, 8 | After file renames |
 | Convention renames | Previous | Multiple | ✅ Check 7 | After convention changes |
 | Path prefixes | Previous | 43 | ✅ Check 12 | After restructuring |
-| Equation names | Not yet | — | ❌ | — |
+| Equation names | 2026-03-07 | 4 | ✅ Check 15 | After module doc updates |
 | Set names | Not yet | — | ❌ | — |
-| Realization names | Previous | 1 (fbask) | ❌ | After code merges |
+| Realization names | 2026-03-07 | 12 | ✅ Check 16 | After code merges |
 | File:line citations | Not yet | — | ❌ | After code merges |
 
 ---
