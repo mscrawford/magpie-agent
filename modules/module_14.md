@@ -1473,7 +1473,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
    ```r
    # Compare modeled to FAO yields
    yields_model <- yields(gdx, level="reg", products="kcr")
-   yields_fao <- read.csv("modules/14_yields/input/f14_yields_calib.cs3")
+   yields_fao <- read.csv("modules/14_yields/input/f14_yld_calib.csv")
    relative_error <- abs(yields_model - yields_fao) / yields_fao
    stopifnot(mean(relative_error, na.rm=TRUE) < 0.15)  # <15% avg error
    ```

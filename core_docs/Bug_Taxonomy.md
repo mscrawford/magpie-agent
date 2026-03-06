@@ -244,6 +244,34 @@ the common pattern.
 
 **Prevention**: ✅ Automated — Check 17 catches missing files too
 
+### Pattern 12: Content-Level Citation Mismatch
+
+**What it looks like**: Citation has a valid line number (within file range) but
+the cited line doesn't contain the claimed identifier. Often off by 1-5 lines.
+
+**Why it happens**: Code evolves after documentation is written — lines are added
+or removed, shifting all subsequent line numbers. Also occurs when input parameters
+are reordered during refactoring.
+
+**Examples**:
+- `q52_emis_co2_actual` cited at `equations.gms:19` but actually at line 16 (3 lines off)
+- `s14_carbon_fraction` cited at `input.gms:29` but actually at line 22 (7 lines off)
+- `i20_processing_unitcosts` cited at `input.gms:25` — actually `f20_processing_unitcosts` there (wrong prefix)
+
+**Discovery stats**: 26 bugs across 9 module docs (292 claims checked, 91% → 99.3%)
+
+**Prevention**: Manual audit needed — too dependent on context parsing for reliable automation
+
+### Pattern 13: Wrong Parameter Default Value
+
+**What it looks like**: Documentation claims a parameter default that differs from
+`config/default.cfg`. Common when docs describe scenario-specific values as if defaults.
+
+**Examples**:
+- `s56_cprice_red_factor` documented as default=0, actual default=1
+
+**Prevention**: Manual audit. Most "default" claims in docs are correct (42/43 verified).
+
 ## Audit Angles Registry
 
 Track which audit angles have been attempted, their yield, and when to repeat.
@@ -259,6 +287,8 @@ Track which audit angles have been attempted, their yield, and when to repeat.
 | Set names | 2026-03-07 | 0 | N/A | Sets too distinctive to hallucinate |
 | Realization names | 2026-03-07 | 12 | ✅ Check 16 | After code merges |
 | File:line citations | 2026-03-07 | 151 | ✅ Check 17 | After code merges |
+| Content-level citations | 2026-03-07 | 26 | Manual | After code merges |
+| Parameter defaults | 2026-03-07 | 1 | Manual | After config changes |
 
 ---
 
