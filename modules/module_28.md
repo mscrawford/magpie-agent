@@ -413,7 +413,7 @@ Module 28 is a **reference data module** with zero equations and zero optimizati
 - **Water Balance**: ❌ Does NOT participate (no water-related parameters)
 - **Carbon Balance**: ⚠️ **INDIRECT** - Age-classes used in Module 52 carbon growth calculations
   - Chapman-Richards vegetation growth uses `ac` (age-class set) for carbon density progression
-  - Carbon stocks vary by age: `pm_carbon_density_ac(t,j,ac,ag_pools)`
+  - Carbon stocks vary by age: `pm_carbon_density_secdforest_ac(t,j,ac,ag_pools)` / `pm_carbon_density_plantation_ac(t,j,ac,ag_pools)`
   - Module 28 provides the age-class indexing structure
   - **Reference**: `cross_module/carbon_balance_conservation.md` (Section 6, Chapman-Richards Growth)
 - **Food Balance**: ❌ Does NOT participate (age-classes don't affect production directly)

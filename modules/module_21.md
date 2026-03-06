@@ -554,7 +554,7 @@ v21_cost_trade_reg.scale(i,k_trade) = 10e4;
 Module 21 implements the **regional trade balance mechanism** that ensures global food supply meets demand:
 
 - **Global Production Constraint** (`q21_trade_glo`): Enforces that regional production plus net imports equals supply requirements
-  - Formula: `vm_prod_reg(i,k) + sum(i2, vm_import(i2,i,k)) - sum(i2, vm_export(i,i2,k)) = vm_supply(i,k)`
+  - Formula: `sum(i2, vm_prod_reg(i2,k_trade)) =g= sum(i2, vm_supply(i2,k_trade)) + f21_trade_balanceflow(ct,k_trade)`
   - Location: `equations.gms:12-14`
 
 - **Two-Pool Trade System**:
@@ -606,26 +606,26 @@ Module 21 implements the **regional trade balance mechanism** that ensures globa
 Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
        ↑                                         │
        │                                         │
-       └─────────── vm_import/export ←───────────┘
+       └──── self-sufficiency constraints ←───────┘
                            ↓
                   Module 17 (Production)
                      vm_prod_reg(i,k)
 ```
 
 **Resolution Mechanism**: **Type 2 - Simultaneous Equations**
-- All three modules' variables (`vm_supply`, `vm_import`, `vm_export`, `vm_prod_reg`) are optimized **simultaneously** in the same GAMS SOLVE statement
+- All three modules' variables (`vm_supply`, `vm_prod_reg`, `v21_excess_prod`, `v21_excess_dem`) are optimized **simultaneously** in the same GAMS SOLVE statement
 - The coupled system of equations forms a square system (# variables = # equations) with unique solution
 - GAMS solver (CONOPT/IPOPT) solves all equations together in one optimization
 
 **Why It Works**:
-1. Trade variables (`vm_import`, `vm_export`) link supply and production
+1. Self-sufficiency constraints (`q21_trade_reg`) and excess demand/supply variables link supply and production
 2. Global balance ensures total imports = total exports
 3. Regional production + net imports must meet regional demand
 4. System is economically consistent (market clearing)
 
 **Testing Protocol** (if modifying Module 21):
 - ✅ Verify food balance holds: `sum(i, vm_prod_reg(i,k)) = sum(i, vm_supply(i,k))`
-- ✅ Verify trade balance: `sum(i, sum(i2, vm_import(i,i2,k))) = sum(i, sum(i2, vm_export(i,i2,k)))`
+- ✅ Verify trade balance: `sum(i, vm_prod_reg(i,k)) >= sum(i, vm_supply(i,k))` (global production covers global demand)
 - ✅ Test infeasibility scenarios (regions with zero production but high demand)
 - ✅ Check self-sufficiency constraints are not violated
 

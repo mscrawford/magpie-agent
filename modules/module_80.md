@@ -741,7 +741,7 @@ Module 80 depends on ALL modules to:
 - **postsolve**: Modules read optimal variable values (`.l` levels)
 - **output**: Report generation uses optimal solution
 
-**Example**: Module 50 (NR Soil Budget) reads `vm_nr_surplus.l` (optimal nitrogen surplus) in postsolve to calculate cumulative soil degradation.
+**Example**: Module 50 (NR Soil Budget) reads `v50_nr_surplus_cropland.l` (optimal nitrogen surplus) in postsolve to calculate cumulative soil degradation.
 
 ---
 

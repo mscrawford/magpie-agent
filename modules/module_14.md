@@ -1402,7 +1402,7 @@ pm_yields_semi_calib(j,kcr,w) [14] → **BACK TO START** (via soil organic matte
 
 **Resolution mechanism in code** (from circular_dependency_resolution.md Section 3.1):
 - **Preloop calibration**: `pm_yields_semi_calib` calculated BEFORE optimization
-- **τ factor from previous timestep**: `pm_tau(t)` uses **lagged** production values
+- **τ factor from previous timestep**: `pcm_tau(j,tautype)` uses **lagged** production values
 - **SOM effects gradual**: 15% annual convergence (Module 59) → smooth feedback
 - **No iteration within timestep**: Yields fixed → production optimized → manure calculated → affects NEXT timestep
 
@@ -1442,7 +1442,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 - ✅ Toggle degradation effects (`s14_degradation` 0/1)
 - ✅ Switch climate scenario (`c14_yields_scenario`: cc/nocc/nocc_hist)
 - ✅ Modify timber conversion factors (small adjustments to IPCC factors)
-- ✅ Change bioenergy scaling (`s14_yld_bioen_scaling`) if using bioenergy scenarios
+- ✅ Change bioenergy yield conversion factors (`s14_carbon_fraction`) if using bioenergy scenarios
 
 **Moderate-Risk Modifications** (require calibration testing):
 - ⚠️ Change limited calibration bounds (`s14_limit_calib`):
@@ -1526,7 +1526,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 **Emergency Fixes**:
 - If food demand infeasibility: Increase `s14_limit_calib` upper bound (allow more statistical adjustment)
 - If unrealistic yield patterns: Check LPJmL input data quality
-- If oscillation: Reduce τ factor sensitivity in Module 13 (`s13_tau_response`)
+- If oscillation: Reduce τ factor sensitivity in Module 13 (check `s13_max_gdp_shr` and cropland conservation params)
 - If irrigation fails: Verify irrigated-rainfed calibration (`s14_calib_ir2rf = 1`)
 - If calibration non-convergence: Relax convergence tolerance or fix problematic crops
 

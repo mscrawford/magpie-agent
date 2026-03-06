@@ -975,7 +975,7 @@ Production affects demand via prices (if endogenous demand) → **BACK TO START*
 - If food balance infeasible: Check all cells are included in aggregation
 - If regional anomalies: Verify `cell(i,j)` mapping is correct
 - If oscillation: Check Module 14 yield calibration (not Module 17 issue)
-- If trade errors: Verify `vm_prod_reg` units match `vm_demand` units (both Mt DM/yr)
+- If trade errors: Verify `vm_prod_reg` units match `vm_supply` units (both Mt DM/yr)
 
 **Links**:
 - Food balance details → cross_module/nitrogen_food_balance.md (Part 2)

@@ -952,7 +952,7 @@ Module 42 is a **core participant** in the water balance conservation law:
 
 **Key Equations**:
 - Agricultural demand: `vm_watdem("agriculture",j) × efficiency = Σ(irrigated_area × water_req) + Σ(livestock_prod × water_req)` (`equations.gms:10-14`)
-- Pumping costs: `vm_cost_wat(j) = watdem × pumping_cost_factor` (`equations.gms:16-17`)
+- Pumping costs: `vm_water_cost(j) = watdem × pumping_cost_factor` (`equations.gms:16-17`)
 
 **Not in other conservation laws**:
 - **Not in** land balance (uses land allocation, doesn't enforce it)
@@ -970,7 +970,7 @@ Module 42 is a **core participant** in the water balance conservation law:
 
 **Provides to**:
 - Module 43 (water_availability): `vm_watdem(wat_dem,j)` - total water withdrawals by sector
-- Module 11 (costs): `vm_cost_wat(j)` - water pumping/conveyance costs
+- Module 11 (costs): `vm_water_cost(j)` - water pumping/conveyance costs
 
 **Depends on**:
 - Module 09 (drivers): SSP scenarios for non-agricultural water demands
@@ -1052,7 +1052,7 @@ Module 42 participates in **indirect circular dependencies** through the Cropare
 4. **Cost component check**:
    ```r
    # Verify water costs are reasonable
-   wat_costs <- readGDX("fulldata.gdx", "vm_cost_wat")
+   wat_costs <- readGDX("fulldata.gdx", "vm_water_cost")
    total_costs <- readGDX("fulldata.gdx", "vm_cost_glo")
    wat_share <- sum(wat_costs) / total_costs
    # Water costs typically <5% of total costs
@@ -1069,7 +1069,7 @@ Module 42 participates in **indirect circular dependencies** through the Cropare
 **Emergency Fixes**:
 - If water infeasibility: Reduce non-agricultural demands or increase environmental flow buffer
 - If unrealistic irrigation: Check `ic42_wat_req_k` loaded correctly from LPJmL data
-- If cost anomalies: Verify `s42_pumping_cost` parameter units and magnitudes
+- If cost anomalies: Verify `ic42_pumping_cost` parameter units and magnitudes
 
 **Links**:
 - Water balance enforcement → `modules/module_43.md`

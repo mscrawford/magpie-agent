@@ -836,7 +836,7 @@ Module 29 tracks **cropland carbon stocks** across four pools:
   4. **Below-ground carbon**: Root biomass
 
 - **Dynamic Soil Carbon**:
-  - Module 59 calculates equilibrium: `pm_carbon_density_secdforest` for tree cover
+  - Module 59 calculates equilibrium: `pm_carbon_density_secdforest_ac` for tree cover
   - Equation: `v29_treecover(j,ac)` affects soil carbon accumulation
   - Tree cover acts as carbon sink on cropland
 

@@ -637,7 +637,7 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 **Safe Modifications**:
 - ✅ Adjusting conservation priority area scenarios (BH, IFL, KBA, WDPA, etc.)
 - ✅ Changing protection/restoration allocation logic (`s22_conservation_target`)
-- ✅ Modifying conservation share parameters (`f22_conservation_fader`)
+- ✅ Modifying conservation share parameters (`p22_conservation_fader`)
 - ✅ Adding new conservation scenarios or land protection types
 - ✅ Updating WDPA baseline data with new protected area information
 

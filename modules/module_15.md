@@ -468,7 +468,7 @@ q15_foodtree_kcal_staples(iso,kfo_st) ..
 | `i15_intake_EATLancet(iso,kfo)` | EAT-Lancet diet targets | kcal/cap/day | EAT-Lancet Commission |
 | `i15_ruminant_fadeout(t,iso)` | Ruminant meat substitution | 1 | Scenario fader |
 | `i15_livestock_fadeout(t,iso)` | Livestock reduction | 1 | Scenario fader |
-| `p15_waste_scen` | Waste reduction target | 1 | Scenario switch |
+| `s15_waste_scen` | Waste reduction target | 1 | Scenario switch |
 | `p15_demand2intake_ratio(t,iso)` | Waste ratio | kcal/kcal | Regression-based |
 
 ---

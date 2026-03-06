@@ -224,7 +224,7 @@ GTAP_cost_1995(k) = GTAP_cost_2004(k) × (FAO_production_1995 / FAO_production_2
 f40_transport_costs(k) = GTAP_cost_1995(k) / sum(j, vm_prod_initial(j,k) × f40_distance(j))
 ```
 
-**Assumption**: Initial production pattern `vm_prod_initial(j,k)` based on FAO regional production downscaled to cells using land suitability
+**Assumption**: Initial production pattern (conceptual `vm_prod_initial(j,k)`, not an actual GAMS variable) based on FAO regional production downscaled to cells using land suitability
 
 **Result**: First-guess cost factors (likely inaccurate due to mismatch between initial production assumption and actual optimized allocation)
 
@@ -235,7 +235,7 @@ f40_transport_costs(k) = GTAP_cost_1995(k) / sum(j, vm_prod_initial(j,k) × f40_
 1. Run MAgPIE with `f40_transport_costs(k)` from Stage 2
 2. Yield calibration mode active (Module 14): Adjust yields to match FAO regional production totals for 1995
 3. Optimization determines spatial allocation accounting for transport costs
-4. Output: Calibrated production pattern `vm_prod_calibrated(j,k)` matching FAO totals but with optimized spatial distribution
+4. Output: Calibrated production pattern (conceptual `vm_prod_calibrated(j,k)`, realized as `vm_prod(j,k)` in GAMS) matching FAO totals but with optimized spatial distribution
 
 ---
 

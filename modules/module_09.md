@@ -657,6 +657,7 @@ gdp_ppp["y2050", africa_countries, "SSP2"] <- gdp_ppp["y2050", africa_countries,
 **Current**: Continuous 0-1 scale
 **Alternative**: Step function at specific GDP thresholds
 ```gams
+* Hypothetical (not actual code) — im_gdp_pc_ppp_iso is at ISO level, would need aggregation to (i)
 im_development_state(t,i) = 0$(im_gdp_pc_ppp(t,i) < 4000);  * Low income
 im_development_state(t,i) = 0.33$(im_gdp_pc_ppp(t,i) >= 4000 AND im_gdp_pc_ppp(t,i) < 12000);  * Lower-middle
 im_development_state(t,i) = 0.67$(im_gdp_pc_ppp(t,i) >= 12000 AND im_gdp_pc_ppp(t,i) < 25000);  * Upper-middle

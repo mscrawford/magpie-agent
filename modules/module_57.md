@@ -290,7 +290,7 @@ Integral at Step 4:
 loop(maccs_steps$(ord(maccs_steps) > 1),
     p57_maccs_costs_integral(t,i,emis_source,"pollutant")$(ord(maccs_steps) <= i57_mac_step) =
     p57_maccs_costs_integral(t,i,emis_source,"pollutant") +
-    (f57_maccs(t,i,category,maccs_steps) - f57_maccs(t,i,category,maccs_steps-1))
+    (f57_maccs_<type>(t,i,category,maccs_steps) - f57_maccs_<type>(t,i,category,maccs_steps-1))
     * (ord(maccs_steps)-1) * s57_step_length;
 );
 ```
@@ -518,7 +518,7 @@ Integral = Sum over steps of (Mitigation_delta × Price × Step_width)
 **Trapezoid Rule**:
 - Each step: Width = `s57_step_length` (6.15 or 22.4 USD17/tC-eq)
 - Height = Price at step: `(ord(maccs_steps)-1) × s57_step_length`
-- Delta mitigation: `f57_maccs(step) - f57_maccs(step-1)`
+- Delta mitigation: `f57_maccs_<type>(step) - f57_maccs_<type>(step-1)` (where type = n2o or ch4)
 
 **Cumulative Sum**: Loop accumulates area as steps increase
 

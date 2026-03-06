@@ -1406,7 +1406,7 @@ Module 30 ──→ vm_area ──→ Module 29 ──→ vm_land("crop") ──
 - Core module for food security, water allocation, land use
 
 **Safe Modifications**:
-- ✅ Adjusting rotation penalty parameters (`s30_rotation_scenario_speed`, `s30_rotation_scenario_target`)
+- ✅ Adjusting rotation penalty parameters (`s30_rotation_scenario_start`, `s30_rotation_scenario_target`)
 - ✅ Changing BETR (bioenergy tree) targets (`s30_betr_target`, `s30_betr_penalty`)
 - ✅ Modifying crop diversity constraints (rotamax30 scalars)
 - ✅ Adding new crop types to `kcr` set (requires extensive downstream updates)
