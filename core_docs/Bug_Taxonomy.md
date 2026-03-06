@@ -208,6 +208,42 @@ rather than looking up the actual declaration. Similar to Pattern 2 but for equa
 
 **Prevention**: ✅ Automated — Check 15 (check_gams_equations.sh)
 
+### Pattern 10: Stale File:Line Citations
+
+**What it looks like**: `equations.gms:74` points past end of file (file has 49 lines),
+or `presolve.gms:20` references a file that doesn't exist (actual: `presolve_ini.gms`).
+
+**Why it happens**: Documentation written against older/different versions of GAMS files
+where the code was longer or structured differently. Also: wrong realization name in the
+"Verified Against" footer propagates to all line citations (if the doc was "verified"
+against a non-existent realization, all line numbers are fabricated).
+
+**Scale**: 151 bugs found — the **largest single bug class** by count.
+- 39 in module_22.md (wrong filename: presolve.gms → presolve_ini.gms)
+- 46 in module_29.md (hallucinated line numbers past EOF)
+- 23 in module_30.md, 18 in module_38.md
+
+**Fix strategy**: Strip out-of-range line numbers rather than guess correct ones.
+Keeping `equations.gms` without a line number is better than pointing to a wrong line.
+
+**Prevention**: ✅ Automated — Check 17 (check_gams_citations.sh)
+
+**Root cause insight**: This pattern correlates strongly with Pattern 8 (stale
+realization names). Wrong realization → wrong file sizes → all line citations invalid.
+
+### Pattern 11: Wrong GAMS Filename
+
+**What it looks like**: Citation references `presolve.gms` but actual file is
+`presolve_ini.gms`. File genuinely doesn't exist under that name.
+
+**Why it happens**: GAMS file naming isn't fully standardized — most modules have
+`presolve.gms` but some use `presolve_ini.gms`, `preloop.gms`, etc. AI assumes
+the common pattern.
+
+**Examples**: Module 22 (`presolve.gms` → `presolve_ini.gms`, 39 citations)
+
+**Prevention**: ✅ Automated — Check 17 catches missing files too
+
 ## Audit Angles Registry
 
 Track which audit angles have been attempted, their yield, and when to repeat.
@@ -220,9 +256,9 @@ Track which audit angles have been attempted, their yield, and when to repeat.
 | Convention renames | Previous | Multiple | ✅ Check 7 | After convention changes |
 | Path prefixes | Previous | 43 | ✅ Check 12 | After restructuring |
 | Equation names | 2026-03-07 | 4 | ✅ Check 15 | After module doc updates |
-| Set names | Not yet | — | ❌ | — |
+| Set names | 2026-03-07 | 0 | N/A | Sets too distinctive to hallucinate |
 | Realization names | 2026-03-07 | 12 | ✅ Check 16 | After code merges |
-| File:line citations | Not yet | — | ❌ | After code merges |
+| File:line citations | 2026-03-07 | 151 | ✅ Check 17 | After code merges |
 
 ---
 

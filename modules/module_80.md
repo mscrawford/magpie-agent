@@ -155,11 +155,11 @@ solve magpie USING nlp MINIMIZING vm_cost_glo;
 - Retry 1: CONOPT4 with increased variable limit (optfile = 2, Lim_Variable = 1.e25)
 - If still fails, proceed to Fallback C
 
-**Fallback C - CONOPT3 as last resort** (solve.gms:154-161):
+**Fallback C - CONOPT3 as last resort** (solve.gms):
 - Switch to CONOPT3 (older, more robust solver)
 - Final attempt to find feasible solution
 
-**Step 9 - Optional CPLEX Polish** (solve.gms:182-202):
+**Step 9 - Optional CPLEX Polish** (solve.gms):
 
 If `s80_add_cplex = 1` (set via `c80_nlp_solver = "conopt4+cplex"`):
 1. Fix nonlinearities again (`nl_fix`)
@@ -167,9 +167,9 @@ If `s80_add_cplex = 1` (set via `c80_nlp_solver = "conopt4+cplex"`):
 3. Release nonlinearities (`nl_release`)
 4. If optimal/feasible, minimize land differences
 
-Purpose: CPLEX may find solutions closer to previous timestep pattern (solve.gms:183-202).
+Purpose: CPLEX may find solutions closer to previous timestep pattern (solve.gms).
 
-**Step 10 - Finalization** (solve.gms:204-211):
+**Step 10 - Finalization** (solve.gms):
 
 Success (modelstat < 3, excluding modelstat = 7):
 - Save GDX file: `mv magpie_p.gdx magpie_YEAR.gdx`
@@ -637,7 +637,7 @@ vm_cost_glo.up = Inf;
 if ((magpie.modelstat=1 or magpie.modelstat = 7), ...
 ```
 
-**In failure check**: Modelstat 7 excluded from failure (solve.gms:208, nlp_apr17/solve.gms:102):
+**In failure check**: Modelstat 7 excluded from failure (solve.gms, nlp_apr17/solve.gms:102):
 ```gams
 if ((p80_modelstat(t) > 2 and p80_modelstat(t) ne 7), abort
 ```

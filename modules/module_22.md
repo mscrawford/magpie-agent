@@ -64,7 +64,7 @@ Module 22 has **NO EQUATIONS** - it's a **parameter calculation module** that ru
 
 ---
 
-#### **A. Baseline Protection (WDPA + China)** (`presolve.gms:20-26`)
+#### **A. Baseline Protection (WDPA + China)** (`presolve_ini.gms:20-26`)
 
 **Purpose**: Implements historical protected area trends from World Database on Protected Areas and China-specific PA data (@wang_over_2024)
 
@@ -93,7 +93,7 @@ if(m_year(t) <= sm_fix_SSP2,
 
 ---
 
-#### **B. Additional Conservation Priority Areas** (`presolve.gms:28-44`)
+#### **B. Additional Conservation Priority Areas** (`presolve_ini.gms:28-44`)
 
 **Purpose**: Add future conservation scenarios on top of WDPA baseline
 
@@ -129,7 +129,7 @@ p22_conservation_area(t,j,land_natveg) =
 - **CCA**: Conservation Concern Areas
 - **PBL_HalfEarth**: PBL Half-Earth scenario
 
-**Special Case: IFL Primary Forest** (`presolve.gms:16-17`):
+**Special Case: IFL Primary Forest** (`presolve_ini.gms:16-17`):
 ```gams
 * Include all remaining primary forest areas in IFL conservation target
 p22_add_consv(t,j,"IFL","primforest") = pcm_land(j,"primforest") * p22_conservation_fader(t);
@@ -140,7 +140,7 @@ p22_add_consv(t,j,"BH_IFL","primforest") = pcm_land(j,"primforest") * p22_conser
 
 ---
 
-#### **C. Protection Calculation** (`presolve.gms:47-55`)
+#### **C. Protection Calculation** (`presolve_ini.gms:47-55`)
 
 **Purpose**: Set protection targets, capped at current land availability
 
@@ -173,7 +173,7 @@ Result:
 
 ---
 
-#### **D. Restoration Calculation** (`presolve.gms:58-118`)
+#### **D. Restoration Calculation** (`presolve_ini.gms:58-118`)
 
 **Purpose**: Calculate restoration requirements to meet conservation targets
 
@@ -183,7 +183,7 @@ Result:
 if(s22_restore_land = 1 OR m_year(t) <= sm_fix_SSP2,
 ```
 
-**D.1 Grassland Restoration** (`presolve.gms:64-67`):
+**D.1 Grassland Restoration** (`presolve_ini.gms:64-67`):
 
 ```gams
 * Grassland
@@ -193,7 +193,7 @@ pm_land_conservation(t,j,"past","restore")$(p22_conservation_area(t,j,"past") > 
 
 **Logic**: If target > current pasture area, restore the difference
 
-**D.2 Forest Restoration** (`presolve.gms:68-74`):
+**D.2 Forest Restoration** (`presolve_ini.gms:68-74`):
 
 ```gams
 * Forest land
@@ -210,7 +210,7 @@ pm_land_conservation(t,j,"secdforest","restore")$(pm_land_conservation(t,j,"secd
 - **All restoration goes to secondary forest** (primforest cannot be created by definition)
 - Zero out very small restoration requirements (< 0.000001 Mha) to avoid numerical issues
 
-**D.3 Other Land Restoration** (`presolve.gms:75-77`):
+**D.3 Other Land Restoration** (`presolve_ini.gms:75-77`):
 
 ```gams
 * Other land
@@ -222,7 +222,7 @@ pm_land_conservation(t,j,"other","restore")$(p22_conservation_area(t,j,"other") 
 
 ---
 
-#### **E. Restoration Potential Constraints** (`presolve.gms:79-111`)
+#### **E. Restoration Potential Constraints** (`presolve_ini.gms:79-111`)
 
 **Purpose**: Limit restoration by available land (restoration potential)
 
@@ -233,7 +233,7 @@ pm_land_conservation(t,j,"other","restore")$(p22_conservation_area(t,j,"other") 
 - Crop minimum (food security)
 - Tree cover (from Module 32)
 
-**E.1 Secondary Forest Restoration Potential** (`presolve.gms:82-89`):
+**E.1 Secondary Forest Restoration Potential** (`presolve_ini.gms:82-89`):
 
 ```gams
 p22_secdforest_restore_pot(t,j) = sum(land, pcm_land(j, land))
@@ -258,7 +258,7 @@ Secdforest restoration potential = Total land
 Secdforest restoration = min(Target restoration, Restoration potential)
 ```
 
-**E.2 Grassland Restoration Potential** (`presolve.gms:92-100`):
+**E.2 Grassland Restoration Potential** (`presolve_ini.gms:92-100`):
 
 ```gams
 p22_past_restore_pot(t,j) = sum(land, pcm_land(j, land))
@@ -272,7 +272,7 @@ p22_past_restore_pot(t,j) = sum(land, pcm_land(j, land))
 
 **Logic**: Same as secdforest, but also excludes already-allocated secdforest restoration
 
-**E.3 Other Land Restoration Potential** (`presolve.gms:103-111`):
+**E.3 Other Land Restoration Potential** (`presolve_ini.gms:103-111`):
 
 ```gams
 p22_other_restore_pot(t,j) = sum(land, pcm_land(j, land))
@@ -293,7 +293,7 @@ p22_other_restore_pot(t,j) = sum(land, pcm_land(j, land))
 
 ---
 
-#### **F. No Restoration Mode** (`presolve.gms:113-118`)
+#### **F. No Restoration Mode** (`presolve_ini.gms:113-118`)
 
 ```gams
 else
@@ -307,7 +307,7 @@ pm_land_conservation(t,j,land,"restore") = 0;
 
 ---
 
-#### **G. Protection Reversal** (`presolve.gms:120-122`)
+#### **G. Protection Reversal** (`presolve_ini.gms:120-122`)
 
 ```gams
 if (m_year(t) >= s22_base_protect_reversal,
@@ -492,7 +492,7 @@ i22_land_iso(iso) = sum(land, fm_land_iso("y1995",iso,land));
      - `vm_land.lo(j,"crop")`: Minimum cropland requirement (mio. ha)
    - **Why critical**: Cannot calculate restoration potential without knowing current land allocation
    - **Timing**: Module 10 runs in optimization, Module 22 in presolve (uses previous timestep values)
-   - **File**: `presolve.gms:54-111`
+   - **File**: `presolve_ini.gms:54-111`
 
 **Additional Dependencies** (indirect):
 - **Module 32 (Forestry)**: `vm_treecover.l(j)` - tree cover area (mio. ha)
@@ -681,7 +681,7 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 
 ### 6. Code Truth: What Module 22 DOES
 
-✅ **1. Implements WDPA + China Baseline Protection (1995-2020)** (`presolve.gms:20-26`):
+✅ **1. Implements WDPA + China Baseline Protection (1995-2020)** (`presolve_ini.gms:20-26`):
 - Historical protected area trends from World Database on Protected Areas + China PAs (@wang_over_2024)
 - 1995: 955 Mha → 2020: 1856 Mha (94% increase, 14.3% of land)
 - Post-2020: Held constant at 2020 levels unless additional scenarios applied
@@ -693,7 +693,7 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 - **Country-specific**: Can apply different scenarios to selected countries
 - **Additive**: Priority areas added to WDPA baseline, not replacing it
 
-✅ **3. Calculates Restoration Requirements** (`presolve.gms:62-77`):
+✅ **3. Calculates Restoration Requirements** (`presolve_ini.gms:62-77`):
 - If conservation target > current land area → restoration needed
 - **Restoration types**:
   - Grassland restoration: `target_pasture - current_pasture`
@@ -701,7 +701,7 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
   - Other land restoration: `target_other - current_other`
 - **Forest restoration attribution**: All forest restoration goes to secondary forest (primforest cannot be created)
 
-✅ **4. Limits Restoration by Available Land** (`presolve.gms:79-111`):
+✅ **4. Limits Restoration by Available Land** (`presolve_ini.gms:79-111`):
 - **Restoration potential** = Total land - Urban - Timber - Protected pasture - Minimum cropland - Tree cover
 - **Priority order**: Secdforest → Pasture → Other land
 - **Prevents infeasibility**: Cannot restore more land than physically available
@@ -712,7 +712,7 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 - **Regional aggregation**: Weighted average for MAgPIE's 10 regions
 - **Dual scenarios**: Different scenarios for selected vs. non-selected countries
 
-✅ **6. Provides Binding Constraints to Land Modules** (`presolve.gms:54-55`):
+✅ **6. Provides Binding Constraints to Land Modules** (`presolve_ini.gms:54-55`):
 - **Protection**: `pm_land_conservation(t,j,land,"protect")` prevents conversion
 - **Restoration**: `pm_land_conservation(t,j,land,"restore")` requires land creation
 - **Used by**: Module 10 (Land), Module 35 (NatVeg), Module 31 (Pasture)
@@ -723,7 +723,7 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 - **Result**: Slight mismatches in some regions
 - **Resolution**: Protection capped at current land area (line 55)
 
-✅ **8. Allows Protection Reversal** (`presolve.gms:120-122`):
+✅ **8. Allows Protection Reversal** (`presolve_ini.gms:120-122`):
 - **Switch**: `s22_base_protect_reversal` (default: Inf = never)
 - **Purpose**: Scenario analysis (e.g., costs of protection)
 - **Effect**: Sets `pm_land_conservation = 0` after reversal year
@@ -841,12 +841,12 @@ s22_conservation_target = 2030    # Quick phase-in
 ```
 
 **Effect**:
-- All primary forest automatically protected (`presolve.gms:16`)
+- All primary forest automatically protected (`presolve_ini.gms:16`)
 - IFL-designated secondary forest and other natural land also protected
 - Focuses protection on largest remaining wilderness areas
 - High impact on tropical deforestation (Amazon, Congo, SE Asia)
 
-**Files**: `input.gms:10`, `presolve.gms:16-17`
+**Files**: `input.gms:10`, `presolve_ini.gms:16-17`
 
 ---
 
@@ -866,10 +866,10 @@ $setglobal c22_protect_scenario  BH_IFL
 **Effect**:
 - Protects 36 biodiversity hotspots (Myers et al.) + all IFL areas
 - Maximum protection coverage (~20-25% of land)
-- All primary forest protected (special case in `presolve.gms:17`)
+- All primary forest protected (special case in `presolve_ini.gms:17`)
 - Comprehensive conservation strategy (complementary criteria)
 
-**Files**: `input.gms:10`, `presolve.gms:16-17`
+**Files**: `input.gms:10`, `presolve_ini.gms:16-17`
 
 ---
 
@@ -897,7 +897,7 @@ s22_restore_land = 0
 - Focusing on "no further loss" rather than "net gain"
 - Baseline scenario for comparing with restoration scenarios
 
-**Files**: `input.gms:14`, `presolve.gms:62`
+**Files**: `input.gms:14`, `presolve_ini.gms:62`
 
 ---
 
@@ -983,7 +983,7 @@ s22_base_protect_reversal = 2050
 - Sensitivity analysis of protection duration
 - Policy evaluation (what if protection funding stops?)
 
-**Files**: `input.gms:17`, `presolve.gms:120-122`
+**Files**: `input.gms:17`, `presolve_ini.gms:120-122`
 
 ---
 
@@ -1097,9 +1097,9 @@ stopifnot(max_excess < 0.001)  # Should be essentially zero (rounding errors onl
 
 **Expected**: `max_excess ≈ 0` (protection capped at current land)
 
-**If fails**: Check `presolve.gms:54-55` capping logic
+**If fails**: Check `presolve_ini.gms:54-55` capping logic
 
-**File**: `presolve.gms:54-55`
+**File**: `presolve_ini.gms:54-55`
 
 ---
 
@@ -1129,9 +1129,9 @@ stopifnot(all(restoration <= expected_restoration + 0.001))
 
 **Expected**: `restoration ≤ expected_restoration` (capped by potential)
 
-**If fails**: Check restoration potential calculations (`presolve.gms:79-111`)
+**If fails**: Check restoration potential calculations (`presolve_ini.gms:79-111`)
 
-**Files**: `presolve.gms:64-77`, `presolve.gms:79-111`
+**Files**: `presolve_ini.gms:64-77`, `presolve_ini.gms:79-111`
 
 ---
 
@@ -1159,7 +1159,7 @@ stopifnot(max_diff < 1)  # Within 1 Mha tolerance (due to restoration potential 
 
 **If fails**: Either protection capping or restoration potential limiting
 
-**Files**: `presolve.gms:54-77`
+**Files**: `presolve_ini.gms:54-77`
 
 ---
 
@@ -1247,9 +1247,9 @@ stopifnot(min_other >= -0.001)
 
 **Expected**: All restoration potentials ≥ 0
 
-**If fails**: Check restoration potential calculations (`presolve.gms:82-111`)
+**If fails**: Check restoration potential calculations (`presolve_ini.gms:82-111`)
 
-**Files**: `presolve.gms:79-111`
+**Files**: `presolve_ini.gms:79-111`
 
 ---
 
@@ -1274,9 +1274,9 @@ if(reversal_year < 9999) {  # Reversal enabled
 
 **Expected**: Protection = 0 after reversal year
 
-**If fails**: Check reversal logic (`presolve.gms:120-122`)
+**If fails**: Check reversal logic (`presolve_ini.gms:120-122`)
 
-**Files**: `presolve.gms:120-122`
+**Files**: `presolve_ini.gms:120-122`
 
 ---
 
@@ -1385,7 +1385,7 @@ Module 22 (Land Conservation) implements protected areas as EXOGENOUS constraint
    - Historical trends: 955 Mha (1995) → 1856 Mha (2020) = 14.3% of land
    - Post-2020: Held constant at 2020 levels (unless scenarios applied)
    - Categories: IUCN Ia, Ib, III, IV, V, VI + legally designated
-   - File: modules/22_land_conservation/area_based_apr22/presolve.gms:20-26
+   - File: modules/22_land_conservation/area_based_apr22/presolve_ini.gms:20-26
 
 2. Future Scenarios (optional):
    - 20+ options: BH, IFL, KBA, 30by30, GSN, IrrC, Half-Earth
@@ -1400,7 +1400,7 @@ Module 22 (Land Conservation) implements protected areas as EXOGENOUS constraint
 
 4. Restoration (if enabled):
    → If target > current land: restore the difference
-   → Forest restoration → secondary forest (presolve.gms:71-73)
+   → Forest restoration → secondary forest (presolve_ini.gms:71-73)
    → Limited by available land (restoration potential)
 
 ⚠️ IMPORTANT: Protection is EXOGENOUS (not optimized). MAgPIE does not decide
@@ -1454,7 +1454,7 @@ in some regions. Check p22_secdforest_restore_pot to verify feasibility.
 ```
 Restoration is limited by RESTORATION POTENTIAL (available land after other uses):
 
-1. Check restoration potential (modules/22_land_conservation/area_based_apr22/presolve.gms:79-111):
+1. Check restoration potential (modules/22_land_conservation/area_based_apr22/presolve_ini.gms:79-111):
 
    Restoration potential = Total land
                           - Urban land

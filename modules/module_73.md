@@ -546,7 +546,7 @@ v73_prod_residues(j) ≤ vm_prod(j,"wood") × 0.15
    - `pm_demand_forestry(t,i,kforestry)` - Regional timber demand (mio. tDM/yr)
      - **Use**: Drives plantation establishment and harvest decisions
    - `im_timber_prod_cost(kforestry)` - Unit production costs (USD17MER/tDM)
-     - **Use**: Calculate forestry establishment costs in Module 32 (`32_forestry/dynamic_may24/equations.gms:159`)
+     - **Use**: Calculate forestry establishment costs in Module 32 (`32_forestry/dynamic_may24/equations.gms`)
 
 2. **Module 62 (material)** ← 1 variable:
    - `pm_demand_forestry(t,i,kforestry)` - Regional timber demand (mio. tDM/yr)

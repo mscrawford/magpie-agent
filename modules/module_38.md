@@ -303,7 +303,7 @@ Where:
 
 The model must compare investment costs (one-time) to production benefits (per timestep).
 
-**Economic Logic** (documented in `equations.gms:51-76`):
+**Economic Logic** (documented in `equations.gms`):
 
 1. **True Utility**: Investment I₀ provides utility over infinite horizon:
    ```
@@ -627,7 +627,7 @@ This creates dynamic adjustments:
 - **Type**: Positive variable (endogenous in sticky_labor, fixed in per_ton_fao)
 - **Dimensions**: [j, kcr]
 - **Units**: hours per ton DM
-- **Bounds**: 0.1× to 10× baseline (`presolve.gms:63-64`)
+- **Bounds**: 0.1× to 10× baseline (`presolve.gms`)
 - **Typical Range**: 10-200 hours/tDM
   - Low (mechanized grains): 10-30 hours/tDM
   - High (labor-intensive vegetables): 100-200 hours/tDM
@@ -638,7 +638,7 @@ This creates dynamic adjustments:
 - **Type**: Positive variable (endogenous in sticky_labor after 2025)
 - **Dimensions**: [j, kcr, mobil38] where mobil38 = {mobile, immobile}
 - **Units**: USD17MER per ton DM
-- **Bounds**: 0.1× to 10× baseline (`presolve.gms:75-76`)
+- **Bounds**: 0.1× to 10× baseline (`presolve.gms`)
 - **Typical Range**: 5-50 USD/tDM
   - Low (extensive systems): 5-15 USD/tDM
   - High (irrigated, mechanized): 30-50 USD/tDM
@@ -652,7 +652,7 @@ This creates dynamic adjustments:
 - **Dimensions**: [j, kcr]
 - **Units**: mio USD17MER per yr
 - **Typical Range**: $0-500 million per cell-crop
-- **Determined by**: Gap between required and existing capital (`equations.gms:83-86`)
+- **Determined by**: Gap between required and existing capital (`equations.gms`)
 
 **v38_investment_mobile(j)** - Mobile capital investment
 - **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:20`
@@ -660,7 +660,7 @@ This creates dynamic adjustments:
 - **Dimensions**: [j]
 - **Units**: mio USD17MER per yr
 - **Typical Range**: $0-1 billion per cell
-- **Determined by**: Gap between required and existing mobile capital (`equations.gms:91-94`)
+- **Determined by**: Gap between required and existing mobile capital (`equations.gms`)
 
 ### 10.4 Relaxation Variable (Linear Model Only)
 
@@ -670,7 +670,7 @@ This creates dynamic adjustments:
 - **Units**: Dimensionless (1)
 - **Purpose**: Allow CES constraint to be slightly violated in linear model
 - **Value**:
-  - Non-linear model: Fixed to 0 (`presolve.gms:97`)
+  - Non-linear model: Fixed to 0 (`presolve.gms`)
   - Linear model: Released (`nl_fix.gms:14-16`)
 - **Reason**: Linear approximation of CES may have slight infeasibilities
 
@@ -684,8 +684,8 @@ This creates dynamic adjustments:
 - **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:29`
 - **Dimensions**: [t, j, kcr]
 - **Units**: mio USD17MER
-- **Initialized**: `presolve.gms:84` (from 1995 production)
-- **Depreciated**: `presolve.gms:91` (5% annually)
+- **Initialized**: `presolve.gms` (from 1995 production)
+- **Depreciated**: `presolve.gms` (5% annually)
 - **Updated**: `postsolve.gms:9` (add investments)
 - **Typical Range**: $10-1000 million per cell-crop
 
@@ -715,14 +715,14 @@ This creates dynamic adjustments:
 - **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:39`
 - **Dimensions**: [j, kcr]
 - **Units**: Dimensionless (0-1)
-- **Calculated**: `presolve.gms:55` (calibrated to baseline factor mix)
+- **Calculated**: `presolve.gms` (calibrated to baseline factor mix)
 - **Typical Range**: 0.3-0.7 (matches pm_factor_cost_shares roughly)
 
 **i38_ces_scale(j,kcr)** - Total factor productivity in CES (A)
 - **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:40`
 - **Dimensions**: [j, kcr]
 - **Units**: Dimensionless (1)
-- **Calculated**: `presolve.gms:56` (calibrated to produce 1 unit output)
+- **Calculated**: `presolve.gms` (calibrated to produce 1 unit output)
 - **Typical Range**: 0.8-1.2 (close to 1 by construction)
 
 ### 11.4 Target Parameters
@@ -790,11 +790,11 @@ This creates dynamic adjustments:
 
 4. **Incorporates wage-productivity feedback** via pm_productivity_gain_from_wages from Module 36, increasing labor efficiency with rising wages (`equations.gms:22`)
 
-5. **Creates capital stickiness** by separating capital into immobile (crop-specific, 100% by default) and mobile (crop-shared) types, with depreciation and accumulation dynamics (`sets.gms:9-10`, `input.gms:15`, `presolve.gms:84-92`, `postsolve.gms:9-10`)
+5. **Creates capital stickiness** by separating capital into immobile (crop-specific, 100% by default) and mobile (crop-shared) types, with depreciation and accumulation dynamics (`sets.gms:9-10`, `input.gms:15`, `presolve.gms`, `postsolve.gms:9-10`)
 
-6. **Annuitizes investment costs** using factor (r+d)/(1+r) to represent long-term economic value of capital in current-period optimization (`equations.gms:46-49`)
+6. **Annuitizes investment costs** using factor (r+d)/(1+r) to represent long-term economic value of capital in current-period optimization (`equations.gms`)
 
-7. **Maintains historical factor requirements** fixed until 2025 (s38_startyear_labor_substitution), then allows endogenous adjustment (`presolve.gms:67-77`, `input.gms:17`)
+7. **Maintains historical factor requirements** fixed until 2025 (s38_startyear_labor_substitution), then allows endogenous adjustment (`presolve.gms`, `input.gms:17`)
 
 8. **Supports optional labor share target** to enforce minimum rural employment, with linear ramp from baseline to target between 2025-2050 (`equations.gms:28-34`, `presolve.gms:25-45`, `input.gms:18-20`)
 
@@ -802,9 +802,9 @@ This creates dynamic adjustments:
 
 10. **Provides three realizations** with increasing sophistication: per_ton_fao_may22 (simple volume-based), sticky_feb18 (capital stocks), sticky_labor (full CES with climate/wages) (`module.gms:22-24`)
 
-11. **Estimates initial capital stocks** from 1995 production levels with one year depreciation, creating starting conditions for dynamic capital accumulation (`presolve.gms:84-85`)
+11. **Estimates initial capital stocks** from 1995 production levels with one year depreciation, creating starting conditions for dynamic capital accumulation (`presolve.gms`)
 
-12. **Triggers investment only when needed**, requiring new capital only when production demands exceed existing (depreciated) stocks (`equations.gms:83-94`)
+12. **Triggers investment only when needed**, requiring new capital only when production demands exceed existing (depreciated) stocks (`equations.gms`)
 
 ---
 
@@ -1376,7 +1376,7 @@ abline(h=0.4, col="red", lty=2)  # Target line
    - Labor efficiency affected by climate (Module 37) and wages (Module 36)
    - Active only after 2025 (historical lock before)
 
-2. **Capital Stickiness** (`presolve.gms:84-92`, `postsolve.gms:9-10`):
+2. **Capital Stickiness** (`presolve.gms`, `postsolve.gms:9-10`):
    - 100% immobile by default (crop-specific, location-specific)
    - 5% annual depreciation (20-year lifetime)
    - Investment only when required > existing stock
@@ -1486,7 +1486,7 @@ capital_need <- readGDX(gdx, "ov38_capital_need", select=list(type="level"))
 
 2. **Explain Cost Advantage**:
 ```gams
-# Investment requirement (equations.gms:83-86):
+# Investment requirement (equations.gms):
 v38_investment_immobile(j,kcr) =g=
   vm_prod(j,kcr) * v38_capital_need(j,kcr,"immobile") - p38_capital_immobile(t,j,kcr)
 ```
@@ -1598,7 +1598,7 @@ for (scen in scenarios) {
 
 4. **Labor productivity impacts combined multiplicatively**: Climate and wage impacts are combined as `pm_labor_prod × pm_productivity_gain_from_wages` (`equations.gms:22`), assuming they are independent. Interaction effects (e.g., wage increases having larger benefits in heat-stressed regions) are missed.
 
-5. **Capital stock initialized from 1995 production only**: Initial capital stocks estimated assuming 1995 production equals 1994 production (`presolve.gms:84-85`). No accounting for pre-1995 capital accumulation or production shocks in the base year.
+5. **Capital stock initialized from 1995 production only**: Initial capital stocks estimated assuming 1995 production equals 1994 production (`presolve.gms`). No accounting for pre-1995 capital accumulation or production shocks in the base year.
 
 ---
 

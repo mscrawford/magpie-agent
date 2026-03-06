@@ -205,7 +205,7 @@ sum(pollutant_nh3no2_51,vm_emissions_reg(i2,emis_source_n51,pollutant_nh3no2_51)
 - **Leaching pathway**: NO₃⁻ → groundwater/rivers → N₂O (IPCC EF5 = 0.0075 tN₂O-N/tNO₃-N) (`equations.gms:88-89`)
 - **Emission source loop**: Calculated separately for each source `emis_source_n51` = {inorg_fert, man_crop, awms, resid, resid_burn, man_past, som} (`sets.gms:15-16`)
 - **Best estimate**: Uses "best" uncertainty scenario (other options: "low", "high") (`equations.gms:87,89`)
-- **Pollutant subsets**: `pollutant_nh3no2_51` = {nh3_n, no2_n} (Module 56 sets.gms:204-205)
+- **Pollutant subsets**: `pollutant_nh3no2_51` = {nh3_n, no2_n} (Module 56 sets.gms)
 
 **Indirect Emissions Process** (per IPCC 2006 Guidelines):
 1. Direct emissions calculated in equations 1-7 → includes NH₃, NOₓ, NO₃⁻
@@ -244,9 +244,9 @@ sum(pollutant_nh3no2_51,vm_emissions_reg(i2,emis_source_n51,pollutant_nh3no2_51)
 
 **To Module 56 (GHG Policy)**:
 - `vm_emissions_reg(i,emis_source,n_pollutants_direct)`: Regional emissions by source and pollutant type (Mt N) (`declarations.gms:9-16`)
-  - Pollutants: n2o_n_direct, nh3_n, no2_n, no3_n (Module 56 sets.gms:199-202)
+  - Pollutants: n2o_n_direct, nh3_n, no2_n, no3_n (Module 56 sets.gms)
   - Sources: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som (`sets.gms:15-16`)
-  - Indirect: n2o_n_indirect (calculated in equation 8) (Module 56 sets.gms:176,196)
+  - Indirect: n2o_n_indirect (calculated in equation 8) (Module 56 sets.gms,196)
 
 ---
 

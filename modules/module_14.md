@@ -635,7 +635,7 @@ Module 14 reads 9 input data files:
 
 ### 6.8 Pollinator Dependence by Crop
 
-**File:** `f14_kcr_pollinator_dependence.csv` (read at `input.gms:98`)
+**File:** `f14_kcr_pollinator_dependence.csv` (read at `input.gms`)
 **Contents:** Share of yield dependent on biotic pollination for each crop (0-1)
 **Example:** Oilpalm ≈0.4, maize ≈0, rapeseed ≈0.3
 **Purpose:** Scale pollination deficiency impact by crop sensitivity

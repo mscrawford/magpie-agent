@@ -269,7 +269,7 @@ q21_costs_tariffs(i2,k_trade)..
 
 ### 9. Trade Margin Costs (`q21_costs_margins`)
 
-**Formula** (`equations.gms:75-77`):
+**Formula** (`equations.gms`):
 ```gams
 q21_costs_margins(i2,k_trade)..
   v21_cost_margin_reg(i2,k_trade) =g=
@@ -285,13 +285,13 @@ q21_costs_margins(i2,k_trade)..
 
 **Units**: Million USD17MER per year
 
-**Note**: Margins currently assigned to exporting region (`equations.gms:74`)
+**Note**: Margins currently assigned to exporting region (`equations.gms`)
 
 ---
 
 ### 10. Regional Trade Costs (`q21_cost_trade_reg`)
 
-**Formula** (`equations.gms:80-83`):
+**Formula** (`equations.gms`):
 ```gams
 q21_cost_trade_reg(i2,k_trade)..
   v21_cost_trade_reg(i2,k_trade) =g=
@@ -306,13 +306,13 @@ q21_cost_trade_reg(i2,k_trade)..
 **Key Scalar**:
 - `s21_cost_import = 1500` USD17MER per tDM (penalty for emergency imports, `input.gms:21`)
 
-**Source**: `equations.gms:79`
+**Source**: `equations.gms`
 
 ---
 
 ### 11. Total Regional Trade Costs (`q21_cost_trade`)
 
-**Formula** (`equations.gms:86-87`):
+**Formula** (`equations.gms`):
 ```gams
 q21_cost_trade(i2)..
   vm_cost_trade(i2) =e= sum(k_trade, v21_cost_trade_reg(i2,k_trade));
@@ -324,7 +324,7 @@ q21_cost_trade(i2)..
 
 **Interface**: `vm_cost_trade(i)` feeds into Module 11 (Costs) objective function
 
-**Source**: `equations.gms:85`
+**Source**: `equations.gms`
 
 ---
 
@@ -744,7 +744,7 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 **Variables**: ✅ 1 interface variable verified (`vm_cost_trade`)
 - Confirmed usage in Module 11 via grep
 
-**Minor Issue**: Duplicate line in `declarations.gms:36` and `declarations.gms:60` (both list `q21_cost_trade_reg` as "Superregional" when line 35 correctly says "Regional"). This is a comment typo, does not affect code execution.
+**Minor Issue**: Duplicate line in `declarations.gms:36` and `declarations.gms` (both list `q21_cost_trade_reg` as "Superregional" when line 35 correctly says "Regional"). This is a comment typo, does not affect code execution.
 
 **Formula Accuracy**: ✅ All 11 equation formulas match source code exactly
 **Citation Density**: 60+ file:line citations

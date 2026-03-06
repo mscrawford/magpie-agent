@@ -209,7 +209,7 @@ The `fbask_jan16_sticky` realization shares 6 of 7 equations with `fbask_jan16` 
 
 **Purpose**: Calculate capital costs using annuitized investment with depreciation (replaces the factor-cost-shares approach in `fbask_jan16`)
 
-**Formula** (`fbask_jan16_sticky/equations.gms:72-74`):
+**Formula** (`fbask_jan16_sticky/equations.gms`):
 ```
 vm_cost_prod_livst(i2,"capital") =e=
     sum(kli, v70_investment(i2,kli))
@@ -236,7 +236,7 @@ vm_cost_prod_livst(i2,"capital") =e=
 
 **Purpose**: Ensure sufficient investment to cover capital requirements for livestock production, accounting for pre-existing capital stocks
 
-**Formula** (`fbask_jan16_sticky/equations.gms:79-82`):
+**Formula** (`fbask_jan16_sticky/equations.gms`):
 ```
 v70_investment(i2,kli) =g=
     vm_prod_reg(i2,kli) * sum(ct, p70_capital_need(ct,i2,kli))
@@ -249,7 +249,7 @@ v70_investment(i2,kli) =g=
 1. **Required Capital**: `vm_prod_reg × p70_capital_need` — total capital needed for current production level
 2. **Existing Capital**: `p70_capital(t,i,kli)` — pre-existing immobile capital stocks after depreciation
 
-**Capital Need Calculation** (`fbask_jan16_sticky/presolve.gms:78-81`):
+**Capital Need Calculation** (`fbask_jan16_sticky/presolve.gms`):
 ```
 p70_capital_need(t,i,kli) = i70_fac_req_livst(t,i,kli)
     * pm_factor_cost_shares(t,i,"capital")
@@ -257,13 +257,13 @@ p70_capital_need(t,i,kli) = i70_fac_req_livst(t,i,kli)
     * s70_multiplicator_capital_need
 ```
 
-**Capital Stock Update** (`fbask_jan16_sticky/presolve.gms:83-95`):
+**Capital Stock Update** (`fbask_jan16_sticky/presolve.gms`):
 - First timestep: `p70_capital = p70_capital_need × p70_initial_1995_prod`
 - Subsequent timesteps: `p70_capital = p70_capital × (1 - s70_depreciation_rate)^timestep_length`
 
 **Parameters**:
 - `s70_multiplicator_capital_need`: Multiplier for capital need (default: 1) (`fbask_jan16_sticky/input.gms:35`)
-- `p70_initial_1995_prod(i,kli)`: Initial 1995 production from historical data (`fbask_jan16_sticky/preloop.gms:94`)
+- `p70_initial_1995_prod(i,kli)`: Initial 1995 production from historical data (`fbask_jan16_sticky/preloop.gms`)
 
 **Mechanism**: When production increases, `v70_investment` must rise to cover the additional capital requirement. When production decreases, existing capital exceeds needs, so no new investment is required (the inequality allows `v70_investment` to be zero). This creates asymmetric adjustment costs — expansion is costly but contraction is "free" (sunk capital).
 
@@ -1114,9 +1114,9 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 - `q70_feed`: Demand constraint (≥ production × baskets + balance flows) (`equations.gms:17-20`)
 - `q70_feed_balanceflow`: Scavenging adjustment for ruminant pasture (`equations.gms:25-29`)
 - `q70_cost_prod_liv_labor`: Labor costs with wage scaling (`equations.gms:59-62`)
-- `q70_cost_prod_liv_capital`: Capital costs (`equations.gms:64-66`); in `fbask_jan16_sticky`: investment-based capital costs (`fbask_jan16_sticky/equations.gms:72-74`)
+- `q70_cost_prod_liv_capital`: Capital costs (`equations.gms:64-66`); in `fbask_jan16_sticky`: investment-based capital costs (`fbask_jan16_sticky/equations.gms`)
 - `q70_cost_prod_fish`: Fish production costs (`equations.gms:68-70`)
-- `q70_investment` (`fbask_jan16_sticky` only): Investment to cover capital requirements (`fbask_jan16_sticky/equations.gms:79-82`)
+- `q70_investment` (`fbask_jan16_sticky` only): Investment to cover capital requirements (`fbask_jan16_sticky/equations.gms`)
 
 **4. Postsolve** (after solve):
 - Update pasture feed demand parameter for next timestep (`postsolve.gms:9`)

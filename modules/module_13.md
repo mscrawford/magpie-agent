@@ -310,7 +310,7 @@ vm_tech_cost.l(i) = vm_tech_cost.up(i)
 
 ## Computational Performance
 
-**Warning** (realization.gms:38-40): The `endo_jan22` realization "significantly reduces the overall computational performance of the model since these endogenous calculations are highly computational intensive."
+**Warning** (realization.gms): The `endo_jan22` realization "significantly reduces the overall computational performance of the model since these endogenous calculations are highly computational intensive."
 
 **Reason**: Power function in q13_cost_tc with endogenous tau variables creates non-linear optimization problem with potentially many local optima. Solver must balance intensification costs against land expansion across two tau types and all regions simultaneously.
 

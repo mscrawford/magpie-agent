@@ -18,9 +18,9 @@ This module provides the critical interface variable `vm_area(j,kcr,w)` that is 
 - Calculate agricultural production from area × yield (`equations.gms:14-15`)
 - Enforce rotational constraints (rule-based or penalty-based) to prevent monoculture (`equations.gms:36-82`)
 - Track bioenergy tree land targets and penalties (`equations.gms:21-23`)
-- Calculate cropland carbon stocks (`equations.gms:87-89`)
-- Calculate biodiversity values for annual and perennial crops (`equations.gms:94-101`)
-- Aggregate regional cropland area for growth constraints (`equations.gms:105-107`)
+- Calculate cropland carbon stocks (`equations.gms`)
+- Calculate biodiversity values for annual and perennial crops (`equations.gms`)
+- Aggregate regional cropland area for growth constraints (`equations.gms`)
 
 ---
 
@@ -276,7 +276,7 @@ rotamax_red30(rotamax30) = yes$(i30_rotation_incentives(t,rotamax30) > 0);
 **Description**: This calculates how much a crop group exceeds its maximum share. The excess area is multiplied by the penalty rate in `q30_rotation_penalty`. If area is below the maximum, the positive variable constraint ensures penalty = 0.
 
 #### q30_rotation_min2 - Minimum Rotational Share (Penalty-Based)
-**Location**: `equations.gms:69-72`
+**Location**: `equations.gms`
 **Purpose**: Calculate penalty amount for falling below minimum share
 
 ```gams
@@ -302,7 +302,7 @@ rotamin_red30(rotamin30) = yes$(i30_rotation_incentives(t,rotamin30) > 0);
 ### 5. Irrigated Area Constraints
 
 #### q30_rotation_max_irrig - Maximum Irrigated Rotational Share
-**Location**: `equations.gms:79-82`
+**Location**: `equations.gms`
 **Purpose**: Prevent over-specialization on irrigated land (always active)
 
 ```gams
@@ -316,9 +316,9 @@ q30_rotation_max_irrig(j2,rotamax_red30) ..
 
 **Key Difference**: Uses `vm_AEI(j)` (Area Equipped for Irrigation) from Module 41 instead of total cropland
 
-**Always Active**: No conditional on implementation mode (equations.gms:79) - applies in BOTH rule-based and penalty-based modes
+**Always Active**: No conditional on implementation mode (equations.gms) - applies in BOTH rule-based and penalty-based modes
 
-**No Minimum**: Comment states "No minimum constraint is included for irrigated areas for computational reasons. Minimum constraints just need to be met on total areas." (`equations.gms:76-77`)
+**No Minimum**: Comment states "No minimum constraint is included for irrigated areas for computational reasons. Minimum constraints just need to be met on total areas." (`equations.gms`)
 
 **Rationale**: Irrigated land is expensive to establish, so farmers tend to use it intensively for high-value crops. This constraint prevents 100% specialization (e.g., all irrigated land as rice) while allowing more intensive use than rainfed land.
 
@@ -329,7 +329,7 @@ q30_rotation_max_irrig(j2,rotamax_red30) ..
 ### 6. Carbon Stocks
 
 #### q30_carbon - Cropland Carbon Content
-**Location**: `equations.gms:87-89`
+**Location**: `equations.gms`
 **Purpose**: Calculate above-ground carbon stocks in cropland
 
 ```gams
@@ -359,7 +359,7 @@ q30_carbon(j2,ag_pools) ..
 ### 7. Biodiversity Values
 
 #### q30_bv_ann - Biodiversity Value for Annual Crops
-**Location**: `equations.gms:94-97`
+**Location**: `equations.gms`
 **Purpose**: Calculate biodiversity intactness for annual cropland
 
 ```gams
@@ -371,7 +371,7 @@ q30_bv_ann(j2,potnatveg) ..
 
 **Formula**: BV = Annual Crop Area × BII Coefficient × LUH2 Layer
 
-**Annual Crops** (`sets.gms:103-104`): 15 crops
+**Annual Crops** (`sets.gms`): 15 crops
 ```gams
 crop_ann30(kcr) / tece, maiz, trce, rice_pro, rapeseed, sunflower, potato, cassav_sp,
                   sugr_beet, others, cottn_pro, foddr, soybean, groundnut, puls_pro /
@@ -384,7 +384,7 @@ crop_ann30(kcr) / tece, maiz, trce, rice_pro, rapeseed, sunflower, potato, cassa
 
 **Dimensions**: Results are disaggregated by potential natural vegetation type to account for different baseline biodiversity levels.
 
-**Initialization** (`preloop.gms:44-46`):
+**Initialization** (`preloop.gms`):
 ```gams
 vm_bv.l(j,"crop_ann",potnatveg) =
   sum((crop_ann30,w), fm_croparea("y1995",j,w,crop_ann30)) * fm_bii_coeff("crop_ann",potnatveg)
@@ -394,7 +394,7 @@ vm_bv.l(j,"crop_ann",potnatveg) =
 **Description**: This calculates the biodiversity "value" (really intactness) of annual cropland relative to natural vegetation. Annual crops have low biodiversity due to frequent disturbance.
 
 #### q30_bv_per - Biodiversity Value for Perennial Crops
-**Location**: `equations.gms:99-101`
+**Location**: `equations.gms`
 **Purpose**: Calculate biodiversity intactness for perennial cropland
 
 ```gams
@@ -405,7 +405,7 @@ q30_bv_per(j2,potnatveg) .. vm_bv(j2,"crop_per",potnatveg) =e=
 
 **Formula**: BV = Perennial Crop Area × BII Coefficient × LUH2 Layer
 
-**Perennial Crops** (`sets.gms:106-107`): 4 crops
+**Perennial Crops** (`sets.gms`): 4 crops
 ```gams
 crop_per30(kcr) / oilpalm, begr, sugr_cane, betr /
 ```
@@ -415,7 +415,7 @@ crop_per30(kcr) / oilpalm, begr, sugr_cane, betr /
 - Offer year-round habitat
 - Have less soil disturbance
 
-**Initialization** (`preloop.gms:48-50`):
+**Initialization** (`preloop.gms`):
 ```gams
 vm_bv.l(j,"crop_per",potnatveg) =
   sum((crop_per30,w), fm_croparea("y1995",j,w,crop_per30)) * fm_bii_coeff("crop_per",potnatveg)
@@ -429,7 +429,7 @@ vm_bv.l(j,"crop_per",potnatveg) =
 ### 8. Regional Aggregation
 
 #### q30_crop_reg - Regional Cropland Area
-**Location**: `equations.gms:105-107`
+**Location**: `equations.gms`
 **Purpose**: Aggregate cell-level crop area to regional level for growth constraint
 
 ```gams
@@ -442,7 +442,7 @@ q30_crop_reg(i2) .. v30_crop_area(i2)
 
 **Purpose**: Used for cropland growth constraint in presolve
 
-**Cropland Growth Constraint** (`presolve.gms:56-61`):
+**Cropland Growth Constraint** (`presolve.gms`):
 ```gams
 if(m_year(t) <= sm_fix_SSP2,
   v30_crop_area.up(i) = Inf;
@@ -669,7 +669,7 @@ q30_rotation_min(j2,crpmin30,w) ..
 **Units**: Million hectares (mio. ha)
 **Source**: External data
 
-**Usage**: Used in `preloop.gms:41` to calculate country weights for bioenergy tree targets
+**Usage**: Used in `preloop.gms` to calculate country weights for bioenergy tree targets
 
 **Description**: Country-level cropland data used to weight policy application across regions.
 
@@ -876,7 +876,7 @@ else
 - After scenario start with penalty = 0: Missing BETR fixed to zero (no enforcement)
 
 ### 5. Cropland Growth Constraint
-**Location**: `presolve.gms:56-61`
+**Location**: `presolve.gms`
 
 **Logic**:
 ```gams
@@ -948,7 +948,7 @@ p30_country_weight(i) = sum(i_to_iso(i,iso), p30_country_switch(iso) * pm_avl_cr
 **Description**: Translates country-level policy targets to region-level weights. Regions with more cropland in policy countries get stronger policy application.
 
 ### 9. Biodiversity Value Initialization
-**Location**: `preloop.gms:43-50`
+**Location**: `preloop.gms`
 
 **Logic**:
 ```gams
@@ -1081,7 +1081,7 @@ All scenario transitions use **sigmoidal interpolation** to prevent discontinuit
 During the historic period (up to SSP2 fix year):
 - **Bioenergy**: Only rainfed bioenergy allowed (`presolve.gms:18`)
 - **Rotation Implementation**: Always rule-based (`presolve.gms:19`)
-- **Cropland Growth**: No constraint (`presolve.gms:57`)
+- **Cropland Growth**: No constraint (`presolve.gms`)
 - **BETR Penalty**: Zero (`presolve.gms:44`)
 
 **Rationale**: Historic calibration uses SSP2 defaults to match observed land use patterns.
@@ -1145,7 +1145,7 @@ Policy targets defined at country level are aggregated to region level via **cro
 
 ### 10. Cropland Growth Constraint
 
-The cropland growth constraint (`q30_crop_reg` + bounds in `presolve.gms:56-61`) limits the **speed** of agricultural expansion:
+The cropland growth constraint (`q30_crop_reg` + bounds in `presolve.gms`) limits the **speed** of agricultural expansion:
 
 **Formula**: Max Cropland(t) = Cropland(t-1) × (1 + Growth Rate)^Years
 
@@ -1594,7 +1594,7 @@ vm_area.fx(j,kbe30,w) = 0;  * In presolve
 ## Limitations and Known Issues
 
 ### 1. Uniform Carbon Density
-**Issue**: All crops in a cell have the same carbon density (`equations.gms:87-89`).
+**Issue**: All crops in a cell have the same carbon density (`equations.gms`).
 
 **Implication**: Cannot represent carbon benefits of switching from annual to perennial crops.
 
@@ -1629,7 +1629,7 @@ vm_area.fx(j,kbe30,w) = 0;  * In presolve
 **Workaround**: None. Multiple cropping systems are aggregated into annual average area.
 
 ### 6. Biodiversity Simplification
-**Issue**: BII coefficients are uniform for all cells within a land cover type (`equations.gms:94-101`).
+**Issue**: BII coefficients are uniform for all cells within a land cover type (`equations.gms`).
 
 **Implication**: Cannot represent cell-specific biodiversity values (e.g., organic farms vs conventional farms, agroforestry vs monoculture).
 

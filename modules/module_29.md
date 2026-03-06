@@ -103,7 +103,7 @@ q29_avl_cropland(j2)..
 - Excludes low-suitability areas (steep slopes, poor soils, etc.)
 - Can be further reduced for compositional heterogeneity
 
-**Available Cropland Calculation** (`presolve.gms:35`):
+**Available Cropland Calculation** (`presolve.gms`):
 ```gams
 p29_avl_cropland(t,j) = f29_avl_cropland(j,"%c29_marginal_land%") * (1 - p29_snv_shr(t,j));
 ```
@@ -117,7 +117,7 @@ p29_avl_cropland(t,j) = f29_avl_cropland(j,"%c29_marginal_land%") * (1 - p29_snv
 - `q33_marginal` - Use marginal land definition from Module 33
 - `no_marginal` - Exclude marginal land
 
-**Source**: `equations.gms:22-23`, `presolve.gms:35`
+**Source**: `equations.gms:22-23`, `presolve.gms`
 
 ---
 
@@ -206,7 +206,7 @@ p29_snv_shr(t,j) = i29_snv_scenario_fader(t) *
 **Country Weighting**:
 - Allows different SNV policies for selected vs non-selected countries
 - Weight = fraction of region's cropland in policy-affected countries
-- Calculated based on available cropland (`preloop.gms:58-59`)
+- Calculated based on available cropland (`preloop.gms`)
 
 **Source**: `equations.gms:45-52`
 
@@ -214,7 +214,7 @@ p29_snv_shr(t,j) = i29_snv_scenario_fader(t) *
 
 ### 6. SNV Transition Constraint (`q29_land_snv_trans`)
 
-**Formula** (`equations.gms:59-60`):
+**Formula** (`equations.gms`):
 ```gams
 q29_land_snv_trans(j2)..
   sum(land_snv, vm_lu_transitions(j2,"crop",land_snv)) =g=
@@ -223,7 +223,7 @@ q29_land_snv_trans(j2)..
 
 **Meaning**: Land transitions from cropland to SNV ≥ required relocation
 
-**Purpose** (`equations.gms:54-57`): SNV constraint operates at km² scale; required cropland relocation derived from high-resolution Copernicus Global Land Service data (Buchhorn et al. 2020)
+**Purpose** (`equations.gms`): SNV constraint operates at km² scale; required cropland relocation derived from high-resolution Copernicus Global Land Service data (Buchhorn et al. 2020)
 
 **Relocation Calculation** (`presolve.gms:22-32`):
 ```gams
@@ -237,13 +237,13 @@ p29_snv_relocation(t,j) = (i29_snv_scenario_fader(t) - i29_snv_scenario_fader(t-
 - Target cropland from satellite imagery (f29_snv_target_cropland)
 - Capped at maximum feasible relocation (`presolve.gms:29-32`)
 
-**Source**: `equations.gms:54-60`
+**Source**: `equations.gms`
 
 ---
 
 ### 7. Fallow Land Minimum (`q29_fallow_min`)
 
-**Formula** (`equations.gms:66-68`):
+**Formula** (`equations.gms`):
 ```gams
 q29_fallow_min(j2)$(sum(ct, i29_fallow_penalty(ct)) > 0)..
   v29_fallow_missing(j2) =g=
@@ -252,27 +252,27 @@ q29_fallow_min(j2)$(sum(ct, i29_fallow_penalty(ct)) > 0)..
 
 **Meaning**: Missing fallow land = max(0, target fallow - actual fallow)
 
-**Purpose** (`equations.gms:62-64`): Penalty for violating fallow land target
+**Purpose** (`equations.gms`): Penalty for violating fallow land target
 
 **Conditional**: Only active when penalty > 0
 
-**Target Calculation** (`presolve.gms:104`):
+**Target Calculation** (`presolve.gms`):
 ```gams
 i29_fallow_target(t) = s29_fallow_target * i29_fallow_scenario_fader(t);
 ```
 
-**Penalty Logic** (`presolve.gms:106-117`):
+**Penalty Logic** (`presolve.gms`):
 - Before scenario start: Penalty = 0, missing fixed to 0
 - After scenario start: Penalty = s29_fallow_penalty (default 615 USD/ha)
 - Missing variable unbounded if penalty > 0
 
-**Source**: `equations.gms:62-68`
+**Source**: `equations.gms`
 
 ---
 
 ### 8. Fallow Land Maximum (`q29_fallow_max`)
 
-**Formula** (`equations.gms:70-72`):
+**Formula** (`equations.gms`):
 ```gams
 q29_fallow_max(j2)..
   vm_fallow(j2) =l= vm_land(j2,"crop") * s29_fallow_max;
@@ -290,7 +290,7 @@ q29_fallow_max(j2)..
 
 ### 9. Fallow Land Biodiversity Value (`q29_fallow_bv`)
 
-**Formula** (`equations.gms:76-78`):
+**Formula** (`equations.gms`):
 ```gams
 q29_fallow_bv(j2,potnatveg)..
   vm_bv(j2,"crop_fallow",potnatveg) =e=
@@ -299,7 +299,7 @@ q29_fallow_bv(j2,potnatveg)..
 
 **Meaning**: Fallow biodiversity value = fallow area × perennial crop BII × potential vegetation weight
 
-**Biodiversity Assumption** (`equations.gms:74`): Fallow land BII based on perennial crops
+**Biodiversity Assumption** (`equations.gms`): Fallow land BII based on perennial crops
 
 **Components**:
 - `fm_bii_coeff("crop_per",potnatveg)` - BII coefficient for perennial crops
@@ -307,13 +307,13 @@ q29_fallow_bv(j2,potnatveg)..
 
 **Interface**: `vm_bv(j,"crop_fallow",potnatveg)` → Module 44 (Biodiversity)
 
-**Source**: `equations.gms:74-78`
+**Source**: `equations.gms`
 
 ---
 
 ### 10. Tree Cover Aggregation (`q29_treecover`)
 
-**Formula** (`equations.gms:83-84`):
+**Formula** (`equations.gms`):
 ```gams
 q29_treecover(j2)..
   vm_treecover(j2) =e= sum(ac, v29_treecover(j2,ac));
@@ -321,7 +321,7 @@ q29_treecover(j2)..
 
 **Meaning**: Total tree cover = sum across all age classes
 
-**Purpose** (`equations.gms:81`): Interface variable for other modules
+**Purpose** (`equations.gms`): Interface variable for other modules
 
 **Interface**: `vm_treecover(j)` used by other modules for total tree cover area
 
@@ -329,7 +329,7 @@ q29_treecover(j2)..
 
 ### 11. Tree Cover Minimum (`q29_treecover_min`)
 
-**Formula** (`equations.gms:90-92`):
+**Formula** (`equations.gms`):
 ```gams
 q29_treecover_min(j2)$(sum(ct, i29_treecover_penalty(ct)) > 0)..
   v29_treecover_missing(j2) =g=
@@ -338,32 +338,32 @@ q29_treecover_min(j2)$(sum(ct, i29_treecover_penalty(ct)) > 0)..
 
 **Meaning**: Missing treecover = max(0, target treecover - actual treecover)
 
-**Purpose** (`equations.gms:86-88`): Penalty for violating treecover target
+**Purpose** (`equations.gms`): Penalty for violating treecover target
 
 **Conditional**: Only active when penalty > 0
 
-**Target Calculation** (`presolve.gms:66-68`):
+**Target Calculation** (`presolve.gms`):
 ```gams
 i29_treecover_target(t,j) = i29_treecover_scenario_fader(t) *
   (s29_treecover_target * sum(cell(i,j), p29_country_weight(i))
    + s29_treecover_target_noselect * sum(cell(i,j), 1-p29_country_weight(i)));
 ```
 
-**Keep Existing Treecover** (`presolve.gms:74-76`):
+**Keep Existing Treecover** (`presolve.gms`):
 - If `s29_treecover_keep = 1`, target cannot fall below current treecover share
 - Prevents loss of existing tree cover
 
-**Penalty Values** (`presolve.gms:85-89`, `input.gms:28-29`):
+**Penalty Values** (`presolve.gms`, `input.gms:28-29`):
 - Before scenario start: `s29_treecover_penalty_before = 0` USD/ha
 - After scenario start: `s29_treecover_penalty = 6150` USD/ha
 
-**Source**: `equations.gms:86-92`
+**Source**: `equations.gms`
 
 ---
 
 ### 12. Tree Cover Maximum (`q29_treecover_max`)
 
-**Formula** (`equations.gms:94-96`):
+**Formula** (`equations.gms`):
 ```gams
 q29_treecover_max(j2)..
   sum(ac, v29_treecover(j2,ac)) =l= vm_land(j2,"crop") * s29_treecover_max;
@@ -379,7 +379,7 @@ q29_treecover_max(j2)..
 
 ### 13. Tree Cover Biodiversity Value (`q29_treecover_bv`)
 
-**Formula** (`equations.gms:101-104`):
+**Formula** (`equations.gms`):
 ```gams
 q29_treecover_bv(j2,potnatveg)..
   vm_bv(j2,"crop_tree",potnatveg) =e=
@@ -389,7 +389,7 @@ q29_treecover_bv(j2,potnatveg)..
 
 **Meaning**: Treecover BV = (area by age-class × age-specific BII) × potential vegetation weight
 
-**BII Coefficient Options** (`presolve.gms:44-52`, `input.gms:21`):
+**BII Coefficient Options** (`presolve.gms`, `input.gms:21`):
 
 **Switch** (`s29_treecover_bii_coeff`):
 - `0` (default): Use secondary vegetation BII coefficients
@@ -397,15 +397,15 @@ q29_treecover_bv(j2,potnatveg)..
 
 **Age-Class Mapping**: `ac_to_bii_class_secd(ac,bii_class_secd)` maps age classes to BII categories
 
-**Note** (`equations.gms:98-99`): BII value depends on whether tree cover treated as natural vegetation or plantations
+**Note** (`equations.gms`): BII value depends on whether tree cover treated as natural vegetation or plantations
 
-**Source**: `equations.gms:98-104`
+**Source**: `equations.gms`
 
 ---
 
 ### 14. Tree Cover Establishment Cost (`q29_cost_treecover_est`)
 
-**Formula** (`equations.gms:108-111`):
+**Formula** (`equations.gms`):
 ```gams
 q29_cost_treecover_est(j2)..
   v29_cost_treecover_est(j2) =e=
@@ -423,13 +423,13 @@ q29_cost_treecover_est(j2)..
 
 **Age Classes** (`ac_est`): Only establishment age classes (ac0, ac5 for 10-year timestep)
 
-**Source**: `equations.gms:106-111`
+**Source**: `equations.gms`
 
 ---
 
 ### 15. Tree Cover Recurring Cost (`q29_cost_treecover_recur`)
 
-**Formula** (`equations.gms:115-117`):
+**Formula** (`equations.gms`):
 ```gams
 q29_cost_treecover_recur(j2)..
   v29_cost_treecover_recur(j2) =e=
@@ -444,13 +444,13 @@ q29_cost_treecover_recur(j2)..
 
 **Purpose**: Annual management cost (pruning, pest control, etc.)
 
-**Source**: `equations.gms:113-117`
+**Source**: `equations.gms`
 
 ---
 
 ### 16. Tree Cover Establishment Distribution (`q29_treecover_est`)
 
-**Formula** (`equations.gms:122-123`):
+**Formula** (`equations.gms`):
 ```gams
 q29_treecover_est(j2,ac_est)..
   v29_treecover(j2,ac_est) =e= sum(ac_est2, v29_treecover(j2,ac_est2))/card(ac_est2);
@@ -458,7 +458,7 @@ q29_treecover_est(j2,ac_est)..
 
 **Meaning**: Each establishment age class receives equal share of new treecover
 
-**Purpose** (`equations.gms:119-120`): Distribute new tree establishment equally across age classes
+**Purpose** (`equations.gms`): Distribute new tree establishment equally across age classes
 
 **Example**:
 - 5-year timestep: ac_est = {ac0} → all new trees in ac0
@@ -466,7 +466,7 @@ q29_treecover_est(j2,ac_est)..
 
 **Rationale**: Simulates continuous planting throughout the timestep
 
-**Source**: `equations.gms:119-123`
+**Source**: `equations.gms`
 
 ---
 
@@ -503,7 +503,7 @@ q29_treecover_est(j2,ac_est)..
 
 ### Algorithm 2: Age-Class Shifting for Tree Cover
 
-**Implementation** (`presolve.gms:54-62`):
+**Implementation** (`presolve.gms`):
 ```gams
 s29_shift = m_timestep_length_forestry/5;  ! Number of 5-yr age-classes to shift
 
@@ -525,7 +525,7 @@ p29_treecover(t,j,"acx") = p29_treecover(t,j,"acx")
 - Time t (5-yr step): 10 ha now in ac10
 - Trees continue aging until reaching acx (maximum age)
 
-**Source**: `presolve.gms:54-62`
+**Source**: `presolve.gms`
 
 ---
 
@@ -554,7 +554,7 @@ elseif (s29_snv_shr > 0.2),
 
 **Input Data**: Copernicus satellite imagery for 20% and 50% SNV scenarios
 
-**Source**: `preloop.gms:20-28`, `input.gms:89-93`
+**Source**: `preloop.gms:20-28`, `input.gms`
 
 ---
 
@@ -562,7 +562,7 @@ elseif (s29_snv_shr > 0.2),
 
 **Purpose**: Apply policies only to selected countries, aggregate to regional level
 
-**Implementation** (`preloop.gms:51-59`):
+**Implementation** (`preloop.gms`):
 ```gams
 ! Set country switch (1 = affected by policy, 0 = not affected)
 p29_country_switch(iso) = 0;
@@ -588,7 +588,7 @@ p29_country_weight(i) =
 
 **Default** (`input.gms:43-68`): All countries in `policy_countries29` (full global coverage)
 
-**Source**: `preloop.gms:51-59`
+**Source**: `preloop.gms`
 
 ---
 
@@ -613,7 +613,7 @@ pc29_treecover(j,ac) = (pc29_treecover_share(j) * pm_land_hist("y1995",j,"crop")
 pc29_treecover(j,ac) = 0;  ! Start with no tree cover
 ```
 
-**Data Source** (`input.gms:97-103`): `f29_treecover(j)` from CroplandTreecover.cs2
+**Data Source** (`input.gms`): `f29_treecover(j)` from CroplandTreecover.cs2
 
 **Source**: `preloop.gms:31-40`, `input.gms:35`
 
@@ -623,7 +623,7 @@ pc29_treecover(j,ac) = 0;  ! Start with no tree cover
 
 **Purpose**: Choose carbon accumulation trajectory for tree cover
 
-**Implementation** (`preloop.gms:45-49`):
+**Implementation** (`preloop.gms`):
 
 **Option 0** (`s29_treecover_plantation = 0`, default):
 ```gams
@@ -643,7 +643,7 @@ p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac(t,j,ac,
 
 **Trade-off**: Plantation grows faster initially but has lower final carbon density
 
-**Source**: `preloop.gms:42-49`, `input.gms:20`
+**Source**: `preloop.gms`, `input.gms:20`
 
 ---
 
@@ -656,7 +656,7 @@ p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac(t,j,ac,
 | `SNVTargetCropland.cs3` | `f29_snv_target_cropland` | Cropland requiring relocation for SNV | (j, relocation_target) | Mio. ha |
 | `CroplandTreecover.cs2` | `f29_treecover` | Initial tree cover from maps (2015) | (j) | Mio. ha |
 
-**Source**: `input.gms:75-103`
+**Source**: `input.gms`
 
 ---
 
@@ -1036,7 +1036,7 @@ Module 29 (Cropland) ──→ vm_treecover(j) ──→ Module 59 (SOM)
 
 ### 7. Country Weighting by Available Cropland
 **What**: Country influence weighted by available cropland, not actual cropland or population
-**Where**: `p29_country_weight` calculation (`preloop.gms:59`)
+**Where**: `p29_country_weight` calculation (`preloop.gms`)
 **Impact**: Countries with large marginal land dominate even if they have little actual agriculture
 
 ### 8. No Tree Cover Harvest
@@ -1046,7 +1046,7 @@ Module 29 (Cropland) ──→ vm_treecover(j) ──→ Module 59 (SOM)
 
 ### 9. Treecover Establishment Equally Distributed
 **What**: New trees split equally among ac_est age classes (e.g., 50% ac0, 50% ac5 for 10-yr timestep)
-**Where**: `q29_treecover_est` (`equations.gms:122-123`)
+**Where**: `q29_treecover_est` (`equations.gms`)
 **Impact**: Assumes continuous planting, cannot model concentrated establishment events
 
 ### 10. SNV Relocation Based on 2019 Satellite Data
