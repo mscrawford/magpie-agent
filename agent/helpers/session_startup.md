@@ -33,8 +33,9 @@ fi
 
 # Pull latest magpie-agent (teammates may have pushed improvements)
 cd "$AGENT_DIR" && git pull --rebase origin main 2>/dev/null
-# Re-deploy AGENT.md if it changed
+# Re-deploy AGENT.md to both targets (CLAUDE.md is what Claude loads!)
 cp "$AGENT_DIR/AGENT.md" "$MAGPIE_DIR/AGENT.md" 2>/dev/null
+cp "$AGENT_DIR/AGENT.md" "$MAGPIE_DIR/CLAUDE.md" 2>/dev/null
 # Fetch latest MAgPIE develop (so we can detect new commits)
 cd "$MAGPIE_DIR" && git fetch origin develop --quiet 2>/dev/null
 ```

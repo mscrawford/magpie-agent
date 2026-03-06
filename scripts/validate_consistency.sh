@@ -391,6 +391,7 @@ else
 fi
 
 # Check for CLAUDE.md references in active files (should be AGENT.md)
+# Exclude files that legitimately reference CLAUDE.md as a deployment target
 CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/null \
     | grep -v ".git" \
     | grep -v "feedback/integrated/" \
@@ -399,6 +400,10 @@ CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/n
     | grep -v "feedback/global/agent_lessons.md" \
     | grep -v "scripts/validate_consistency.sh" \
     | grep -v "agent/commands/validate.md" \
+    | grep -v "./AGENT.md" \
+    | grep -v "core_docs/Bug_Taxonomy.md" \
+    | grep -v "agent/commands/bootstrap.md" \
+    | grep -v "agent/helpers/session_startup.md" \
     || true)
 
 if [ -z "$CLAUDE_REFS" ]; then
@@ -517,14 +522,35 @@ fi
 # =============================================
 print_section "10/17" "Checking AGENT.md deployment..."
 
+DEPLOY_OK=0
+DEPLOY_FAIL=0
+
 if [ -f "../AGENT.md" ]; then
     if diff -q AGENT.md ../AGENT.md > /dev/null 2>&1; then
-        check_pass "AGENT.md deployed copy is in sync"
+        DEPLOY_OK=$((DEPLOY_OK + 1))
     else
         check_error "AGENT.md differs from ../AGENT.md — run: cp AGENT.md ../AGENT.md"
+        DEPLOY_FAIL=$((DEPLOY_FAIL + 1))
     fi
 else
     check_warning "../AGENT.md not found (deploy with: cp AGENT.md ../AGENT.md)"
+    DEPLOY_FAIL=$((DEPLOY_FAIL + 1))
+fi
+
+if [ -f "../CLAUDE.md" ]; then
+    if diff -q AGENT.md ../CLAUDE.md > /dev/null 2>&1; then
+        DEPLOY_OK=$((DEPLOY_OK + 1))
+    else
+        check_error "CLAUDE.md differs from AGENT.md — run: cp AGENT.md ../CLAUDE.md (CRITICAL: Claude loads this!)"
+        DEPLOY_FAIL=$((DEPLOY_FAIL + 1))
+    fi
+else
+    check_warning "../CLAUDE.md not found (deploy with: cp AGENT.md ../CLAUDE.md)"
+    DEPLOY_FAIL=$((DEPLOY_FAIL + 1))
+fi
+
+if [ "$DEPLOY_FAIL" -eq 0 ]; then
+    check_pass "All deployment copies in sync (AGENT.md + CLAUDE.md)"
 fi
 
 # =============================================

@@ -38,8 +38,9 @@ Would you like me to complete the setup now?
 If user agrees, run these commands:
 
 ```bash
-# 1. Copy AGENT.md to parent directory
+# 1. Copy AGENT.md to parent directory (both targets)
 cp AGENT.md ../AGENT.md
+cp AGENT.md ../CLAUDE.md
 
 # 2. Verify the copy
 ls -lh ../AGENT.md
@@ -80,7 +81,7 @@ If the user prefers to do it manually:
 
 ```bash
 # From magpie-agent directory
-cp AGENT.md ../AGENT.md
+cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md
 ```
 
 ---
@@ -89,7 +90,8 @@ cp AGENT.md ../AGENT.md
 
 - The agent should only offer bootstrap ONCE per session when first detecting missing files
 - Don't repeatedly ask on every message
-- Bootstrap copies TO parent directory (`../AGENT.md`)
+- Bootstrap copies TO parent directory (`../AGENT.md` AND `../CLAUDE.md`)
+- CLAUDE.md is what Claude loads into its system prompt — must stay in sync!
 - Source files remain in magpie-agent/
 
 ---
