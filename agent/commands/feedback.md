@@ -90,7 +90,7 @@ MAgPIE developers can improve the agent by submitting feedback:
 
 **⏱️ When will my feedback be integrated?**
 - Feedback accumulates in `feedback/pending/`
-- Integration happens **weekly or monthly** via `command: integrate-feedback`
+- Integration happens **weekly or monthly** via `/integrate-feedback`
 - You'll see your corrections in `module_XX.md` or warnings/lessons in `module_XX_notes.md`
 - Timeline: Typically integrated within 1-4 weeks of submission
 
@@ -184,7 +184,7 @@ git push
 
 ## ⚙️ INTEGRATION WORKFLOW (STEP 2 - MAINTAINER ONLY)
 
-**To process pending feedback, use `command: integrate-feedback`.**
+**To process pending feedback, use `/integrate-feedback`.**
 
 This separate process will:
 1. Read pending files

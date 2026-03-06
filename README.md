@@ -409,7 +409,7 @@ MAgPIE developers can improve agent performance through feedback!
 
 - Say "/feedback" for complete system overview
 - Submit feedback about agent behavior, documentation errors, or suggestions
-- Review and compress integrated feedback with `command: compress-documentation`
+- Review and compress integrated feedback with `/compress-documentation`
 
 See `feedback/README.md` for details.
 

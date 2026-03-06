@@ -41,14 +41,14 @@ feedback/pending/
 
 ---
 
-### 2. **Validation & Integration** (Periodic, via `command: integrate-feedback`)
+### 2. **Validation & Integration** (Periodic, via `/integrate-feedback`)
 
 **When**: Periodic sessions (weekly, monthly, or as needed)
 
 **Command**:
 ```bash
 /integrate-feedback all           # All pending feedback
-command: integrate-feedback               # Interactive mode
+/integrate-feedback               # Interactive mode
 ```
 
 **Process**:
@@ -245,7 +245,7 @@ Every module knows:
 
 **Why**: Pending files are submitted by users and should be preserved as-is until integration
 
-**Instead**: Use `command: integrate-feedback` to validate and integrate
+**Instead**: Use `/integrate-feedback` to validate and integrate
 
 ### DO NOT Integrate Without Validation
 
@@ -292,8 +292,8 @@ Every module knows:
 - `CONSOLIDATION_PLAN.md` - Phase 2, Task 2.1 details
 - `CURRENT_STATE.json` - Project status
 - `scripts/submit_feedback.sh` - Submission script
-- `command: integrate-feedback` command - Integration command
-- `command: compress-documentation` command - Compression command (use AFTER integration)
+- `/integrate-feedback` command - Integration command
+- `/compress-documentation` command - Compression command (use AFTER integration)
 
 ---
 
