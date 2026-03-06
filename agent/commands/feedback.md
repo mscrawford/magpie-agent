@@ -2,7 +2,7 @@
 
 **Purpose**: Learn about and use the user feedback system
 
-**When user says**: "run command: feedback", "how do I give feedback", "feedback system", etc.
+**When user says**: "/feedback", "run command: feedback", "how do I give feedback", "feedback system", etc.
 
 ---
 

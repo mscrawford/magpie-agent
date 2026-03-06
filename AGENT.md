@@ -3,7 +3,7 @@
 **📍 FILE LOCATION NOTE**: You are reading the SOURCE file in `/magpie/magpie-agent/AGENT.md`
 - ✅ **THIS IS THE CORRECT FILE TO EDIT** for AI documentation updates
 - ⚠️ A deployed copy may exist at `../AGENT.md` (parent directory) - DO NOT EDIT that one
-- 🔄 Changes here deploy to parent via `run command: update`
+- 🔄 Changes here deploy to parent via `/update`
 - 📝 Always commit changes to the magpie-agent repo, not the main MAgPIE repo
 
 ---
@@ -16,7 +16,7 @@
 - Advanced patterns → `core_docs/Query_Patterns_Reference.md`
 - Response guidelines → `core_docs/Response_Guidelines.md`
 - Tool usage → `core_docs/Tool_Usage_Patterns.md`
-- Only go to raw GAMS code if docs don't have what you need
+- Only go to raw GAMS code if docs don't have what you need (but DO verify in code for high-stakes claims — see Step 2b)
 - For GAMS code → `../modules/XX_name/realization/file.gms` (parent directory)
 
 **This documentation was created to save you time and ensure accuracy. Use it!**
@@ -30,7 +30,7 @@
 **🎬 At the start of each session:**
 
 1. **FIRST**: Check if this is a fresh installation:
-   - If `../AGENT.md` is missing → run `command: bootstrap` for setup
+   - If `../AGENT.md` is missing → run `/bootstrap` for setup
    - If already exists → proceed to context check
 
 2. **THEN**: Run the **session startup checklist** (see `agent/helpers/session_startup.md`):
@@ -72,7 +72,7 @@ I'm your AI assistant for the MAgPIE land-use model. I have curated documentatio
 When working on the documentation project, update ONLY `project/CURRENT_STATE.json` (all status, plans, progress). Do NOT update README.md, project/README.md, or modules/README.md (static reference docs).
 
 **📍 CRITICAL - Git Workflow for AGENT.md:**
-When updating this AGENT.md file, use `command: update-agent-md` for detailed workflow instructions.
+When updating this AGENT.md file, use `/update-agent-md` for detailed workflow instructions.
 
 ---
 
@@ -115,13 +115,13 @@ git push origin main
 ```
 **Ask the user before pushing** — they may want to review the changes first.
 
-### 2. Flag Documentation Gaps
+### 3. Flag Documentation Gaps
 If during the session you noticed:
 - A helper was loaded but **lacked critical information** → note what was missing in the helper's Lessons Learned
 - A user question had **no matching helper** and would have benefited from one → mention it to the user: "💡 This workflow could benefit from a dedicated helper. Want me to create one?"
 - Module documentation was **wrong or outdated** → update the module_XX_notes.md with a warning
 
-### 3. Deploy AGENT.md (if changed)
+### 4. Deploy AGENT.md (if changed)
 If you modified AGENT.md itself during the session:
 ```bash
 cp AGENT.md ../AGENT.md
@@ -524,7 +524,7 @@ Other IAMs may use different approaches:
 
 - Each `module_XX.md` may have a `module_XX_notes.md` with warnings, lessons, corrections, and examples
 - Always read notes files when answering about a module
-- **For complete details on the feedback system, say "run command: feedback".**
+- **For complete details on the feedback system, type `/feedback`.**
 
 ### Feedback flow
 
@@ -541,7 +541,7 @@ User submits feedback (via /feedback command)
 See `feedback/WORKFLOW_GUIDE.md` for the complete workflow.
 
 **When to remind users about feedback** (not every session — only when triggered):
-- ✅ After you **correct yourself** or the user corrects you — "I've recorded this correction. You can also submit formal feedback with `run command: feedback`"
+- ✅ After you **correct yourself** or the user corrects you — "I've recorded this correction. You can also submit formal feedback with `/feedback`"
 - ✅ After a **long debugging session** where new patterns were discovered
 - ✅ When the user expresses **frustration with documentation** quality or gaps
 - ❌ Do NOT remind on routine Q&A sessions or simple lookups
@@ -683,7 +683,7 @@ Module 29 uses land allocation from Module 10 (see `modules/module_10.md#equatio
 - **Parameterization detection** → `core_docs/Query_Patterns_Reference.md` (Pattern 4 + Appendix)
 - **Complete example walkthrough** → `core_docs/Response_Guidelines.md` (carbon pricing → forest growth)
 - **Document role hierarchy** → `core_docs/Response_Guidelines.md` (precedence, conflicts, quality assurance)
-- **First-time setup** → `command: bootstrap`
+- **First-time setup** → `/bootstrap`
 
 **The AI documentation exists to make your job easier AND more accurate. Use it!**
 
@@ -697,7 +697,7 @@ This agent is designed to work with any AI assistant. To set up for your specifi
 
 1. **Point your AI to this file** - Configure your AI tool to read `AGENT.md` (or `magpie-agent/AGENT.md`) at session start
 2. **Deploy to parent** - Copy `AGENT.md` to the MAgPIE root directory for convenience
-3. **Commands** - Tell the agent "run command: X" to execute commands from `agent/commands/`
+3. **Commands** - Type `/guide` (or "run command: guide") to execute commands from `agent/commands/`
 
 ### Tool-Specific Notes
 
@@ -723,7 +723,7 @@ Then configure your AI tool to read `AGENT.md` from the MAgPIE root directory.
 
 ## 🔄 KEEPING DOCUMENTATION IN SYNC
 
-The agent documentation must stay synchronized with the MAgPIE codebase. Use `command: sync` to check for updates.
+The agent documentation must stay synchronized with the MAgPIE codebase. Use `/sync` to check for updates.
 
 ### Sync Tracking
 
@@ -742,7 +742,7 @@ This file tracks:
 
 ### Sync Workflow
 
-1. **Check status**: `command: sync`
+1. **Check status**: `/sync`
 2. **Review commits**: Agent identifies GAMS changes
 3. **Update docs**: Agent updates affected module_XX.md files
 4. **Log sync**: Agent updates sync_log.json

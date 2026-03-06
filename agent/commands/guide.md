@@ -2,7 +2,7 @@
 
 **Purpose**: Show capabilities of the MAgPIE Agent
 
-**When user says**: "run command: guide", "/guide", "show guide", "what can you do?", "help", etc.
+**When user says**: "/guide", "run command: guide", "show guide", "what can you do?", "help", etc.
 
 **How to present**: Show the **Quick Start** section first. Then ask: "Want to see the full guide, or is this enough to get started?" Only show the Full Reference if they ask for it.
 
@@ -217,7 +217,7 @@ Help improve the agent by sharing your experience:
 ./scripts/search_feedback.sh "Module 70"
 ```
 
-Say "run command: feedback" for complete details.
+Type `/feedback` for complete details.
 
 ---
 
@@ -385,7 +385,7 @@ Located in `scripts/` directory:
 ---
 
 ### Example 3: Update Documentation
-**You**: "run command: update"
+**You**: "/update"
 
 **Agent will**:
 1. Pull latest from magpie-agent repo
@@ -438,7 +438,7 @@ When you encounter:
 ## 📞 Getting Help
 
 **For questions about the agent itself**:
-- Say "run command: guide" (this comprehensive guide)
+- Type `/guide` (this comprehensive guide)
 - Read `README.md` in magpie-agent/
 - Check `project/CURRENT_STATE.json` for project status
 
