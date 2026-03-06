@@ -524,8 +524,8 @@ v58_manLandRed(j2,manPeat58) =e= m58_LandMerge(vm_landreduction,vm_landreduction
 ```gams
 v58_peatland(j2,manPeat58) =e=
   pc58_peatland(j2,manPeat58)
-  + v58_manLandExp(j2,manPeat58) * p58_scalingFactorExp(ct,j2) - v58_balance(j2,manPeat58)
-  - v58_manLandRed(j2,manPeat58) * p58_scalingFactorRed(ct,j2,manPeat58) + v58_balance2(j2,manPeat58)
+  + v58_manLandExp(j2,manPeat58) * sum(ct, p58_scalingFactorExp(ct,j2)) - v58_balance(j2,manPeat58)
+  - v58_manLandRed(j2,manPeat58) * sum(ct, p58_scalingFactorRed(ct,j2,manPeat58)) + v58_balance2(j2,manPeat58)
 ```
 - **Type**: Equality
 - **Active**: Only after s58_fix_peatland (equations.gms:46)
@@ -574,7 +574,7 @@ v58_peatlandChange(j2,"rewetted") / m_timestep_length =l=
 **q58_rewetting_exo(j,manPeat58)** - Exogenous target (equations.gms:65-67)
 ```gams
 v58_peatland(j2,"rewetted") =g=
-  sum(drained58, p58_peatland_ref(j2,drained58)) * i58_rewetting_exo(ct,j2)
+  sum(drained58, p58_peatland_ref(j2,drained58)) * sum(ct, i58_rewetting_exo(ct,j2))
 ```
 - **Type**: Inequality (≥)
 - **Active**: Only after s58_fix_peatland (equations.gms:65)
@@ -588,8 +588,8 @@ v58_peatland(j2,"rewetted") =g=
 ```gams
 vm_peatland_cost(j2) =e=
   sum(cost58, v58_peatland_cost_annuity(j2,cost58))
-  + v58_peatland(j2,"rewetted") * i58_cost_rewet_recur(ct)
-  + sum(manPeat58, v58_peatland(j2,manPeat58)) * i58_cost_drain_recur(ct)
+  + v58_peatland(j2,"rewetted") * sum(ct, i58_cost_rewet_recur(ct))
+  + sum(manPeat58, v58_peatland(j2,manPeat58)) * sum(ct, i58_cost_drain_recur(ct))
   + sum(manPeat58, v58_balance(j2,manPeat58)+v58_balance2(j2,manPeat58)) * s58_balance_penalty
 ```
 - **Type**: Equality
@@ -603,8 +603,8 @@ vm_peatland_cost(j2) =e=
 ```gams
 v58_peatland_cost_annuity(j2,cost58) =g=
   sum(map_cost58(intact58,cost58), v58_peatlandChange(j2,intact58))
-  * i58_cost_onetime(ct,cost58)
-  * pm_interest(ct,i2) / (1 + pm_interest(ct,i2))
+  * sum(ct, i58_cost_onetime(ct,cost58))
+  * sum((cell(i2,j2),ct), pm_interest(ct,i2) / (1 + pm_interest(ct,i2)))
 ```
 - **Type**: Inequality (≥)
 - **Interpretation**: Annuity ≥ one-time cost × area change × annuity factor

@@ -190,26 +190,51 @@ q59_nr_som(j2) ..
 - Divided by timestep length to get annual rate
 - Only tracks cropland SOM changes
 
-#### 3.6 Plant-Available Nitrogen from SOM
+#### 3.6 SOM Nitrogen Fertilizer Bound (`q59_nr_som_fertilizer`)
 
-**Location**: `equations.gms:81-84` and `equations.gms:88-91`
+**Location**: `equations.gms:81-84`
 
 ```gams
 q59_nr_som_fertilizer(j2) ..
   vm_nr_som_fertilizer(j2) =l= vm_nr_som(j2);
+```
 
+**VERIFIED**: Plant-available nitrogen from SOM cannot exceed total SOM nitrogen release.
+
+**Constraint Type**: Inequality (≤) — upper bound on plant-available N
+
+**Purpose**: Ensures that the nitrogen credited to crops from soil organic matter loss (`vm_nr_som_fertilizer`) does not exceed the actual nitrogen released by SOM decomposition (`vm_nr_som`). This prevents the model from claiming more nitrogen benefit than physically exists.
+
+**Key Variables**:
+- `vm_nr_som_fertilizer(j)`: Plant-available nitrogen from SOM loss (Mt N per yr) — provided to Module 51
+- `vm_nr_som(j)`: Total nitrogen release from SOM loss (Mt N per yr) — calculated in q59_nr_som
+
+**CRITICAL**: Only a fraction of SOM nitrogen release is plant-available. The remainder is lost to leaching or emissions (tracked by Module 51).
+
+#### 3.7 SOM Nitrogen Uptake Capacity (`q59_nr_som_fertilizer2`)
+
+**Location**: `equations.gms:88-91`
+
+```gams
 q59_nr_som_fertilizer2(j2) ..
   vm_nr_som_fertilizer(j2) =l=
     vm_landexpansion(j2,"crop") * s59_nitrogen_uptake;
 ```
 
-**VERIFIED**: Plant-available nitrogen limited by:
-1. Total SOM nitrogen release
-2. Maximum uptake capacity (200 kg N/ha on expanded area) (`equations.gms:93`, `input.gms:9`)
+**VERIFIED**: Plant-available nitrogen from SOM is additionally limited by the crop uptake capacity on expanded cropland area.
 
-**CRITICAL**: Only a fraction of SOM nitrogen release is plant-available. Rest is lost to leaching or emissions (tracked by Module 51).
+**Constraint Type**: Inequality (≤) — upper bound on plant-available N based on uptake capacity
 
-#### 3.7 Soil Carbon Management Cost
+**Purpose**: Limits the nitrogen benefit from SOM loss to what crops can actually absorb on newly expanded cropland. This is the second of two constraints on `vm_nr_som_fertilizer` — together with `q59_nr_som_fertilizer`, the effective value is the minimum of total SOM N release and crop uptake capacity.
+
+**Key Variables**:
+- `vm_nr_som_fertilizer(j)`: Plant-available nitrogen from SOM loss (Mt N per yr)
+- `vm_landexpansion(j,"crop")`: Cropland expansion area (mio. ha)
+- `s59_nitrogen_uptake`: Maximum N uptake per hectare of expanded cropland (default: 200 kg N/ha = 0.0002 Mt N/Mha, `input.gms:9`)
+
+**Mechanism**: Only newly expanded cropland receives SOM nitrogen credit. Existing cropland is assumed to already be at equilibrium. At 200 kg N/ha (`equations.gms:93`), this represents the maximum feasible crop uptake on freshly converted land where SOM mineralization is highest.
+
+#### 3.8 Soil Carbon Management Cost
 
 **Location**: `equations.gms:98-101`
 

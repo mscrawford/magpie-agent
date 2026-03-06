@@ -192,7 +192,7 @@ p32_rotation_regional(t,i) = weighted average of cellular rotations by area
 
 ### 4. Key Equations (31 Total)
 
-**VERIFIED**: 31 equations manage costs, land, carbon, production, and constraints (`declarations.gms:85-117`).
+**VERIFIED**: All 31 equations documented. They manage costs, land, carbon, production, and constraints (`declarations.gms:85-117`).
 
 #### 4.1 Total Forestry Costs
 
@@ -229,6 +229,50 @@ vm_land_forestry(j2,type32) =e= sum(ac, v32_land(j2,type32,ac));
 ```
 
 **Purpose**: Provide type-specific aggregates to other modules
+
+**q32_land_diff** (`equations.gms:113-115`):
+```gams
+q32_land_diff .. vm_landdiff_forestry =e= sum((j2,type32),
+            v32_land_expansion(j2,type32)
+          + sum(ac_sub, v32_land_reduction(j2,type32,ac_sub)));
+```
+
+**Translation**: Aggregated gross forestry land change = sum of all expansion + all reduction across types and cells. Used by Module 10 (land) for land-use change tracking.
+
+**q32_land_expansion** (`equations.gms:117-119`):
+```gams
+q32_land_expansion(j2,type32) ..
+    v32_land_expansion(j2,type32) =e=
+    sum(ac_est, v32_land(j2,type32,ac_est));
+```
+
+**Translation**: Land expansion for each forestry type equals the area in establishment age classes (`ac_est`). New land only appears in the youngest age classes.
+
+**q32_land_reduction** (`equations.gms:121-122`):
+```gams
+q32_land_reduction(j2,type32,ac_sub) ..
+  v32_land_reduction(j2,type32,ac_sub) =e= pc32_land(j2,type32,ac_sub) - v32_land(j2,type32,ac_sub);
+```
+
+**Translation**: Land reduction per type and age class = previous area (`pc32_land`) minus optimized area (`v32_land`). Must be ≥ 0 because `v32_land_reduction` is a positive variable.
+
+**q32_land_expansion_forestry** (`equations.gms:61-62`):
+```gams
+q32_land_expansion_forestry(j2,type32) ..
+  vm_landexpansion_forestry(j2,type32) =e= v32_land_expansion(j2,type32)
+    - (v32_land_replant(j2))$sameas(type32,"plant");
+```
+
+**Translation**: Net forestry expansion reported to Module 10 = total expansion minus replanted area (for `plant` type only). Replanting after harvest does not count as new expansion.
+
+**q32_land_reduction_forestry** (`equations.gms:64-65`):
+```gams
+q32_land_reduction_forestry(j2,type32) ..
+  vm_landreduction_forestry(j2,type32) =e= sum(ac_sub, v32_land_reduction(j2,type32,ac_sub))
+    - (v32_land_replant(j2))$sameas(type32,"plant");
+```
+
+**Translation**: Net forestry reduction reported to Module 10 = total reduction minus replanted area (for `plant` type only). Harvest followed by replanting does not count as net reduction.
 
 #### 4.3 Establishment Decision
 
@@ -267,6 +311,25 @@ if(s32_demand_establishment = 1,
 ```
 
 **Translation**: If forward-looking, use demand at time `t + rotation_length`, else use current demand
+
+**q32_establishment_hvarea** (`equations.gms:204-208`):
+```gams
+q32_establishment_hvarea(j2)$s32_establishment_dynamic ..
+              sum(ac_est, v32_land(j2,"plant",ac_est))
+              =g=
+              sum(ac_sub, v32_hvarea_forestry(j2,ac_sub))
+                * sum(cell(i2,j2), min(1, sum(ct, p32_future_to_current_demand_ratio(ct,i2))));
+```
+
+**Translation**: New plantation establishment must be at least as large as the harvested area scaled by `min(1, future/current demand ratio)`. Only active when `s32_establishment_dynamic = 1`. Ensures harvested plantations are re-established unless demand is declining.
+
+**q32_establishment_fixed** (`equations.gms:215-216`):
+```gams
+q32_establishment_fixed(j2)$s32_establishment_static ..
+  sum(ac, v32_land(j2,"plant",ac)) =e= sum(ac, pc32_land(j2,"plant",ac));
+```
+
+**Translation**: Total plantation area must remain equal to previous time step area. Only active when `s32_establishment_static = 1`. Keeps plantation area constant — no net expansion or reduction — while still allowing age-class shifts and harvest/regrowth cycles.
 
 #### 4.4 Timber Production
 
@@ -348,6 +411,24 @@ sum(ct, p32_aff_pol_timestep(ct,j2)) * vm_natforest_reduction(j2) =e= 0;
 **Translation**: If NPI/NDC afforestation required, then natural forest reduction must be zero
 **Purpose**: Ensure policy afforestation doesn't come at expense of existing natural forests
 
+**q32_aff_est** (`equations.gms:47`):
+```gams
+q32_aff_est(j2) ..
+sum(ac_est, v32_land(j2,"aff",ac_est)) =l= sum(ac, v32_land(j2,"aff",ac))
+  - sum((ct,ac), p32_land(ct,j2,"aff",ac));
+```
+
+**Translation**: New afforestation establishment (area in `ac_est`) can only be positive if total afforested land increases relative to the previous time step. Prevents replacing existing afforestation with new establishment — `ac_est` can only grow when there is a net increase in `aff` area.
+
+**q32_bgp_aff** (`equations.gms:41-43`):
+```gams
+q32_bgp_aff(j2,ac) ..
+vm_cdr_aff(j2,ac,"bph") =e=
+sum(ac_est, v32_land(j2,"aff",ac_est)) * p32_aff_bgp(j2,ac);
+```
+
+**Translation**: Biophysical (bph) effect of afforestation = newly established area × biophysical impact parameter `p32_aff_bgp`. This captures local warming/cooling effects (e.g., albedo changes) as opposed to the biogeochemical CDR in `q32_cdr_aff`. Both `bgc` and `bph` components are passed to Module 56 via `vm_cdr_aff`.
+
 #### 4.7 Biodiversity Value
 
 **q32_bv_aff** (`equations.gms:128-131`):
@@ -360,7 +441,25 @@ q32_bv_aff(j2,potnatveg) .. vm_bv(j2,"aff_co2p",potnatveg)
 
 **Translation**: BV = area × BII coefficient (by age class) × potential natural vegetation layer
 
-**Similar equations** for `ndc` and `plant` types (`equations.gms:133-141`)
+**q32_bv_ndc** (`equations.gms:133-136`):
+```gams
+q32_bv_ndc(j2,potnatveg) .. vm_bv(j2,"aff_ndc",potnatveg)
+          =e=
+          sum(bii_class_secd, sum(ac_to_bii_class_secd(ac,bii_class_secd), v32_land(j2,"ndc",ac)) *
+          p32_bii_coeff("ndc",bii_class_secd,potnatveg)) * fm_luh2_side_layers(j2,potnatveg);
+```
+
+**Translation**: Biodiversity value of NPI/NDC afforestation. Same structure as `q32_bv_aff` but uses `ndc` land pools and `ndc`-specific BII coefficients. Reports to `vm_bv(j,"aff_ndc",potnatveg)` for Module 44.
+
+**q32_bv_plant** (`equations.gms:138-141`):
+```gams
+q32_bv_plant(j2,potnatveg) .. vm_bv(j2,"plant",potnatveg)
+          =e=
+          sum(bii_class_secd, sum(ac_to_bii_class_secd(ac,bii_class_secd), v32_land(j2,"plant",ac)) *
+          p32_bii_coeff("plant",bii_class_secd,potnatveg)) * fm_luh2_side_layers(j2,potnatveg);
+```
+
+**Translation**: Biodiversity value of timber plantations. Same structure as `q32_bv_aff` but uses `plant` land pools and `plant`-specific BII coefficients. Plantations typically have lower BII coefficients than `ndc` or `aff` types.
 
 **BII coefficient choice** (`input.gms:38`):
 - `s32_aff_bii_coeff = 0`: Use natural vegetation BII (default)

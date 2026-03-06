@@ -524,6 +524,8 @@ vm_lu_transitions.up(j,"primforest","other") =
 
 **How**: Add equations to `equations.gms`
 
+> **⚠️ NOTE**: The equation `q10_deforestation` shown below is a **hypothetical example** illustrating how a user could extend the module. It does **NOT** exist in the current `landmatrix_dec18` realization.
+
 **Example: Track total deforestation**
 ```gams
 * In declarations.gms:
@@ -570,6 +572,8 @@ vm_land.fx(j,"forestry") = f_afforestation_target(t,j);
 **Purpose**: Track which land types are converted to urban
 
 **How**: Add urban-specific transition tracking
+
+> **⚠️ NOTE**: The equation `q10_urban_source` shown below is a **hypothetical example** illustrating how a user could extend the module. It does **NOT** exist in the current `landmatrix_dec18` realization.
 
 **Example**:
 ```gams

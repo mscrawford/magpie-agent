@@ -40,9 +40,9 @@
 
 ### 2. Mechanisms & Equations
 
-Module 15 implements **15 equations** split into two categories:
+Module 15 implements **18 equations** split into two categories:
 1. **MAgPIE Constraint** (1 equation): Links food demand model output to MAgPIE
-2. **Standalone Food Demand Model** (14 equations): Estimates food demand independently
+2. **Standalone Food Demand Model** (17 equations): Estimates food demand independently
 
 ---
 
@@ -75,7 +75,7 @@ q15_food_demand(i2,kfo) ..
 
 #### **B. Standalone Food Demand Model Equations**
 
-These 14 equations run BEFORE MAgPIE (or iterate with it) to estimate `p15_kcal_pc_calibrated`.
+These 17 equations run BEFORE MAgPIE (or iterate with it) to estimate `p15_kcal_pc_calibrated`.
 
 ---
 
@@ -155,26 +155,32 @@ q15_regr_bmi_shr(iso,sex,agegroup15,bmi_tree15) ..
 
 **Equations 5-10: Hierarchical BMI Share Disaggregation** (`equations.gms:81-123`)
 
-Each equation calculates a specific BMI group share from the tree nodes:
+Each equation calculates a specific BMI group share from the tree nodes. The 6 equations have **distinct formulas** — they are NOT interchangeable:
 
+**Equation 5: Very Low BMI** (`equations.gms:81-86`)
 ```gams
-*' Very Low BMI
 q15_bmi_shr_verylow(iso,sex,agegroup15) ..
     v15_bmi_shr_overgroups(iso,sex,agegroup15,"verylow")
     =e=
     v15_regr_overgroups(iso,sex,agegroup15,"low")
     * v15_regr_overgroups(iso,sex,agegroup15,"lowsplit")
     ;
+```
+**Translation**: VeryLow share = Low node × LowSplit node
 
-*' Low BMI
+**Equation 6: Low BMI** (`equations.gms:88-93`)
+```gams
 q15_bmi_shr_low(iso,sex,agegroup15) ..
     v15_bmi_shr_overgroups(iso,sex,agegroup15,"low")
     =e=
     v15_regr_overgroups(iso,sex,agegroup15,"low")
     * (1- v15_regr_overgroups(iso,sex,agegroup15,"lowsplit"))
     ;
+```
+**Translation**: Low share = Low node × (1 - LowSplit node)
 
-*' Medium BMI
+**Equation 7: Medium BMI** (`equations.gms:95-101`)
+```gams
 q15_bmi_shr_medium(iso,sex,agegroup15) ..
     v15_bmi_shr_overgroups(iso,sex,agegroup15,"medium")
     =e=
@@ -182,12 +188,49 @@ q15_bmi_shr_medium(iso,sex,agegroup15) ..
     -v15_regr_overgroups(iso,sex,agegroup15,"high"))
     * (1-v15_regr_overgroups(iso,sex,agegroup15,"mediumsplit"))
     ;
-
-*' [... similar for mediumhigh, high, veryhigh]
 ```
+**Translation**: Medium share = (1 - Low node - High node) × (1 - MediumSplit node)
+
+**Equation 8: Medium-High BMI** (`equations.gms:103-109`)
+```gams
+q15_bmi_shr_medium_high(iso,sex,agegroup15) ..
+    v15_bmi_shr_overgroups(iso,sex,agegroup15,"mediumhigh")
+    =e=
+    (1-v15_regr_overgroups(iso,sex,agegroup15,"low")
+    -v15_regr_overgroups(iso,sex,agegroup15,"high"))
+    * v15_regr_overgroups(iso,sex,agegroup15,"mediumsplit")
+    ;
+```
+**Translation**: MediumHigh share = (1 - Low node - High node) × MediumSplit node
+
+**Equation 9: High BMI** (`equations.gms:111-116`)
+```gams
+q15_bmi_shr_high(iso,sex,agegroup15) ..
+    v15_bmi_shr_overgroups(iso,sex,agegroup15,"high")
+    =e=
+    v15_regr_overgroups(iso,sex,agegroup15,"high")
+    * (1-v15_regr_overgroups(iso,sex,agegroup15,"highsplit"))
+    ;
+```
+**Translation**: High share = High node × (1 - HighSplit node)
+
+**Equation 10: Very High BMI** (`equations.gms:118-123`)
+```gams
+q15_bmi_shr_veryhigh(iso,sex,agegroup15) ..
+    v15_bmi_shr_overgroups(iso,sex,agegroup15,"veryhigh")
+    =e=
+    v15_regr_overgroups(iso,sex,agegroup15,"high")
+    * v15_regr_overgroups(iso,sex,agegroup15,"highsplit")
+    ;
+```
+**Translation**: VeryHigh share = High node × HighSplit node
 
 **Purpose**: Apply tree structure to disaggregate population into 6 BMI groups
-**Logic**: Split fractions multiply to produce final shares (e.g., verylow = low × lowsplit)
+**Logic**: The tree has 3 regression nodes (low, medium-via-residual, high) each split into 2 leaves:
+- **Low branch**: low × lowsplit → verylow; low × (1-lowsplit) → low
+- **Medium branch**: (1-low-high) × mediumsplit → mediumhigh; (1-low-high) × (1-mediumsplit) → medium
+- **High branch**: high × highsplit → veryhigh; high × (1-highsplit) → high
+- **Conservation**: All 6 shares sum to 1.0 by construction (verified: low + verylow + medium + mediumhigh + high + veryhigh = low + (1-low-high) + high = 1.0)
 
 ---
 
@@ -349,7 +392,7 @@ q15_foodtree_kcal_staples(iso,kfo_st) ..
 
 #### **A. Food Demand Model Variables** (`declarations.gms:42-56`)
 
-**14 optimization variables** in the standalone food demand model:
+**10 optimization variables** in the standalone food demand model:
 
 | Variable | Description | Units | Type |
 |----------|-------------|-------|------|
@@ -1446,7 +1489,7 @@ if(s15_exo_diet == 1) {
 **Module 15 (Food Demand)** is the **primary driver of agricultural production** in MAgPIE, operating as a **standalone optimization model** that estimates food demand based on anthropometric requirements, income, and optional price responses.
 
 **Core Functions**:
-1. **Standalone optimization** (NLP model with 14 equations, runs before/iterates with MAgPIE)
+1. **Standalone optimization** (NLP model with 17 equations, runs before/iterates with MAgPIE)
 2. **Anthropometric requirements** (BMI distribution → energy needs by sex/age/body size)
 3. **Income effects** (saturation curves: livestock, processed foods increase with income)
 4. **Optional price response** (elastic demand: up to 10 iterations, 0.5% convergence)
@@ -1456,8 +1499,8 @@ if(s15_exo_diet == 1) {
 
 **Key Features**:
 - **Unique architecture**: Only MAgPIE module that is a standalone optimization model
-- **15 equations**: 1 MAgPIE constraint + 14 food demand model equations
-- **14 optimization variables** in food demand model (+ `vm_dem_food` in MAgPIE)
+- **18 equations**: 1 MAgPIE constraint + 17 food demand model equations
+- **10 optimization variables** in food demand model (+ `vm_dem_food` in MAgPIE)
 - **15+ input files**: FAO data, regression parameters, EAT-Lancet targets, etc.
 - **249 ISO countries**: Country-level resolution, aggregated to 10 MAgPIE regions
 - **6 BMI groups × 18 ages × 2 sexes**: Detailed demographic structure
@@ -1516,15 +1559,15 @@ if(s15_exo_diet == 1) {
 - **Food demand drives everything**: Land use, production, trade, emissions, costs
 - **Human dimension**: Links demographics, income, nutrition to agricultural system
 - **Policy relevance**: Dietary shifts major mitigation lever (up to 8 GtCO2eq/yr)
-- **Most complex module**: Standalone model, 15 equations, 14 variables, 15+ input files
+- **Most complex module**: Standalone model, 18 equations, 10 variables, 15+ input files
 - **Critical for scenarios**: SSPs, EAT-Lancet, waste reduction all implemented here
 
 ---
 
-**Last Verified**: 2025-10-13
-**Verified Against**: `../modules/15_*/anthropometrics_jan18/*.gms`
-**Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Last Verified**: 2025-07-15
+**Verified Against**: `modules/15_food/anthro_iso_jun22/*.gms`
+**Verification Method**: All 18 equations cross-referenced with declarations.gms and equations.gms; counts corrected from prior 15→18
+**Changes Since Last Verification**: Equation count corrected (15→18), 3 abbreviated BMI equations expanded with full code
 
 ---
 

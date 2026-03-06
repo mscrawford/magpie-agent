@@ -1,10 +1,10 @@
 # Module 30: Croparea - Complete Implementation Guide
 
 **Status**: 100% Verified
-**Version**: detail_apr24 realization
+**Version**: detail_apr24 + simple_apr24 realizations
 **Last Updated**: 2025-10-12
 **Lines of Code**: ~650 (detailed realization)
-**Equations**: 12
+**Equations**: 12 (detail_apr24) + 9 (simple_apr24); 13 unique equation names across both realizations
 
 ---
 
@@ -458,6 +458,91 @@ else
 **Rationale**: This allows scenarios to limit the speed of agricultural expansion, representing institutional, labor, or capital constraints that prevent rapid conversion of land to cropland.
 
 **Description**: This is a simple spatial aggregation equation. The growth constraint prevents unrealistic cropland expansion (e.g., doubling cropland in 5 years) by bounding the upper limit of the regional aggregate.
+
+---
+
+## simple_apr24 Realization — Equations Unique or Different from detail_apr24
+
+The `simple_apr24` realization declares **9 equations** total. Six are identical to `detail_apr24`
+(`q30_prod`, `q30_betr_missing`, `q30_carbon`, `q30_bv_ann`, `q30_bv_per`, `q30_crop_reg`)
+and are documented above. The three equations below are either **unique to simple_apr24** or
+have **significantly different implementations** compared to `detail_apr24`.
+
+### 9. Cost Equation (simple_apr24 only)
+
+#### q30_cost — Bioenergy Tree Penalty Cost
+**Location**: `simple_apr24/equations.gms:25-27`
+**Purpose**: Aggregate bioenergy-tree shortfall penalties into the regional rotation-penalty variable
+
+```gams
+q30_cost(i2) ..
+  vm_rotation_penalty(i2) =g=
+    sum(cell(i2,j2), v30_betr_missing(j2) * sum(ct, i30_betr_penalty(ct)));
+```
+
+**Formula**: Regional Penalty ≥ Σ_j (BETR Shortfall_j × Penalty Rate)
+
+**Key Variables**:
+- `vm_rotation_penalty(i)`: Regional penalty variable entering Module 11 objective function (mio. USD17MER)
+- `v30_betr_missing(j)`: Missing bioenergy tree land versus target (mio. ha), calculated by `q30_betr_missing`
+- `i30_betr_penalty(ct)`: Penalty rate for BETR shortfall, default `s30_betr_penalty = 2460 USD17MER/ha` (`input.gms:26`)
+
+**Conditional behaviour**: The penalty rate is set to 0 and `v30_betr_missing` is fixed to 0 before the BETR scenario start year (`presolve.gms:34-36`), effectively disabling this equation.
+
+**Comparison with detail_apr24**: In `detail_apr24`, the equivalent equation is `q30_rotation_penalty`, which sums **three** penalty components: rotation-rule violations (`v30_penalty`), irrigated-area rotation violations (`v30_penalty_max_irrig`), **and** BETR shortfall. In `simple_apr24`, `q30_cost` carries **only** the BETR shortfall penalty because the simple realization enforces rotational constraints as hard bounds (≤ / ≥) rather than via penalty payments.
+
+---
+
+### 10. Rotational Constraints (simple_apr24 variants)
+
+The `simple_apr24` realization uses a **simplified, rule-based-only** approach to rotational constraints. Key differences from `detail_apr24`:
+
+| Feature | detail_apr24 | simple_apr24 |
+|---|---|---|
+| Implementation modes | Rule-based OR penalty-based (`i30_implementation`) | Rule-based only (hard constraints) |
+| Crop-group sets | `rotamax30` / `rotamin30` (29 max + 6 min groups) | `crpmax30` / `crpmin30` subsets of `crp30` (20 crop-rotation types) |
+| Water dimension | Summed across `w` | Separate constraint **per** `w` (rainfed and irrigated independently) |
+| Share parameters | `i30_rotation_rules(ct,rota30)` — time-varying via scenario fader | `f30_rotation_max_shr(crp30)` / `f30_rotation_min_shr(crp30)` — static from CSV input |
+| On/off switch | `s30_implementation` scalar | `c30_rotation_constraints` compile-time switch (`input.gms:14`) |
+
+#### q30_rotation_max (simple_apr24) — Maximum Rotational Share
+**Location**: `simple_apr24/equations.gms:34-36`
+**Purpose**: Limit the maximum share any crop-rotation group can occupy, separately for each water supply type
+
+```gams
+q30_rotation_max(j2,crpmax30,w) ..
+  sum((crp_kcr30(crpmax30,kcr)), vm_area(j2,kcr,w)) =l=
+    sum(kcr, vm_area(j2,kcr,w)) * f30_rotation_max_shr(crpmax30);
+```
+
+**Formula**: Area(Crop Group, w) ≤ Total Cropland(w) × Max Share
+
+**Key Variables**:
+- `crpmax30(crp30)`: Dynamic subset of crop-rotation types with binding max constraints, populated in `presolve.gms:23` where `f30_rotation_max_shr < 1`
+- `crp_kcr30(crp30,kcr)`: Mapping from 20 rotation types to 19 MAgPIE crops (`sets.gms:18-37`)
+- `f30_rotation_max_shr(crp30)`: Maximum allowed area share per crop group, read from `input/f30_rotation_max.csv` (`input.gms:80-85`). Set to 1 (inactive) when `c30_rotation_constraints = "off"` (`input.gms:86`)
+- `vm_area(j,kcr,w)`: Crop production area (mio. ha)
+
+**Description**: This is a hard constraint (≤) that prevents any single crop-rotation group from dominating either the rainfed or irrigated area within a cell. Unlike `detail_apr24`, the constraint applies **per water supply type** (`w` dimension), so the rainfed and irrigated area portfolios are constrained independently.
+
+#### q30_rotation_min (simple_apr24) — Minimum Rotational Share
+**Location**: `simple_apr24/equations.gms:42-44`
+**Purpose**: Enforce a minimum share for crop-rotation groups, separately for each water supply type
+
+```gams
+q30_rotation_min(j2,crpmin30,w) ..
+  sum((crp_kcr30(crpmin30,kcr)), vm_area(j2,kcr,w)) =g=
+    sum(kcr, vm_area(j2,kcr,w)) * f30_rotation_min_shr(crpmin30);
+```
+
+**Formula**: Area(Crop Group, w) ≥ Total Cropland(w) × Min Share
+
+**Key Variables**:
+- `crpmin30(crp30)`: Dynamic subset of crop-rotation types with binding min constraints, populated in `presolve.gms:24` where `f30_rotation_min_shr > 0`
+- `f30_rotation_min_shr(crp30)`: Minimum required area share per crop group, read from `input/f30_rotation_min.csv` (`input.gms:89-94`). Set to 0 (inactive) when `c30_rotation_constraints = "off"` (`input.gms:95`)
+- `crp_kcr30(crp30,kcr)`: Mapping from rotation types to crops (`sets.gms:18-37`)
+
+**Description**: This is a hard constraint (≥) that guarantees minimum crop-group diversity within each water supply type. Like the simple max constraint, this operates **per `w`**, unlike `detail_apr24` which sums over `w`.
 
 ---
 

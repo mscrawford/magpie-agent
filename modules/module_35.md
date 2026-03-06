@@ -38,9 +38,9 @@
 
 **File Sizes**:
 - `presolve.gms` (262 lines) ⭐ CRITICAL - Age dynamics, disturbances, recovery, bounds
-- `equations.gms` (229 lines) - 33 equations for land, carbon, harvest, BII
+- `equations.gms` (229 lines) - 32 equations for land, carbon, harvest, BII
 - `postsolve.gms` (203 lines) - State updates and output
-- `declarations.gms` (140 lines) - 33 equations, 88 variables/parameters
+- `declarations.gms` (140 lines) - 32 equations, 88 variables/parameters
 - `preloop.gms` (99 lines) - Initialization
 - `input.gms` (66 lines) - Configuration and data loading
 - `realization.gms` (48 lines) - Module description
@@ -290,9 +290,9 @@ pc35_land_other(j,"othernat",ac_est) = pc35_land_other(j,"othernat",ac_est) - p3
 
 ---
 
-### 6. Key Equations (Selected from 33 Total)
+### 6. Key Equations (Complete — 32 Total)
 
-**Full list**: 33 equations in `equations.gms` (229 lines)
+**Full list**: 32 equations in `equations.gms` (229 lines)
 
 #### 6.1 Land Aggregation
 
@@ -331,6 +331,27 @@ vm_land(j2,"other") =g= sum(ct, p35_min_other(ct,j2));
 
 **Purpose**: NPI/NDC policies for specific forest and other land targets (non-interchangeable)
 
+**q35_secdforest_restoration** (`equations.gms:24-28`):
+```gams
+sum(land_ag, vm_lu_transitions(j2,land_ag,"secdforest"))
++ vm_lu_transitions(j2,"forestry","secdforest")
+=g=
+p35_land_restoration(j2,"secdforest");
+```
+
+**Purpose**: Ensures that transitions from agricultural land and forestry into secondary forest meet the restoration target set for secondary forest. The constraint includes both agricultural-to-secdforest and forestry-to-secdforest transitions.
+**Key variables**: `vm_lu_transitions` (land use transitions from Module 10), `p35_land_restoration` (restoration target, computed in presolve)
+
+**q35_other_restoration** (`equations.gms:30-33`):
+```gams
+sum(land_ag, vm_lu_transitions(j2,land_ag,"other"))
+=g=
+p35_land_restoration(j2,"other");
+```
+
+**Purpose**: Ensures that transitions from agricultural land into other natural land meet the other-land restoration target. Unlike secondary forest, forestry-to-other transitions are not included.
+**Key variables**: `vm_lu_transitions`, `p35_land_restoration`
+
 #### 6.3 Carbon Stocks
 
 **q35_carbon_secdforest** (`equations.gms:46-48`):
@@ -341,7 +362,23 @@ vm_carbon_stock(j2,"secdforest",ag_pools,stockType) =e=
 
 **Purpose**: Carbon = area × age-class-specific carbon density (summed over age classes)
 
-**Similar equations** for primforest and other land
+**q35_carbon_primforest** (`equations.gms:42-44`):
+```gams
+vm_carbon_stock(j2,"primforest",ag_pools,stockType) =e=
+  m_carbon_stock(vm_land,fm_carbon_density,"primforest");
+```
+
+**Purpose**: Primary forest carbon stock = area × carbon density. Uses the `m_carbon_stock` macro with `fm_carbon_density` (global, no age-class dimension since primforest is always mature).
+**Key variables**: `vm_land(j,"primforest")` (area), `fm_carbon_density` (carbon density input from LPJmL)
+
+**q35_carbon_other** (`equations.gms:50-52`):
+```gams
+vm_carbon_stock(j2,"other",ag_pools,stockType) =e=
+  m_carbon_stock_ac(vm_land_other,p35_carbon_density_other,"othertype35,ac","othertype35,ac_sub");
+```
+
+**Purpose**: Other land carbon stock = sum over othertype35 and age classes of area × carbon density. Uses the age-class macro `m_carbon_stock_ac` because other land tracks age classes, and iterates over both other land subtypes (othernat, youngsecdf).
+**Key variables**: `vm_land_other(j,othertype35,ac)` (area by subtype and age class), `p35_carbon_density_other` (age-class-specific carbon density)
 
 #### 6.4 Biodiversity Value (BII)
 
@@ -356,6 +393,25 @@ vm_bv(j2,"secdforest",potnatveg) =e=
 
 **BII coefficients** increase with forest age (Module 44 provides coefficients)
 
+**q35_bv_primforest** (`equations.gms:56-58`):
+```gams
+vm_bv(j2,"primforest",potnatveg) =e=
+  vm_land(j2,"primforest") * fm_bii_coeff("primary",potnatveg) * fm_luh2_side_layers(j2,potnatveg);
+```
+
+**Purpose**: Biodiversity value of primary forest = area × BII coefficient for "primary" class × LUH2 potential natural vegetation share. Primary forest always uses the highest BII class ("primary"), which has a coefficient of 1.0.
+**Key variables**: `vm_land(j,"primforest")` (area), `fm_bii_coeff("primary",potnatveg)` (BII coefficient), `fm_luh2_side_layers` (spatial mask for potential natural vegetation type)
+
+**q35_bv_other** (`equations.gms:65-68`):
+```gams
+vm_bv(j2,"other",potnatveg) =e=
+  sum(bii_class_secd, sum(ac_to_bii_class_secd(ac,bii_class_secd), sum(othertype35, vm_land_other(j2,othertype35,ac))) *
+  fm_bii_coeff(bii_class_secd,potnatveg)) * fm_luh2_side_layers(j2,potnatveg);
+```
+
+**Purpose**: Biodiversity value of other land, calculated identically to secondary forest BII — area is mapped to BII age classes via `ac_to_bii_class_secd`, then multiplied by corresponding BII coefficients and the LUH2 potential vegetation layer. Sums across both other land subtypes (othernat, youngsecdf).
+**Key variables**: `vm_land_other(j,othertype35,ac)` (area by subtype and age), `ac_to_bii_class_secd` (mapping from age class to BII class), `fm_bii_coeff`, `fm_luh2_side_layers`
+
 #### 6.5 Harvest Constraints
 
 **q35_hvarea_secdforest** (`equations.gms:172-175`):
@@ -365,7 +421,21 @@ v35_hvarea_secdforest(j2,ac_sub) =l= v35_secdforest_reduction(j2,ac_sub);
 
 **Purpose**: Harvested area ≤ area reduction (not all reduction is harvest - some is conversion)
 
-**Similar constraints** for primforest and other land
+**q35_hvarea_primforest** (`equations.gms:177-179`):
+```gams
+v35_hvarea_primforest(j2) =l= v35_primforest_reduction(j2);
+```
+
+**Purpose**: Harvested area from primary forest ≤ total primary forest reduction. Not all primary forest loss is timber harvest — some may be land use conversion.
+**Key variables**: `v35_hvarea_primforest` (harvest area), `v35_primforest_reduction` (total area reduction)
+
+**q35_hvarea_other** (`equations.gms:182-185`):
+```gams
+v35_hvarea_other(j2,othertype35,ac_sub) =l= v35_other_reduction(j2,othertype35,ac_sub);
+```
+
+**Purpose**: Harvested area from other land ≤ total other land reduction, by subtype and age class.
+**Key variables**: `v35_hvarea_other` (harvest area by subtype and age), `v35_other_reduction` (total area reduction by subtype and age)
 
 #### 6.6 Timber Production
 
@@ -378,7 +448,27 @@ sum(ac_sub, v35_hvarea_secdforest(j2,ac_sub) * sum(ct,pm_timber_yield(ct,j2,ac_s
 
 **Purpose**: Production = harvested area × yield / timestep length
 
-**Similar equations** for primforest and other land (woodfuel only)
+**q35_prod_primforest** (`equations.gms:149-152`):
+```gams
+sum(kforestry, vm_prod_natveg(j2,"primforest",kforestry))
+=e=
+v35_hvarea_primforest(j2) * sum(ct, pm_timber_yield(ct,j2,"acx","primforest")) / m_timestep_length_forestry;
+```
+
+**Purpose**: Woody biomass production from primary forest = harvested area × yield at mature age class ("acx") / timestep length. Primary forest always uses the "acx" yield since it is assumed mature.
+**Key variables**: `v35_hvarea_primforest` (harvest area), `pm_timber_yield(t,j,"acx","primforest")` (timber yield for mature primary forest), `m_timestep_length_forestry` (timestep divisor)
+
+**q35_prod_other** (`equations.gms:158-164`):
+```gams
+sum(kforestry, vm_prod_natveg(j2,"other",kforestry))
+=e=
+(sum(ac_sub, v35_hvarea_other(j2,"othernat",ac_sub) * sum(ct, pm_timber_yield(ct,j2,ac_sub,"other")))
++ sum(ac_sub, v35_hvarea_other(j2,"youngsecdf",ac_sub) * sum(ct, pm_timber_yield(ct,j2,ac_sub,"secdforest"))))
+/ m_timestep_length_forestry;
+```
+
+**Purpose**: Woody biomass production from other land. `othernat` uses "other" yields while `youngsecdf` uses "secdforest" yields (since young secondary forest has timber characteristics closer to secondary forest). Both are summed and divided by timestep length.
+**Key variables**: `v35_hvarea_other` (harvest area by subtype and age), `pm_timber_yield` (yields differ by subtype: "other" vs "secdforest")
 
 #### 6.7 Regeneration
 
@@ -395,6 +485,33 @@ sum(ac_sub,v35_hvarea_secdforest(j2,ac_sub))
 
 **CRITICAL**: Harvested primary forest becomes secondary forest (one-way transition)
 
+**q35_other_regeneration** (`equations.gms:214-219`):
+```gams
+sum(ac_est, vm_land_other(j2,"othernat",ac_est))
+=e=
+sum((othertype35,ac_sub),v35_hvarea_other(j2,othertype35,ac_sub))
++ vm_landexpansion(j2,"other");
+```
+
+**Purpose**: New other natural land in establishment age classes = harvested other land (from both subtypes) + land expansion into "other". Harvested other land regenerates as `othernat` regardless of its original subtype. Land expansion (from agricultural abandonment via Module 10) also enters as `othernat`.
+**Key variables**: `vm_land_other(j,"othernat",ac_est)` (new other land), `v35_hvarea_other` (harvested area), `vm_landexpansion(j,"other")` (land expansion from Module 10)
+
+**q35_secdforest_est** (`equations.gms:224-225`):
+```gams
+v35_secdforest(j2,ac_est) =e= sum(ac_est2, v35_secdforest(j2,ac_est2)) / card(ac_est2);
+```
+
+**Purpose**: Distributes new secondary forest additions equally across establishment age classes (`ac_est`). For a 10-year timestep, `ac_est` = {ac0, ac5}, so each gets half. This ensures uniform distribution of new area across the establishment period.
+**Key variables**: `v35_secdforest(j,ac_est)` (secdforest in establishment classes), `ac_est2` (alias for `ac_est`), `card(ac_est2)` (number of establishment classes)
+
+**q35_other_est** (`equations.gms:227-228`):
+```gams
+vm_land_other(j2,"othernat",ac_est) =e= sum(ac_est2, vm_land_other(j2,"othernat",ac_est2)) / card(ac_est2);
+```
+
+**Purpose**: Distributes new other natural land additions equally across establishment age classes, analogous to `q35_secdforest_est`. Only applies to `othernat` subtype (not `youngsecdf`, which is handled via forest recovery in presolve).
+**Key variables**: `vm_land_other(j,"othernat",ac_est)`, `ac_est2`, `card(ac_est2)`
+
 #### 6.8 Maximum Forest Establishment
 
 **q35_max_forest_establishment** (`equations.gms:192-197`):
@@ -408,6 +525,89 @@ sum(ct,pm_max_forest_est(ct,j2))
 **Purpose**: Total forest expansion (natural + managed) ≤ potential forest area - existing youngsecdf
 
 **Provides constraint** to Module 32 (forestry) for plantation establishment
+
+#### 6.9 Land Change Tracking (Expansion, Reduction, Diff)
+
+*' The following technical calculations are needed for reducing differences in land-use patterns between time steps.
+
+**q35_other_expansion** (`equations.gms:97-99`):
+```gams
+v35_other_expansion(j2,othertype35) =e= sum(ac_est, vm_land_other(j2,othertype35,ac_est));
+```
+
+**Purpose**: Other land expansion = area in establishment age classes. Expansion is defined as new area appearing in the youngest age classes relative to the previous timestep.
+**Key variables**: `v35_other_expansion` (gross expansion), `vm_land_other(j,othertype35,ac_est)` (area in establishment classes)
+
+**q35_other_reduction** (`equations.gms:101-103`):
+```gams
+v35_other_reduction(j2,othertype35,ac_sub) =e=
+  pc35_land_other(j2,othertype35,ac_sub) - vm_land_other(j2,othertype35,ac_sub);
+```
+
+**Purpose**: Other land reduction per subtype and age class = previous area (`pc35_land_other`, fixed in presolve after aging) minus current optimized area. Positive values indicate land was converted away.
+**Key variables**: `pc35_land_other` (previous timestep area after aging), `vm_land_other` (current optimized area)
+
+**q35_secdforest_expansion** (`equations.gms:105-107`):
+```gams
+v35_secdforest_expansion(j2) =e= sum(ac_est, v35_secdforest(j2,ac_est));
+```
+
+**Purpose**: Secondary forest expansion = area in establishment age classes. Analogous to other land expansion.
+**Key variables**: `v35_secdforest_expansion`, `v35_secdforest(j,ac_est)`
+
+**q35_secdforest_reduction** (`equations.gms:109-111`):
+```gams
+v35_secdforest_reduction(j2,ac_sub) =e=
+  pc35_secdforest(j2,ac_sub) - v35_secdforest(j2,ac_sub);
+```
+
+**Purpose**: Secondary forest reduction per age class = previous area minus current optimized area.
+**Key variables**: `pc35_secdforest` (previous timestep area after aging), `v35_secdforest` (current optimized area)
+
+**q35_primforest_reduction** (`equations.gms:113-115`):
+```gams
+v35_primforest_reduction(j2) =e=
+  pcm_land(j2,"primforest") - vm_land(j2,"primforest");
+```
+
+**Purpose**: Primary forest reduction = previous area minus current area. Since primary forest has no age classes, this is a simple scalar difference per cluster.
+**Key variables**: `pcm_land(j,"primforest")` (previous timestep area), `vm_land(j,"primforest")` (current area)
+
+**q35_natforest_reduction** (`equations.gms:81-82`):
+```gams
+vm_natforest_reduction(j2) =e=
+  v35_primforest_reduction(j2) + sum(ac_sub, v35_secdforest_reduction(j2,ac_sub));
+```
+
+**Purpose**: Total natural forest reduction = primary forest reduction + sum of secondary forest reduction across all age classes. This interface variable is provided to other modules (e.g. Module 73 timber).
+**Key variables**: `vm_natforest_reduction` (total natural forest loss), `v35_primforest_reduction`, `v35_secdforest_reduction`
+
+**q35_landdiff** (`equations.gms:89-95`):
+```gams
+vm_landdiff_natveg =e=
+  sum(j2,
+      sum(othertype35, v35_other_expansion(j2,othertype35))
+      + sum((othertype35,ac_sub), v35_other_reduction(j2,othertype35,ac_sub))
+      + v35_secdforest_expansion(j2)
+      + sum(ac_sub, v35_secdforest_reduction(j2,ac_sub))
+      + v35_primforest_reduction(j2));
+```
+
+**Purpose**: Aggregated gross change in natural vegetation across all clusters. Sums all expansion and reduction variables. This value is passed to Module 10 (land) to minimize land-use pattern oscillations between timesteps — the objective function penalizes large `vm_landdiff_natveg` values to encourage stability.
+**Key variables**: `vm_landdiff_natveg` (global scalar), all expansion and reduction variables above
+
+#### 6.10 Harvest Costs
+
+**q35_cost_hvarea** (`equations.gms:128-134`):
+```gams
+vm_cost_hvarea_natveg(i2) =e=
+  sum((ct,cell(i2,j2),ac_sub), v35_hvarea_secdforest(j2,ac_sub)) * s35_timber_harvest_cost_secdforest
++ sum((ct,cell(i2,j2),othertype35,ac_sub), v35_hvarea_other(j2,othertype35,ac_sub)) * s35_timber_harvest_cost_other
++ sum((ct,cell(i2,j2)), v35_hvarea_primforest(j2)) * s35_timber_harvest_cost_primforest;
+```
+
+**Purpose**: Total harvest cost per economic region (i) = harvested area × per-hectare cost for each land type. Costs are differentiated: primary forest ($3,690/ha) > other land ($3,075/ha) > secondary forest ($2,460/ha). Higher costs for primary forest mimic access difficulties. Aggregated from cluster (j) to regional (i) level via `cell(i,j)` mapping.
+**Key variables**: `vm_cost_hvarea_natveg(i)` (total cost, passed to Module 11), `v35_hvarea_secdforest`, `v35_hvarea_other`, `v35_hvarea_primforest` (harvested areas), `s35_timber_harvest_cost_*` (per-hectare cost scalars)
 
 ---
 
@@ -701,7 +901,7 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 - ✅ Conservation policies (NPI/NDC/protected areas enforced here)
 - ✅ Avoided deforestation potential (climate mitigation)
 
-**File Complexity**: 1,085 lines across 9 files, 33 equations - one of the most complex modules in MAgPIE.
+**File Complexity**: 1,085 lines across 9 files, 32 equations - one of the most complex modules in MAgPIE.
 
 **Reference**: `cross_module/modification_safety_guide.md` (HIGH RISK - Complex land and carbon dynamics)
 
@@ -858,7 +1058,7 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 
 **Purpose**: Central hub for natural vegetation dynamics with age-class tracking, disturbances, harvest, and conservation
 
-**Complexity**: VERY HIGH (1,085 lines, 33 equations, 8 files)
+**Complexity**: VERY HIGH (1,085 lines, 32 equations, 8 files)
 
 **Key Innovation**: Age-class tracking with 20 tC/ha threshold for forest maturation
 
@@ -874,11 +1074,11 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 
 **Critical Files**:
 - `presolve.gms` (262 lines) ⭐ - Disturbances, age dynamics, recovery, bounds
-- `equations.gms` (229 lines) - 33 equations for land, carbon, harvest, BII
+- `equations.gms` (229 lines) - 32 equations for land, carbon, harvest, BII
 - `postsolve.gms` (203 lines) - State updates
 
 **AI Response Pattern**:
-- Cite specific equations and line numbers (33 equations available)
+- Cite specific equations and line numbers (32 equations available)
 - Clarify forest vs. other land threshold (20 tC/ha)
 - Distinguish primary/secondary/other land dynamics
 - Warn about age-class complexity when modifying
