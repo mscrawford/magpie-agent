@@ -923,15 +923,15 @@ vm_problematic_var.fx(j) = baseline_value(j);
 ### 11.1 MAgPIE Documentation
 
 **Core Architecture**:
-- `magpie-agent/core_docs/Core_Architecture.md` - Model structure
-- `magpie-agent/core_docs/Module_Dependencies.md` - Full dependency graph
-- `magpie-agent/cross_module/modification_safety_guide.md` - Safety protocols
+- `core_docs/Core_Architecture.md` - Model structure
+- `core_docs/Module_Dependencies.md` - Full dependency graph
+- `cross_module/modification_safety_guide.md` - Safety protocols
 
 **Conservation Laws** (all involve circular dependencies):
-- `magpie-agent/cross_module/land_balance_conservation.md`
-- `magpie-agent/cross_module/carbon_balance_conservation.md`
-- `magpie-agent/cross_module/water_balance_conservation.md`
-- `magpie-agent/cross_module/nitrogen_food_balance.md`
+- `cross_module/land_balance_conservation.md`
+- `cross_module/carbon_balance_conservation.md`
+- `cross_module/water_balance_conservation.md`
+- `cross_module/nitrogen_food_balance.md`
 
 ### 11.2 Recursive-Dynamic Models (Theory)
 

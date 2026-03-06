@@ -935,7 +935,7 @@ Is model infeasible?
 
 **Checklist**:
 - [ ] Read this entire guide
-- [ ] Read module documentation (`magpie-agent/modules/module_XX.md`)
+- [ ] Read module documentation (`modules/module_XX.md`)
 - [ ] Understand dependency chains (Module_Dependencies.md)
 - [ ] Check conservation law implications (cross_module/*.md)
 - [ ] Create git branch for changes
@@ -994,19 +994,19 @@ Is model infeasible?
 ### 8.1 Essential Documentation
 
 **Module Documentation**:
-- Module 10: `magpie-agent/modules/module_10.md` (Land allocation)
-- Module 11: `magpie-agent/modules/module_11.md` (Costs)
-- Module 17: `magpie-agent/modules/module_17.md` (Production)
-- Module 56: `magpie-agent/modules/module_56.md` (GHG policy)
+- Module 10: `modules/module_10.md` (Land allocation)
+- Module 11: `modules/module_11.md` (Costs)
+- Module 17: `modules/module_17.md` (Production)
+- Module 56: `modules/module_56.md` (GHG policy)
 
 **Cross-Module Documentation**:
-- Land Balance: `magpie-agent/cross_module/land_balance_conservation.md`
-- Water Balance: `magpie-agent/cross_module/water_balance_conservation.md`
-- Carbon Balance: `magpie-agent/cross_module/carbon_balance_conservation.md`
-- Food Balance: `magpie-agent/cross_module/nitrogen_food_balance.md`
+- Land Balance: `cross_module/land_balance_conservation.md`
+- Water Balance: `cross_module/water_balance_conservation.md`
+- Carbon Balance: `cross_module/carbon_balance_conservation.md`
+- Food Balance: `cross_module/nitrogen_food_balance.md`
 
 **Dependency Analysis**:
-- Phase 2: `magpie-agent/core_docs/Module_Dependencies.md` (Complete dependency graph)
+- Phase 2: `core_docs/Module_Dependencies.md` (Complete dependency graph)
 
 ### 8.2 Testing Tools
 
@@ -1028,7 +1028,7 @@ library(magpie4)
 
 **Internal Resources**:
 1. Check `AGENT.md` (project instructions)
-2. Search `magpie-agent/` documentation
+2. Search `` documentation
 3. Review module code with line numbers cited in docs
 
 **External Resources**:

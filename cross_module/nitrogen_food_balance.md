@@ -310,18 +310,18 @@ stopifnot(max_shortage < 0.01)  # Small tolerance for numerical error
 ## References
 
 **Nitrogen Documentation**:
-- Module 50: `magpie-agent/modules/module_50.md`
-- Module 51: `magpie-agent/modules/module_51.md`
-- Module 59: `magpie-agent/modules/module_59.md`
+- Module 50: `modules/module_50.md`
+- Module 51: `modules/module_51.md`
+- Module 59: `modules/module_59.md`
 
 **Food Documentation**:
-- Module 16: `magpie-agent/modules/module_16.md`
-- Module 17: `magpie-agent/modules/module_17.md`
-- Module 21: `magpie-agent/modules/module_21.md`
+- Module 16: `modules/module_16.md`
+- Module 17: `modules/module_17.md`
+- Module 21: `modules/module_21.md`
 
 **Core Documentation**:
-- Phase 1: `magpie-agent/core_docs/Core_Architecture.md`
-- Phase 2: `magpie-agent/core_docs/Module_Dependencies.md`
+- Phase 1: `core_docs/Core_Architecture.md`
+- Phase 2: `core_docs/Module_Dependencies.md`
 
 ---
 

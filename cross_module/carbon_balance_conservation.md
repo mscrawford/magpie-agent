@@ -945,10 +945,10 @@ lossrate = 1 - 0.85^years
 ## References
 
 **Module Documentation**:
-- Module 52: `magpie-agent/modules/module_52.md`
-- Module 53: `magpie-agent/modules/module_53.md`
-- Module 57: `magpie-agent/modules/module_57.md`
-- Module 59: `magpie-agent/modules/module_59.md`
+- Module 52: `modules/module_52.md`
+- Module 53: `modules/module_53.md`
+- Module 57: `modules/module_57.md`
+- Module 59: `modules/module_59.md`
 
 **Source Code**:
 - Module 52 emissions: `modules/52_carbon/normal_dec17/equations.gms:16-19`

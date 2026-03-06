@@ -947,12 +947,12 @@ THEN Groundwater Buffer = Shortfall × 1.01
 ## References
 
 **Module Documentation**:
-- Module 42: `magpie-agent/modules/module_42.md`
-- Module 43: `magpie-agent/modules/module_43.md`
+- Module 42: `modules/module_42.md`
+- Module 43: `modules/module_43.md`
 
 **Core Documentation**:
-- Phase 1: Core Architecture (`magpie-agent/core_docs/Core_Architecture.md`)
-- Phase 2: Module Dependencies (`magpie-agent/core_docs/Module_Dependencies.md`)
+- Phase 1: Core Architecture (`core_docs/Core_Architecture.md`)
+- Phase 2: Module Dependencies (`core_docs/Module_Dependencies.md`)
 
 **Source Code**:
 - Module 42 equations: `modules/42_water_demand/all_sectors_aug13/equations.gms:10-17`
