@@ -91,18 +91,17 @@ wc -l core_docs/AGENT.md
 
 ```bash
 # Method 1: Absolute path
-ls /path/to/magpie-agent/core_docs/AGENT.md
+ls /path/to/magpie-agent/AGENT.md
 
 # Method 2: Find from known root
 find /path/to/magpie-agent -name "AGENT.md" -type f
 
 # Method 3: Check git tracking
-git ls-tree -r HEAD --name-only | grep "AI_Agent_Behavior_Guide"
+git ls-tree -r HEAD --name-only | grep "AGENT.md"
 
-# Method 4: Check both possible locations
-ls core_docs/AGENT.md 2>/dev/null || \
-ls magpie-agent/core_docs/AGENT.md 2>/dev/null || \
-echo "Not found in expected locations - verifying with find..."
+# Method 4: Check expected location
+ls AGENT.md 2>/dev/null || \
+echo "Not found in expected location - verifying with find..."
 
 # Method 5: Ask user if uncertain
 # "I'm having trouble locating file X. Can you confirm it exists and provide the path?"
@@ -582,13 +581,13 @@ cd /path/to/magpie/magpie-agent
 
 ```bash
 # ❌ ONE failed attempt:
-ls core_docs/AGENT.md
-# Error → "File doesn't exist"
+ls modules/module_50.md
+# Error → "File doesn't exist" (maybe working dir isn't magpie-agent/)
 
 # ✅ VERIFY with multiple methods:
 pwd  # Where am I?
-find . -name "AGENT.md"
-git ls-tree -r HEAD --name-only | grep "AI_Agent_Behavior"
+find . -name "module_50.md"
+git ls-tree -r HEAD --name-only | grep "module_50"
 ```
 
 ### Mistake 2: Relative paths after cd
