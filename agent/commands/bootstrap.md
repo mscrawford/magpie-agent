@@ -65,7 +65,6 @@ AGENT.md is now deployed to the parent directory.
 🚀 Available Commands:
   /guide              - Complete capabilities guide (start here!)
   /sync               - Sync docs with MAgPIE code changes
-  /update             - Pull latest agent documentation
   /feedback           - Submit feedback to improve the agent
 
 🎯 You can now use all magpie-agent features!

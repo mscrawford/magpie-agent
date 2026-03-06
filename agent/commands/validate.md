@@ -289,12 +289,9 @@ If file counts changed:
 
 # 2. Fix any errors found
 # (manual fixes based on report)
-
-# 3. Then compress
-# Use /compress-documentation
 ```
 
-**Why:** Compression consolidates content. Validate ensures you're consolidating *correct* content.
+**Why:** Validate ensures all documentation is correct and consistent.
 
 ### After Updates
 
@@ -429,9 +426,8 @@ If file counts changed:
 
 ## 📚 See Also
 
-- `/compress-documentation` - Consolidate redundant documentation
 - `AGENT.md` - Document precedence hierarchy and link rules
-- `scripts/validate_consistency.sh` - Validation script details
+- `scripts/validate_consistency.sh` - Validation script details (26 automated checks)
 
 ---
 

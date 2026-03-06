@@ -91,9 +91,10 @@ When a helper is used and:
 
 ### Feedback Integration
 
-The `/integrate-feedback` command can route feedback to helpers:
-- Feedback type `helper_improvement` → Append to relevant helper's Lessons Learned
-- Feedback type `new_helper` → Flag for new helper creation
+The agent records lessons directly during sessions:
+- Corrections and discoveries → Append to relevant helper's Lessons Learned
+- Module-specific insights → Append to `modules/module_XX_notes.md`
+- New helper requests → Flag for creation in this README under `## Requested Helpers`
 
 ---
 

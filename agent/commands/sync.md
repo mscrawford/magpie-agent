@@ -8,7 +8,7 @@
 
 ## Overview
 
-This command helps keep the agent documentation synchronized with the MAgPIE codebase. It reviews recent commits to the develop branch and identifies which changes require documentation updates.
+This command performs a **deep sync** between MAgPIE code and agent documentation. Unlike the automatic freshness check at session start (which only counts new commits), this command reads each commit's diff and updates module documentation accordingly.
 
 ## Workflow
 

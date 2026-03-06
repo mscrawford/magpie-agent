@@ -70,16 +70,24 @@ When using notes files, structure your response like this:
 
 ## Submitting Feedback (For Users)
 
-MAgPIE developers can improve the agent by submitting feedback:
+MAgPIE developers can improve the agent by submitting feedback. Create a file in `feedback/pending/` following this format:
 
-```bash
-# Easy way: Run the interactive script (from magpie-agent/ directory)
-./scripts/submit_feedback.sh
+```markdown
+# Feedback: [Title]
 
-# Choose type: correction, warning, lesson, missing content, or global
-# Fill in the template
-# Commit and push
+**Type**: correction / warning / lesson / missing / global
+**Module**: [XX or "global"]
+**Date**: YYYY-MM-DD
+**Author**: [your name]
+
+## Description
+[What you found / what should change]
+
+## Evidence
+[Code reference, run output, or other supporting info]
 ```
+
+Commit and push to the magpie-agent repo.
 
 **Feedback types:**
 - **Correction**: Fix errors in documentation
@@ -90,11 +98,10 @@ MAgPIE developers can improve the agent by submitting feedback:
 
 **⏱️ When will my feedback be integrated?**
 - Feedback accumulates in `feedback/pending/`
-- Integration happens **weekly or monthly** via `/integrate-feedback`
-- You'll see your corrections in `module_XX.md` or warnings/lessons in `module_XX_notes.md`
-- Timeline: Typically integrated within 1-4 weeks of submission
+- The agent also records corrections directly to `module_XX_notes.md` and helper Lessons Learned during sessions
+- Maintainers review pending feedback periodically and integrate into module docs
 
-See `feedback/README.md` and `feedback/WORKFLOW_GUIDE.md` for complete details.
+See `feedback/README.md` for complete details.
 
 ---
 
@@ -182,15 +189,15 @@ git push
 
 ---
 
-## ⚙️ INTEGRATION WORKFLOW (STEP 2 - MAINTAINER ONLY)
+## ⚙️ INTEGRATION WORKFLOW (MAINTAINER ONLY)
 
-**To process pending feedback, use `/integrate-feedback`.**
-
-This separate process will:
-1. Read pending files
-2. Update documentation (AGENT.md, module notes, etc.)
-3. Move files from `pending/` to `integrated/`
+**To process pending feedback manually:**
+1. Read pending files in `feedback/pending/`
+2. Update relevant module docs (`modules/module_XX.md`) or notes (`modules/module_XX_notes.md`)
+3. Move processed files from `pending/` to `integrated/`
 4. Commit the integration
+
+**Note**: Most corrections and lessons are now recorded directly by the agent during sessions. The formal pending feedback pipeline is for user-submitted feedback that requires maintainer review.
 
 ---
 

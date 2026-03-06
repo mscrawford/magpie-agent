@@ -408,8 +408,8 @@ dot -Tpng core_dependencies.dot -o core_dependencies.png
 MAgPIE developers can improve agent performance through feedback!
 
 - Say "/feedback" for complete system overview
-- Submit feedback about agent behavior, documentation errors, or suggestions
-- Review and compress integrated feedback with `/compress-documentation`
+- Submit corrections, warnings, and lessons via feedback templates
+- The agent also records corrections automatically during sessions
 
 See `feedback/README.md` for details.
 

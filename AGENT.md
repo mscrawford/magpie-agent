@@ -3,7 +3,7 @@
 **📍 FILE LOCATION NOTE**: You are reading the SOURCE file in `/magpie/magpie-agent/AGENT.md`
 - ✅ **THIS IS THE CORRECT FILE TO EDIT** for AI documentation updates
 - ⚠️ A deployed copy may exist at `../AGENT.md` (parent directory) - DO NOT EDIT that one
-- 🔄 Changes here deploy to parent via `/update`
+- 🔄 Changes here auto-deploy to parent at session start (session_startup Step 0)
 - 📝 Always commit changes to the magpie-agent repo, not the main MAgPIE repo
 
 ---
@@ -60,7 +60,7 @@ I'm your AI assistant for the MAgPIE land-use model. I have curated documentatio
 🧠 I learn from our conversations — if you correct me or share insights, I record them so future sessions benefit.
 
 💡 New here? Type /guide for a quick orientation.
-   Need more? /sync, /update, /feedback are also available.
+   Need more? /sync, /feedback are also available.
 ```
 
 **If working on the MAgPIE AI Documentation Project:**
@@ -74,7 +74,7 @@ I'm your AI assistant for the MAgPIE land-use model. I have curated documentatio
 When working on the documentation project, update ONLY `project/CURRENT_STATE.json` (all status, plans, progress). Do NOT update README.md, project/README.md, or modules/README.md (static reference docs).
 
 **📍 CRITICAL - Git Workflow for AGENT.md:**
-When updating this AGENT.md file, use `/update-agent-md` for detailed workflow instructions.
+All AI documentation lives in the `magpie-agent/` repo. Edit AGENT.md here (the source), then deploy via `cp AGENT.md ../AGENT.md`. Never commit AI docs from the parent MAgPIE repo.
 
 ---
 
@@ -150,19 +150,17 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 |---------|---------|-------------|
 | `/guide` | Quick start + full capabilities guide | Everyone |
 | `/sync` | Check MAgPIE code for changes, update docs | Everyone |
-| `/update` | Pull latest agent documentation | Everyone |
 | `/feedback` | Submit feedback to improve the agent | Everyone |
 | `/bootstrap` | First-time setup | New users |
 | `/validate` | Check documentation consistency | Maintainers |
 | `/validate-module` | Validate specific module docs | Maintainers |
-| `/integrate-feedback` | Process pending feedback | Maintainers |
-| `/compress-documentation` | Consolidate feedback (quarterly) | Maintainers |
-| `/update-agent-md` | Git workflow for doc updates | Maintainers |
+
+**Note**: Agent auto-update and AGENT.md deployment happen automatically at session start (see session_startup.md Step 0). No manual `/update` command is needed.
 
 ### How Commands Work
 
-1. User says: `/update` (or "run command: update", "please update", etc.)
-2. Agent reads: `agent/commands/update.md`
+1. User says: `/sync` (or "run command: sync", "sync with develop", etc.)
+2. Agent reads: `agent/commands/sync.md`
 3. Agent follows instructions in that file
 4. Agent reports results to user
 
@@ -539,16 +537,14 @@ Other IAMs may use different approaches:
 ### Feedback flow
 
 ```
-User submits feedback (via /feedback command)
-  → feedback/pending/           (new feedback lands here)
-  → /integrate-feedback         (maintainer processes it)
-  → feedback/integrated/        (archived with timestamp)
-  → EITHER: modules/module_XX_notes.md   (module-specific lessons)
-  → OR:     feedback/global/agent_lessons.md  (system-wide lessons)
-  → OR:     agent/helpers/*.md Lessons Learned  (helper improvements)
-```
+User corrections / agent discoveries during sessions
+  → modules/module_XX_notes.md   (module-specific lessons — written directly by agent)
+  → agent/helpers/*.md Lessons Learned  (helper improvements — written directly by agent)
+  → feedback/global/agent_lessons.md  (system-wide lessons)
 
-See `feedback/WORKFLOW_GUIDE.md` for the complete workflow.
+User submits formal feedback (via /feedback command)
+  → feedback/pending/           (new feedback lands here for maintainer review)
+```
 
 **When to remind users about feedback** (not every session — only when triggered):
 - ✅ After you **correct yourself** or the user corrects you — "I've recorded this correction. You can also submit formal feedback with `/feedback`"
@@ -733,37 +729,10 @@ Then configure your AI tool to read `AGENT.md` from the MAgPIE root directory.
 
 ## 🔄 KEEPING DOCUMENTATION IN SYNC
 
-The agent documentation must stay synchronized with the MAgPIE codebase. Use `/sync` to check for updates.
+Documentation freshness is checked **automatically** at session start (session_startup.md Step 0 fetches MAgPIE develop, Steps 2-3 count new commits and display a staleness badge).
+
+For **deep sync** (reading commit diffs and updating module docs), use `/sync`.
 
 ### Sync Tracking
 
-**Location**: `project/sync_log.json`
-
-This file tracks:
-- Last sync date and commit hash
-- Commits reviewed and their documentation status
-- Modules that may need updates
-
-### When to Sync
-
-- **At session start**: Check if develop branch has new commits
-- **After MAgPIE updates**: When team pulls new code
-- **Periodically**: Weekly sync recommended
-
-### Sync Workflow
-
-1. **Check status**: `/sync`
-2. **Review commits**: Agent identifies GAMS changes
-3. **Update docs**: Agent updates affected module_XX.md files
-4. **Log sync**: Agent updates sync_log.json
-
-### What Triggers Doc Updates
-
-| Change Type | Update Needed? |
-|-------------|---------------|
-| Equation changes (*.gms) | ✅ YES |
-| New/modified parameters | ✅ YES |
-| Interface variable changes | ✅ YES |
-| R preprocessing (*.R) | ❌ NO |
-| Config files (*.cfg) | ❌ NO |
-| Changelog/version bumps | ❌ NO |
+**Location**: `project/sync_log.json` — tracks last sync date, commit hash, and modules reviewed.

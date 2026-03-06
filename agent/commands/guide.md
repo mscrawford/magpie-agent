@@ -37,7 +37,6 @@ Type these to access specific features:
 |---------|-------------|
 | `/guide` | This guide |
 | `/sync` | Update docs after MAgPIE code changes |
-| `/update` | Pull latest agent documentation |
 | `/feedback` | Submit feedback to improve the agent |
 
 ### Tips for best results
@@ -196,51 +195,9 @@ Help improve the agent by sharing your experience:
 - **Missing** - Document gaps in existing docs
 - **Global** - Agent behavior improvements
 
-**How to Submit**:
-```bash
-./scripts/submit_feedback.sh
-```
+**How to submit**: Type `/feedback` for complete details and guided instructions.
 
-**Interactive script will**:
-- ✅ Guide you through feedback template
-- ✅ Help you categorize the feedback
-- ✅ Create properly formatted file
-- ✅ Provide git commit instructions
-
-**Review Pending Feedback**:
-```bash
-./scripts/review_feedback.sh
-```
-
-**Search Feedback**:
-```bash
-./scripts/search_feedback.sh "Module 70"
-```
-
-Type `/feedback` for complete details.
-
----
-
-### 6. **Integrate Feedback Automatically**
-
-Automated feedback integration with git workflow:
-
-```bash
-./scripts/integrate_feedback.sh feedback/pending/[file].md
-```
-
-**The script will**:
-- ✅ Pull latest changes from magpie-agent repo
-- ✅ Detect and help resolve merge conflicts
-- ✅ Guide you through integration
-- ✅ Move feedback to integrated/
-- ✅ Commit with descriptive message
-- ✅ Push to remote repository
-
-**Manual mode**:
-```bash
-./scripts/integrate_feedback.sh [file].md --no-git
-```
+The agent also records corrections and lessons **automatically** during sessions — if you correct the agent or share insights, they're saved immediately.
 
 ---
 
@@ -252,7 +209,6 @@ Automated feedback integration with git workflow:
 |---------|-------------|
 | `guide` | Show this capabilities guide |
 | `sync` | Check MAgPIE code for changes, update documentation |
-| `update` | Pull latest agent documentation from repository |
 | `feedback` | Submit feedback to improve the agent |
 | `bootstrap` | First-time setup for new installations |
 
@@ -260,11 +216,8 @@ Automated feedback integration with git workflow:
 
 | Command | What It Does |
 |---------|-------------|
-| `validate` | Check documentation consistency across all files |
+| `validate` | Check documentation consistency across all files (26 automated checks) |
 | `validate-module` | Validate a specific module's documentation |
-| `integrate-feedback` | Process pending user feedback |
-| `compress-documentation` | Consolidate accumulated feedback (quarterly) |
-| `update-agent-md` | Git workflow for documentation updates |
 
 ---
 
@@ -303,25 +256,15 @@ Learn about and use the feedback system:
 
 ---
 
-## 🛠️ Helper Scripts
+## 🛠️ Validation Script
 
 Located in `scripts/` directory:
 
-### `submit_feedback.sh`
-**Purpose**: Interactive feedback submission
-**Usage**: `./scripts/submit_feedback.sh`
+### `validate_consistency.sh`
+**Purpose**: Automated documentation consistency checks (26 checks)
+**Usage**: `./scripts/validate_consistency.sh`
 
-### `review_feedback.sh`
-**Purpose**: Review pending feedback
-**Usage**: `./scripts/review_feedback.sh`
-
-### `search_feedback.sh`
-**Purpose**: Search feedback and notes files
-**Usage**: `./scripts/search_feedback.sh "search term"`
-
-### `integrate_feedback.sh`
-**Purpose**: Integrate feedback with git automation
-**Usage**: `./scripts/integrate_feedback.sh feedback/pending/[file].md`
+Checks: naming conventions, broken links, trigger sync, deployment freshness, hardcoded values, dependency counts, equation cross-refs, and more.
 
 ---
 
@@ -384,15 +327,15 @@ Located in `scripts/` directory:
 
 ---
 
-### Example 3: Update Documentation
-**You**: "/update"
+### Example 3: Validate Documentation
+**You**: "/validate"
 
 **Agent will**:
-1. Pull latest from magpie-agent repo
-2. Copy AGENT.md to parent
-3. Report: "Updated files: module_70_notes.md (added new warning), GAMS_Phase2.md (syntax examples)"
+1. Run `scripts/validate_consistency.sh` (26 automated checks)
+2. Report results: naming conventions, broken links, trigger sync, deployment freshness
+3. Flag any issues that need attention
 
-**Time**: 10 seconds
+**Time**: 15 seconds
 
 ---
 
@@ -448,7 +391,7 @@ When you encounter:
 - Check module index for module numbers
 
 **For issues or suggestions**:
-- Submit feedback via `./scripts/submit_feedback.sh`
+- Use `/feedback` to submit corrections or share insights
 - Create GitHub issue (if applicable)
 - Talk to your team's MAgPIE expert
 

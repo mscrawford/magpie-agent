@@ -8,7 +8,7 @@
 ## 🎯 How This File Is Used
 
 This file contains **system-wide lessons** that apply across all modules and interactions.
-It is updated when global feedback is integrated via `/integrate-feedback`.
+It is updated automatically when the agent discovers system-wide insights, or manually during feedback integration.
 
 The agent should consult this file for:
 - Cross-cutting behavioral patterns
