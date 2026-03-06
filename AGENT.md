@@ -388,10 +388,10 @@ When reporting documentation sync status, use these badges:
 
 ## 📚 COMPLETE DOCUMENTATION STRUCTURE
 
-MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized into three categories:
+MAgPIE has **comprehensive AI-readable documentation** (~290,000 words) organized into three categories:
 
-### Core Documentation (~70,000 words)
-**Location**: `core_docs/`
+### Core Documentation (~65,000 words)
+**Location**: `core_docs/`, `reference/`, `cross_module/`
 
 | File | Use For |
 |------|---------|
@@ -402,7 +402,7 @@ MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized
 | **Response_Guidelines.md** | Token efficiency, examples, quality checklist, complete workflows |
 | **Tool_Usage_Patterns.md** | Best practices for AI agent tools (file operations, shell commands, paths) |
 
-### Module Documentation (~20,000+ lines)
+### Module Documentation (~48,000 lines)
 **Location**: `modules/`
 
 **Coverage**: All 46 modules documented with equations, parameters, dependencies, assumptions.

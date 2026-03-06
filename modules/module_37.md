@@ -1266,7 +1266,7 @@ Module 37 participates in **zero circular dependencies**:
 **Risk Level**: 🟢 **LOW RISK** (Independent peripheral module)
 
 **Why Low Risk**:
-1. **Minimal dependents**: Only Module 38 uses labor productivity (see `core_docs/Module_Dependencies.md#module-37`)
+1. **Minimal dependents**: Only Module 38 uses labor productivity (see `core_docs/Module_Dependencies.md`)
 2. **No conservation constraints**: Cannot violate balance laws
 3. **No circular dependencies**: Cannot create feedback loops
 4. **Simple data flow**: Climate → Labor Prod → Factor Costs

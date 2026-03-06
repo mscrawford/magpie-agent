@@ -80,7 +80,7 @@ cd "$AGENT_DIR"
 # ===========================
 # Check 1: Dependency Counts
 # ===========================
-print_section "1/11" "Checking dependency counts..."
+print_section "1/13" "Checking dependency counts..."
 
 # Check Module 10
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
@@ -134,7 +134,7 @@ fi
 # =====================================
 # Check 2: Equation Parameter Counts
 # =====================================
-print_section "2/11" "Checking equation parameters..."
+print_section "2/13" "Checking equation parameters..."
 
 # Chapman-Richards parameters
 CR_PARAMS=$(grep -r "Chapman-Richards\|Chapman Richards" \
@@ -178,7 +178,7 @@ fi
 # ============================
 # Check 3: Cross-References
 # ============================
-print_section "3/11" "Checking cross-references..."
+print_section "3/13" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
@@ -246,7 +246,7 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/11" "Checking duplicate equations..."
+print_section "4/13" "Checking duplicate equations..."
 
 # Check for common equations mentioned in multiple places
 # q70_feed
@@ -271,7 +271,7 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 # Check 5: Entry Point Consistency
 # =================================
-print_section "5/11" "Checking entry point consistency..."
+print_section "5/13" "Checking entry point consistency..."
 
 # README should point to CURRENT_STATE.json for project work
 if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
@@ -311,7 +311,7 @@ fi
 # =======================
 # Check 6: File Counts
 # =======================
-print_section "6/11" "Checking file counts..."
+print_section "6/13" "Checking file counts..."
 
 # Count module docs
 MODULE_COUNT=$(ls -1 modules/module_*.md 2>/dev/null | grep -v "_notes" | wc -l | tr -d ' ')
@@ -348,7 +348,7 @@ fi
 # ==========================================
 # Check 7: Convention Linter (stale formats)
 # ==========================================
-print_section "7/11" "Checking naming conventions..."
+print_section "7/13" "Checking naming conventions..."
 
 # Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
 STALE_CMD_COUNT=0
@@ -414,7 +414,7 @@ fi
 # ==============================================
 # Check 8: Markdown Link Validator (key files)
 # ==============================================
-print_section "8/11" "Checking markdown link targets..."
+print_section "8/13" "Checking markdown link targets..."
 
 BROKEN_LINKS=0
 
@@ -467,7 +467,7 @@ fi
 # ==============================================
 # Check 9: Trigger Keyword Sync
 # ==============================================
-print_section "9/11" "Checking helper trigger keyword sync..."
+print_section "9/13" "Checking helper trigger keyword sync..."
 
 TRIGGER_ISSUES=0
 
@@ -515,7 +515,7 @@ fi
 # =============================================
 # Check 10: AGENT.md Deployment Freshness
 # =============================================
-print_section "10/11" "Checking AGENT.md deployment..."
+print_section "10/13" "Checking AGENT.md deployment..."
 
 if [ -f "../AGENT.md" ]; then
     if diff -q AGENT.md ../AGENT.md > /dev/null 2>&1; then
@@ -530,7 +530,7 @@ fi
 # =============================================
 # Check 11: Anti-Hardcoding Guard
 # =============================================
-print_section "11/11" "Checking for hardcoded values in mechanism files..."
+print_section "11/13" "Checking for hardcoded values in mechanism files..."
 
 HARDCODED_ISSUES=0
 
@@ -551,6 +551,55 @@ if [ "$HARDCODED_ISSUES" -eq 0 ]; then
     check_pass "No hardcoded commit hashes in mechanism files"
 else
     check_warning "$HARDCODED_ISSUES files contain hardcoded commit hashes (may become stale)"
+fi
+
+# ================================================
+# Check 12: Path prefix check (magpie-agent/)
+# ================================================
+print_section "12/13" "Checking for stale path prefixes..."
+
+# Files inside magpie-agent/ should not use magpie-agent/ as a path prefix
+# (since the working directory IS magpie-agent/, this creates double-nesting)
+PREFIX_ISSUES=0
+# Exclude: README.md/AGENT.md (may mention it in prose), Tool_Usage_Patterns (teaching examples),
+# archive dirs, feedback/integrated (historical records), session_startup.md (handles both dirs)
+PREFIX_HITS=$(grep -rn 'magpie-agent/' --include="*.md" . 2>/dev/null | \
+    grep -v ".git" | \
+    grep -v "archive/" | \
+    grep -v "README.md\|AGENT.md\|Tool_Usage_Patterns\|session_startup.md" | \
+    grep -v "github\|http\|repo\|git@\|clone\|remote" | \
+    grep -v "feedback/integrated/" | \
+    grep -v "# From magpie-agent\|in magpie-agent\|is magpie-agent\|or magpie-agent\|the magpie-agent" | \
+    grep '`[^`]*magpie-agent/[^`]*`' || true)
+
+if [ -n "$PREFIX_HITS" ]; then
+    PREFIX_ISSUES=$(echo "$PREFIX_HITS" | wc -l | tr -d ' ')
+    check_error "$PREFIX_ISSUES backtick-quoted paths use stale 'magpie-agent/' prefix"
+    echo "$PREFIX_HITS" | head -5 | while IFS= read -r line; do
+        log "    → $line"
+    done
+else
+    check_pass "No stale magpie-agent/ path prefixes in backtick-quoted paths"
+fi
+
+# ================================================
+# Check 13: Unclosed code blocks
+# ================================================
+print_section "13/13" "Checking for unclosed code blocks..."
+
+UNCLOSED=0
+for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./feedback/archive/*"); do
+    fences=$(grep -c '```' "$f" 2>/dev/null || true)
+    fences=${fences:-0}
+    fences=$(echo "$fences" | tr -d '[:space:]')
+    if [ $((fences % 2)) -ne 0 ]; then
+        UNCLOSED=$((UNCLOSED + 1))
+        check_error "Unclosed code block in $f ($fences fence markers)"
+    fi
+done
+
+if [ "$UNCLOSED" -eq 0 ]; then
+    check_pass "All code blocks properly closed"
 fi
 
 # ============

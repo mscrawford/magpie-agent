@@ -1321,7 +1321,7 @@ Module 17 (production) → 14 (yields) → **70 (livestock)** → 17
 
 ### Modification Safety
 
-**Risk Level**: ⚠️ **MEDIUM-HIGH RISK** (Hub module - see `core_docs/Module_Dependencies.md#module-70` for dependency details)
+**Risk Level**: ⚠️ **MEDIUM-HIGH RISK** (Hub module - see `core_docs/Module_Dependencies.md` for dependency details)
 **Testing**: Verify feed demand reasonable, check livestock production feasible
 
 ---
