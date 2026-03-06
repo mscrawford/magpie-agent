@@ -214,6 +214,10 @@ When the user's question matches a trigger pattern, **silently read the helper f
 | Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "modelstat", "error", "abort", "no feasible solution" |
 | Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "carbon budget" |
 | Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "safe to modify", "can I change", "extend", "add to module" |
+| Setting up diet/food scenarios | `agent/helpers/scenario_diet_change.md` | "diet", "EAT-Lancet", "food demand", "livestock reduction", "food waste", "dietary change", "BMI", "food scenario" |
+| Understanding model outputs | `agent/helpers/interpreting_outputs.md` | "interpret", "output", "results", "report", "fulldata.gdx", "postsolve", "what does this mean" |
+| Choosing between realizations | `agent/helpers/realization_selection.md` | "which realization", "choose realization", "difference between", "default realization", "switch realization" |
+| Adding a new crop/commodity | `agent/helpers/adding_new_crop.md` | "add crop", "new crop type", "add commodity", "extend crop set", "new product" |
 
 ### Helper system details
 
