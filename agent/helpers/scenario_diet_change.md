@@ -178,14 +178,14 @@ Modules 10/20/30/34/35 ── production needs → cropland/pasture/forest alloc
 
 | Topic | Document | Key Content |
 |-------|----------|-------------|
-| Module 15 full reference | `magpie-agent/modules/module_15.md` | All 18 equations, 35+ scalars, modification guides |
-| Module 16 demand hub | `magpie-agent/modules/module_16.md` | Supply balance equations, 8 equation details |
-| Food balance law | `magpie-agent/cross_module/nitrogen_food_balance.md` | How supply ≥ demand is enforced system-wide |
+| Module 15 full reference | `modules/module_15.md` | All 18 equations, 35+ scalars, modification guides |
+| Module 16 demand hub | `modules/module_16.md` | Supply balance equations, 8 equation details |
+| Food balance law | `cross_module/nitrogen_food_balance.md` | How supply ≥ demand is enforced system-wide |
 | Livestock/feed system | Module 70 (`modules/70_livestock/`) | `c70_feed_scen`, SCP feed substitution |
 | Predefined scenarios | `config/scenario_config.csv` | SDP, VLLO columns with preset diet settings |
 | EAT-Lancet 2.0 project | `config/projects/scenario_config_el2.csv` | EL2_PHD, EL2_Demand presets |
 | FSEC project scenarios | `config/projects/scenario_config_fsec.csv` | Per-commodity diet scenario columns |
-| Modification safety | `magpie-agent/agent/helpers/modification_impact_analysis.md` | Risk assessment for food module changes |
+| Modification safety | `agent/helpers/modification_impact_analysis.md` | Risk assessment for food module changes |
 
 ---
 

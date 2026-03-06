@@ -85,6 +85,42 @@ When updating this AGENT.md file, use `command: update-agent-md` for detailed wo
 
 ---
 
+## 🏁 SESSION CLEANUP: Before Ending a Session
+
+**Before a session ends** (user says goodbye, wraps up, or you sense the conversation is concluding), run this checklist:
+
+### 1. Commit Accumulated Learning
+Check if you made **any** of these changes during the session:
+- Appended entries to any helper's `## Lessons Learned` section
+- Created or updated a `modules/module_XX_notes.md` file
+- Discovered and recorded a user correction
+- Updated `feedback/global/agent_lessons.md`
+
+If YES → **commit and push** to the magpie-agent repo:
+```bash
+cd magpie-agent/
+git add -A
+git commit -m "learn: session learnings — [brief description]
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+git push origin main
+```
+**Ask the user before pushing** — they may want to review the changes first.
+
+### 2. Flag Documentation Gaps
+If during the session you noticed:
+- A helper was loaded but **lacked critical information** → note what was missing in the helper's Lessons Learned
+- A user question had **no matching helper** and would have benefited from one → mention it to the user: "💡 This workflow could benefit from a dedicated helper. Want me to create one?"
+- Module documentation was **wrong or outdated** → update the module_XX_notes.md with a warning
+
+### 3. Deploy AGENT.md (if changed)
+If you modified AGENT.md itself during the session:
+```bash
+cp AGENT.md ../AGENT.md
+```
+
+---
+
 ## 🎮 COMMAND SYSTEM
 
 **Commands** are agent instructions stored in `agent/commands/`. When a user says "run command: X" or similar, read and execute `agent/commands/X.md`.
@@ -245,7 +281,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 | Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "safe to modify", "can I change", "extend", "add to module" |
 | Setting up diet/food scenarios | `agent/helpers/scenario_diet_change.md` | "diet", "EAT-Lancet", "food demand", "livestock reduction", "food waste", "dietary change", "BMI", "food scenario" |
 | Understanding model outputs | `agent/helpers/interpreting_outputs.md` | "model output", "run results", "fulldata.gdx", "postsolve", "report.mif", "understand results" |
-| Choosing between realizations | `agent/helpers/realization_selection.md` | "which realization", "choose realization", "difference between", "default realization", "switch realization" |
+| Choosing between realizations | `agent/helpers/realization_selection.md` | "which realization", "choose realization", "realization comparison", "default realization", "switch realization" |
 | Adding a new crop/commodity | `agent/helpers/adding_new_crop.md` | "add crop", "new crop type", "add commodity", "extend crop set", "new product" |
 
 ### Sync freshness badges
@@ -261,6 +297,22 @@ When reporting documentation sync status, use these badges:
 - Each helper has a **Lessons Learned** section that grows with use
 - When you discover something not in the helper during a session, **append it** to Lessons Learned
 - Helpers complement module docs (task-oriented vs. fact-oriented)
+
+### Capturing corrections and new knowledge
+
+**When a user corrects you** ("No, that's wrong" / "Actually it works like X"):
+1. **Immediately** append the correction to the relevant helper's `## Lessons Learned` or to `modules/module_XX_notes.md`
+2. Format: `- YYYY-MM-DD: CORRECTION — [what was wrong] → [what is correct] (source: user correction)`
+3. If the correction is system-wide, also append to `feedback/global/agent_lessons.md`
+
+**When you discover a module warning** (infeasibility combo, silent bug, misleading parameter):
+1. Check if `modules/module_XX_notes.md` exists — if not, create it using the template in existing notes files
+2. Append the warning under the appropriate section
+3. This happens during normal use, not only via the feedback command
+
+**When a user's question reveals a helper gap** (no helper covers their workflow):
+1. Mention it: "💡 This workflow isn't covered by a helper yet. Want me to create one?"
+2. If they decline, note the gap in `agent/helpers/README.md` under a `## Requested Helpers` section
 
 ---
 
@@ -425,10 +477,11 @@ User submits feedback (via /feedback command)
 
 See `feedback/WORKFLOW_GUIDE.md` for the complete workflow.
 
-**Occasionally remind users** (sparingly):
-```
-📝 Spot an error or have insights to share? Say "run command: feedback" to help improve the documentation!
-```
+**When to remind users about feedback** (not every session — only when triggered):
+- ✅ After you **correct yourself** or the user corrects you — "I've recorded this correction. You can also submit formal feedback with `run command: feedback`"
+- ✅ After a **long debugging session** where new patterns were discovered
+- ✅ When the user expresses **frustration with documentation** quality or gaps
+- ❌ Do NOT remind on routine Q&A sessions or simple lookups
 
 ---
 

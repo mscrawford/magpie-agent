@@ -1,6 +1,6 @@
 # Helper: Choosing Between Realizations
 
-**Auto-load triggers**: "which realization", "choose realization", "difference between", "realization comparison", "default realization", "switch realization", "alternative realization"
+**Auto-load triggers**: "which realization", "choose realization", "realization comparison", "default realization", "switch realization", "alternative realization"
 **Last updated**: 2026-03-06
 **Lessons count**: 1 entries
 
@@ -161,14 +161,14 @@ Modules 51 (nitrogen), 53 (methane), 55 (awms), 58 (peatland) each have `off` re
 
 | Decision Area | See Module Docs |
 |---------------|-----------------|
-| Trade model choice | `magpie-agent/modules/module_21_trade.md` |
-| Forestry configuration | `magpie-agent/modules/module_32_forestry.md` |
-| Livestock feed & costs | `magpie-agent/modules/module_70_livestock.md` |
-| Natural vegetation | `magpie-agent/modules/module_35_natveg.md` |
-| Food demand switches | `magpie-agent/modules/module_15_food.md` |
-| Factor cost approaches | `magpie-agent/modules/module_38_factor_costs.md` |
-| Core architecture | `magpie-agent/core_docs/Core_Architecture.md` |
-| All module details | `magpie-agent/modules/module_<NN>_<name>.md` |
+| Trade model choice | `modules/module_21.md` |
+| Forestry configuration | `modules/module_32.md` |
+| Livestock feed & costs | `modules/module_70.md` |
+| Natural vegetation | `modules/module_35.md` |
+| Food demand switches | `modules/module_15.md` |
+| Factor cost approaches | `modules/module_38.md` |
+| Core architecture | `core_docs/Core_Architecture.md` |
+| All module details | `modules/module_XX.md` |
 
 ---
 

@@ -82,9 +82,12 @@ When a helper is used and:
 
 ### Promoting Lessons
 
-When a lesson in "Lessons Learned" proves generally applicable:
-1. Move it from "Lessons Learned" to the appropriate main section (Quick Reference, Pitfalls, etc.)
-2. Keep the original entry but mark it as `[PROMOTED to Section X]`
+**Trigger**: When a helper's Lessons Learned section reaches **5+ entries**, review them during the next session that loads the helper:
+1. If a lesson is widely applicable, move its content into the relevant main section (Quick Reference, Pitfalls, etc.)
+2. Mark the original entry: `[PROMOTED to Quick Reference]`
+3. If a lesson is narrow/situational, leave it in place — it's still useful context
+
+**The agent should check lesson count** (in the header `Lessons count: N entries`) each time it loads a helper. When N ≥ 5, scan for promotion candidates before answering.
 
 ### Feedback Integration
 

@@ -1,6 +1,6 @@
 # Helper: Interpreting MAgPIE Outputs
 
-**Auto-load triggers**: "interpret", "output", "results", "report", "fulldata.gdx", "postsolve", "what does this mean", "understand results"
+**Auto-load triggers**: "model output", "run results", "fulldata.gdx", "postsolve", "report.mif", "understand results"
 **Last updated**: 2026-03-06
 **Lessons count**: 1 entries
 
@@ -180,8 +180,8 @@ Rscript output.R output=comparison_validation outputdir=output/run1,output/run2
 - **Debugging infeasibilities**: See `helpers/debugging_infeasibility.md`
 - **Carbon pricing scenarios**: See `helpers/scenario_carbon_pricing.md`
 - **Impact analysis**: See `helpers/modification_impact_analysis.md`
-- **Core architecture (execution flow)**: See `magpie-agent/core_docs/Core_Architecture.md`
-- **Data flow (input→output pipeline)**: See `magpie-agent/core_docs/Data_Flow.md`
+- **Core architecture (execution flow)**: See `core_docs/Core_Architecture.md`
+- **Data flow (input→output pipeline)**: See `core_docs/Data_Flow.md`
 - **Output scripts**: `scripts/output/` directory; see `scripts/output/INFO.yml` for index
 
 ---
