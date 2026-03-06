@@ -1573,3 +1573,18 @@ Data sources:
 **Verified Against**: `../modules/22_*/land_feb18/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `pm_land_conservation` | `(t,j,land,consv_type)` | Land protection and restoration for all land types | mio. ha |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+

@@ -1000,6 +1000,24 @@ Module 11 is at the **end of the dependency chain** — it aggregates costs but 
 
 ---
 
+## Limitations
+
+### Structural Limitations
+
+1. **No discounting of future costs**: Module 11 does not apply discount rates to costs from future time steps. Each time step is optimized independently (recursive dynamic, not forward-looking). Long-term costly land transitions (e.g., reforestation) appear equally expensive regardless of when they occur (`equations.gms:10`).
+
+2. **Blind aggregation with no validation**: Module 11 unconditionally sums 30+ cost variables from other modules without conditional logic or sign checks (`equations.gms:15-45`). Errors in source modules propagate directly to the objective function.
+
+3. **Single currency, no real vs. nominal distinction**: All costs in USD17MER (2017 US dollars, Market Exchange Rates). No PPP adjustment or inflation mechanism exists between time periods.
+
+### Methodological Limitations
+
+4. **CDR rewards can create negative objective function**: The CDR reward term `vm_reward_cdr_aff(i2)` is subtracted from costs (`equations.gms:27`). Under very high carbon prices, global costs could theoretically become negative, driving maximum afforestation until constrained by land feasibility.
+
+5. **No cost attribution or unit cost metrics**: Module 11 calculates only total system costs, not per-unit costs (e.g., USD/ton). Cost attribution and marginal cost analysis require post-processing of model outputs.
+
+---
+
 ## 16. Summary
 
 Module 11 is the **simplest yet most critical module in MAgPIE**:

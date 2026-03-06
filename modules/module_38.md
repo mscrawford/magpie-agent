@@ -1584,6 +1584,24 @@ for (scen in scenarios) {
 
 ---
 
+## Limitations
+
+### Structural Limitations
+
+1. **Factor costs independent of harvested area**: As stated in `realization.gms:19-22`, this realization "assumes that factor costs, within a region, purely depend on production and are independent of the area under cultivation." Labor and capital costs scale with production volume (tDM), not area (ha). This does not account for economies of scale (e.g., mechanization on larger farms).
+
+2. **Fixed CES elasticity of substitution (σ = 0.3)**: Labor-capital substitution is set at σ = 0.3 (`input.gms:16`), meaning a 10% wage increase leads to only ~3% reduction in labor intensity. Agricultural automation is severely constrained by this low elasticity.
+
+3. **Immobile capital assumption (100% by default)**: Default configuration sets 100% of capital as crop-specific and location-specific (`s38_immobile = 1` in `input.gms:15`). No general-purpose machinery can be flexibly reallocated, which artificially penalizes crop switching.
+
+### Methodological Limitations
+
+4. **Labor productivity impacts combined multiplicatively**: Climate and wage impacts are combined as `pm_labor_prod × pm_productivity_gain_from_wages` (`equations.gms:22`), assuming they are independent. Interaction effects (e.g., wage increases having larger benefits in heat-stressed regions) are missed.
+
+5. **Capital stock initialized from 1995 production only**: Initial capital stocks estimated assuming 1995 production equals 1994 production (`presolve.gms:84-85`). No accounting for pre-1995 capital accumulation or production shocks in the base year.
+
+---
+
 ## Participates In
 
 This section shows Module 38's role in system-level mechanisms. For complete details, see the linked documentation.

@@ -711,6 +711,11 @@ Emissions = 10 / (1-0.5) × (1-0.6) × 0.01
 **Last Updated**: 2025-10-12
 ---
 
+
+## Interface Variables
+
+Module 51 does not declare interface variables (`vm_`, `pm_`, `im_`). It operates internally using equation-level emission calculations that feed into the GHG accounting system via Module 56 (GHG Policy).
+
 ## Participates In
 
 This section shows Module 51's role in system-level mechanisms.

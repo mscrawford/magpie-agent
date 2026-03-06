@@ -1176,3 +1176,19 @@ other sectors), not unemployment.
 **Verified Against**: `../modules/36_*/off/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `pm_hourly_costs` | `(t,i,wage_scen)` | Hourly labor costs in agriculture | USD17MER/hr |
+| `pm_productivity_gain_from_wages` | `(t,i)` | Productivity gain from higher wages | dimensionless |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+

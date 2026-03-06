@@ -954,6 +954,23 @@ Check: Monotonic increase between start and target
 
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_cost_scm` | `(j)` | Recurring cost for soil carbon management on cropland | mio. USD17MER/yr |
+| `vm_nr_som` | `(j)` | Release of soil organic matter | Mt N/yr |
+| `vm_nr_som_fertilizer` | `(j)` | Uptake of soil organic matter from plants | Mt N/yr |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 ### Conservation Laws

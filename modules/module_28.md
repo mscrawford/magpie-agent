@@ -386,6 +386,21 @@ Harvesting permitted in ac_sub age-classes that exceed rotation age (Module 32 l
 
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `im_forest_ageclass` | `(j,ac)` | Forest area in 5-year age-classes based on GFAD | mio. ha |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 ### Conservation Laws

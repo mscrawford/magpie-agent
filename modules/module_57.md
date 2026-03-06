@@ -804,6 +804,22 @@ Module 57 is a **cost bridge** between GHG policy and emission modules:
 **Last Updated**: 2025-10-12
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_maccs_costs` | `(i,factors)` | Costs of technical GHG mitigation | mio. USD17MER/yr |
+| `im_maccs_mitigation` | `(t,i,emis_source,pollutants)` | Technical mitigation of GHG emissions | percent |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 ### Conservation Laws

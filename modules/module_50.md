@@ -878,6 +878,24 @@ Available scenarios in `sets.gms:13-20`
 **Status**: ✅ Comprehensive documentation - READY FOR FACT-CHECKING
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_nr_inorg_fert_reg` | `(i,land_ag)` | Inorganic fertilizer application | Tg N/yr |
+| `vm_nr_inorg_fert_costs` | `(i)` | Cost of inorganic fertilizers | mio. USD17MER/yr |
+| `vm_nr_eff` | `(i)` | Cropland nutrient uptake efficiency | Tg N/yr |
+| `vm_nr_eff_pasture` | `(i)` | Pasture nutrient uptake efficiency | Tg N/yr |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 This section shows Module 50's role in system-level mechanisms.

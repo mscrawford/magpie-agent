@@ -1093,6 +1093,24 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 ---
 
+## Limitations
+
+### Structural Limitations
+
+1. **Recursive dynamic (myopic) implementation**: Carbon prices are applied per-period without any foresight — agents cannot anticipate future carbon price increases. With `s56_limit_ch4_n2o_price = 1000`, methane and nitrous oxide prices are capped at ~33 USD17MER/tCO2eq (converted from 1000 USD/tN2O), limiting policy ambition.
+
+2. **Selective emission coverage**: Only land-use and agriculture-related emissions are priced: CO2 from land-use change, CH4 from enteric fermentation, N2O from soils. Industrial fossil fuel emissions, energy-sector CO2, and embodied emissions from agricultural inputs are excluded from the model boundary.
+
+3. **Carbon stock pricing method varies by implementation**: The `price_aug22` realization uses total stock changes (`vm_carbon_stock`), while `price_jan20` uses separate annual emission terms. This means switching realizations can fundamentally change how forests and carbon sequestration are valued.
+
+### Methodological Limitations
+
+4. **CDR buffer not mechanically enforced**: Carbon Dioxide Removal (CDR) is constrained by `sm_cdr_target` (default = 0, unconstrained), but this only sets a policy floor. Under-delivery of CDR pledges is not penalized — the constraint is soft and voluntary.
+
+5. **50-year price foresight cap**: Maximum anticipation period is limited to 50 years (`s56_cprice_red_factor = 0` eliminates any price foresight by default). Afforestation investments that sequester carbon over 100+ years see only the first 50 years of carbon revenue at best.
+
+---
+
 ## Participates In
 
 ### Conservation Laws

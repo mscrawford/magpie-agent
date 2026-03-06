@@ -508,6 +508,11 @@ parameter_value(j) = sum(clcl, pm_climate_class(j,clcl) * f_climate_parameter(cl
 
 ---
 
+
+## Interface Variables
+
+Module 45 is a **data/sets provider module** with no interface variables (`vm_`, `pm_`, `im_`). It provides climate classification sets (`clcl`) and mapping data used by Modules 58 (Peatland) and 59 (SOM) for climate-dependent calculations.
+
 ## Participates In
 
 This section shows Module 45's role in system-level mechanisms.

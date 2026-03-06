@@ -891,3 +891,22 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 **Verified Against**: `../modules/35_*/pot_forest_feb21/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_land_other` | `(j,othertype35,ac)` | Detailed stock of other land | mio. ha |
+| `vm_prod_natveg` | `(j,land_natveg,kforestry)` | Production of woody biomass from natural vegetation | mio. tDM/yr |
+| `vm_cost_hvarea_natveg` | `(i)` | Cost of harvesting natural vegetation | mio. USD17MER |
+| `vm_natforest_reduction` | `(j)` | Natural forest reduction | mio. ha |
+| `pm_max_forest_est` | `(t,j)` | Overall forest establishment potential in current time step | mio. ha |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+

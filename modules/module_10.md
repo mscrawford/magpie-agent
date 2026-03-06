@@ -870,3 +870,24 @@ This section shows Module 10's role in system-level mechanisms. For complete det
 **Verified Against**: `../modules/10_*/landmatrix_dec18/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_land` | `(j,land)` | Land area of the different land types | mio. ha |
+| `vm_landexpansion` | `(j,land)` | Land expansion | mio. ha |
+| `vm_landreduction` | `(j,land)` | Land reduction | mio. ha |
+| `vm_cost_land_transition` | `(j)` | Costs for land-use transitions | mio. USD17MER/yr |
+| `vm_lu_transitions` | `(j,land_from,land_to)` | Land transitions between time steps | mio. ha |
+| `pm_land_start` | `(j,land)` | Land initialization area | mio. ha |
+| `pm_land_hist` | `(t_ini10,j,land)` | Land area for historical time steps | mio. ha |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+

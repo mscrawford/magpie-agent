@@ -971,6 +971,23 @@ constr_demand <- readGDX(gdx, "p73_demand_constr_wood")
 
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_cost_timber` | `(i)` | Cost of harvesting timber from forests | mio. USD17MER/yr |
+| `pm_demand_forestry` | `(t_ext,i,kforestry)` | Extended demand for timber beyond simulation | mio. tDM/yr |
+| `im_timber_prod_cost` | `(kforestry)` | Cost for producing one unit of wood/woodfuel | USD17MER/tDM |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 ### Conservation Laws

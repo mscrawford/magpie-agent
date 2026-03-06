@@ -1525,3 +1525,60 @@ if(s15_exo_diet == 1) {
 **Verified Against**: `../modules/15_*/anthropometrics_jan18/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
+
+---
+
+## Participates In
+
+This section shows Module 15's role in system-level mechanisms. For complete details, see the linked documentation.
+
+### Conservation Laws
+
+**Food Balance** (see `cross_module/nitrogen_food_balance.md`):
+
+Module 15 drives the **demand side** of the food balance through `vm_dem_food(i,kfo)`. The trade balance equation (Module 21) ensures:
+
+```
+vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) ≥ vm_dem_food(i,k)
+```
+
+Module 15 sets the right-hand side — production, imports, and exports must satisfy this demand. Errors in demand propagate to every land-use decision.
+
+Module 15 does not directly participate in land, water, carbon, or nitrogen conservation laws (those are affected indirectly via the demand → production → land chain).
+
+### Dependency Chains
+
+**Role**: Demand aggregator — provides the constraint that drives ALL production decisions.
+
+**Depends on**: Module 09 (`im_pop`, `im_gdp_pc_ppp_iso`) — population and income drivers.
+
+**Provides to**: Module 16 (`vm_dem_food` — one of 8 demand components), which feeds Module 17 (production), Module 21 (trade), and Module 10 (land allocation).
+
+**Demand-to-production chain**: `15 → 16 → 17 → 21 → 10` (see `core_docs/Module_Dependencies.md`).
+
+### Circular Dependencies
+
+**Cycle 1: Demand-Trade-Production-Price Feedback** (⭐⭐⭐ high complexity):
+
+```
+vm_dem_food [15] → demand [16] → trade [21] → production [17]
+    → food prices change → real income affected [15]
+    → vm_dem_food [15] (iterative)
+```
+
+**Resolution**: Depends on `s15_elastic_demand`:
+- **Default (= 0)**: `vm_dem_food` is exogenous — fixed from standalone food demand model. No feedback within optimization. Fast convergence.
+- **Elastic (= 1)**: `vm_dem_food` becomes an optimization variable. Iterates between MAgPIE and food demand model via `intersolve.gms` until convergence. Slower but more realistic price responses.
+
+**Cycle 2: Income-Development-Demand Triangle** (⭐⭐ moderate):
+
+GDP is exogenous (SSP scenarios), so this cycle is broken by design.
+
+### Modification Safety
+
+**Risk Level**: 🔴 HIGH — drives entire demand-driven model system.
+
+- ✅ Safe: Adjust diet scenario faders, income elasticities, subsistence levels
+- 🔴 High-risk: Change BMI regression parameters, food price response, or enable elastic demand without testing convergence
+
+See `cross_module/modification_safety_guide.md`.

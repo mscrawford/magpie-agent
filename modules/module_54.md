@@ -479,6 +479,21 @@ Module 54 (Phosphorus) is a **placeholder module** currently **deactivated** in 
 **Verification**: Module 54 documentation is **fully verified** against source code. Module is confirmed as **inactive placeholder** with zero errors (because there are no calculations to have errors).
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_p_fert_costs` | `(i)` | Costs for mineral P fertilizers | mio. USD17MER/yr |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 ### Conservation Laws

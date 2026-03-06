@@ -1264,3 +1264,23 @@ abline(v=rot_age, col="red", lty=2)  # Rotation age
 **Verified Against**: `../modules/32_*/dynamic_may24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_cost_fore` | `(i)` | Forestry costs | mio. USD17MER |
+| `vm_prod_forestry` | `(j,kforestry)` | Production of woody biomass from commercial plantations | mio. tDM/yr |
+| `vm_landexpansion_forestry` | `(j,type32)` | Forestry land expansion | mio. ha |
+| `vm_landreduction_forestry` | `(j,type32)` | Forestry land reduction | mio. ha |
+| `vm_land_forestry` | `(j,type32)` | Forestry land pools | mio. ha |
+| `vm_cdr_aff` | `(j,ac,aff_effect)` | Expected CDR and local biophysical effects of afforestation | mio. tC |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+

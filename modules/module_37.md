@@ -1203,6 +1203,21 @@ Recommendation:
 ```
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `pm_labor_prod` | `(t,j)` | Labor productivity factor | dimensionless |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 This section shows Module 37's role in system-level mechanisms. For complete details, see the linked documentation.

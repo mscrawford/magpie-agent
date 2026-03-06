@@ -835,6 +835,21 @@ sum(wat_dem, vm_watdem(wat_dem,j2)) =l= sum(wat_src, v43_watavail(wat_src,j2))
 **Module 43 Status**: Fully verified - Equation checked, all mechanisms documented, zero errors
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `im_wat_avail` | `(t,wat_src,j)` | Water availability | mio. m³/yr |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 This section shows Module 43's role in system-level mechanisms.

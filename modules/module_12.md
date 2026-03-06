@@ -799,3 +799,61 @@ if(all_countries_selected) {
 **Verified Against**: `../modules/12_*/glo_jan16/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `pm_interest` | `(t_all,i)` | Interest rate in each region and timestep | % per yr |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
+---
+
+## Participates In
+
+This section shows Module 12's role in system-level mechanisms. For complete details, see the linked documentation.
+
+### Conservation Laws
+
+Module 12 participates **indirectly** in conservation laws through cost calculations that affect land-use decisions. Interest rates (`pm_interest`) scale annualized capital costs in Modules 13 (TC), 39 (land conversion), and 41 (irrigation). Higher interest rates raise conversion costs, favouring conservation; lower rates incentivize expansion.
+
+Module 12 does NOT directly allocate, trade, or balance any physical resources (land, water, carbon, nitrogen).
+
+### Dependency Chains
+
+**Role**: Economic discounting hub — converts capital investments into annualized costs.
+
+**Depends on**: Module 09 (`im_development_state`) — GDP-based development classification.
+
+**Provides to** (10 modules via `pm_interest`): Module 13 (TC cost amortization), Module 39 (land conversion annuities), Module 41 (irrigation investment annuities), Module 56 (CDR reward discounting), and downstream cost modules.
+
+**Cost aggregation chain**: `12 → 13 → 14 → 17 → 71 → 11` (see `core_docs/Module_Dependencies.md`).
+
+### Circular Dependencies
+
+**GDP-Income-Development State Feedback** (⭐⭐ moderate):
+
+```
+im_development_state [09, exogenous] → pm_interest [12]
+    → capital costs [13, 39, 41] → production decisions
+    → GDP growth (implicit) → development state [09]
+```
+
+**Resolution**: Development state is exogenous (SSP data), breaking the loop. Module 12 computes `pm_interest` once in `preloop.gms`, not during optimization.
+
+### Modification Safety
+
+**Risk Level**: 🟡 MEDIUM — affects ALL capital investment decisions.
+
+- ✅ Safe: Adjust rate levels (`s12_interest_lic/hic`), fading schedule, country selection
+- 🔴 High-risk: Change GDP-development relationship or introduce non-monotonic curves
+
+See `cross_module/modification_safety_guide.md`.
+

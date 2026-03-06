@@ -832,6 +832,23 @@ Solid storage:
 **Last Updated**: 2025-10-12
 ---
 
+
+## Interface Variables
+
+### Provided to Other Modules
+
+| Variable | Dimensions | Description | Units |
+|----------|------------|-------------|-------|
+| `vm_manure` | `(i,kli,awms,npk)` | Manure excreted in confinements | mio. t nutrient |
+| `vm_manure_recycling` | `(i,npk)` | Manure recycled to croplands | mio. t nutrient |
+| `vm_manure_confinement` | `(i,kli,awms_conf,npk)` | Manure in confinements by AWMS | mio. t nutrient |
+
+**Source**: `declarations.gms` (verified against GAMS code)
+
+### Received from Other Modules
+
+Key input variables from other modules are documented in the Dependencies section.
+
 ## Participates In
 
 ### Conservation Laws

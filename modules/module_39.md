@@ -1118,6 +1118,24 @@ print(paste("Uncalibrated error:", error_uncalib))  # May be 10-30%
 
 ---
 
+## Limitations
+
+### Data Limitations
+
+1. **Very limited data availability**: As stated in `realization.gms:16`, "data availability for land conversion costs is very limited." Base costs (e.g., 12,300 USD/ha for cropland) are derived from sparse sources, with calibration factors compensating for poorly understood regional differences.
+
+### Structural Limitations
+
+2. **No source-type differentiation**: The cost equation treats all expansions as equal — `vm_landexpansion(j,land) × i39_cost_establish(i,land)` (`equations.gms:12-15`). Converting forest to cropland costs the same as converting grassland to cropland. Deforestation externalities are not reflected in conversion costs.
+
+3. **Calibration factors distort post-2050 behavior**: Calibration factors converge to 1.0 by 2050, removing regional cost advantages. This creates artificial discontinuity where regions with historically low costs become relatively expensive after 2050.
+
+4. **Asymmetric reduction rewards**: Reduction rewards apply only in regions with declining historical cropland (1995-2015) AND where calibration cost factor > 1. Most regions receive zero reduction reward, insufficiently incentivizing cropland abandonment.
+
+5. **Annuity factor assumes permanent conversion**: One-time conversion costs are spread using annuity factor `r/(1+r)` assuming perpetual productivity (`equations.gms:15`). No depreciation or re-conversion option value is modeled — land-use changes are treated as irreversible.
+
+---
+
 ## Participates In
 
 This section shows Module 39's role in system-level mechanisms. For complete details, see the linked documentation.
