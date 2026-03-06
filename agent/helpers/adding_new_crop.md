@@ -227,7 +227,7 @@ NUTRIENT BALANCE
 - [Module 30: Croparea](../../modules/module_30.md) — Per-crop area allocation, rotation constraints
 - [Module 15: Food Demand](../../modules/module_15.md) — Regression-based food demand
 - [Module 20: Processing](../../modules/module_20.md) — Primary → secondary product conversion
-- [Data Flow](../core_docs/Data_Flow.md) — Input data pipeline and preprocessing
+- [Data Flow](../../core_docs/Data_Flow.md) — Input data pipeline and preprocessing
 
 ---
 

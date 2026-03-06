@@ -80,7 +80,7 @@ cd "$AGENT_DIR"
 # ===========================
 # Check 1: Dependency Counts
 # ===========================
-print_section "1/6" "Checking dependency counts..."
+print_section "1/11" "Checking dependency counts..."
 
 # Check Module 10
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
@@ -134,7 +134,7 @@ fi
 # =====================================
 # Check 2: Equation Parameter Counts
 # =====================================
-print_section "2/6" "Checking equation parameters..."
+print_section "2/11" "Checking equation parameters..."
 
 # Chapman-Richards parameters
 CR_PARAMS=$(grep -r "Chapman-Richards\|Chapman Richards" \
@@ -178,7 +178,7 @@ fi
 # ============================
 # Check 3: Cross-References
 # ============================
-print_section "3/6" "Checking cross-references..."
+print_section "3/11" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
@@ -246,7 +246,7 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/6" "Checking duplicate equations..."
+print_section "4/11" "Checking duplicate equations..."
 
 # Check for common equations mentioned in multiple places
 # q70_feed
@@ -271,7 +271,7 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 # Check 5: Entry Point Consistency
 # =================================
-print_section "5/6" "Checking entry point consistency..."
+print_section "5/11" "Checking entry point consistency..."
 
 # README should point to CURRENT_STATE.json for project work
 if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
@@ -311,7 +311,7 @@ fi
 # =======================
 # Check 6: File Counts
 # =======================
-print_section "6/6" "Checking file counts..."
+print_section "6/11" "Checking file counts..."
 
 # Count module docs
 MODULE_COUNT=$(ls -1 modules/module_*.md 2>/dev/null | grep -v "_notes" | wc -l | tr -d ' ')
@@ -344,6 +344,197 @@ if [ "$GAMS_COUNT" -eq 6 ]; then
     check_pass "GAMS reference: $GAMS_COUNT files (matches expected 6)"
 else
     check_warning "GAMS reference: $GAMS_COUNT files (expected 6)"
+fi
+
+# ==========================================
+# Check 7: Convention Linter (stale formats)
+# ==========================================
+print_section "7/11" "Checking naming conventions..."
+
+# Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
+STALE_CMD_COUNT=0
+while IFS= read -r file; do
+    # Skip archived/historical files and this script's own source
+    case "$file" in
+        ./feedback/integrated/*|./project/completed_phases/*) continue ;;
+        ./scripts/validate_consistency.sh) continue ;; # self-references are check logic, not stale format
+    esac
+    # Count "command: X" outside of "When user says" lines and "Unknown command:" patterns
+    HITS=$(grep -c "command:" "$file" 2>/dev/null | tr -d ' ')
+    SAFE=$(grep -c "When user says\|Unknown command:\|the command:\|COMMAND SYSTEM\|# Command" "$file" 2>/dev/null | tr -d ' ')
+    # In AGENT.md, "run command:" in trigger descriptions is intentional
+    if [ "$(basename "$file")" = "AGENT.md" ]; then
+        SAFE=$((SAFE + $(grep -c '"run command:' "$file" 2>/dev/null | tr -d ' ')))
+    fi
+    BAD=$((HITS - SAFE))
+    if [ "$BAD" -gt 0 ]; then
+        STALE_CMD_COUNT=$((STALE_CMD_COUNT + BAD))
+        log "    ⚠️  $file: ~$BAD possible stale 'command:' refs"
+    fi
+done < <(find . -name "*.md" -not -path "./.git/*" -not -path "./feedback/integrated/*" -not -path "./project/completed_phases/*" 2>/dev/null)
+
+# Also check shell scripts (excluding this script itself)
+while IFS= read -r file; do
+    [ "$file" = "./scripts/validate_consistency.sh" ] && continue
+    HITS=$(grep -c "command:" "$file" 2>/dev/null | tr -d ' ')
+    SAFE=$(grep -c "Unknown command:" "$file" 2>/dev/null | tr -d ' ')
+    BAD=$((HITS - SAFE))
+    if [ "$BAD" -gt 0 ]; then
+        STALE_CMD_COUNT=$((STALE_CMD_COUNT + BAD))
+        log "    ⚠️  $file: ~$BAD possible stale 'command:' refs"
+    fi
+done < <(find . -name "*.sh" -not -path "./.git/*" 2>/dev/null)
+
+if [ "$STALE_CMD_COUNT" -eq 0 ]; then
+    check_pass "No stale 'command:' format references found"
+else
+    check_warning "Found ~$STALE_CMD_COUNT possible stale 'command:' refs (review above)"
+fi
+
+# Check for CLAUDE.md references in active files (should be AGENT.md)
+CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/null \
+    | grep -v ".git" \
+    | grep -v "feedback/integrated/" \
+    | grep -v "project/completed_phases/" \
+    | grep -v "feedback/global/agent_lessons.md" \
+    | grep -v "scripts/validate_consistency.sh" \
+    || true)
+
+if [ -z "$CLAUDE_REFS" ]; then
+    check_pass "No stale CLAUDE.md references (all use AGENT.md)"
+else
+    CLAUDE_COUNT=$(echo "$CLAUDE_REFS" | wc -l | tr -d ' ')
+    check_warning "$CLAUDE_COUNT files still reference CLAUDE.md (should be AGENT.md)"
+    for ref in $CLAUDE_REFS; do
+        log "    ⚠️  $ref"
+    done
+fi
+
+# ==============================================
+# Check 8: Markdown Link Validator (key files)
+# ==============================================
+print_section "8/11" "Checking markdown link targets..."
+
+BROKEN_LINKS=0
+
+# Check helpers for broken relative links
+for helper in agent/helpers/*.md; do
+    [ -f "$helper" ] || continue
+    HELPER_DIR=$(dirname "$helper")
+    # Extract markdown links: [text](path) — skip URLs and anchors
+    while IFS= read -r link_target; do
+        # Skip URLs, anchors, and empty
+        case "$link_target" in
+            http*|mailto*|\#*|"") continue ;;
+        esac
+        # Strip any anchor from path
+        CLEAN_PATH=$(echo "$link_target" | sed 's/#.*//')
+        [ -z "$CLEAN_PATH" ] && continue
+        # Resolve relative to helper's directory
+        RESOLVED="$HELPER_DIR/$CLEAN_PATH"
+        if [ ! -e "$RESOLVED" ]; then
+            BROKEN_LINKS=$((BROKEN_LINKS + 1))
+            log "    ❌ $(basename "$helper"): broken link → $link_target (resolves to $RESOLVED)"
+        fi
+    done < <(grep -oE '\[([^]]*)\]\(([^)]+)\)' "$helper" 2>/dev/null | sed 's/.*](//' | sed 's/)//')
+done
+
+# Check key docs for broken relative links
+for doc in AGENT.md README.md core_docs/*.md; do
+    [ -f "$doc" ] || continue
+    DOC_DIR=$(dirname "$doc")
+    while IFS= read -r link_target; do
+        case "$link_target" in
+            http*|mailto*|\#*|"") continue ;;
+        esac
+        CLEAN_PATH=$(echo "$link_target" | sed 's/#.*//')
+        [ -z "$CLEAN_PATH" ] && continue
+        RESOLVED="$DOC_DIR/$CLEAN_PATH"
+        if [ ! -e "$RESOLVED" ]; then
+            BROKEN_LINKS=$((BROKEN_LINKS + 1))
+            log "    ❌ $(basename "$doc"): broken link → $link_target"
+        fi
+    done < <(grep -oE '\[([^]]*)\]\(([^)]+)\)' "$doc" 2>/dev/null | sed 's/.*](//' | sed 's/)//')
+done
+
+if [ "$BROKEN_LINKS" -eq 0 ]; then
+    check_pass "All markdown link targets exist"
+else
+    check_error "$BROKEN_LINKS broken markdown links found (see above)"
+fi
+
+# ==============================================
+# Check 9: Trigger Keyword Sync
+# ==============================================
+print_section "9/11" "Checking helper trigger keyword sync..."
+
+TRIGGER_ISSUES=0
+
+# For each keyword-triggered helper, check it appears in AGENT.md routing table
+for helper in agent/helpers/*.md; do
+    [ -f "$helper" ] || continue
+    BASENAME=$(basename "$helper")
+    # Skip non-keyword helpers
+    case "$BASENAME" in
+        session_startup.md|README.md) continue ;;
+    esac
+    # Check if helper is referenced in AGENT.md auto-load table
+    if ! grep -q "$BASENAME" AGENT.md 2>/dev/null; then
+        TRIGGER_ISSUES=$((TRIGGER_ISSUES + 1))
+        log "    ❌ $BASENAME not found in AGENT.md routing table"
+    fi
+    # Check if helper has Auto-load triggers line
+    if ! grep -q "Auto-load triggers" "$helper" 2>/dev/null; then
+        TRIGGER_ISSUES=$((TRIGGER_ISSUES + 1))
+        log "    ⚠️  $BASENAME missing Auto-load triggers declaration"
+    fi
+done
+
+if [ "$TRIGGER_ISSUES" -eq 0 ]; then
+    check_pass "All helpers registered in AGENT.md with trigger declarations"
+else
+    check_warning "$TRIGGER_ISSUES trigger sync issues found (see above)"
+fi
+
+# =============================================
+# Check 10: AGENT.md Deployment Freshness
+# =============================================
+print_section "10/11" "Checking AGENT.md deployment..."
+
+if [ -f "../AGENT.md" ]; then
+    if diff -q AGENT.md ../AGENT.md > /dev/null 2>&1; then
+        check_pass "AGENT.md deployed copy is in sync"
+    else
+        check_error "AGENT.md differs from ../AGENT.md — run: cp AGENT.md ../AGENT.md"
+    fi
+else
+    check_warning "../AGENT.md not found (deploy with: cp AGENT.md ../AGENT.md)"
+fi
+
+# =============================================
+# Check 11: Anti-Hardcoding Guard
+# =============================================
+print_section "11/11" "Checking for hardcoded values in mechanism files..."
+
+HARDCODED_ISSUES=0
+
+# Check for 40-char hex strings (commit hashes) in mechanism files
+for mech in agent/helpers/session_startup.md agent/commands/*.md AGENT.md; do
+    [ -f "$mech" ] || continue
+    # Find 40-char hex strings that look like commit hashes (not in comments about the check itself)
+    HASH_HITS=$(grep -oE '[0-9a-f]{40}' "$mech" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$HASH_HITS" -gt 0 ]; then
+        HARDCODED_ISSUES=$((HARDCODED_ISSUES + 1))
+        log "    ⚠️  $(basename "$mech"): $HASH_HITS hardcoded commit hash(es)"
+    fi
+    # Also check for 7-10 char abbreviated hashes that might be hardcoded
+    # (only flag if they appear in non-example contexts — this is heuristic)
+done
+
+if [ "$HARDCODED_ISSUES" -eq 0 ]; then
+    check_pass "No hardcoded commit hashes in mechanism files"
+else
+    check_warning "$HARDCODED_ISSUES files contain hardcoded commit hashes (may become stale)"
 fi
 
 # ============
