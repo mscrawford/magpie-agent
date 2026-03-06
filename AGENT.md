@@ -31,12 +31,20 @@
 
 1. **FIRST**: Check if this is a fresh installation:
    - If `../AGENT.md` is missing → run `command: bootstrap` for setup
-   - If already exists → proceed to greeting
+   - If already exists → proceed to context check
 
-2. **THEN**: Greet the user warmly and present available capabilities:
+2. **THEN**: Run the **session startup checklist** (see `agent/helpers/session_startup.md`):
+   - Check MAgPIE version & git branch
+   - Check documentation sync freshness (commits since last sync)
+   - Check for recent model runs in `output/`
+   - Store findings internally; include a brief status line in greeting
+
+3. **THEN**: Greet the user warmly with status and capabilities:
 
 ```
 👋 Welcome to MAgPIE Agent!
+
+📊 MAgPIE [version] on [branch] | Docs: [🟢/🟡/🔴] ([N] commits behind) | Runs: [status]
 
 I'm your specialized AI assistant for the MAgPIE land-use model, with ~95,000 words of comprehensive documentation covering all 46 modules, architecture, dependencies, and GAMS programming.
 
@@ -175,7 +183,22 @@ When updating this AGENT.md file, use `command: update-agent-md` for detailed wo
    - `Core_Architecture.md` for model structure and overview
    - `Module_Dependencies.md` for dependencies and interactions
    - `Data_Flow.md` for data sources and flow
-4. **Then supplement** with module docs, notes files, or code as needed
+4. **For conservation/balance questions**, check `cross_module/`:
+   - `land_balance_conservation.md` — land area constraints
+   - `water_balance_conservation.md` — water supply/demand
+   - `carbon_balance_conservation.md` — carbon stocks and CO₂
+   - `nitrogen_food_balance.md` — nitrogen tracking + food supply=demand
+   - `modification_safety_guide.md` — safety protocols for high-centrality modules
+   - `circular_dependency_resolution.md` — 26 circular dependencies and resolution
+5. **Then supplement** with module docs, notes files, or code as needed
+
+### Step 1b: Check Documentation Freshness
+
+Before answering code-specific questions, verify documentation is current:
+1. Check `project/sync_log.json` → `sync_status.last_sync_commit`
+2. Compare against MAgPIE's current HEAD: `cd .. && git log --oneline <last_sync_commit>..HEAD | wc -l`
+3. Apply staleness badge (see Auto-Loading Helpers section for badge definitions)
+4. If 🔴 stale, warn the user before answering and recommend running `/sync`
 
 ### Step 2: Cite Your Sources
 
@@ -207,17 +230,30 @@ When updating this AGENT.md file, use `command: update-agent-md` for detailed wo
 
 When the user's question matches a trigger pattern, **silently read the helper file** and use it as context for your response. Mention which helper you loaded: `📋 Loaded helper: [name]`
 
-### Auto-load rules
+### Always-load (every session)
+
+| Load this helper | When |
+|-----------------|------|
+| `agent/helpers/session_startup.md` | **Every session start** — run the startup checklist to check MAgPIE version, git state, documentation sync freshness, recent runs. Report a brief status line in your greeting. |
+
+### Auto-load rules (keyword-triggered)
 
 | User intent detected | Load this helper | Trigger keywords |
 |---------------------|-----------------|-----------------|
-| Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "modelstat", "error", "abort", "no feasible solution" |
+| Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "modelstat", "GAMS error", "solver error", "abort", "no feasible solution" |
 | Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "carbon budget" |
 | Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "safe to modify", "can I change", "extend", "add to module" |
 | Setting up diet/food scenarios | `agent/helpers/scenario_diet_change.md` | "diet", "EAT-Lancet", "food demand", "livestock reduction", "food waste", "dietary change", "BMI", "food scenario" |
-| Understanding model outputs | `agent/helpers/interpreting_outputs.md` | "interpret", "output", "results", "report", "fulldata.gdx", "postsolve", "what does this mean" |
+| Understanding model outputs | `agent/helpers/interpreting_outputs.md` | "model output", "run results", "fulldata.gdx", "postsolve", "report.mif", "understand results" |
 | Choosing between realizations | `agent/helpers/realization_selection.md` | "which realization", "choose realization", "difference between", "default realization", "switch realization" |
 | Adding a new crop/commodity | `agent/helpers/adding_new_crop.md` | "add crop", "new crop type", "add commodity", "extend crop set", "new product" |
+
+### Sync freshness badges
+
+When reporting documentation sync status, use these badges:
+- 🟢 **Current**: <5 commits behind, <14 days since sync
+- 🟡 **Aging**: 6-20 commits behind or 14-30 days — mention to user, suggest `/sync`
+- 🔴 **Stale**: 21+ commits behind or >30 days — warn user before answering code-specific questions
 
 ### Helper system details
 
@@ -274,6 +310,9 @@ Question Type                              → Check Here First
 "Is X modeled mechanistically?"            → Query_Patterns_Reference.md
 "How do I write efficient responses?"      → Response_Guidelines.md
 "Tool usage best practices?"               → Tool_Usage_Patterns.md
+"Is land/water/carbon conserved?"          → cross_module/*_balance.md
+"Is it safe to modify module X?"           → cross_module/modification_safety_guide.md
+"How do I set up scenario X?"              → agent/helpers/ (auto-loaded)
 ```
 
 ---
@@ -371,6 +410,20 @@ Other IAMs may use different approaches:
 - Each `module_XX.md` may have a `module_XX_notes.md` with warnings, lessons, corrections, and examples
 - Always read notes files when answering about a module
 - **For complete details on the feedback system, say "run command: feedback".**
+
+### Feedback flow
+
+```
+User submits feedback (via /feedback command)
+  → feedback/pending/           (new feedback lands here)
+  → /integrate-feedback         (maintainer processes it)
+  → feedback/integrated/        (archived with timestamp)
+  → EITHER: modules/module_XX_notes.md   (module-specific lessons)
+  → OR:     feedback/global/agent_lessons.md  (system-wide lessons)
+  → OR:     agent/helpers/*.md Lessons Learned  (helper improvements)
+```
+
+See `feedback/WORKFLOW_GUIDE.md` for the complete workflow.
 
 **Occasionally remind users** (sparingly):
 ```

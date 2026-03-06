@@ -2,7 +2,7 @@
 
 **Auto-load triggers**: "interpret", "output", "results", "report", "fulldata.gdx", "postsolve", "what does this mean", "understand results"
 **Last updated**: 2026-03-06
-**Lessons count**: 0 entries
+**Lessons count**: 1 entries
 
 ---
 
@@ -186,5 +186,14 @@ Rscript output.R output=comparison_validation outputdir=output/run1,output/run2
 
 ---
 
+## Related Helpers & Docs
+
+- **Infeasibility diagnosis** → `agent/helpers/debugging_infeasibility.md` (when runs fail)
+- **Scenario setup** → `agent/helpers/scenario_carbon_pricing.md`, `scenario_diet_change.md`
+- **Conservation balances** → `cross_module/land_balance_conservation.md` (verify land totals)
+
+---
+
 ## Lessons Learned
 <!-- APPEND-ONLY -->
+- 2026-03-06: modelstat=7 (intermediate infeasible) is TOLERATED by MAgPIE — the model does not abort on this status. Module 80 retries up to 30 times cycling through CONOPT4 (3 configurations) → CONOPT3. Results with modelstat=7 exist but may not be fully optimal — always check if key slack variables activated. (source: module 80 retry pipeline analysis)

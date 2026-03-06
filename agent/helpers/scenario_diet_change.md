@@ -2,7 +2,7 @@
 
 **Auto-load triggers**: "diet", "EAT-Lancet", "food demand", "livestock reduction", "food waste", "dietary change", "BMI", "food scenario"
 **Last updated**: 2026-03-06
-**Lessons count**: 0 entries
+**Lessons count**: 1 entries
 
 ---
 
@@ -189,5 +189,14 @@ Modules 10/20/30/34/35 ── production needs → cropland/pasture/forest alloc
 
 ---
 
+## Related Helpers & Docs
+
+- **Output interpretation** → `agent/helpers/interpreting_outputs.md` (reading diet scenario results)
+- **Carbon pricing interaction** → `agent/helpers/scenario_carbon_pricing.md` (diet + climate policy combos)
+- **Food balance** → `cross_module/nitrogen_food_balance.md` (food supply=demand constraint)
+
+---
+
 ## Lessons Learned
 <!-- APPEND-ONLY: Record practical insights from real usage below this line -->
+- 2026-03-06: Module 15 has 18 equations fully documented. The BMI-related equations (q15_bmi_shr, q15_bmi_shr_verylow, etc.) use cumulative normal distribution lookups — if BMI targets seem to have no effect, check that s15_exo_diet=1 is set. Default s15_exo_diet=0 silently ignores all EAT-Lancet settings. (source: deep validation of module 15)

@@ -2,7 +2,7 @@
 
 **Auto-load triggers**: "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "abort"
 **Last updated**: 2026-03-06
-**Lessons count**: 0 entries
+**Lessons count**: 2 entries
 
 ---
 
@@ -159,6 +159,15 @@ MAgPIE has 13 slack variables with high penalty costs. When they activate, the m
 | Carbon policy setup | `modules/module_56.md` |
 | Optimization mechanics | `modules/module_80.md` |
 | Full debugging reference | `reference/Infeasibility_Debugging_Guide.md` |
+
+---
+
+## Related Helpers & Docs
+
+- **Modification safety** → `agent/helpers/modification_impact_analysis.md` (code changes that cause infeasibility)
+- **Carbon policy pitfalls** → `agent/helpers/scenario_carbon_pricing.md` (aggressive pricing → infeasibility)
+- **Conservation constraints** → `cross_module/land_balance_conservation.md` (land conflicts)
+- **Water constraints** → `cross_module/water_balance_conservation.md` (irrigation limits)
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Auto-load triggers**: "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget"
 **Last updated**: 2026-03-06
-**Lessons count**: 0 entries
+**Lessons count**: 2 entries
 
 ---
 
@@ -166,6 +166,17 @@ Default "y2030" means prices only take effect AFTER 2030. If your scenario needs
 
 ---
 
+## Related Helpers & Docs
+
+- **Infeasibility from aggressive pricing** → `agent/helpers/debugging_infeasibility.md`
+- **Carbon balance mechanics** → `cross_module/carbon_balance_conservation.md`
+- **Module modification safety** → `cross_module/modification_safety_guide.md`
+- **Realization choices** → `agent/helpers/realization_selection.md` (GHG module realizations)
+
+---
+
 ## Lessons Learned
 <!-- APPEND-ONLY: Add new entries at the bottom. Never remove old ones. -->
 <!-- Format: - YYYY-MM-DD: [lesson] (source: [user feedback | session experience]) -->
+- 2026-03-06: Module 56 c56_cprice_aff="secdforest_vegc" interacts with c56_emis_policy — if forestry isn't in the emission policy, setting cprice_aff alone won't create afforestation incentives. Always check both settings together. (source: deep validation of module 56)
+- 2026-03-06: The c56_mute_ghgprices_until setting means carbon prices only take effect AFTER the specified year (default y2030). If running short historical scenarios, prices may appear to have no effect — this is by design, not a bug. (source: config/default.cfg analysis)

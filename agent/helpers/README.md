@@ -22,11 +22,12 @@ Each helper defines its own trigger patterns. The master routing is in `CLAUDE.m
 
 | Trigger Pattern | Helper File | Description |
 |----------------|-------------|-------------|
+| **ALWAYS** (every session start) | `session_startup.md` | Checks MAgPIE version, git state, sync freshness, recent runs |
 | "infeasible", "won't solve", "modelstat", "error 4" | `debugging_infeasibility.md` | Diagnosing and fixing model infeasibilities |
 | "carbon price", "carbon tax", "GHG policy", "emission pricing" | `scenario_carbon_pricing.md` | Setting up carbon pricing scenarios |
 | "diet", "EAT-Lancet", "food demand change", "livestock reduction" | `scenario_diet_change.md` | Configuring diet change scenarios |
 | "modify", "change", "what breaks", "impact of changing" | `modification_impact_analysis.md` | Assessing modification safety and impacts |
-| "interpret", "output", "results", "what does this mean" | `interpreting_outputs.md` | Understanding model outputs |
+| "model output", "run results", "fulldata.gdx", "what does this mean" | `interpreting_outputs.md` | Understanding model outputs |
 | "which realization", "choose realization", "difference between" | `realization_selection.md` | Comparing and choosing realizations |
 | "add crop", "new crop type", "extend crops" | `adding_new_crop.md` | Cross-module walkthrough for adding crops |
 

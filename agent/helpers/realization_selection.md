@@ -2,7 +2,7 @@
 
 **Auto-load triggers**: "which realization", "choose realization", "difference between", "realization comparison", "default realization", "switch realization", "alternative realization"
 **Last updated**: 2026-03-06
-**Lessons count**: 0 entries
+**Lessons count**: 1 entries
 
 ---
 
@@ -172,5 +172,14 @@ Modules 51 (nitrogen), 53 (methane), 55 (awms), 58 (peatland) each have `off` re
 
 ---
 
+## Related Helpers & Docs
+
+- **Modification impact** → `agent/helpers/modification_impact_analysis.md` (safety of switching)
+- **Infeasibility risk** → `agent/helpers/debugging_infeasibility.md` (realization-specific issues)
+- **Carbon policy** → `agent/helpers/scenario_carbon_pricing.md` (GHG module realization choices)
+
+---
+
 ## Lessons Learned
 <!-- APPEND-ONLY -->
+- 2026-03-06: Module 70 (livestock) has two realizations: fbask_aug21 (default, flexible baskets) and sticky_feb18 (slow adjustment). The sticky realization adds equation q70_cost_regr for regression-based cost estimation. When switching from fbask to sticky, ensure Module 15 food demand settings are compatible — sticky assumes slower dietary transitions. (source: deep validation of module 70)

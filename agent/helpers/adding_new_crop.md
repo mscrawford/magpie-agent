@@ -2,7 +2,7 @@
 
 **Auto-load triggers**: "add crop", "new crop type", "add commodity", "extend crop set", "new product", "crop type"
 **Last updated**: 2026-03-06
-**Lessons count**: 0 entries
+**Lessons count**: 1 entries
 
 ---
 
@@ -231,5 +231,15 @@ NUTRIENT BALANCE
 
 ---
 
+## Related Helpers & Docs
+
+- **Modification safety** → `agent/helpers/modification_impact_analysis.md` (impact analysis for crop additions)
+- **Infeasibility** → `agent/helpers/debugging_infeasibility.md` (new crop causing solver failures)
+- **Land balance** → `cross_module/land_balance_conservation.md` (cropland allocation constraints)
+- **Nitrogen balance** → `cross_module/nitrogen_food_balance.md` (nutrient requirements)
+
+---
+
 ## Lessons Learned
 <!-- APPEND-ONLY -->
+- 2026-03-06: The kcr set (core/sets.gms) has 20 crop types. Adding a new crop requires entries in at least 15 set definition files and ~25 input data files. The most commonly missed step is forgetting to add the crop to SUBSETS (knbe14, kbe14, kcr_analog14, etc.) — the model compiles but produces wrong results because the new crop is excluded from key equations. (source: code analysis of set hierarchy)

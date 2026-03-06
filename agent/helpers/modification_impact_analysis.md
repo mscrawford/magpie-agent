@@ -2,7 +2,7 @@
 
 **Auto-load triggers**: "modify", "change module", "what breaks", "impact of changing", "safe to modify", "can I change", "extend", "add to module"
 **Last updated**: 2026-03-06
-**Lessons count**: 0 entries
+**Lessons count**: 2 entries
 
 ---
 
@@ -160,6 +160,18 @@ MAgPIE solves one time step at a time. Variables from previous time steps are pa
 
 ---
 
+## Related Helpers & Docs
+
+- **Infeasibility debugging** → `agent/helpers/debugging_infeasibility.md` (when modifications break the model)
+- **Realization selection** → `agent/helpers/realization_selection.md` (choosing between implementations)
+- **Adding new crops** → `agent/helpers/adding_new_crop.md` (specific modification walkthrough)
+- **Safety guide** → `cross_module/modification_safety_guide.md` (centrality rankings, safety protocols)
+- **Circular dependencies** → `cross_module/circular_dependency_resolution.md` (26 cycles to watch for)
+
+---
+
 ## Lessons Learned
 <!-- APPEND-ONLY: Add new entries at the bottom. Never remove old ones. -->
 <!-- Format: - YYYY-MM-DD: [lesson] (source: [user feedback | session experience]) -->
+- 2026-03-06: Module 10 (land) has the highest centrality in MAgPIE — any change to vm_land or the q10_land_area constraint affects ALL other modules. During deep validation, even adding hypothetical examples to module 10 docs required ⚠️ warnings because they could be mistaken for actual model behavior. (source: deep validation of module 10)
+- 2026-03-06: When modifying peatland module (58), beware of contradictory settings: s58_rewetting_switch=0 + s58_rewetting_exo=1 guarantees infeasibility. The modification_safety_guide in cross_module/ has centrality rankings for all modules. (source: module 58 deep analysis)
