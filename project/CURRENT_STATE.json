@@ -84,47 +84,27 @@
   ],
   "last_session": {
     "date": "2026-03-07",
-    "focus": "Complete audit flywheel: all 5 novel audit angles executed",
+    "summary": "Lesson leverage assessment + 3 new audit angles",
+    "bugs_fixed": 29,
+    "cumulative_bugs_fixed": 213,
+    "key_accomplishments": [
+      "Strengthened lesson leverage: AGENT.md Critical Warnings expanded from 1 to 4 sections",
+      "Added write/edit reading order to AGENT.md document hierarchy",
+      "Bug_Taxonomy.md and Verification_Protocol.md now in doc table and quick reference",
+      "Response_Guidelines.md checklist now includes validator step",
+      "Content-level citation audit: 26 wrong line numbers fixed across 9 module docs",
+      "Parameter default audit: 1 bug (s56_cprice_red_factor default=1 not 0)",
+      "Data file existence audit: 1 fabricated filename fixed (f14_yields_calib.cs3)",
+      "Equation formula audit: 165 blocks verified, 0 bugs (all correct)",
+      "Bug Taxonomy: 13 patterns documented, 11 audit angles tracked"
+    ],
+    "validator_state": "17 checks, 32 sub-checks, all passing at 100%",
     "commits": [
-      "a5880c1 (GAMS variable checker + Bug Taxonomy)",
-      "739f346 (equation + realization verification, Checks 15-16)",
-      "5ec5cc3 (state update)",
-      "6506a11 (file:line citation verification, Check 17)"
-    ],
-    "accomplishments": [
-      "Committed GAMS variable checker from previous session (Check 14, 773 vars)",
-      "Fixed 4 wrong equation names, built Check 15 (269 equations verified)",
-      "Fixed 12 wrong realization names, built Check 16 (67 realizations verified)",
-      "Set name audit: 0 bugs (51 sets verified, too distinctive to hallucinate)",
-      "Fixed 151 stale file:line citations (largest bug class), built Check 17 (2230 citations verified)",
-      "Bug Taxonomy now has 11 patterns, Audit Angles Registry fully populated",
-      "Validator: 17 checks, 32 sub-checks, all passing at 100%"
-    ],
-    "bugs_fixed": {
-      "equation_names": 4,
-      "realization_names": 12,
-      "file_line_citations": 151,
-      "total_this_session": 167,
-      "cumulative": "184+ (17 prev + 167 this session)"
-    },
-    "meta_lessons": [
-      "File:line citations are the highest-volume bug class (151 of 184 total bugs)",
-      "Verification footer lines are ironically the least verified content",
-      "Wrong realization names cascade: wrong name \u2192 wrong file sizes \u2192 all line citations invalid",
-      "Set names are too distinctive to hallucinate (0 bugs in 51 checked)",
-      "AI constructs plausible citation line numbers that sound right but point past EOF"
-    ],
-    "validator_state": {
-      "total_checks": 17,
-      "total_sub_checks": 32,
-      "all_passing": true,
-      "verified_counts": {
-        "variables": 773,
-        "equations": 269,
-        "realizations": 67,
-        "citations": 2230
-      }
-    }
+      "da17bd3",
+      "ea6bd7b",
+      "b071948",
+      "4d8419a"
+    ]
   },
   "previous_session": {
     "date": "2026-03-06",
@@ -864,5 +844,59 @@
       "\u2705 Completed Phase 1 document (GAMS_Phase1_Fundamentals.md)"
     ],
     "notes": "\ud83d\udcd8 GAMS PROGRAMMING REFERENCE INITIATED: Created comprehensive GAMS reference documentation to improve agent's ability to read, understand, and work with GAMS code in MAgPIE. Research sources: (1) Official GAMS documentation (gams.com/latest/docs), (2) GAMS tutorials and best practices papers, (3) Real MAgPIE codebase patterns (modules/, core/macros.gms, core/sets.gms). Documentation structure: 6 phases covering fundamentals \u2192 control structures \u2192 advanced features \u2192 functions \u2192 MAgPIE-specific patterns \u2192 best practices (~38K words total planned). Phase 1 Complete (Fundamentals): Covers GAMS basics, sets (indices), parameters (data), variables (decision variables), equations (constraints), model & solve statements. All concepts illustrated with MAgPIE examples. Key value: Enables AI agents to understand GAMS algebraic modeling language without prior knowledge, bridging gap between general programming knowledge and domain-specific optimization language. Files: reference/GAMS_Programming_Reference_Plan.md (plan), reference/GAMS_Phase1_Fundamentals.md (Phase 1 complete). Remaining phases 2-6 ready for future implementation. Git workflow documentation also added to CLAUDE.md."
+  },
+  "audit_angles": {
+    "completed": [
+      {
+        "name": "GAMS variable names",
+        "bugs": 17,
+        "automated": "Check 14"
+      },
+      {
+        "name": "GAMS equation names",
+        "bugs": 4,
+        "automated": "Check 15"
+      },
+      {
+        "name": "GAMS realization names",
+        "bugs": 12,
+        "automated": "Check 16"
+      },
+      {
+        "name": "GAMS set names",
+        "bugs": 0,
+        "automated": "N/A (immune)"
+      },
+      {
+        "name": "File:line citations (range)",
+        "bugs": 151,
+        "automated": "Check 17"
+      },
+      {
+        "name": "Content-level citations",
+        "bugs": 26,
+        "automated": "Manual"
+      },
+      {
+        "name": "Parameter defaults",
+        "bugs": 1,
+        "automated": "Manual"
+      },
+      {
+        "name": "Data file existence",
+        "bugs": 1,
+        "automated": "Manual"
+      },
+      {
+        "name": "Equation formulas",
+        "bugs": 0,
+        "automated": "N/A (accurate)"
+      }
+    ],
+    "remaining": [
+      "Config switch description accuracy",
+      "Cross-module interaction accuracy",
+      "Historical context/timeline accuracy"
+    ]
   }
 }
