@@ -250,6 +250,27 @@ Before answering code-specific questions, verify documentation is current:
 3. Apply staleness badge (see Auto-Loading Helpers section for badge definitions)
 4. If 🔴 stale, warn the user before answering and recommend running `/sync`
 
+### Step 1c: Check Active Realization & Configuration
+
+**Before answering about any module with multiple realizations** (20+ modules have them):
+
+1. **Check the active realization**:
+   ```bash
+   grep "cfg\$gms\$<module_name>" ../config/default.cfg
+   ```
+   Example: `cfg$gms$water_demand <- "all_sectors_aug13"` vs `"agr_sector_aug13"`
+
+2. **Verify your docs match**: Module docs state which realization they cover (e.g., "Realization: `fbask_jan16`"). If the user is running a different realization, **say so**: "My documentation covers `X` realization, but your config uses `Y`. The behavior may differ."
+
+3. **Check key scenario switches** when they change module behavior:
+   ```bash
+   grep "cfg\$gms\$c<module_num>" ../config/default.cfg | head -5
+   ```
+   Example: `s15_exo_diet = 1` completely changes food demand behavior. If a non-default switch is active, mention it.
+
+**Modules with multiple realizations** (check these before answering):
+13, 18, 21, 29, 30, 31, 34, 37, 38, 40, 41, 42, 44, 51, 53, 55, 58, 59, 60, 70
+
 ### Step 2: Cite Your Sources
 
 **ALWAYS state where your information came from:**
@@ -261,6 +282,32 @@ Before answering code-specific questions, verify documentation is current:
 - 🟢 "Verified against module_XX.md and modules/XX_.../equations.gms:123"
 - 💬 "Includes user feedback from module_XX_notes.md"
 - 📘 "Consulted Query_Patterns_Reference.md"
+
+⚠️ **Line number caveat**: Line numbers cited from module docs were verified at the doc's last update date. Code changes since then may have shifted them. For critical work, verify against current code.
+
+### Step 2b: Verify in Code for High-Stakes Claims
+
+**Go to raw GAMS code** (don't just trust docs) when:
+- ✅ User is about to **modify code** based on your answer
+- ✅ Your answer involves **safety** ("it's safe to change X")
+- ✅ The answer seems **surprising** or counterintuitive
+- ✅ Documentation is 🟡 or 🔴 stale for the module in question
+- ✅ You're describing a **specific equation formula** (verify it hasn't changed)
+
+This supplements the "docs first" workflow — docs are still the starting point, but high-stakes answers deserve code confirmation.
+
+### Step 2c: When to Say "I Don't Know"
+
+**Say "I'm not certain" when:**
+- The module docs don't cover the question AND the code is ambiguous
+- You would need to read binary input data files (`.cs2`, `.cs3`) that you can't parse
+- The behavior depends on a parameter value you haven't checked
+- You're making a claim about model behavior you haven't verified in either docs or code
+
+**Format:**
+> "I can tell you [what I DO know from docs/code], but I can't determine [specific thing] because [reason — e.g., it depends on input data I can't read / the code path is conditional on a parameter I haven't checked]. To verify, you could [specific suggestion]."
+
+**Never construct a plausible-sounding answer when you're uncertain.** Partial knowledge + honest caveat is always better than a confident but unverified claim.
 
 ### Step 3: Working with GAMS Code (CRITICAL)
 
@@ -410,8 +457,9 @@ Question Type                              → Check Here First
 1. **CODE TRUTH**: Describe what MAgPIE DOES, not what it SHOULD do or what happens in the real world
 2. **PRECISION**: Reference specific files, equations, and line numbers
 3. **CLARITY**: Clearly state when something is NOT modeled or simplified
-4. **HONESTY**: If unsure, check the code rather than making assumptions
+4. **HONESTY**: If unsure, say so — then check the code rather than guessing
 5. **FOCUS**: Answer about the model's implementation, not general knowledge
+6. **CONTEXT**: Check which realization and configuration the user is running before answering
 
 ### What This Means:
 - ✅ "MAgPIE calculates yields using equation q14_yield_crop with tau factors"
@@ -611,11 +659,14 @@ Module 29 uses land allocation from Module 10 (see `modules/module_10.md#equatio
 **Before sending ANY response:**
 
 - [ ] **🎯 CHECKED AI DOCS FIRST** (module_XX.md or core_docs/)
+- [ ] **Checked active realization** for modules with multiple realizations (Step 1c)
 - [ ] **Stated documentation source** (🟡 docs / 🟢 verified in code)
-- [ ] **Cited file:line** for factual claims
+- [ ] **Cited file:line** for factual claims (note: line numbers may drift between syncs)
 - [ ] **Used exact variable names** (vm_land, not "land variable")
 - [ ] **Described CODE behavior only** (not ecological/economic theory)
 - [ ] **If "MAgPIE models X"**: Verified parameterization vs. mechanistic (3-check)
+- [ ] **If high-stakes claim**: Verified in code, not just docs (Step 2b)
+- [ ] **If uncertain**: Said so explicitly, not constructed plausible answer (Step 2c)
 - [ ] **Stated limitations** (what code does NOT do)
 
 **For complete checklist (20+ items), see `core_docs/Response_Guidelines.md`**
