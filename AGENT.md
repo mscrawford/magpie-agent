@@ -175,7 +175,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 **Directory layout**:
 ```
 /magpie/                          ← Parent: Main MAgPIE project (git repo #1)
-├── AGENT.md                      ← DEPLOYED copy (DO NOT EDIT - auto-updated via update command)
+├── AGENT.md                      ← DEPLOYED copy (DO NOT EDIT - auto-updated at session start)
 ├── modules/                      ← GAMS modules (actual MAgPIE code)
 │   ├── 14_yields/
 │   ├── 70_livestock/
@@ -692,38 +692,6 @@ Module 29 uses land allocation from Module 10 (see `modules/module_10.md#equatio
 - **First-time setup** → `/bootstrap`
 
 **The AI documentation exists to make your job easier AND more accurate. Use it!**
-
----
-
-## 🔧 MODEL-SPECIFIC SETUP
-
-This agent is designed to work with any AI assistant. To set up for your specific tool:
-
-### For Any AI Assistant
-
-1. **Point your AI to this file** - Configure your AI tool to read `AGENT.md` (or `magpie-agent/AGENT.md`) at session start
-2. **Deploy to parent** - Copy `AGENT.md` to the MAgPIE root directory for convenience
-3. **Commands** - Type `/guide` (or "run command: guide") to execute commands from `agent/commands/`
-
-### Tool-Specific Notes
-
-**Claude Code**: Configure to read `AGENT.md` as project instructions.
-
-**GitHub Copilot**: Point to this file in your workspace settings.
-
-**Cursor**: Add this file to your AI context.
-
-**Other tools**: Consult your tool's documentation for how to provide context files.
-
-### First-Time Setup
-
-```bash
-cd /path/to/magpie/magpie-agent
-# Deploy AGENT.md to parent directory
-cp AGENT.md ../AGENT.md
-```
-
-Then configure your AI tool to read `AGENT.md` from the MAgPIE root directory.
 
 ---
 

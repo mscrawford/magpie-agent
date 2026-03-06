@@ -301,7 +301,7 @@ Or:
 
 ## 📐 DOCUMENT ROLE HIERARCHY
 
-**MAgPIE has 82+ documentation files. To avoid confusion and inconsistency, follow this hierarchy:**
+**MAgPIE has 100+ documentation files. To avoid confusion and inconsistency, follow this hierarchy:**
 
 ### **Two Contexts: MAgPIE Questions vs. Documentation Project**
 

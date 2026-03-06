@@ -398,6 +398,7 @@ CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/n
     | grep -v "project/completed_phases/" \
     | grep -v "feedback/global/agent_lessons.md" \
     | grep -v "scripts/validate_consistency.sh" \
+    | grep -v "agent/commands/validate.md" \
     || true)
 
 if [ -z "$CLAUDE_REFS" ]; then

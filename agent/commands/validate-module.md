@@ -50,7 +50,7 @@ done
 Extract all markdown links and verify targets exist:
 ```bash
 # Extract links: [text](path)
-grep -oP '\[.*?\]\(\K[^)]+' modules/module_XX.md
+grep -oE '\[[^]]+\]\([^)]+\)' modules/module_XX.md | grep -oE '\([^)]+\)' | tr -d '()'
 ```
 
 Validate each link:
