@@ -182,4 +182,4 @@ Modules 51 (nitrogen), 53 (methane), 55 (awms), 58 (peatland) each have `off` re
 
 ## Lessons Learned
 <!-- APPEND-ONLY -->
-- 2026-03-06: Module 70 (livestock) has two realizations: fbask_aug21 (default, flexible baskets) and sticky_feb18 (slow adjustment). The sticky realization adds equation q70_cost_regr for regression-based cost estimation. When switching from fbask to sticky, ensure Module 15 food demand settings are compatible — sticky assumes slower dietary transitions. (source: deep validation of module 70)
+- 2026-03-06: Module 70 (livestock) has two realizations: fbask_jan16 (default, flexible baskets) and fbask_jan16_sticky (investment-based capital). The sticky realization adds path-dependent costs with depreciation. When switching from fbask_jan16 to fbask_jan16_sticky, ensure Module 15 food demand settings are compatible — sticky assumes slower structural transitions. (source: deep validation of module 70)
