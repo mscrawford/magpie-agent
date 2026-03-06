@@ -117,7 +117,7 @@ See the **Required Input Data** table below. The most critical and hardest to ob
 | `f14_yields` (biophysical yields) | `(t_all,j,kve,w)` | `modules/14_yields/input/lpj_yields.cs3` | 14 |
 | `f14_fao_yields_hist` (FAO yields) | `(t_all,i,kcr)` | `modules/14_yields/managementcalib_aug19/input/f14_region_yields.cs3` | 14 |
 | `f14_kcr_pollinator_dependence` | `(kcr)` | `modules/14_yields/input/f14_kcr_pollinator_dependence.csv` | 14 |
-| `fm_croparea` (historical area) | `(t_all,j,w,kcr)` | `modules/30_croparea/input/f30_croparea_w_initialisation.cs3` | 30 |
+| `fm_croparea` (historical area) | `(t_all,j,w,kcr)` | `modules/30_croparea/*/input/f30_croparea_w_initialisation.cs3` | 30 |
 | `fm_attributes` (DM/GE/NR/P/K/WM/C) | `(attributes,kall)` | `modules/16_demand/sector_may15/input/fm_attributes.cs3` | 16 |
 | `fm_nutrition_attributes` (kcal/protein) | `(t_all,kall,nutrition)` | `modules/15_food/anthro_iso_jun22/input/fm_nutrition_attributes.cs3` | 15 |
 
@@ -135,8 +135,8 @@ See the **Required Input Data** table below. The most critical and hardest to ob
 | SOM land-use factor | `(i,climate59,kcr)` | `modules/59_som/*/input/f59_ch5_F_LU*.cs3` | 59 |
 | SOM irrigation factor | `(climate59,w,kcr)` | `modules/59_som/*/input/f59_ch5_F_IRR.cs3` | 59 |
 | Seed share | `(t_all,i,kcr)` | `modules/16_demand/sector_may15/input/f16_seed_shr.csv` | 16 |
-| Waste share | `(t_all,i,kall)` | `modules/16_demand/input/f16_waste_shr.csv` | 16 |
-| Domestic balance flow | `(t_all,i,kall)` | `modules/16_demand/input/f16_domestic_balanceflow.csv` | 16 |
+| Waste share | `(t_all,i,kall)` | `modules/16_demand/sector_may15/input/f16_waste_shr.csv` | 16 |
+| Domestic balance flow | `(t_all,i,kall)` | `modules/16_demand/sector_may15/input/f16_domestic_balanceflow.csv` | 16 |
 | Self-sufficiency ratios | `(t_all,h,kall)` | `modules/21_trade/*/input/f21_self_suff.cs3` | 21 |
 | Trade margins | `(h,kall)` | `modules/21_trade/*/input/f21_trade_margin.cs3` | 21 |
 | Trade tariffs | `(h,kall)` | `modules/21_trade/*/input/f21_trade_tariff.cs3` | 21 |

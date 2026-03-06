@@ -32,7 +32,7 @@ q10_land_area(j2) ..
 
 ## 2. The Seven Land Pools
 
-**Verified**: `modules/10_land/landmatrix_dec18/module.gms:149-169`
+**Verified**: `core/sets.gms:250-251`
 
 MAgPIE distinguishes 7 mutually exclusive land types that sum to total cell area:
 
