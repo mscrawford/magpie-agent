@@ -1008,7 +1008,7 @@ Module 42 participates in **indirect circular dependencies** through the Cropare
 4. **SSP scenario sensitivity**: Non-agricultural demands affect water availability for agriculture
 
 **Safe Modifications**:
-- ✅ Change SSP scenario for non-agricultural demands (`c42_watdem_nonagr_scen`)
+- ✅ Change SSP scenario for non-agricultural demands (`s42_watdem_nonagr_scenario`)
 - ✅ Adjust irrigation efficiency assumptions (`s42_irrig_eff_*` scalars)
 - ✅ Modify pumping cost parameters (`s42_watdem_nonagr_*`)
 - ✅ Change environmental flow scenarios (`s42_env_flow_scenario`)

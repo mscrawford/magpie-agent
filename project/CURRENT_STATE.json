@@ -69,13 +69,17 @@
       "\u2705 Deep equation validation across 11 modules (all gaps closed)",
       "\u2705 Auto-loading AI context helper system (3 initial helpers)",
       "\u2705 Phase 2 helpers: diet change, output interpretation, realization selection, adding new crop",
-      "\u2705 Session awareness system (startup helper, freshness badges, cross-refs, notes)"
+      "\u2705 Session awareness system (startup helper, freshness badges, cross-refs, notes)",
+      "\u2705 CLAUDE.md synced with AGENT.md (was 4 months stale)",
+      "\u2705 Deployment workflow hardened (session_startup, bootstrap, validator all sync CLAUDE.md)",
+      "\u2705 15 audit angles completed, 215 bugs fixed, 14 bug patterns documented",
+      "\u2705 Validator: 17 checks, 32 sub-checks, all passing"
     ],
     "in_progress": [],
     "future": [
-      "Automated verification tooling (equation checker, line validator scripts)",
-      "Developer onboarding package",
-      "CLAUDE.md modernization for newer AI models"
+      "Semantic-level audits (config switch behavior descriptions, prose accuracy)",
+      "CI/CD integration for validator",
+      "Developer onboarding package"
     ]
   },
   "known_issues": [
@@ -84,26 +88,14 @@
   ],
   "last_session": {
     "date": "2026-03-07",
-    "summary": "Lesson leverage assessment + 3 new audit angles",
-    "bugs_fixed": 29,
-    "cumulative_bugs_fixed": 213,
-    "key_accomplishments": [
-      "Strengthened lesson leverage: AGENT.md Critical Warnings expanded from 1 to 4 sections",
-      "Added write/edit reading order to AGENT.md document hierarchy",
-      "Bug_Taxonomy.md and Verification_Protocol.md now in doc table and quick reference",
-      "Response_Guidelines.md checklist now includes validator step",
-      "Content-level citation audit: 26 wrong line numbers fixed across 9 module docs",
-      "Parameter default audit: 1 bug (s56_cprice_red_factor default=1 not 0)",
-      "Data file existence audit: 1 fabricated filename fixed (f14_yields_calib.cs3)",
-      "Equation formula audit: 165 blocks verified, 0 bugs (all correct)",
-      "Bug Taxonomy: 13 patterns documented, 11 audit angles tracked"
-    ],
-    "validator_state": "17 checks, 32 sub-checks, all passing at 100%",
-    "commits": [
-      "da17bd3",
-      "ea6bd7b",
-      "b071948",
-      "4d8419a"
+    "summary": "CLAUDE.md sync (critical: was 4 months stale), deployment workflow fix, config switch audit, interface variable completeness check, Pattern 14 documented",
+    "bugs_fixed": 2,
+    "cumulative_bugs_fixed": 215,
+    "key_findings": [
+      "CLAUDE.md was 461 lines (Nov 2023) vs AGENT.md 785 lines \u2014 4 months of lessons missing from system prompt",
+      "Config switch audit: 1 wrong switch name (c42_watdem_nonagr_scen \u2192 s42_watdem_nonagr_scenario), 0 default value bugs",
+      "Interface variable completeness: only 1 gap across all 46 modules (vm_land_other in static_jan19)",
+      "Equation count claims: too noisy for automated checking (module numbers/years match 'equation')"
     ]
   },
   "previous_session": {

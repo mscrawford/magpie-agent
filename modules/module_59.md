@@ -59,7 +59,7 @@
 ### 2. Realizations
 
 **Active**: `cellpool_jan23` (cell-level pools, IPCC 2019 factors, temporal dynamics)
-**Legacy**: `static_jan19` (IPCC 2006 factors, no temporal dynamics)
+**Legacy**: `static_jan19` (IPCC 2006 factors, no temporal dynamics; uses `vm_land_other` for othernat/youngsecdf soil carbon)
 
 **VERIFIED Implementation** (`cellpool_jan23`):
 - IPCC 2019 Guidelines stock change factors (`realization.gms:9-11`)
