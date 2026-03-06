@@ -35,17 +35,17 @@ ls core_docs/  # ❌ FAILS - you're not where you think you are
 #### ✅ SOLUTION 1: Use Absolute Paths (RECOMMENDED)
 
 ```bash
-# From <env> working directory: /Users/turnip/.../magpie-agent/
+# From <env> working directory: /path/to/magpie-agent/
 
 # ✅ ALWAYS WORKS:
-ls /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/core_docs/
+ls /path/to/magpie/magpie-agent/core_docs/
 
 # ✅ BUILD FROM KNOWN BASE:
 # If working directory is /magpie/magpie-agent/:
 ls $(pwd)/core_docs/AGENT.md
 
 # ✅ For files in parent MAgPIE repo:
-ls /Users/turnip/Documents/Work/Workspace/magpie/modules/50_nr_soil_budget/
+ls /path/to/magpie/modules/50_nr_soil_budget/
 ```
 
 #### ✅ SOLUTION 2: Verify Location First
@@ -53,7 +53,7 @@ ls /Users/turnip/Documents/Work/Workspace/magpie/modules/50_nr_soil_budget/
 ```bash
 # Check where you are
 pwd
-# Output: /Users/turnip/.../magpie/magpie-agent
+# Output: /path/to/magpie/magpie-agent
 
 # THEN use relative paths
 ls core_docs/AGENT.md  # ✅ Now safe
@@ -91,10 +91,10 @@ wc -l core_docs/AGENT.md
 
 ```bash
 # Method 1: Absolute path
-ls /Users/turnip/.../magpie-agent/core_docs/AGENT.md
+ls /path/to/magpie-agent/core_docs/AGENT.md
 
 # Method 2: Find from known root
-find /Users/turnip/.../magpie-agent -name "AGENT.md" -type f
+find /path/to/magpie-agent -name "AGENT.md" -type f
 
 # Method 3: Check git tracking
 git ls-tree -r HEAD --name-only | grep "AI_Agent_Behavior_Guide"
@@ -184,7 +184,7 @@ ls core_docs/  # Fails
 
 ```python
 Read(
-    file_path="/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_50.md"
+    file_path="/path/to/magpie/magpie-agent/modules/module_50.md"
 )
 ```
 
@@ -203,13 +203,13 @@ Read(file_path="./core_docs/file.md")
 **Use the working directory from <env> to build paths:**
 
 ```python
-# <env> shows: Working directory: /Users/turnip/.../magpie-agent
+# <env> shows: Working directory: /path/to/magpie-agent
 
 # For AI docs (in current repo):
-Read(file_path="/Users/turnip/.../magpie-agent/modules/module_50.md")
+Read(file_path="/path/to/magpie-agent/modules/module_50.md")
 
 # For GAMS code (in parent repo):
-Read(file_path="/Users/turnip/.../magpie/modules/50_nr_soil_budget/macceff_aug22/equations.gms")
+Read(file_path="/path/to/magpie/modules/50_nr_soil_budget/macceff_aug22/equations.gms")
 ```
 
 ### File vs. Directory Distinction
@@ -256,7 +256,7 @@ Bash(command='grep -n "Section Title" /path/to/large.md')
 
 ```python
 Write(
-    file_path="/Users/turnip/.../magpie-agent/feedback/integrated/file.md",
+    file_path="/path/to/magpie-agent/feedback/integrated/file.md",
     content="..."
 )
 ```
@@ -352,13 +352,13 @@ Grep(pattern="vm_nr_eff")
 # Search specific directory:
 Grep(
     pattern="vm_nr_eff",
-    path="/Users/turnip/.../magpie/modules/50_nr_soil_budget/"
+    path="/path/to/magpie/modules/50_nr_soil_budget/"
 )
 
 # Search specific file:
 Grep(
     pattern="vm_nr_eff",
-    path="/Users/turnip/.../magpie-agent/modules/module_50.md"
+    path="/path/to/magpie-agent/modules/module_50.md"
 )
 ```
 
@@ -420,7 +420,7 @@ Glob(pattern="module_[0-9]+\.md")  # This is regex, not glob!
 # Search from specific directory:
 Glob(
     pattern="**/*.gms",
-    path="/Users/turnip/.../magpie/modules/"
+    path="/path/to/magpie/modules/"
 )
 
 # Default: Search from current working directory
@@ -540,13 +540,13 @@ cd ../modules
 
 # Where am I now?
 pwd
-# Expected: /Users/turnip/.../magpie/modules
+# Expected: /path/to/magpie/modules
 
 # Verify I'm where I think I am:
 ls 50_nr_soil_budget/  # GAMS module should exist here
 
 # Return to base:
-cd /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+cd /path/to/magpie/magpie-agent
 ```
 
 ---
@@ -664,7 +664,7 @@ wc -l core_docs/AGENT.md
 **Correct approach**:
 ```bash
 # Method 1: Absolute path
-wc -l /Users/turnip/.../magpie-agent/core_docs/AGENT.md
+wc -l /path/to/magpie-agent/core_docs/AGENT.md
 
 # Method 2: Verify location first
 pwd  # Shows: /magpie (not expected /magpie-agent)
