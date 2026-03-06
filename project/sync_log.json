@@ -1,22 +1,63 @@
 {
   "_comment": "Tracks synchronization between MAgPIE codebase and agent documentation",
   "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
-  
   "sync_status": {
-    "last_sync_date": "2026-01-20",
-    "last_sync_commit": "ba821a980",
-    "last_sync_commit_date": "2026-01-13",
-    "last_sync_commit_message": "Merge pull request #860 from pascal-sauer/develop",
+    "last_sync_date": "2026-03-06",
+    "last_sync_commit": "ce6e1a89a",
+    "last_sync_commit_date": "2026-02-24",
+    "last_sync_commit_message": "Merge pull request #858 from bodirsky/magpie_calib_expansion",
     "synced_by": "AI agent",
     "magpie_branch": "develop"
   },
-  
   "pending_review": {
     "_comment": "Commits that have been identified but not yet integrated into documentation",
     "commits": []
   },
-  
   "recent_syncs": [
+    {
+      "date": "2026-03-06",
+      "commit_range": "ba821a980..ce6e1a89a",
+      "changes_reviewed": [
+        {
+          "commit": "f52afdfeb",
+          "date": "2026-01-21",
+          "description": "Merge PR #857 - new protected area data for China (f_ChinaPA)",
+          "modules_affected": [
+            "22_land_conservation"
+          ],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "Updated module_22.md: WDPA baseline numbers updated to include China PA data (@wang_over_2024). 1995: 864\u2192955 Mha, 2020: 1662\u21921856 Mha, 13.06%\u219214.3%. All references across file updated."
+        },
+        {
+          "commit": "1a9efecdc",
+          "date": "2026-01-29",
+          "description": "Merge PR #861 - renv update (1.1.7) and rmarkdown hydration",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "R tooling update only - renv/activate.R changes. No GAMS module impact."
+        },
+        {
+          "commit": "82c80c50c",
+          "date": "2026-02-10",
+          "description": "Merge PR #863 - f_newResidues (biomass for energy data generation script)",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "New R start script (generate_biomassForEnergyData.R), scenario config updates, CHANGELOG. No GAMS module changes."
+        },
+        {
+          "commit": "ce6e1a89a",
+          "date": "2026-02-24",
+          "description": "Merge PR #858 - magpie_calib_expansion (land conversion cost calibration)",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "R calibration script rewrite (landconversion_cost.R), start_functions.R updates, CHANGELOG. No GAMS module changes."
+        }
+      ]
+    },
     {
       "date": "2026-01-20",
       "commit_range": "3e0478c83..ba821a980",
@@ -25,7 +66,11 @@
           "commit": "480e300b1",
           "date": "2025-12-19",
           "description": "f_btc2 - conservation tau for croparea implementation",
-          "modules_affected": ["13_tc", "14_yields", "29_cropland"],
+          "modules_affected": [
+            "13_tc",
+            "14_yields",
+            "29_cropland"
+          ],
           "doc_update_needed": true,
           "doc_update_status": "complete",
           "notes": "Updated module_13.md and module_14.md with conservation tau feature, cluster-level vm_tau, new equations q13_tau and q13_tau_consv"
@@ -34,7 +79,10 @@
           "commit": "a6f114383",
           "date": "2026-01-03",
           "description": "bugfix residues for 2nd gen off",
-          "modules_affected": ["60_bioenergy", "32_forestry"],
+          "modules_affected": [
+            "60_bioenergy",
+            "32_forestry"
+          ],
           "doc_update_needed": false,
           "doc_update_status": "n/a",
           "notes": "Presolve conditional for historical time steps"
@@ -59,7 +107,9 @@
           "commit": "9ccd6290d",
           "date": "2025-11-28",
           "description": "Fix parenthesis placement in forestry discounting formula",
-          "modules_affected": ["32_forestry"],
+          "modules_affected": [
+            "32_forestry"
+          ],
           "doc_update_needed": true,
           "doc_update_status": "complete",
           "notes": "Updated module_32.md with corrected equation formula"
@@ -77,7 +127,9 @@
           "commit": "4c430c065",
           "date": "2025-11-18",
           "description": "withr::defer remove f32_max_aff_area.cs4",
-          "modules_affected": ["32_forestry"],
+          "modules_affected": [
+            "32_forestry"
+          ],
           "doc_update_needed": false,
           "doc_update_status": "n/a",
           "notes": "R preprocessing change, not GAMS model logic"
@@ -104,7 +156,6 @@
       "summary": "Reviewed 5 substantive commits. Updated module_32.md with forestry discounting fix."
     }
   ],
-  
   "documentation_baseline": {
     "_comment": "When core documentation was last fully verified against code",
     "modules_verified_date": "2025-10-13",
@@ -114,7 +165,6 @@
     "full_audit_result": "Only 1 GAMS change since 2025-10-13 (forestry fix) - already synced",
     "notes": "All 46 modules verified current as of 2025-11-29"
   },
-  
   "module_sync_status": {
     "_comment": "Track which modules may need updates based on code changes",
     "potentially_stale": [],
@@ -141,7 +191,6 @@
     "verified_current": "all_46_modules",
     "last_full_audit": "2026-01-20"
   },
-  
   "sync_workflow": {
     "description": "How to keep documentation in sync with MAgPIE code",
     "steps": [

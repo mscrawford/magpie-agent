@@ -2,7 +2,7 @@
 
 **Status**: Fully documented
 **Location**: `modules/22_land_conservation/area_based_apr22/`
-**Method**: Exogenous protection targets (WDPA baseline + conservation priority areas)
+**Method**: Exogenous protection targets (WDPA + China baseline + conservation priority areas)
 **Realization**: `area_based_apr22` (April 2022 version)
 **Author**: Patrick v. Jeetze
 
@@ -21,10 +21,10 @@
 
 **Conservation Architecture**:
 ```
-WDPA Baseline (1995-2020)                Additional Priority Areas (post-2020)
+WDPA + China Baseline (1995-2020)        Additional Priority Areas (post-2020)
        ↓                                             ↓
 Historical protected areas            +    Conservation scenarios
-(864 Mha → 1662 Mha)                      (BH, IFL, KBA, 30by30, etc.)
+(955 Mha → 1856 Mha)                      (BH, IFL, KBA, 30by30, etc.)
        ↓                                             ↓
        └──────────────────┬──────────────────────────┘
                           ↓
@@ -40,21 +40,21 @@ pm_land_conservation(t,j,land,"protect")  pm_land_conservation(t,j,land,"restore
 
 **From Module Header** (`realization.gms:8-24`):
 ```gams
-*' Land reserved for area-based conservation is derived from WDPA and is based on observed
-*' land conservation trends. In 1995, the total area under land conservation (across all land
-*' types) in the input data set is 864.31 Mha and, by 5-year time steps, increases to
-*' 1662.02 Mha in 2020 (13.06 % of the total land area, excluding inland water bodies under
-*' protection). After 2020 land conservation is held constant at 2020 values. The protected area
-*' based on WDPA includes all areas under legal protection meeting the IUCN and CBD protected
-*' area definitions (including IUCN categories Ia, Ib, III, IV, V, VI and 'not assigned' but
-*' legally designated areas). Natural vegetation (natveg) and grassland ('past') within protected
-*' areas cannot be converted to other land types.
+*' Land reserved for area-based conservation is derived from WDPA and @wang_over_2024 and is
+*' based on observed protected area designation. In 1995, the total area under
+*' land conservation (across all land types) in the input data set is 954.9 Mha and,
+*' by 5-year time steps, increases to 1855.7 Mha in 2020 (14.3 % of the total land area, excluding
+*' inland water bodies under protection). After 2020 land conservation is held constant at 2020 values.
+*' The protected area based on WDPA includes all areas under legal protection meeting the
+*' IUCN and CBD protected area definitions (including IUCN categories Ia, Ib, III, IV, V, VI
+*' and 'not assigned' but legally designated areas). Natural vegetation (natveg) and
+*' grassland ('past') within protected areas cannot be converted to other land types.
 ```
 
 **Realization**: `area_based_apr22`
 - Area-based approach (not species-based or ecosystem service-based)
 - April 2022 version
-- WDPA baseline + multiple conservation priority area options
+- WDPA + China baseline + multiple conservation priority area options
 
 ---
 
@@ -64,9 +64,9 @@ Module 22 has **NO EQUATIONS** - it's a **parameter calculation module** that ru
 
 ---
 
-#### **A. Baseline Protection (WDPA)** (`presolve.gms:20-26`)
+#### **A. Baseline Protection (WDPA + China)** (`presolve.gms:20-26`)
 
-**Purpose**: Implements historical protected area trends from World Database on Protected Areas
+**Purpose**: Implements historical protected area trends from World Database on Protected Areas and China-specific PA data (@wang_over_2024)
 
 ```gams
 if(m_year(t) <= sm_fix_SSP2,
@@ -85,11 +85,11 @@ if(m_year(t) <= sm_fix_SSP2,
   - `p22_country_weight(i)`: Fraction of region covered by policy countries (by land area)
   - Default: All countries selected → weight = 1.0
 
-**WDPA Coverage** (`realization.gms:11-17`):
-- 1995: 864.31 Mha (6.8% of land area)
-- 2020: 1662.02 Mha (13.06% of land area)
-- Growth rate: +93% over 25 years (~2.6%/yr)
-- Categories included: IUCN Ia, Ib, III, IV, V, VI + legally designated areas
+**WDPA + China PA Coverage** (`realization.gms:11-17`):
+- 1995: 954.9 Mha (7.4% of land area)
+- 2020: 1855.7 Mha (14.3% of land area)
+- Growth rate: +94% over 25 years (~2.7%/yr)
+- Categories included: IUCN Ia, Ib, III, IV, V, VI + legally designated areas + China PAs (@wang_over_2024)
 
 ---
 
@@ -406,7 +406,7 @@ m_fillmissingyears(f22_wdpa_baseline,"j,wdpa_cat22,land");
 - **Land cover estimation**: Based on ESA-CCI land-use/land-cover maps
 
 **Coverage by Land Type** (approximate, 2020):
-- Total: 1662 Mha (13.06% of land area)
+- Total: 1856 Mha (14.3% of land area)
 - Forest: ~400-500 Mha (primforest + secdforest)
 - Grassland/pasture: ~200-300 Mha
 - Other natural land: ~100-200 Mha
@@ -550,8 +550,8 @@ Module 22 provides **exogenous protection and restoration targets** that constra
   - Example: 30by30 scenario restores 3,094 Mha globally by 2030
 
 - **Historical Coverage**:
-  - 1995: 864.31 Mha protected (6.79% of land)
-  - 2020: 1,662.02 Mha protected (13.06% of land)
+  - 1995: 954.9 Mha protected (7.4% of land)
+  - 2020: 1,855.7 Mha protected (14.3% of land)
   - Post-2020: Constant at 2020 levels (unless additional scenarios active)
 
 - **Cross-Module Reference**: `cross_module/land_balance_conservation.md` (Section 5, Module Interactions)
@@ -681,9 +681,9 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 
 ### 6. Code Truth: What Module 22 DOES
 
-✅ **1. Implements WDPA Baseline Protection (1995-2020)** (`presolve.gms:20-26`):
-- Historical protected area trends from World Database on Protected Areas
-- 1995: 864 Mha → 2020: 1662 Mha (93% increase, 13.06% of land)
+✅ **1. Implements WDPA + China Baseline Protection (1995-2020)** (`presolve.gms:20-26`):
+- Historical protected area trends from World Database on Protected Areas + China PAs (@wang_over_2024)
+- 1995: 955 Mha → 2020: 1856 Mha (94% increase, 14.3% of land)
 - Post-2020: Held constant at 2020 levels unless additional scenarios applied
 - Covers IUCN categories Ia, Ib, III, IV, V, VI + legally designated areas
 
@@ -807,7 +807,7 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 
 **How**: Modify `input.gms:10`
 ```gams
-* Default: WDPA baseline only (13% in 2020)
+* Default: WDPA + China baseline only (14.3% in 2020)
 $setglobal c22_protect_scenario  none
 
 * Alternative: 30% by 2030 scenario
@@ -816,7 +816,7 @@ s22_conservation_target = 2030    # Accelerated timeline
 ```
 
 **Effect**:
-- Protected area increases from 13% (2020) to 30% (2030)
+- Protected area increases from 14.3% (2020) to 30% (2030)
 - Distributed proportionally across natural vegetation types
 - Requires significant restoration (~2000-2500 Mha additional)
 - Large land-use implications (reduced agricultural expansion potential)
@@ -1001,7 +1001,7 @@ $setglobal c22_base_protect  WDPA_I-II-III
 ```
 
 **Effect**:
-- Lower baseline protection (~400-600 Mha instead of 1662 Mha)
+- Lower baseline protection (~400-600 Mha instead of 1856 Mha)
 - Focuses on "no human use" areas
 - More consistent with "wilderness" definition
 - Higher restoration requirements if additional scenarios applied
@@ -1020,7 +1020,7 @@ $setglobal c22_base_protect  WDPA_I-II-III
 
 **How**: Modify `input.gms:10`
 ```gams
-* Default: WDPA baseline only (13%)
+* Default: WDPA + China baseline only (14.3%)
 $setglobal c22_protect_scenario  none
 
 * Alternative: Half-Earth (50% by 2050)
@@ -1029,7 +1029,7 @@ s22_conservation_target = 2050
 ```
 
 **Effect**:
-- Protected area increases from 13% (2020) to 50% (2050)
+- Protected area increases from 14.3% (2020) to 50% (2050)
 - Based on Global Safety Net (Dinerstein et al. 2020)
 - Prioritizes areas with high biodiversity, carbon, and intactness
 - **Massive restoration requirements** (~4000-5000 Mha)
@@ -1165,7 +1165,7 @@ stopifnot(max_diff < 1)  # Within 1 Mha tolerance (due to restoration potential 
 
 #### 9.4 WDPA Baseline Trend Check
 
-**Test**: Does WDPA baseline match documented trends (864 Mha in 1995 → 1662 Mha in 2020)?
+**Test**: Does WDPA + China baseline match documented trends (955 Mha in 1995 → 1856 Mha in 2020)?
 
 **How**:
 ```r
@@ -1179,14 +1179,14 @@ print(paste("1995 total:", total_1995, "Mha"))
 print(paste("2020 total:", total_2020, "Mha"))
 
 # Check against documented values
-stopifnot(abs(total_1995 - 864.31) < 10)  # Within 10 Mha tolerance
-stopifnot(abs(total_2020 - 1662.02) < 10)
+stopifnot(abs(total_1995 - 954.9) < 10)  # Within 10 Mha tolerance
+stopifnot(abs(total_2020 - 1855.7) < 10)
 ```
 
 **Expected**:
-- 1995: ~864 Mha
-- 2020: ~1662 Mha
-- Growth: +798 Mha (+92%)
+- 1995: ~955 Mha
+- 2020: ~1856 Mha
+- Growth: +901 Mha (+94%)
 
 **If fails**: Check input data file (`wdpa_baseline.cs3`)
 
@@ -1282,10 +1282,10 @@ if(reversal_year < 9999) {  # Reversal enabled
 
 ### 10. Summary
 
-**Module 22 (Land Conservation)** provides **exogenous land conservation targets** that constrain land-use optimization in MAgPIE. It operates as a **data provider module** (no equations) that calculates protection and restoration requirements based on WDPA baseline trends and optional conservation priority scenarios.
+**Module 22 (Land Conservation)** provides **exogenous land conservation targets** that constrain land-use optimization in MAgPIE. It operates as a **data provider module** (no equations) that calculates protection and restoration requirements based on WDPA + China baseline trends and optional conservation priority scenarios.
 
 **Core Functions**:
-1. **WDPA baseline** (1995-2020): Historical protected area trends (864 → 1662 Mha)
+1. **WDPA + China baseline** (1995-2020): Historical protected area trends (955 → 1856 Mha)
 2. **Conservation scenarios** (post-2020): 20+ options (BH, IFL, 30by30, GSN, etc.)
 3. **Protection calculation**: Min(target, current land) - prevents conversion
 4. **Restoration calculation**: Max(0, target - current land) - active restoration
@@ -1296,7 +1296,7 @@ if(reversal_year < 9999) {  # Reversal enabled
 **Key Features**:
 - **No equations**: Parameter calculation only (runs in preloop/presolve)
 - **Exogenous targets**: Not optimized, provided as scenarios
-- **20+ conservation scenarios**: From 13% (WDPA 2020) to 50% (Half-Earth)
+- **20+ conservation scenarios**: From 14.3% (WDPA + China 2020) to 50% (Half-Earth)
 - **2 conservation types**: Protection (prevent conversion) + Restoration (active recovery)
 - **Restoration limited by available land**: Cannot restore more than physically possible
 - **Country-specific**: Can apply different policies to selected countries
@@ -1354,7 +1354,7 @@ if(reversal_year < 9999) {  # Reversal enabled
 - Protection capped at current land
 - Restoration conservation (target - current)
 - Total conservation sum (protect + restore ≈ target)
-- WDPA baseline trends (864 → 1662 Mha)
+- WDPA + China baseline trends (955 → 1856 Mha)
 - Country weight sums (= 1.0 per region)
 - Restoration potential feasibility (≥ 0)
 - Protection reversal (= 0 after reversal year)
@@ -1381,8 +1381,8 @@ if(reversal_year < 9999) {  # Reversal enabled
 ```
 Module 22 (Land Conservation) implements protected areas as EXOGENOUS constraints:
 
-1. WDPA Baseline (1995-2020):
-   - Historical trends: 864 Mha (1995) → 1662 Mha (2020) = 13% of land
+1. WDPA + China Baseline (1995-2020):
+   - Historical trends: 955 Mha (1995) → 1856 Mha (2020) = 14.3% of land
    - Post-2020: Held constant at 2020 levels (unless scenarios applied)
    - Categories: IUCN Ia, Ib, III, IV, V, VI + legally designated
    - File: modules/22_land_conservation/area_based_apr22/presolve.gms:20-26
@@ -1422,7 +1422,7 @@ YES! Module 22 includes a 30by30 scenario (30% of land protected by 2030):
    s22_restore_land = 1              # Enable restoration
 
 2. What it does:
-   - Current protection (WDPA 2020): 1662 Mha = 13.06%
+   - Current protection (WDPA + China 2020): 1856 Mha = 14.3%
    - Target (30by30): ~3800 Mha = 30%
    - Additional protection needed: ~2100 Mha
    - Phase-in: Gradual increase from 2025 to 2030 (sigmoid fader)
@@ -1512,7 +1512,7 @@ Restoration is limited by RESTORATION POTENTIAL (available land after other uses
 Module 22 provides 20+ conservation scenarios (c22_protect_scenario):
 
 1. Baseline:
-   - none: WDPA baseline only (13% in 2020, held constant post-2020)
+   - none: WDPA + China baseline only (14.3% in 2020, held constant post-2020)
 
 2. Biodiversity-focused:
    - BH: Biodiversity Hotspots (36 global hotspots, Myers et al. 2000)
