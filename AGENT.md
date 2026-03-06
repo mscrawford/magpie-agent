@@ -199,6 +199,31 @@ When updating this AGENT.md file, use `command: update-agent-md` for detailed wo
 
 ---
 
+## 🔄 Auto-Loading Context Helpers
+
+**In addition to module documentation**, the agent has **task-oriented helper files** that provide step-by-step guidance for common workflows. These are loaded automatically based on user intent.
+
+### How it works
+
+When the user's question matches a trigger pattern, **silently read the helper file** and use it as context for your response. Mention which helper you loaded: `📋 Loaded helper: [name]`
+
+### Auto-load rules
+
+| User intent detected | Load this helper | Trigger keywords |
+|---------------------|-----------------|-----------------|
+| Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "modelstat", "error", "abort", "no feasible solution" |
+| Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "carbon budget" |
+| Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "safe to modify", "can I change", "extend", "add to module" |
+
+### Helper system details
+
+- Helpers live in `agent/helpers/` — see `agent/helpers/README.md` for the full system
+- Each helper has a **Lessons Learned** section that grows with use
+- When you discover something not in the helper during a session, **append it** to Lessons Learned
+- Helpers complement module docs (task-oriented vs. fact-oriented)
+
+---
+
 ## 📚 COMPLETE DOCUMENTATION STRUCTURE
 
 MAgPIE has **comprehensive AI-readable documentation** (~95,000 words) organized into three categories:
