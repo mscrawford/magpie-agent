@@ -102,8 +102,9 @@ magpie-agent/
 ├── README.md                  ← You are here (project overview)
 ├── AGENT.md                   ← AI agent instructions (SOURCE - edit here)
 │
-├── agent/                     ← AGENT COMMANDS
-│   └── commands/              ← Command definitions (guide, sync, feedback, etc.)
+├── agent/                     ← AGENT SYSTEM
+│   ├── commands/              ← Slash command definitions (6 commands)
+│   └── helpers/               ← Auto-loading context helpers (9 helpers)
 │
 ├── project/                   ← PROJECT MANAGEMENT (maintainers only)
 │   ├── README.md              ← What's in this folder
@@ -122,26 +123,32 @@ magpie-agent/
 │   ├── modification_safety_guide.md
 │   └── circular_dependency_resolution.md
 │
-├── core_docs/                 ← Phase 0: Foundation (4 files) ✅
+├── core_docs/                 ← Architecture & Guidelines (6 files) ✅
 │   ├── Core_Architecture.md
 │   ├── Module_Dependencies.md
 │   ├── Data_Flow.md
+│   ├── Query_Patterns_Reference.md
+│   ├── Response_Guidelines.md
 │   └── Tool_Usage_Patterns.md
 │
-├── reference/                 ← GAMS Programming (6 files)
+├── reference/                 ← GAMS Programming & Guides (9 files)
 │   ├── GAMS_Phase1_Fundamentals.md
 │   ├── GAMS_Phase2_Control_Structures.md
 │   ├── GAMS_Phase3_Advanced_Features.md
 │   ├── GAMS_Phase4_Functions_Operations.md
 │   ├── GAMS_Phase5_MAgPIE_Patterns.md
-│   └── GAMS_Phase6_Best_Practices.md
+│   ├── GAMS_Phase6_Best_Practices.md
+│   ├── Code_Truth_Principles.md
+│   ├── Infeasibility_Debugging_Guide.md
+│   └── Verification_Protocol.md
 │
 ├── feedback/                  ← User Feedback System
 │   ├── README.md              System overview
 │   ├── global/agent_lessons.md
 │   └── integrated/            Archived feedback
 │
-└── archive/                   ← Historical session logs
+└── scripts/                   ← Validation scripts
+    └── validate_consistency.sh
 ```
 
 ---
@@ -259,24 +266,13 @@ Update `project/CURRENT_STATE.json` with:
 - AGENT.md (agent instructions - only update for new workflows)
 - modules/README.md (static reference)
 
-**Step 2: Archive Session Files (1 minute)**
+**Step 2: Commit and Push (if changes were made)**
 
-Move dated log files to archive:
+If documentation was updated, commit to the magpie-agent repo:
 ```bash
-mv *_2025-10-*.md archive/
+git add -A && git commit -m "learn: session learnings — [brief description]"
+git push origin main
 ```
-
-**Keep root clean!**
-
-**Step 3: Create Lightweight Handover (50 lines MAX)**
-
-**DO NOT** duplicate information from `project/CURRENT_STATE.json`
-
-**DO** include:
-- What was accomplished (bullet points)
-- What failed (if anything)
-- Recommended next steps (3-5 items)
-- Any new lessons learned
 
 ---
 
@@ -357,7 +353,7 @@ mv *_2025-10-*.md archive/
 
 ### Dependency Graphs
 
-Available in `core_docs/phase2_dependency_analysis/`:
+Available in `reference/phase2_dependency_analysis/`:
 - `core_dependencies.dot` - Top 20 modules
 - `degradation_system.dot` - Degradation subsystem
 - `forestry_system.dot` - Forestry/timber system
@@ -365,7 +361,7 @@ Available in `core_docs/phase2_dependency_analysis/`:
 
 Generate PNG:
 ```bash
-cd core_docs/phase2_dependency_analysis
+cd reference/phase2_dependency_analysis
 dot -Tpng core_dependencies.dot -o core_dependencies.png
 ```
 

@@ -27,10 +27,9 @@ Report:
 ### Step 2: Fetch Latest Commits from MAgPIE
 
 ```bash
-# Navigate to MAgPIE repo and get recent commits
-cd ..
-git fetch origin develop
-git log origin/develop --oneline -20 --date=short --format="%h %ad %s"
+# From magpie-agent/, fetch and show recent MAgPIE commits
+git -C .. fetch origin develop
+git -C .. log origin/develop --oneline -20 --date=short --format="%h %ad %s"
 ```
 
 Compare against `sync_status.last_sync_commit` in sync_log.json.
@@ -41,7 +40,7 @@ For each new commit since last sync:
 
 **Check if it affects GAMS modules:**
 ```bash
-git show <commit> --stat | grep -E "\.gms$"
+git -C .. show <commit> --stat | grep -E "\.gms$"
 ```
 
 **Categorize the change:**
@@ -63,8 +62,8 @@ git show <commit> --stat | grep -E "\.gms$"
 For commits that affect GAMS modules:
 
 ```bash
-# See what changed
-git show <commit> -- modules/<module_name>/*.gms
+# See what changed (from magpie-agent/)
+git -C .. show <commit> -- modules/<module_name>/*.gms
 ```
 
 **Questions to answer:**

@@ -183,7 +183,8 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 └── magpie-agent/                 ← YOU ARE HERE (git repo #2)
     ├── AGENT.md                  ← SOURCE instructions (edit here)
     ├── agent/
-    │   └── commands/             ← Command definitions (edit here)
+    │   ├── commands/             ← Slash command definitions
+    │   └── helpers/              ← Auto-loading context helpers
     ├── modules/                  ← AI documentation (NOT GAMS code)
     │   ├── module_14.md
     │   ├── module_70.md
@@ -248,7 +249,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 
 Before answering code-specific questions, verify documentation is current:
 1. Check `project/sync_log.json` → `sync_status.last_sync_commit`
-2. Compare against MAgPIE's current HEAD: `cd .. && git log --oneline <last_sync_commit>..HEAD | wc -l`
+2. Compare against MAgPIE's current HEAD: `git -C .. log --oneline <last_sync_commit>..HEAD | wc -l`
 3. Apply staleness badge (see Auto-Loading Helpers section for badge definitions)
 4. If 🔴 stale, warn the user before answering and recommend running `/sync`
 
