@@ -20,3 +20,4 @@ session_logs/temp_*
 
 # Claude Code settings (copied from parent, user-specific)
 .claude/settings.local.json
+validation_report_*.txt

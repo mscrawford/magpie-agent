@@ -289,6 +289,33 @@ Track which audit angles have been attempted, their yield, and when to repeat.
 | File:line citations | 2026-03-07 | 151 | ✅ Check 17 | After code merges |
 | Content-level citations | 2026-03-07 | 26 | Manual | After code merges |
 | Parameter defaults | 2026-03-07 | 1 | Manual | After config changes |
+| Data file existence | 2026-03-07 | 1 | Manual | After file renames |
+| Equation formulas | 2026-03-07 | 0 | N/A | Formulas are reliable |
+| Cross-module dependencies | 2026-03-07 | 0* | Manual | Style issue, not bugs |
+| Deployment sync (CLAUDE.md) | 2026-03-07 | 1 critical | Manual | After AGENT.md edits |
+
+\* Cross-module dependency claims mix code-level and conceptual dependencies.
+Not bugs per se, but 13 modules claim "depends on Module 11 (costs)" which is
+conceptually valid but code-direction-reversed (Module 11 reads THEIR costs).
+
+### Pattern 14: Deployment Copy Drift
+
+**What it looks like**: CLAUDE.md (loaded by Claude via convention) is months behind
+AGENT.md (the source). All lessons, warnings, and quality guard sections missing.
+
+**Why it happens**: Multiple deployment targets (AGENT.md, CLAUDE.md) but update
+process only syncs one. CLAUDE.md was a legacy file from an earlier naming convention.
+
+**Discovery**: CLAUDE.md was 461 lines (Nov 2023) while AGENT.md was 785 lines (Mar 2026)
+— missing 4 months of quality improvements including the entire Quality Guard section.
+
+**Prevention**: After editing AGENT.md, ALWAYS sync both:
+```bash
+cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md
+```
+
+**Severity**: CRITICAL — this is the #1 transmission failure. If CLAUDE.md isn't
+synced, future Claude instances receive NONE of the documented lessons.
 
 ---
 

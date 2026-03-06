@@ -2,8 +2,9 @@
 
 **📍 FILE LOCATION NOTE**: You are reading the SOURCE file in `/magpie/magpie-agent/AGENT.md`
 - ✅ **THIS IS THE CORRECT FILE TO EDIT** for AI documentation updates
-- ⚠️ A deployed copy may exist at `../AGENT.md` (parent directory) - DO NOT EDIT that one
-- 🔄 Changes here auto-deploy to parent at session start (session_startup Step 0)
+- ⚠️ Two deployed copies exist in parent: `../AGENT.md` AND `../CLAUDE.md` — DO NOT EDIT those
+- 🔄 After editing, sync ALL copies: `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md`
+- ⚠️ **CLAUDE.md is critical** — it's what gets loaded into Claude's system prompt!
 - 📝 Always commit changes to the magpie-agent repo, not the main MAgPIE repo
 
 ---
@@ -510,6 +511,53 @@ Other IAMs may use different approaches:
 ```
 
 **Never present unverified claims about other models as facts.**
+
+---
+
+## 🛡️ QUALITY GUARD: Lessons from 213 Verified Bug Fixes
+
+> These rules come from systematic cross-verification of all documentation against
+> the GAMS codebase. **Every rule here prevented real bugs. Follow them.**
+
+### The Three Rules
+
+1. **NEVER FABRICATE** — Copy variable names, equation names, realization names, and line numbers directly from code. Never construct them from context. (`ls ../modules/XX_name/` to verify realization directories)
+2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (17 checks, 32 sub-checks). It catches wrong names, stale citations, and convention violations automatically.
+3. **VERIFY BEFORE CITING** — If you haven't read a file THIS session, don't cite its line numbers. Line numbers drift as code evolves.
+
+### Bug Distribution (where errors actually occur)
+
+| Error Class | % of All Bugs | Automated? |
+|-------------|--------------|------------|
+| Wrong file:line citations | 71% | ✅ Check 17 |
+| Wrong realization names | 6% | ✅ Check 16 |
+| Wrong variable names | 8% | ✅ Check 14 |
+| Wrong line content | 12% | Manual |
+| Wrong equation names | 2% | ✅ Check 15 |
+| Wrong defaults/filenames | 1% | Manual |
+
+### High-Risk vs Low-Risk Content
+
+| HIGH RISK (verify carefully) | LOW RISK (generally accurate) |
+|------------------------------|-------------------------------|
+| "Verified Against" footers | Equation formulas (0 bugs in 165 blocks) |
+| Advisory/troubleshooting sections | Set names (immune to hallucination) |
+| File:line citations | Constraint types (=e=, =l=, =g=) |
+| Realization directory names | Variable names in formal equations |
+| Parameter default values | Cross-module dependency claims |
+
+### Cascade Effect
+
+Wrong realization name → wrong file path → wrong file size → ALL line citations invalid.
+**Always verify realization names FIRST** before writing any file:line citations.
+
+### For Writing Automation Scripts
+
+macOS ships bash 3.x: no associative arrays (`declare -A`), no `grep -P`. Use Python for complex cross-referencing. See existing scripts in `scripts/` for patterns.
+
+### For Future Audit Sessions
+
+Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See `core_docs/Bug_Taxonomy.md` for 13 documented patterns and the improvement flywheel methodology.
 
 ---
 
