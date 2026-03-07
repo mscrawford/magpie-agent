@@ -150,6 +150,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 |---------|---------|-------------|
 | `/guide` | Quick start + full capabilities guide | Everyone |
 | `/explain` | Explain a GAMS equation, variable, or parameter | Everyone |
+| `/trace` | Trace a variable's flow through the model | Everyone |
 | `/sync` | Check MAgPIE code for changes, update docs | Everyone |
 | `/feedback` | Submit feedback to improve the agent | Everyone |
 | `/bootstrap` | First-time setup | New users |
