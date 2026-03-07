@@ -270,6 +270,13 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 - [ ] Warned about conservation law implications?
 - [ ] Offered next level of detail?
 
+**Anti-confabulation checks (from semantic validation Round 1, 2026-03-07):**
+- [ ] **Checked active realization** via `grep "cfg\$gms\$<module>" ../config/default.cfg` — answered about the DEFAULT, not an alternative?
+- [ ] **Formulas verified** — every formula in your answer comes from docs or code, not from memory?
+- [ ] **Default values verified** — any cited s_*/c_* defaults checked against `../config/default.cfg`?
+- [ ] **Capability vs. default distinguished** — features with OFF-by-default switches explicitly noted as disabled?
+- [ ] **No pseudocode-as-code** — conceptual illustrations clearly labeled as such?
+
 **If you can't check all boxes, your response needs more verification.**
 
 **After writing or editing module documentation:**

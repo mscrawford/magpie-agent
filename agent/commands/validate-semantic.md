@@ -1,0 +1,198 @@
+# Validate Semantic Accuracy (Flywheel)
+
+**Purpose**: Run adversarial semantic validation of the documentation — test whether the docs produce *correct answers*, not just syntactically valid references.
+
+**When user says**: "/validate-semantic", "semantic validation", "test doc quality", "run the flywheel", etc.
+
+**Complements**: `/validate` (syntactic checks) — this tests *meaning*, that tests *form*.
+
+---
+
+## Overview
+
+The semantic validation flywheel generates expert questions, answers them from docs, audits answers against GAMS source code, and identifies documentation inaccuracies that syntactic checks can't catch.
+
+```
+GENERATE → ANSWER (Sonnet) → AUDIT (Opus) → SYNTHESIZE → IMPROVE → EXPAND
+```
+
+**Baseline from Round 1 (2026-03-07)**: 6.7/10 mean accuracy, 40 bugs across 5 questions.
+
+---
+
+## Step-by-Step Execution
+
+### Step 1: Generate Questions
+
+Design 5 expert-level questions using this rotation of **6 archetypes**:
+
+| Archetype | Description | Example |
+|-----------|-------------|---------|
+| **Cross-module causal chain** | Trace a signal through 3+ modules | "How does carbon price → afforestation → carbon stock?" |
+| **Default vs. switch behavior** | Ask what happens with default config | "By default, is water cost enabled?" |
+| **Quantitative verification** | Request specific numbers/formulas | "Calculate the N release from SOM loss" |
+| **Timing/sequencing** | Ask about execution order | "Is preloop per-timestep or once?" |
+| **Conservation law enforcement** | Ask how constraints work | "How does land balance prevent double-counting?" |
+| **Edge case/failure mode** | Ask what causes problems | "What makes the water module infeasible?" |
+
+**Question design rules**:
+1. Each question must span **≥3 modules**
+2. Each question must require reading **≥2 doc files**
+3. Cover modules **not tested in previous rounds** (check coverage matrix below)
+4. Bias toward **high-centrality modules**: 11, 10, 56, 32, 30, 70, 17, 09
+5. Include specific requests for variable names, equations, or formulas (forces precision)
+
+### Step 2: Answer with Sonnet
+
+Launch **5 parallel Sonnet 4.6 agents** (or current answering model), each with:
+- The question
+- Instructions to answer using **ONLY magpie-agent docs** (no raw GAMS code)
+- Instructions to cite specific variable names, equations, file references
+
+Use the `magpie-helper` agent type. This simulates what a real user would get.
+
+**Prompt template**:
+```
+You are answering an expert-level question about MAgPIE's inner workings.
+Answer using ONLY the magpie-agent AI documentation files (in the magpie-agent/ directory).
+Do NOT read raw GAMS source code files.
+Cite specific variable names (vm_*, pm_*), equation names (q*), and file references.
+
+QUESTION: [question]
+```
+
+### Step 3: Audit with Opus
+
+Launch **5 parallel Opus 4.6 agents** (or highest-capability model), each with:
+- The question + the Sonnet answer
+- Instructions to verify **every claim** against raw GAMS source code
+- The structured audit report format (below)
+
+Use the `general-purpose` agent type with `model: claude-opus-4.6`.
+
+**Audit report format**:
+```markdown
+## Audit Report: QN (Topic)
+
+### Overall Verdict: [ACCURATE / MOSTLY ACCURATE / SIGNIFICANT ERRORS / FUNDAMENTALLY FLAWED]
+### Accuracy Score: X/10
+
+### Verified Claims (correct):
+- [claim]: [evidence from code]
+
+### Bugs Found:
+- **Bug ID**: QN-BX
+- **Severity**: [Critical / Major / Minor / Nitpick]
+- **Claim in answer**: "exact quote"
+- **Reality in code**: what the code actually does
+- **File evidence**: exact file path and relevant code snippet
+- **Bug type**: [Wrong variable name / Wrong equation / Wrong realization / Wrong causality / Missing mechanism / Wrong timing / Fabricated detail / Oversimplification / Wrong default value / Arithmetic error / Wrong units / Wrong module attribution]
+
+### Missing Nuances:
+### Summary:
+```
+
+### Step 4: Synthesize
+
+After all audits complete:
+
+1. **Create a SQL bugs table** for structured analysis:
+```sql
+CREATE TABLE bugs (id TEXT PRIMARY KEY, question TEXT, severity TEXT, bug_type TEXT, description TEXT);
+```
+
+2. **Run analysis queries**:
+```sql
+-- By severity
+SELECT severity, COUNT(*) FROM bugs GROUP BY severity;
+-- By type (find systemic patterns)
+SELECT bug_type, COUNT(*) FROM bugs GROUP BY bug_type ORDER BY COUNT(*) DESC;
+-- By question (find weakest areas)
+SELECT question, COUNT(*) FROM bugs GROUP BY question;
+```
+
+3. **Classify into the three known root-cause patterns**:
+   - **"Interesting Over Default"**: Agent picks non-default realization or switched-off features
+   - **"Plausible Confabulation"**: Agent invents formulas, causal chains, or numbers
+   - **"Documentation Drift"**: Line numbers, defaults, or terms are stale
+
+4. **Update the coverage matrix** (see below)
+
+### Step 5: Improve
+
+Fix bugs in priority order:
+1. **Critical** bugs → fix immediately in module docs
+2. **Major** bugs → fix in the same session
+3. **Minor** bugs → batch into notes files for later
+
+Use Sonnet 4.6 agents (NOT Opus) for fixes — the audit reports already specify exactly what's wrong and what the correct code says.
+
+After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic regressions.
+
+### Step 6: Expand Coverage
+
+Update the coverage matrix and design next round's questions to fill gaps:
+
+**Coverage Matrix Template** (module × archetype):
+
+| Module | Causal Chain | Default/Switch | Quantitative | Timing | Conservation | Edge Case |
+|--------|:-----------:|:--------------:|:------------:|:------:|:------------:|:---------:|
+| 10_land | R1 | | | | | |
+| 11_costs | R1 | | | | | |
+| 12_interest | R1 | | | | | |
+| 13_tc | R1 | | | | | |
+| 14_yields | R1 | | | | | |
+| ... | | | | | | |
+
+Mark each cell with the round number (R1, R2, ...) when tested.
+
+---
+
+## Metrics
+
+Track across rounds:
+
+| Metric | Round 1 | Round N |
+|--------|---------|---------|
+| Mean accuracy score | 6.7/10 | |
+| Critical bugs | 3 | |
+| Major bugs | 14 | |
+| Wrong realization bugs | 2 | |
+| Fabricated detail bugs | 5 | |
+| Module coverage | 16/46 | |
+
+**Targets**: Mean ≥8.5/10, zero Critical bugs, ≤3 Major bugs by Round 5.
+
+---
+
+## Resource Usage
+
+| Phase | Model | Count | ~Duration Each | Total |
+|-------|-------|-------|----------------|-------|
+| Answer | Sonnet 4.6 | 5 | 3-4 min | ~18 min |
+| Audit | Opus 4.6 | 5 | 5-7 min | ~30 min |
+| Fix | Sonnet 4.6 | 5 | 3-5 min | ~20 min |
+
+**Per round**: ~5 Opus calls (audit only) + ~10 Sonnet calls (answer + fix).
+**Opus is needed ONLY for the audit phase** — everything else uses Sonnet.
+
+---
+
+## Question Bank (Validated, Round 1)
+
+These questions were used in Round 1 and can be reused for regression testing after doc improvements:
+
+1. **Land-Carbon-Forestry** (modules 10, 32, 52, 56): "When a carbon price incentivizes afforestation in MAgPIE, trace the complete causal chain..."
+2. **Livestock-Feed-Cropland** (modules 70, 21, 30, 29, 14): "Explain the full cascade from livestock demand to cropland allocation..."
+3. **Water-Irrigation-Yield** (modules 42, 43, 14, 30): "Describe the coupling between water availability and agricultural yields..."
+4. **Nitrogen-SOM-Emissions** (modules 50, 51, 59, 53): "Trace the nitrogen cycle through MAgPIE..."
+5. **Cost Aggregation** (modules 11, 12, 56, 57, 39): "MAgPIE minimizes total global costs — explain exactly what enters the objective function..."
+
+---
+
+## When to Run
+
+- **After major doc updates** (post-sync, post-audit fix cycle)
+- **Monthly** as routine quality assurance
+- **Before releases** to verify documentation quality
+- **When new modules are documented** to ensure accuracy from the start

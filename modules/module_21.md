@@ -1,10 +1,15 @@
 # Module 21: Trade - Complete Documentation
 
 **Status**: ✅ Fully Verified
-**Realization**: selfsuff_reduced_bilateral22 (default with bilateral trade)
+**Realization**: `selfsuff_reduced` (default) | `selfsuff_reduced_bilateral22` (alternative)
 **Source Files Verified**: declarations.gms, equations.gms, input.gms, sets.gms, preloop.gms, postsolve.gms, scaling.gms
-**Total Lines**: ~88 (equations.gms)
-**Total Equations**: 11
+**Total Lines**: ~72 (equations.gms, selfsuff_reduced)
+**Total Equations**: 8 (selfsuff_reduced default) | 11 (selfsuff_reduced_bilateral22)
+
+---
+
+> ⚙️ **Default Realization**: `selfsuff_reduced`
+> The equations and algorithms below describe the **default `selfsuff_reduced` realization** (confirmed in `config/default.cfg`: `cfg$gms$trade <- "selfsuff_reduced"`). Sections or equations that exist **only** in the `selfsuff_reduced_bilateral22` alternative are clearly marked **`[⚠️ bilateral22 only]`**.
 
 ---
 
@@ -12,9 +17,9 @@
 
 Module 21 implements **agricultural trade among world regions** using a **dual-pool system**: a self-sufficiency pool based on historical trade patterns, and a comparative advantage pool based on cost-efficient production. The module enforces global and regional trade balances, ensuring regional demand is met through domestic production and imports.
 
-**Core Function**: Connects regional production (Module 17) to regional demand (Module 16) via trade flows, calculating trade costs (tariffs + margins) that feed into the objective function (Module 11).
+**Core Function**: Connects regional production (Module 17) to regional demand (Module 16) via trade flows, calculating trade costs (margins + tariffs) that feed into the objective function (Module 11).
 
-**Key Innovation**: Uses **region-level bilateral trade margins and tariffs** (unlike older realizations that used super-regional margins), allowing more realistic transport costs between specific region pairs.
+**Key Design**: Uses **superregional self-sufficiency ratios and export shares** to manage trade flows. Margins and tariffs are applied at the superregional level `(h,k)` — not bilateral between region pairs. The `selfsuff_reduced_bilateral22` alternative replaces this with explicit bilateral trade flows between region pairs.
 
 **Reference**: `module.gms:10-13`
 
@@ -103,9 +108,11 @@ q21_trade_glo(k_trade)..
 
 ---
 
-### 2. Bilateral Trade Balance (`q21_trade_bilat`)
+### 2. Bilateral Trade Balance (`q21_trade_bilat`) — `[⚠️ bilateral22 only]`
 
-**Formula** (`equations.gms:17-19`):
+> **This equation does NOT exist in the default `selfsuff_reduced` realization.** It is exclusive to `selfsuff_reduced_bilateral22`. In `selfsuff_reduced`, regional production bounds are enforced directly via `q21_trade_reg` and `q21_trade_reg_up` without explicit bilateral flows.
+
+**Formula** (`selfsuff_reduced_bilateral22/equations.gms:17-19`):
 ```gams
 q21_trade_bilat(h2,k_trade)..
   sum(supreg(h2,i2), vm_prod_reg(i2,k_trade)) =g=
@@ -231,7 +238,7 @@ q21_excess_dem(k_trade)..
 ```gams
 q21_excess_supply(h2,k_trade)..
   v21_excess_prod(h2,k_trade) =e=
-  v21_excess_dem(k_trade) * sum(ct, f21_exp_shr(ct,h2,k_trade));
+  v21_excess_dem(k_trade) * sum(ct, i21_exp_shr(ct,h2,k_trade));
 ```
 
 **Meaning**: Regional excess production = global excess demand × regional export share
@@ -239,15 +246,17 @@ q21_excess_supply(h2,k_trade)..
 **Purpose**: Distributes global excess demand to exporting regions based on historical export shares
 
 **Key Parameter**:
-- `f21_exp_shr(t,h,k)` - Export shares derived from FAO data (0 for importing regions)
+- `i21_exp_shr(t,h,k)` - Export shares **computed internally** in `preloop.gms` from `f21_dom_supply` and `f21_self_suff` (0 for importing regions). **Note**: This is an internal parameter (`i` prefix), NOT a file-read parameter (`f` prefix).
 
 **Reference**: Schmitz et al. 2012 (cited in `equations.gms:62-63`)
 
 ---
 
-### 8. Trade Tariff Costs (`q21_costs_tariffs`)
+### 8. Trade Tariff Costs (`q21_costs_tariffs`) — `[⚠️ bilateral22 only]`
 
-**Formula** (`equations.gms:70-72`):
+> **This equation does NOT exist in the default `selfsuff_reduced` realization.** In `selfsuff_reduced`, tariff costs are combined with margin costs directly in `q21_cost_trade_reg` using superregional `i21_trade_tariff(h,k)`. The bilateral version below applies region-pair-specific tariffs via `v21_trade(i_ex,i_im,k)`.
+
+**Formula** (`selfsuff_reduced_bilateral22/equations.gms:70-72`):
 ```gams
 q21_costs_tariffs(i2,k_trade)..
   v21_cost_tariff_reg(i2,k_trade) =g=
@@ -267,9 +276,11 @@ q21_costs_tariffs(i2,k_trade)..
 
 ---
 
-### 9. Trade Margin Costs (`q21_costs_margins`)
+### 9. Trade Margin Costs (`q21_costs_margins`) — `[⚠️ bilateral22 only]`
 
-**Formula** (`equations.gms`):
+> **This equation does NOT exist in the default `selfsuff_reduced` realization.** In `selfsuff_reduced`, margin costs are combined with tariffs directly in `q21_cost_trade_reg`. The bilateral version below uses `v21_trade(i_ex,i_im,k)`.
+
+**Formula** (`selfsuff_reduced_bilateral22/equations.gms`):
 ```gams
 q21_costs_margins(i2,k_trade)..
   v21_cost_margin_reg(i2,k_trade) =g=
@@ -291,40 +302,45 @@ q21_costs_margins(i2,k_trade)..
 
 ### 10. Regional Trade Costs (`q21_cost_trade_reg`)
 
-**Formula** (`equations.gms`):
+**Formula** (`selfsuff_reduced/equations.gms:62-67`):
 ```gams
-q21_cost_trade_reg(i2,k_trade)..
-  v21_cost_trade_reg(i2,k_trade) =g=
-  v21_cost_tariff_reg(i2,k_trade) + v21_cost_margin_reg(i2,k_trade)
-  + sum(supreg(h2,i2), v21_import_for_feasibility(h2,k_trade)) * s21_cost_import;
+q21_cost_trade_reg(h2,k_trade)..
+  v21_cost_trade_reg(h2,k_trade) =g=
+  (i21_trade_margin(h2,k_trade) + i21_trade_tariff(h2,k_trade))
+  * sum(supreg(h2,i2), vm_prod_reg(i2,k_trade) - vm_supply(i2,k_trade))
+  + v21_import_for_feasibility(h2,k_trade) * s21_cost_import;
 ```
 
-**Meaning**: Commodity-specific trade cost = tariffs + margins + feasibility import penalty
+**Meaning**: Superregional trade cost = (margin + tariff) × net exports + feasibility import penalty
 
-**Purpose**: Aggregates all trade-related costs for each commodity
+**Purpose**: Calculates trade costs at the superregional level (`h` dimension). Margin and tariff are **superregional** (`h,k`) — not bilateral between region pairs.
 
-**Key Scalar**:
-- `s21_cost_import = 1500` USD17MER per tDM (penalty for emergency imports, `input.gms:21`)
+**Key Parameters**:
+- `i21_trade_margin(h,k)` - Superregional transport + insurance costs (USD17MER/tDM), set from `f21_trade_margin(h,k)` in `preloop.gms`
+- `i21_trade_tariff(h,k)` - Superregional tariff (USD17MER/tDM), set from `f21_trade_tariff(h,k)` when `s21_trade_tariff=1`
+- `s21_cost_import = 1500` USD17MER/tDM (emergency import penalty, `input.gms:18`)
 
-**Source**: `equations.gms`
+**Units**: Million USD17MER per year
+
+> **Note**: In `selfsuff_reduced_bilateral22`, this equation instead sums separate `v21_cost_tariff_reg` and `v21_cost_margin_reg` variables that use bilateral `v21_trade(i_ex,i_im,k)` flows.
 
 ---
 
 ### 11. Total Regional Trade Costs (`q21_cost_trade`)
 
-**Formula** (`equations.gms`):
+**Formula** (`selfsuff_reduced/equations.gms:70-71`):
 ```gams
-q21_cost_trade(i2)..
-  vm_cost_trade(i2) =e= sum(k_trade, v21_cost_trade_reg(i2,k_trade));
+q21_cost_trade(h2)..
+  sum(supreg(h2,i2), vm_cost_trade(i2)) =e= sum(k_trade, v21_cost_trade_reg(h2,k_trade));
 ```
 
-**Meaning**: Total regional trade cost = sum over all tradable commodities
+**Meaning**: Regional trade cost `vm_cost_trade(i)` aggregated from superregional `v21_cost_trade_reg(h,k)`
 
-**Purpose**: Aggregates commodity-specific costs into single regional cost variable
+**Purpose**: Maps superregional trade costs back to the regional (`i`) interface variable for Module 11
 
 **Interface**: `vm_cost_trade(i)` feeds into Module 11 (Costs) objective function
 
-**Source**: `equations.gms`
+**Source**: `selfsuff_reduced/equations.gms`
 
 ---
 
@@ -357,37 +373,22 @@ i21_trade_bal_reduction(t_all,k_hardtrade21) =
 
 ---
 
-### Algorithm 2: Tariff Configuration (`preloop.gms:13-27`)
+### Algorithm 2: Tariff Configuration (`preloop.gms`) — `[⚠️ default version differs from bilateral22]`
 
-**Switch Control** (`preloop.gms:13-17`):
+**Switch Control** (`selfsuff_reduced/preloop.gms`):
 ```gams
 if (s21_trade_tariff = 1),
-  i21_trade_tariff(t_all,i_ex,i_im,k_trade) = f21_trade_tariff(i_ex,i_im,k_trade);
+  i21_trade_tariff(h,k_trade) = f21_trade_tariff(h,k_trade);
 elseif (s21_trade_tariff = 0),
-  i21_trade_tariff(t_all,i_ex,i_im,k_trade) = 0;
+  i21_trade_tariff(h,k_trade) = 0;
 ```
 
-**Fadeout** (`preloop.gms:19-27`):
-```gams
-if (s21_trade_tariff_fadeout = 1),
-  ! Linear fadeout from startyear to targetyear
-  i21_trade_tariff(t_all,i_ex,i_im,k_trade)$(year > startyear AND year < targetyear) =
-    (1 - ((year - startyear) / (targetyear - startyear))) * i21_trade_tariff(...);
+> **`[⚠️ bilateral22 only]`**: In `selfsuff_reduced_bilateral22`, tariffs use bilateral dimensions `(t_all,i_ex,i_im,k_trade)` and include a `s21_trade_tariff_fadeout` scalar with `startyear`/`targetyear` scalars. **None of these bilateral dimensions or fadeout scalars exist in the default `selfsuff_reduced` realization.**
 
-  ! Keep full tariff before startyear
-  i21_trade_tariff(...)$(year <= startyear) = i21_trade_tariff(...);
-
-  ! Zero tariff after targetyear
-  i21_trade_tariff(...)$(year >= targetyear) = 0;
-```
-
-**Scalars** (`input.gms:17-20`):
+**Scalars in default `selfsuff_reduced`** (`input.gms`):
 - `s21_trade_tariff = 1` (1=on, 0=off)
-- `s21_trade_tariff_fadeout = 0` (disabled by default)
-- `s21_trade_tariff_startyear = 2025`
-- `s21_trade_tariff_targetyear = 2050`
 
-**Purpose**: Allows scenario analysis with gradual tariff elimination
+**Purpose**: Populates superregional `i21_trade_tariff(h,k)` from file input `f21_trade_tariff(h,k)`
 
 ---
 
@@ -437,20 +438,27 @@ k_import21(k_trade) = / wood, woodfuel /
 | File | Parameter | Description | Dimensions | Units |
 |------|-----------|-------------|------------|-------|
 | `f21_trade_self_suff.cs3` | `f21_self_suff` | Self-sufficiency ratios | (t,h,k) | Dimensionless (0-∞) |
-| `f21_trade_export_share.cs3` | `f21_exp_shr` | Export shares | (t,h,k) | Dimensionless (0-1) |
+| `f21_trade_domestic_supply.cs3` | `f21_dom_supply` | Domestic supply (used to compute export shares) | (t,h,k) | Mio. tDM/yr |
 | `f21_trade_bal_reduction.cs3` | `f21_trade_bal_reduction` | Pool allocation factor | (t,trade_groups,regime) | Dimensionless (0-1) |
 | `f21_trade_balanceflow.cs3` | `f21_trade_balanceflow` | Domestic balance flows | (t,k) | Mio. tDM/yr |
 
-**Source**: `input.gms:25-43`
+> **Note on export shares**: `i21_exp_shr(t,h,k)` is **NOT** read from a file. It is **computed internally** in `preloop.gms` from `f21_dom_supply` and `f21_self_suff`:
+> ```gams
+> i21_exports(t_all,h,k_trade) = ((f21_self_suff * f21_dom_supply) - f21_dom_supply)$(f21_self_suff > 1);
+> i21_exp_glo(t_all,k_trade)   = sum(h, i21_exports(t_all,h,k_trade));
+> i21_exp_shr(t_all,h,k_trade) = i21_exports / (i21_exp_glo + 0.001$(i21_exp_glo = 0));
+> ```
 
-### Bilateral Trade Costs
+### Bilateral Trade Costs — `[⚠️ bilateral22 only]`
+
+> These input files are **not used** in the default `selfsuff_reduced` realization. They apply exclusively to `selfsuff_reduced_bilateral22`, which uses bilateral trade flows `v21_trade(i_ex,i_im,k)`.
 
 | File | Parameter | Description | Dimensions | Units |
 |------|-----------|-------------|------------|-------|
 | `f21_trade_margin_bilat.cs5` | `f21_trade_margin` | Transport + admin costs | (i_ex,i_im,k) | USD17MER/tDM |
 | `f21_trade_tariff_bilat.cs5` | `f21_trade_tariff` | Specific duty tariffs | (i_ex,i_im,k) | USD17MER/tDM |
 
-**Source**: `input.gms:45-57`
+**Source**: `selfsuff_reduced_bilateral22/input.gms:45-57`
 
 **Note**: Files are in realization-specific subdirectory (`selfsuff_reduced_bilateral22/input/`)
 
@@ -483,13 +491,12 @@ k_import21(k_trade) = / wood, woodfuel /
 |----------|-------------|------------|-------|
 | `v21_excess_dem` | Global excess demand | (k_trade) | Mio. tDM/yr |
 | `v21_excess_prod` | Superregional excess production | (h,k_trade) | Mio. tDM/yr |
-| `v21_trade` | Bilateral trade flows | (i_ex,i_im,k_trade) | Mio. tDM/yr |
-| `v21_cost_tariff_reg` | Regional tariff costs | (i,k_trade) | Mio. USD17MER/yr |
-| `v21_cost_margin_reg` | Regional margin costs | (i,k_trade) | Mio. USD17MER/yr |
-| `v21_cost_trade_reg` | Commodity-specific trade costs | (i,k_trade) | Mio. USD17MER/yr |
+| `v21_cost_trade_reg` | Superregional trade costs per commodity | (h,k_trade) | Mio. USD17MER/yr |
 | `v21_import_for_feasibility` | Emergency imports | (h,k_trade) | Mio. tDM/yr |
 
-**Source**: `declarations.gms:14-23`
+> `[⚠️ bilateral22 only]`: `v21_trade(i_ex,i_im,k_trade)`, `v21_cost_tariff_reg(i,k_trade)`, and `v21_cost_margin_reg(i,k_trade)` **do not exist** in `selfsuff_reduced`.
+
+**Source**: `selfsuff_reduced/declarations.gms`
 
 ---
 
@@ -640,7 +647,7 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 **Safe Modifications**:
 - ✅ Adjusting trade cost parameters (`f21_trade_margin`, `f21_trade_tariff`)
 - ✅ Changing self-sufficiency reduction trajectories (`i21_trade_bal_reduction`)
-- ✅ Modifying export share distributions (`f21_exp_shr`)
+- ✅ Modifying export share distributions (`i21_exp_shr` — computed internally in preloop.gms from `f21_dom_supply` and `f21_self_suff`)
 - ✅ Adding new commodities to trade pools (requires set expansion)
 - ✅ Implementing trade policy scenarios (tariff/margin adjustments)
 
@@ -684,7 +691,7 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 
 ### 1. Fixed Trade Patterns
 **What**: Self-sufficiency ratios and export shares are predetermined from historical data
-**Where**: `f21_self_suff`, `f21_exp_shr` input files
+**Where**: `f21_self_suff` input file; `i21_exp_shr` computed internally in `preloop.gms`
 **Impact**: Trade patterns adapt to price changes only within comparative advantage pool
 **Source**: `realization.gms:22-23`
 
@@ -737,9 +744,10 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 
 ## Verification Notes
 
-**Equation Count**: ✅ 11 equations verified
-- Counted via `grep "^[ ]*q21_" modules/21_trade/selfsuff_reduced_bilateral22/declarations.gms`
-- All 11 equation formulas verified against `equations.gms`
+**Equation Count**: ✅ 8 equations verified for default `selfsuff_reduced`
+- Counted via `grep "^[ ]*q21_" modules/21_trade/selfsuff_reduced/declarations.gms`
+- All 8 equation formulas verified against `selfsuff_reduced/equations.gms`
+- 3 additional equations exist only in `selfsuff_reduced_bilateral22`: `q21_trade_bilat`, `q21_costs_tariffs`, `q21_costs_margins`
 
 **Variables**: ✅ 1 interface variable verified (`vm_cost_trade`)
 - Confirmed usage in Module 11 via grep

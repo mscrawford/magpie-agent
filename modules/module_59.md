@@ -141,7 +141,7 @@ i59_lossrate(t) = 1 - 0.85^m_yeardiff(t);
 
 **VERIFIED Convergence Rates**:
 - **1 year**: 15% (1 - 0.85^1 = 0.15)
-- **5 years**: 44% (1 - 0.85^5 = 0.44)
+- **5 years**: ~56% (1 - 0.85^5 ≈ 0.5563)
 - **10 years**: 80% (1 - 0.85^10 = 0.80)
 - **20 years**: 96% (1 - 0.85^20 = 0.96)
 
@@ -314,7 +314,7 @@ q59_cost_scm(j2) ..
 
 **i59_lossrate(t)** - Convergence rate per timestep (1)
 - **Formula**: `1 - 0.85^timestep_length` (`preloop.gms:45`)
-- **Default (5-year steps)**: 0.44 (44%)
+- **Default (5-year steps)**: ~0.5563 (55.6%)
 - **Meaning**: Fraction of gap between current and target that closes each timestep
 
 **i59_subsoilc_density(t,j)** - Subsoil C density (tC/ha)

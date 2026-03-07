@@ -1,10 +1,15 @@
 # Module 30: Croparea - Complete Implementation Guide
 
 **Status**: 100% Verified
-**Version**: detail_apr24 + simple_apr24 realizations
+**Version**: `simple_apr24` (default) | `detail_apr24` (alternative)
 **Last Updated**: 2025-10-12
-**Lines of Code**: ~650 (detailed realization)
-**Equations**: 12 (detail_apr24) + 9 (simple_apr24); 13 unique equation names across both realizations
+**Lines of Code**: ~650 (detail_apr24 realization)
+**Equations**: 9 (simple_apr24 default) | 12 (detail_apr24); 13 unique equation names across both realizations
+
+---
+
+> ⚙️ **Default Realization**: `simple_apr24`
+> Confirmed in `config/default.cfg`: `cfg$gms$croparea <- "simple_apr24"`. The bulk of the detailed equation documentation below comes from `detail_apr24`. Where behaviour differs between realizations, this is noted. See the [simple_apr24 Realization](#simple_apr24-realization--equations-unique-or-different-from-detail_apr24) section for simple_apr24-specific equations.
 
 ---
 
@@ -28,18 +33,18 @@ This module provides the critical interface variable `vm_area(j,kcr,w)` that is 
 
 ### Realizations
 
-**1. detail_apr24** (default, documented here)
+**1. simple_apr24** ⚙️ **(DEFAULT)**
+- Simplified rotational constraints (hard bounds ≤/≥, no penalty payments)
+- Basic carbon and biodiversity tracking
+- Has `not_used.txt` listing one unused input variable (`vm_AEI`); this does **not** indicate deprecated status — `simple_apr24` is the active default realization
+
+**2. detail_apr24** (alternative)
 - Full rotational constraints system (29 crop groups)
 - Rule-based OR penalty-based implementation modes
 - Separate constraints for total and irrigated areas
 - Bioenergy tree land targets
 - Cropland growth constraint
 - Carbon and biodiversity calculations
-
-**2. simple_apr24** (alternative)
-- Simplified rotational constraints
-- Basic carbon and biodiversity tracking
-- Has `not_used.txt` indicating deprecated status
 
 **Files**: `module.gms:18-19`
 

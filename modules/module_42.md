@@ -260,12 +260,14 @@ else
 **Mathematical form**: `efficiency = 1 / (1 + exp((a - GDP) / b))`
 - `a = -22160`: Inflection point parameter
 - `b = 37767`: Steepness parameter
-- `GDP`: GDP per capita in USD17MER
+- `GDP`: GDP per capita in USD17MER — **fixed to 1995 value** (`im_gdp_pc_mer("y1995",i)`) in the DEFAULT scenario 2; current-year GDP (`im_gdp_pc_mer(t,i)`) only in scenario 3
 
 **Behavior**:
 - Low GDP → efficiency approaches 0 (high losses)
 - High GDP → efficiency approaches 1 (low losses)
 - Smooth transition (no discontinuities)
+
+> ⚠️ **Default is time-invariant**: In the default scenario (`s42_irrig_eff_scenario = 2`), `GDP` is locked to the **1995 value** for every model timestep. `v42_irrig_eff` therefore does **not** change over time by default. The "dynamic GDP sigmoid" interpretation — where efficiency rises with projected future GDP — applies only to scenario 3. Confirmed in `presolve.gms:12-22` and `config/default.cfg` (`s42_irrig_eff_scenario` defaults to 2).
 
 **Known Issue** (realization.gms:58-61):
 - Double-counts management factor (also in LPJmL)
@@ -470,7 +472,7 @@ positive variables
   v42_irrig_eff(j)  Irrigation efficiency (1)
 ```
 
-**Fixed in presolve** (presolve.gms:12-22): Not optimized, set to GDP-based formula
+**Fixed in presolve** (presolve.gms:12-22): Not optimized, set to GDP-based sigmoidal formula. **In the default scenario (scenario 2), the result is time-invariant** — it uses fixed 1995 GDP values and does not change across timesteps. Only scenario 3 produces time-varying values.
 
 **Range**: 0 to 1 (dimensionless)
 
@@ -524,6 +526,7 @@ sum(kli, vm_prod(j2,kli) * ic42_wat_req_k(j2,kli) * v42_irrig_eff(j2))
 
 **Usage** (presolve.gms:13, 18, 20):
 - Calculate irrigation efficiency via sigmoidal function
+- **Default access pattern**: Accessed as `im_gdp_pc_mer("y1995",i)` (1995 value) for both the historical lock period (before `sm_fix_SSP2`) and the default scenario 2 after it. The time index `t` is used only in scenario 3.
 
 **Units**: USD17MER per capita
 

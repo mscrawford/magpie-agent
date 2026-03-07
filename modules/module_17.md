@@ -11,7 +11,7 @@
 
 ### 1.1 Purpose
 
-Module 17 aggregates **cell-level production to regional-level production** for all MAgPIE plant commodities (`module.gms:8-11`). It serves as the **spatial aggregation hub** that connects spatially explicit production decisions (at cluster/cell level) to regional supply that can be traded and consumed.
+Module 17 aggregates **cell-level production to regional-level production** for all primary commodities in set `k` (`equations.gms:11`). It serves as the **spatial aggregation hub** that connects spatially explicit production decisions (at cluster/cell level) to regional supply that can be traded and consumed.
 
 **Core Function:** `vm_prod_reg(i,k)` = Σ `vm_prod(j,k)` for all cells j in region i
 
@@ -21,16 +21,18 @@ Module 17 aggregates **cell-level production to regional-level production** for 
 
 1. **Spatial Aggregation** (`equations.gms:10-11`): Sums cell-level production to regional totals
 2. **Production Initialization** (`presolve.gms:10-16`): Sets initial production levels for first time step to improve solver convergence
-3. **Plant Commodities Only** (`realization.gms:14-15`): Aggregates crops and pasture; livestock production handled differently
+3. **Equation over Full k Set** (`equations.gms:11`): `q17_prod_reg` is declared over the full set `k` (all 28 primary commodities, including livestock, fish, and forestry); in practice, `vm_prod(j,k)` is currently only populated for plant commodities (crops and pasture)
 4. **Zero Configuration Complexity:** One switch, no input files, no calibration
 
 ### 1.3 Scope and Limitations
 
-**Applies to:** Crops (kcr) and pasture — 20 plant commodities (`realization.gms:10`)
+**Equation declared over:** Full set `k` (28 primary commodities: crops, pasture, livestock, fish, wood, woodfuel) (`declarations.gms:9,11`)
 
-**Does NOT apply to:** Livestock, fish, wood products (`realization.gms:14-15`)
+**Currently populates non-zero values for:** Crops (kcr) and pasture — 20 plant commodities. Cell-level production for livestock, fish, and forestry is not currently modeled at cell level (`realization.gms:8-14`).
 
-**Rationale:** Cell-level production modeling exists for crops (Module 30) and pasture (Module 31), which have spatially explicit land allocation. Livestock production (Module 70) is modeled at regional level directly, so no spatial aggregation is needed.
+**Does NOT apply to (current limitation):** Livestock, fish, wood products — as stated in `realization.gms`: "For the time being, this approach is not applied to livestock products."
+
+**Rationale:** Cell-level production modeling exists for crops (Module 30) and pasture (Module 31). Livestock production (Module 70) is modeled at regional level directly, so `vm_prod(j,k)` for livestock remains zero.
 
 ---
 
@@ -164,9 +166,9 @@ If in first time step (`ord(t) = 1`) AND initialization switch is ON, set level 
 - **Module 20 (Processing):** Raw material supply for processing industries
 - **Reporting modules:** Output for analysis and validation
 
-**Dimensions:** i (regions) × kall (all commodities, though only plant commodities are computed here)
+**Dimensions:** i (regions) × kall (all commodities; `q17_prod_reg` computes values for set `k`, the subset of primary commodities)
 
-**Note:** `vm_prod_reg` is defined over `kall` (all products including livestock), but Module 17 only calculates values for plant commodities (k ⊂ kall). Livestock production is assigned to `vm_prod_reg` directly by Module 70.
+**Note:** `vm_prod_reg` is defined over `kall` (all products). Module 17's equation `q17_prod_reg(i2,k)` is declared over set `k` (all 28 primary commodities, including livestock, fish, wood, woodfuel). In current practice, `vm_prod(j,k)` is only non-zero for plant commodities, so livestock/fish/forestry rows of `vm_prod_reg` sum to zero via Module 17 — but the equation itself is not restricted to plants.
 
 **Citation:** `declarations.gms:10`
 
@@ -174,7 +176,7 @@ If in first time step (`ord(t) = 1`) AND initialization switch is ON, set level 
 
 ### 4.2 Intermediate Variable
 
-**vm_prod(j,k)** - Cell-level production for plant commodities (mio. tDM/yr)
+**vm_prod(j,k)** - Cell-level production for primary commodities (mio. tDM/yr)
 **Calculated by:**
 - **Module 30 (Crop):** Crop production = cropland area × yield
 - **Module 31 (Pasture):** Pasture production = pasture area × pasture yield
@@ -184,7 +186,7 @@ If in first time step (`ord(t) = 1`) AND initialization switch is ON, set level 
 - **Module 40 (Transport):** Cell-to-market transport calculations
 - **Reporting modules:** Spatial production maps
 
-**Dimensions:** j (cells) × k (plant commodities)
+**Dimensions:** j (cells) × k (all primary commodities)
 
 **Citation:** `declarations.gms:9`
 
@@ -302,13 +304,13 @@ Following the "Code Truth" principle:
 - **DOES aggregate** production calculated by Module 30 and 31
 - All production logic (area × yield) is in Modules 30 and 31, not Module 17
 
-### 7.2 No Livestock Production
+### 7.2 Livestock/Fish/Forestry — Current Limitation
 
-- **Does NOT aggregate** livestock, fish, or wood products
-- **DOES aggregate** only crops and pasture
-- Livestock production is computed at regional level in Module 70, assigned directly to `vm_prod_reg`
+- **The equation `q17_prod_reg(i2,k)` IS declared** over the full set `k` (all primary commodities including livestock, fish, wood, woodfuel) — `declarations.gms:9,11`
+- **In current practice,** `vm_prod(j,k)` is only populated for plant commodities (crops and pasture from Modules 30/31), so `vm_prod_reg(i,livst_rum)` etc. sum to zero
+- This is an explicit current limitation stated in `realization.gms:13-14`: *"For the time being, this approach is not applied to livestock products"*
 
-**Rationale:** Stated in `realization.gms:14-15` — no cell-level livestock production exists, so no aggregation needed.
+**Rationale:** No cell-level livestock or fish production variables exist currently; Module 70 handles livestock at regional level. The equation architecture already supports these products — `vm_prod(j,k)` just has no non-zero values for them yet.
 
 ### 7.3 No Inter-Cell Trade
 
@@ -384,7 +386,7 @@ if (ord(t) = 1, [initialize] );
 
 ### 8.5 No Commodity-Specific Logic
 
-**Pattern:** Same equation applies to all plant commodities (no special cases for rice vs. wheat, etc.).
+**Pattern:** Same equation applies to all primary commodities in set `k` (no special cases for rice vs. wheat, livestock vs. crops, etc.).
 
 **Why:** Aggregation is commodity-neutral. Summing tons of rice is the same mathematical operation as summing tons of wheat.
 
@@ -701,14 +703,14 @@ Variables are already in appropriate units (mio. tDM/yr) — no scaling needed f
 Module 17 is a **minimal but essential aggregation module** that connects spatial production to regional supply:
 
 **What It Does:**
-- Sums cell-level plant production to regional totals (1 equation: q17_prod_reg)
+- Sums cell-level production to regional totals (1 equation: q17_prod_reg, over full set k)
 - Initializes production in first time step for faster convergence (optional)
-- Applies to crops and pasture only; livestock handled separately
+- Equation is declared over all 28 primary commodities (k); currently produces non-zero values for plant commodities only (livestock/fish/forestry cell-level production not yet implemented)
 
 **What It Doesn't Do:**
 - Calculate production (that's Module 30/31)
 - Model intra-regional transport costs or losses
-- Aggregate livestock, fish, or wood products
+- Produce non-zero aggregation for livestock, fish, or wood products (current limitation — vm_prod is not populated for these)
 - Apply weights, adjustments, or quality factors
 
 **Critical Principle:** Module 17 is a **pure pass-through aggregator**. All production logic is upstream; Module 17 just sums the results.
@@ -749,7 +751,7 @@ vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) = vm_demand(i,k)
 ```
 
 **Module 17's contribution**:
-- Provides `vm_prod_reg(i,k)` for crops and pasture
+- Provides `vm_prod_reg(i,k)` for all primary commodities (currently non-zero for crops and pasture)
 - **Critical**: If production aggregation is wrong, food balance cannot be satisfied
 - **Must sum correctly**: Σ(cells) production = regional production
 

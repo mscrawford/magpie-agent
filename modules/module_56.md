@@ -33,7 +33,7 @@ The module provides extensive configurability through 6 key switches that determ
 
 | Switch | Purpose | Default | Range |
 |--------|---------|---------|-------|
-| `c56_pollutant_prices` | Price scenario (e.g., 1.5°C, 2°C, NDC) | SSP2-NPi2025 | 100+ scenarios |
+| `c56_pollutant_prices` | Price scenario (e.g., 1.5°C, 2°C, NDC) | R34M410-SSP2-NPi2025 | 100+ scenarios |
 | `c56_emis_policy` | Which gases/sources are priced | reddnatveg_nosoil | 60+ policies |
 | `c56_carbon_stock_pricing` | Which carbon pools for LULUCF accounting | actualNoAcEst | actual / actualNoAcEst |
 | `c56_cprice_aff` | Price used for afforestation decisions | secdforest_vegc | Various options |
@@ -433,7 +433,7 @@ im_pollutant_prices(t_all,i,"co2_c",emis_source)$(im_pollutant_prices(t_all,i,"c
 
 **What This Does:**
 
-1. **Zero historical prices:** GHG prices = 0 for years ≤ 2010 (no retrospective carbon pricing)
+1. **Zero historical prices:** GHG prices = 0 for years ≤ `sm_fix_SSP2` (default: 2025; no retrospective carbon pricing)
 2. **Mute future prices until start year:** Prices = 0 until `c56_mute_ghgprices_until` (default 2030, `input.gms:88`)
 3. **Minimum C price:** CO2 price floor = `s56_minimum_cprice` (default $3.67/tC, `input.gms:67`)
 
@@ -503,7 +503,7 @@ Policy "redd_nosoil" might have:
 
 **Historical Override:**
 
-Before 2010, always use "reddnatveg_nosoil" regardless of `c56_emis_policy` setting.
+For years ≤ `sm_fix_SSP2` (default: 2025), always use "reddnatveg_nosoil" regardless of `c56_emis_policy` setting.
 
 **Citation:** `preloop.gms:84-91`, `input.gms:113-117`
 
@@ -653,8 +653,10 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 | **all** | ✓ | ✓ | ✓ | ✓ | Comprehensive carbon pricing |
 | **all_nosoil** | ✓ | ✗ | ✓ | ✓ | Price all except soil C (measurement challenges) |
 | **reddnatveg_nosoil** (default) | ✓ (natural veg only) | ✗ | ✗ | ✗ | REDD+ (reduce deforestation emissions) |
-| **redd+natveg_nosoil** | ✓ (deforestation + reforestation) | ✗ | ✗ | ✗ | REDD+ with afforestation incentives |
+| **redd+natveg_nosoil** | ✓ (deforestation + reforestation) | ✗ | ✗ | ✗ | REDD+ with forestry emission pricing |
 | **sdp_all** | ✓ | ✓ | ✓ | ✓ | Sustainable Development Pathway |
+
+**Note:** The CDR reward mechanism (`q56_reward_cdr_aff`) for afforestation is driven by `p56_c_price_aff`, which uses `im_pollutant_prices` for the source specified by `c56_cprice_aff` (default: `secdforest_vegc`). Because `f56_emis_policy("reddnatveg_nosoil","co2_c","secdforest_vegc") = 1`, the CDR afforestation reward **is active under the default `reddnatveg_nosoil` policy** — it operates independently of the emission pricing policy matrix. A separate `c56_emis_policy` is not required to incentivize afforestation.
 
 **Citation:** `sets.gms:119-163`, `input.gms:113-117`
 
@@ -810,7 +812,7 @@ grep "^[ ]*q56_" modules/56_ghg_policy/price_aug22/declarations.gms | wc -l
 1. **Check prices are zero before start year:**
    ```gams
    display im_pollutant_prices;
-   * All prices should be 0 for t ≤ 2010 and t ≤ c56_mute_ghgprices_until
+   * All prices should be 0 for t ≤ sm_fix_SSP2 (default: 2025) and t ≤ c56_mute_ghgprices_until
    ```
 
 2. **Check policy matrix application:**
@@ -948,7 +950,7 @@ display im_pollutant_prices, f56_emis_policy, vm_emissions_reg.l, v56_emis_prici
 
 ### 11.1 GHG Pricing is Optional, Not Default
 
-With `c56_pollutant_prices = "SSP2-NPi2025"` (No Policy Improvement) and historical zeroing, **default runs have NO carbon pricing**. Users must explicitly select mitigation scenarios (e.g., "PkBudg650") to activate pricing.
+With `c56_pollutant_prices = "R34M410-SSP2-NPi2025"` (No Policy Improvement) and historical zeroing, **default runs have NO carbon pricing**. Users must explicitly select mitigation scenarios (e.g., "R34M410-SSP2-PkBudg650") to activate pricing.
 
 **Implication:** Reference scenarios without climate policy require no special configuration.
 

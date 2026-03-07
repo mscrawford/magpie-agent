@@ -63,6 +63,8 @@ q13_tech_cost(i2, tautype) ..
 
 **Infinite Horizon Annuity**: The formula `r/(1+r)` distributes investment costs over an infinite time horizon, avoiding the need to specify a depreciation period (equations.gms:34-42).
 
+> ⚠️ **Contrast with Module 41**: Module 41 (irrigation investment) uses `(r + d)/(1+r)` where `d = s41_AEI_depreciation` is an explicit depreciation rate for irrigation equipment (endo_apr13/equations.gms). Module 13's annuity factor contains **no depreciation term** — it is strictly `r/(1+r)`. Adding a `d` term here would be incorrect.
+
 **Example** (illustrative numbers):
 - If τ increases from 1.0 to 1.2: intensification rate = 1.2/1.0 - 1 = 0.20 (20% increase)
 - If unit cost is 1000 USD/ha and interest rate is 5%: annualized cost = 0.20 × 1000 × 0.05/1.05 ≈ 9.52 USD/ha/yr

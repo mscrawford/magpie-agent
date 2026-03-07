@@ -152,8 +152,9 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/sync` | Check MAgPIE code for changes, update docs | Everyone |
 | `/feedback` | Submit feedback to improve the agent | Everyone |
 | `/bootstrap` | First-time setup | New users |
-| `/validate` | Check documentation consistency | Maintainers |
+| `/validate` | Check documentation consistency (syntactic) | Maintainers |
 | `/validate-module` | Validate specific module docs | Maintainers |
+| `/validate-semantic` | Run adversarial semantic accuracy flywheel | Maintainers |
 
 **Note**: Agent auto-update and AGENT.md deployment happen automatically at session start (see session_startup.md Step 0). No manual `/update` command is needed.
 
@@ -264,9 +265,11 @@ Before answering code-specific questions, verify documentation is current:
    ```
    Example: `cfg$gms$water_demand <- "all_sectors_aug13"` vs `"agr_sector_aug13"`
 
-2. **Verify your docs match**: Module docs state which realization they cover (e.g., "Realization: `fbask_jan16`"). If the user is running a different realization, **say so**: "My documentation covers `X` realization, but your config uses `Y`. The behavior may differ."
+2. **⚠️ ALWAYS LEAD WITH THE DEFAULT REALIZATION**: When a module has multiple realizations, describe the **default** one first and most prominently. Non-default realizations should be clearly marked as alternatives. Semantic validation found that describing non-default realizations as if they were active caused **Critical-severity** cascading errors (wrong variable names, wrong equations, wrong mechanisms).
 
-3. **Check key scenario switches** when they change module behavior:
+3. **Verify your docs match**: Module docs state which realization they cover (e.g., "Realization: `fbask_jan16`"). If the user is running a different realization, **say so**: "My documentation covers `X` realization, but your config uses `Y`. The behavior may differ."
+
+4. **Check key scenario switches** when they change module behavior:
    ```bash
    grep "cfg\$gms\$c<module_num>" ../config/default.cfg | head -5
    ```
@@ -274,6 +277,23 @@ Before answering code-specific questions, verify documentation is current:
 
 **Modules with multiple realizations** (check these before answering):
 13, 18, 21, 29, 30, 31, 34, 37, 38, 40, 41, 42, 44, 51, 53, 55, 58, 59, 60, 70
+
+### Step 1d: Anti-Confabulation Rules
+
+**Semantic validation (Round 1, 2026-03-07) found that ~25% of bugs were plausible confabulations.** To prevent this:
+
+1. **Never construct formulas from memory.** If the docs don't contain the exact formula, say "The docs don't include this formula — let me check the source code" and read the actual `.gms` file.
+
+2. **Never invent causal mechanisms.** When explaining cross-module interactions, cite specific variables and equations from docs or code. If you can't find the connecting mechanism, say so.
+
+3. **Verify default parameter values against `../config/default.cfg`** before citing them. Default values change across MAgPIE versions — don't rely on memorized or doc-stated values for:
+   - Scenario switches (`c56_pollutant_prices`, `c70_feed_scen`, etc.)
+   - Scalar parameters (`s42_pumping`, `s14_calib_ir2rf`, etc.)
+   - Year thresholds (`sm_fix_SSP2`, etc.)
+
+4. **Distinguish "capability" from "default behavior."** Many features have scenario switches that are OFF by default (e.g., `s42_pumping = 0` disables water costs). Always state the default state: "This feature exists but is **disabled by default** (`s42_pumping = 0`)."
+
+5. **Never present pseudocode as real code.** If you're illustrating a concept, clearly label it: "Conceptually: ..." not "The code does: ..."
 
 ### Step 2: Cite Your Sources
 

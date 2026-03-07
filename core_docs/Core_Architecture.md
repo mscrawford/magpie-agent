@@ -60,7 +60,7 @@ Where `[phase]` can be:
 - `equations` - Define optimization equations
 - `scaling` - Set variable scaling factors
 - `start` - Initialize before time loop
-- `preloop` - Execute before each time step
+- `preloop` - Execute ONCE before the time step loop (not per-timestep)
 - `presolve` - Prepare for solving
 - `postsolve` - Post-processing after solving
 
@@ -198,7 +198,7 @@ Each module processes through these phases sequentially:
 4. **equations** - Define optimization constraints and objectives
 5. **scaling** - Configure numerical scaling for solver stability
 6. **start** - One-time initialization before time loop
-7. **preloop** - Execute at start of each iteration
+7. **preloop** - Execute ONCE before the time step loop (not per-timestep)
 8. **presolve** - Prepare data for current time step
 9. **[SOLVE]** - Optimization solver execution
 10. **postsolve** - Process results after solving
@@ -206,14 +206,15 @@ Each module processes through these phases sequentially:
 #### 5.2 Time Step Execution
 
 ```
+ONCE before loop: Execute all module preloop phases
+
 FOR each time step t:
     1. Set ct(t) = current time
-    2. Execute all module preloop phases
-    3. Execute all module presolve phases
-    4. SOLVE optimization model
-    5. Execute all module postsolve phases
-    6. Store results
-    7. Advance to next time step
+    2. Execute all module presolve phases
+    3. SOLVE optimization model
+    4. Execute all module postsolve phases
+    5. Store results
+    6. Advance to next time step
 ```
 
 ### 6. Variable Naming Convention
