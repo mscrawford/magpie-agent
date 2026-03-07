@@ -85,6 +85,12 @@ q56_emis_pricing_co2(i2,emis_oneoff) ..
                  (pcm_carbon_stock(j2,land,c_pools,"actual") - vm_carbon_stock(j2,land,c_pools,"%c56_carbon_stock_pricing%"))/m_timestep_length);
 ```
 
+**Architectural Note — Direct Carbon Stock Pathway:**
+
+CO2 pricing is calculated **directly from `vm_carbon_stock`**, intentionally **bypassing `vm_emissions_reg`**. This is a deliberate design choice: land-use-change CO2 is measured as the difference between the previous and current carbon stock, giving a complete LULUCF accounting figure without relying on per-source emission aggregation.
+
+Contrast with annual emissions (Section 2.1): `q56_emis_pricing` routes CH4, N2O, and other recurring gases through `vm_emissions_reg`. `q56_emis_pricing_co2` does NOT — it reads carbon stocks directly and computes the implied CO2 flow itself.
+
 **What This Does:**
 
 Calculates CO2 emissions from land-use change as **carbon stock change between time steps** divided by timestep length.

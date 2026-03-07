@@ -8,10 +8,12 @@
 
 ## 1. Purpose & Overview
 
-Module 39 calculates the costs associated with converting land from one use to another (e.g., forest to cropland, cropland to pasture). These costs represent the economic burden of:
+Module 39 calculates the costs associated with converting land from one use to another (e.g., forest to cropland, cropland to pasture). These costs represent the **physical establishment and transaction costs** of conversion:
 - **Clearing vegetation** (removing trees, biomass)
 - **Preparing land** for new use (leveling, soil preparation, fencing)
-- **Opportunity costs** of land-use change
+- **Infrastructure setup** for the new land use (drainage, seeding, planting)
+
+**Note**: These are establishment/transaction costs — NOT opportunity costs. The economic value of foregone carbon (opportunity cost of deforestation) is handled separately in Module 56 (GHG pricing policy), not here.
 
 **Key Innovation**: The `calib` realization uses regional and time-dependent calibration factors to match historical cropland patterns (2015 benchmark). Regions that historically expanded cropland face higher conversion costs, while regions that reduced cropland receive rewards for further reduction—creating realistic spatial patterns of agricultural expansion.
 

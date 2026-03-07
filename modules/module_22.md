@@ -12,7 +12,7 @@
 
 **Two Conservation Types**:
 1. **Protection** (`consv_type = "protect"`): Prevents conversion of existing land to other uses
-2. **Restoration** (`consv_type = "restore"`): Active restoration to meet conservation targets
+2. **Restoration** (`consv_type = "restore"`): Active restoration to meet conservation targets — applies to **three land types**: secondary forest (for forest deficits), pasture/grassland, and other natural land. Note: forest restoration targets (primforest + secdforest combined) are always attributed to `secdforest` in the output variable, since primary forest cannot be actively created.
 
 **Key Output**:
 - `pm_land_conservation(t,j,land,consv_type)` - Conservation requirements by land type (mio. ha)

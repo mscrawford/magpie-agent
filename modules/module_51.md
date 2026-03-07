@@ -723,7 +723,8 @@ This section shows Module 51's role in system-level mechanisms.
 ### Conservation Laws
 
 **Nitrogen Balance (Emissions)**
-- **Role**: Calculates nitrogen emissions (N₂O, NH₃, NOx) using IPCC factors
+- **Role**: Calculates nitrogen EMISSION TERMS (N₂O, NH₃, NOₓ, NO₃⁻, N₂) using IPCC emission factors — these are output flows that leave the model boundary
+- **Critical**: Module 51 does **NOT** close a system-level nitrogen mass balance. Computed emissions exit the model; they are not recycled back as inputs. The system N balance is deliberately incomplete (see limitation: *No Atmosphere-Biosphere Feedback*)
 - **Details**: `cross_module/nitrogen_food_balance.md`
 
 **Not in** land, water, carbon, or food balance

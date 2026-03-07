@@ -280,7 +280,7 @@ Before answering code-specific questions, verify documentation is current:
 
 ### Step 1d: Anti-Confabulation Rules
 
-**Semantic validation (Round 1, 2026-03-07) found that ~25% of bugs were plausible confabulations.** To prevent this:
+**Semantic validation found that ~25% of bugs were plausible confabulations (Round 1, 6.7/10 accuracy → Round 2, 8.2/10).** To prevent this:
 
 1. **Never construct formulas from memory.** If the docs don't contain the exact formula, say "The docs don't include this formula — let me check the source code" and read the actual `.gms` file.
 
@@ -294,6 +294,8 @@ Before answering code-specific questions, verify documentation is current:
 4. **Distinguish "capability" from "default behavior."** Many features have scenario switches that are OFF by default (e.g., `s42_pumping = 0` disables water costs). Always state the default state: "This feature exists but is **disabled by default** (`s42_pumping = 0`)."
 
 5. **Never present pseudocode as real code.** If you're illustrating a concept, clearly label it: "Conceptually: ..." not "The code does: ..."
+
+6. **Never characterize a module you haven't just looked up.** Even for one-sentence descriptions (e.g., "Module 38 handles X"), check `modules/module_XX.md` first. Round 2 validation (2026-03-07) found that wrong module characterizations were the #1 remaining bug class after other confabulation rules were added. The pattern: when describing a module tangentially (not the main subject), the agent invents plausible-sounding but wrong descriptions.
 
 ### Step 2: Cite Your Sources
 

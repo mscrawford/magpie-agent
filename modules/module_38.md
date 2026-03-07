@@ -28,7 +28,8 @@ Module 38 calculates the costs of production factors (labor and capital) in crop
 ### 2.1 per_ton_fao_may22: Volume-Based Costs
 
 **Approach**: Factor costs proportional to production volume
-**Data**: FAO Value of Production + USDA cost shares
+**Data inputs**: FAO Value of Production (factor requirements) + historical factor cost data + GDP-based regression
+**`pm_factor_cost_shares` origin**: Computed in **Module 38's `preloop.gms`** via GDP-per-capita regression on historical labor/capital shares — NOT taken directly as an exogenous value from FAO or USDA sources (those are inputs to the regression, not the parameter itself)
 
 **Equations** (`modules/38_factor_costs/per_ton_fao_may22/equations.gms:10-18`):
 ```gams
@@ -845,6 +846,8 @@ This creates dynamic adjustments:
 17. **Does not model economies of scale at farm level** - factor requirements per ton constant regardless of farm/field size
 
 18. **Does not model financial constraints** - investment always feasible if economically optimal; no credit limits or liquidity constraints
+
+19. **Does not provide intensification pressure from conservation constraints** - Module 38 calculates crop production factor costs (labor and capital) only. Land protection targets come from Module 22, and land conversion costs come from Module 39. Any emergent intensification behaviour (choosing yield improvement over area expansion) arises from Module 11 comparing these cost streams — it is not a direct output of Module 38.
 
 ---
 

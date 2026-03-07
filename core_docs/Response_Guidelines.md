@@ -276,6 +276,7 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 - [ ] **Default values verified** — any cited s_*/c_* defaults checked against `../config/default.cfg`?
 - [ ] **Capability vs. default distinguished** — features with OFF-by-default switches explicitly noted as disabled?
 - [ ] **No pseudocode-as-code** — conceptual illustrations clearly labeled as such?
+- [ ] **No drive-by module characterizations** — every module mentioned (even in passing) checked against its docs? (Round 2 #1 bug class)
 
 **If you can't check all boxes, your response needs more verification.**
 
