@@ -79,7 +79,7 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 **❌ MISTAKE 1**: Adding a new land type to `land` set only in Module 10
 ```gams
 * WRONG: Only updating sets.gms in Module 10
-set land / crop, past, forest, urban, newtype /;
+set land / crop, past, forestry, primforest, secdforest, urban, other, newtype /;
 ```
 
 **✅ FIX**: Update land type across ALL modules and conservation law documentation
@@ -214,11 +214,11 @@ vm_cost_landcon.up(j,"primforest") = 1e6;  * USD/ha
 | Cost Variable | Source Module | Typical Magnitude (USD17/yr) |
 |---------------|---------------|------------------------------|
 | `vm_cost_prod_crop` | 38_factor_costs | ~100-500 billion |
-| `vm_cost_prod_past` | 38_factor_costs | ~50-100 billion |
+| `vm_cost_prod_past` | 31_past | ~50-100 billion |
 | `vm_cost_prod_livst` | 70_livestock | ~200-400 billion |
 | `vm_nr_inorg_fert_costs` | 50_nr_soil_budget | ~50-150 billion |
 | `vm_emission_costs` | 56_ghg_policy | 0-500 billion (policy-dependent) |
-| `vm_cost_landcon` | 29-35 (land modules) | ~10-50 billion |
+| `vm_cost_landcon` | 39_landconversion | ~10-50 billion |
 | `vm_cost_trade` | 21_trade | ~5-20 billion |
 
 **Source**: module_11.md (lines 84-115)
@@ -327,8 +327,8 @@ q11_cost_reg(i2) =e= ... - vm_reward_cdr_aff(i2);  * Subtract reward
 
 | Variable | Consumers | Description |
 |----------|-----------|-------------|
-| `vm_prod_reg(i,k)` | 9 modules | Regional production (for trade, demand) |
-| `pm_prod_init(j,k)` | 3 modules | Initial production (solver starting point) |
+| `vm_prod_reg(i,kall)` | 9 modules | Regional production (for trade, demand) |
+| `pm_prod_init(j,kcr)` | 3 modules | Initial production (solver starting point) |
 
 **Key Equation**: `q17_prod_reg` aggregates cell-level production to regional level
 
@@ -343,7 +343,7 @@ q11_cost_reg(i2) =e= ... - vm_reward_cdr_aff(i2);  * Subtract reward
 
 **Upstream → Module 17 → Downstream**:
 ```
-Module 30 (Croparea) → vm_prod(j,k) → Module 17 → vm_prod_reg(i,k) → Module 21 (Trade)
+Module 30 (Croparea) → vm_prod(j,k) → Module 17 → vm_prod_reg(i,kall) → Module 21 (Trade)
                                                                       → Module 16 (Demand)
                                                                       → Module 11 (Costs)
                                                                       → Module 73 (Timber)
@@ -387,7 +387,7 @@ pm_prod_init(j,kcr) = sum(w, fm_croparea("y1995",j,w,kcr) * pm_yields_semi_calib
 **❌ MISTAKE 3**: Changing aggregation equation without checking conservation laws
 ```gams
 * WRONG: Adding production from external source
-vm_prod_reg(i,k) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
+vm_prod_reg(i,kall) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
 ```
 
 **Problem**: Food balance expects production = cell-level sum. Adding external source breaks mass balance.
@@ -1072,7 +1072,7 @@ library(magpie4)
 | `im_pop_iso(t,iso)` | 11 | 09_drivers | im_ | Population by country |
 | `pm_interest(t,i)` | 10 | 12_interest_rate | pm_ | Interest rates for NPV |
 | `vm_prod(j,k)` | 9 | 17_production | vm_ | Cell-level production |
-| `vm_prod_reg(i,k)` | 9 | 17_production | vm_ | Regional production |
+| `vm_prod_reg(i,kall)` | 9 | 17_production | vm_ | Regional production |
 | `vm_area(j,kcr,w)` | 9 | 30_croparea | vm_ | Cropland area by irrigation |
 
 **Source**: Module_Dependencies.md (lines 46-59)

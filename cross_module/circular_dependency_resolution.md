@@ -127,22 +127,22 @@ pcm_carbon_stock(j,land,c_pools) = vm_carbon_stock.l(j,land,c_pools);
 ```
 Module 17 (Production)
        ↓
-  vm_prod_reg(i,k) ────→ Module 21 (Trade)
+  vm_prod_reg(i,kall) ──→ Module 21 (Trade)
        ↑                        │
        │                        │
-       └────── vm_import/export ←┘
+       └── vm_supply/trade ─────┘
 ```
 
 **Resolution**:
 1. **Both variables optimized simultaneously** in same solve
 2. **Coupled equations** form system:
    ```
-   vm_prod_reg(i,k) = sum(j, vm_prod(j,k))
-   vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) ≥ vm_demand(i,k)
-   sum(i, vm_import(i,k)) = sum(i, vm_export(i,k))
+   vm_prod_reg(i,kall) = sum(cell(i,j), vm_prod(j,kall))      [q17_prod_reg]
+   sum(i, vm_prod_reg(i,k)) ≥ sum(i, vm_supply(i,k))          [q21_trade_glo]
+   v21_trade(i_ex,i_im,k_trade) handles bilateral trade flows  [q21_trade_bilat]
    ```
 3. **GAMS solver** (CONOPT/IPOPT) solves all equations together
-4. **System is square** (# variables = # equations) → unique solution
+4. **Note**: vm_import/vm_export do NOT exist — trade uses bilateral flows via `v21_trade`
 
 **Convergence**: Guaranteed if equations are **consistent and feasible**
 
@@ -226,15 +226,15 @@ Module 14 (Yields) ←→ Module 13 (TC) ←→ Module 70 (Livestock)
 
 **Dependency Chain**:
 ```
-vm_prod(j,kcr) [17] → pm_yields_semi_calib(j,kcr,w) [14]
+vm_prod(j,kcr) [17] → pm_yields_semi_calib(j,kve,w) [14]
     ↓
   (Yields drive feed availability)
     ↓
-vm_prod(j,kli) [70] → manure availability
+vm_prod_reg(i2,kap) [70] → manure availability
     ↓
   (Manure affects soil fertility)
     ↓
-pm_yields_semi_calib(j,kcr,w) [14] → vm_prod(j,kcr) [17]
+pm_yields_semi_calib(j,kve,w) [14] → vm_prod(j,kcr) [17]
 ```
 
 **Resolution Type**: **Temporal Feedback** + **Iterative Convergence**
@@ -273,15 +273,15 @@ stopifnot(all(abs(yield_change) < 0.2))  # <20% per 5-year timestep
 
 **Dependency Chain**:
 ```
-vm_land(j,"natveg") [10] → area available for natural vegetation [35]
+vm_land(j,"primforest") + vm_land(j,"secdforest") + vm_land(j,"other") [10] → natural vegetation area [35]
     ↓
   (Natural vegetation competes for land)
     ↓
-vm_land_natveg(j) [35] → constraint on vm_land(j,"natveg") [10]
+vm_land(j,land_natveg) [35] → conservation bounds set on vm_land.lo [10]
     ↓
   (Conservation protects natural vegetation)
     ↓
-pm_land_conservation(j,"natveg") [22] → vm_land.lo(j,"natveg") [10]
+pm_land_conservation(t,j,land,consv_type) [22] → vm_land.lo(j,land_natveg) [10]
 ```
 
 **Resolution Type**: **Simultaneous Equations**
@@ -290,9 +290,8 @@ pm_land_conservation(j,"natveg") [22] → vm_land.lo(j,"natveg") [10]
 1. **All variables optimized together** in single solve
 2. **Equations form system**:
    ```
-   sum(land, vm_land(j,land)) = pcm_land(j,land)  [10]
-   vm_land(j,"natveg") ≥ pm_land_conservation(j,"natveg")  [22]
-   vm_land(j,"natveg") = vm_land_natveg(j)  [35, identity]
+   sum(land, vm_land(j,land)) = sum(land, pcm_land(j,land))  [q10_land, 10]
+   vm_land(j,land_natveg) ≥ pm_land_conservation(t,j,land_natveg,"protect")  [22, bounds]
    ```
 3. **Solver ensures consistency** of all constraints
 
@@ -326,7 +325,7 @@ vm_area(j,kcr,"irrigated") [30] → irrigation demand [41]
     ↓
   (Irrigation investment driven by irrigation use)
     ↓
-v41_AEI(j) [41] → constraint on vm_area(j,kcr,"irrigated") [30]
+vm_AEI(j) [41] → constraint on vm_area(j,kcr,"irrigated") [30]
     ↓
   (Irrigation capacity limits irrigated cropland)
 ```
@@ -341,10 +340,10 @@ v41_AEI(j) [41] → constraint on vm_area(j,kcr,"irrigated") [30]
 **Code**:
 ```gams
 * Module 41, equations.gms:
-v41_AEI(j) ≥ sum(kcr, vm_area(j,kcr,"irrigated"))
+vm_AEI(j2) =g= sum(kcr, vm_area(j2,kcr,"irrigated"))
 
 * Module 41, postsolve.gms:
-p41_AEI_start(t+1,j) = v41_AEI.l(j) + new_investment
+pc41_AEI_start(j) = vm_AEI.l(j);
 ```
 
 **Verification**:
@@ -372,7 +371,7 @@ stopifnot(all(irrig_area <= aei_capacity * 1.01))  # Allow 1% tolerance
 
 **Dependency Chain** (5-module feedback):
 ```
-im_pollutant_prices(t,i,"co2_c") [56] → afforestation incentive
+im_pollutant_prices(t_all,i,pollutants,emis_source) [56] → afforestation incentive
     ↓
 vm_land(j,"forestry") [32] → expands plantation forests
     ↓
@@ -380,7 +379,7 @@ vm_land(j,"crop") [30] → competes for land (crop ↓ as forest ↑)
     ↓
 vm_lu_transitions(j,"crop","forestry") [10] → land conversion tracked
     ↓
-vm_carbon_stock(j,"forestry","vegc") [52] → carbon sequestration
+vm_carbon_stock(j,"forestry","vegc","actual") [56] → carbon sequestration
     ↓
 vm_emissions_reg(i,"co2_c") [52] → reduced (or negative) CO2 emissions
     ↓
@@ -965,10 +964,10 @@ vm_problematic_var.fx(j) = baseline_value(j);
 
 | Variable | Module | Purpose | Updated in |
 |----------|--------|---------|------------|
-| `pcm_land(j,land)` | 10_land | Previous land allocation | postsolve.gms:8 |
-| `pcm_carbon_stock(j,land,c_pools)` | 52_carbon | Previous carbon stocks | postsolve.gms:15 |
-| `pcm_interest(t,i)` | 12_interest_rate | Previous interest rates | preloop.gms:20 |
-| `pcm_tau(t,i)` | 13_tc | Previous TC factors | postsolve.gms:25 |
+| `pcm_land(j,land)` | 10_land | Previous land allocation | postsolve.gms:9 |
+| `pcm_carbon_stock(j,land,c_pools,stockType)` | 56_ghg_policy | Previous carbon stocks | postsolve.gms:8 |
+| `pm_interest(t_all,i)` | 12_interest_rate | Interest rates | preloop.gms:23 |
+| `pcm_tau(j,tautype)` | 13_tc | Previous TC factors | postsolve.gms:16 |
 | ... | ... | ... | ... |
 
 **Pattern**: All `pcm_*` variables are updated in `postsolve.gms` from corresponding `vm_*` optimal values

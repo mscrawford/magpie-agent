@@ -3,7 +3,7 @@
 
 ### Executive Summary
 
-This phase analyzed all 45 MAgPIE modules to create a comprehensive dependency graph showing how modules interact through interface variables. The analysis identified 115 interface variables facilitating 173 inter-module dependencies with 26 circular dependency cycles, revealing the model's complex feedback structure.
+This phase analyzed all 46 MAgPIE modules to create a comprehensive dependency graph showing how modules interact through interface variables. The analysis identified 115 interface variables facilitating 173 inter-module dependencies with 26 circular dependency cycles, revealing the model's complex feedback structure.
 
 ### 1. Dependency Architecture Overview
 
@@ -53,9 +53,9 @@ MAgPIE modules communicate through three types of interface variables:
 | `vm_prod` | 9 | vm_ | Agricultural production | 17_production → multiple |
 | `vm_prod_reg` | 9 | vm_ | Regional production | 17_production → multiple |
 | `vm_area` | 9 | vm_ | Cropland area | 30_croparea → multiple |
-| `vm_carbon_stock` | 8 | vm_ | Carbon stocks | 52_carbon → multiple |
+| `vm_carbon_stock` | 8 | vm_ | Carbon stocks | 56_ghg_policy → multiple |
 | `vm_bv` | 7 | vm_ | Biodiversity value | 44_biodiversity → multiple |
-| `vm_nr_inorg_fert_costs` | 6 | vm_ | Nitrogen fertilizer costs | 50_nr_soil_budget → multiple |
+| `vm_nr_inorg_fert_costs` | 2 | vm_ | Nitrogen fertilizer costs | 50_nr_soil_budget → 11_costs |
 
 #### 2.2 Variable Categories by Function
 
@@ -80,8 +80,7 @@ MAgPIE modules communicate through three types of interface variables:
 **Environmental Variables:**
 - `vm_carbon_stock` - Carbon storage
 - `vm_emissions_reg` - Regional emissions
-- `pm_carbon_density_*` - Carbon densities by pool
-- `vm_btc_reg` - Below-ground carbon
+- `pm_carbon_density_*` - Carbon densities by age-class and pool (secdforest, plantation, other)
 
 ### 3. Module Dependency Patterns
 
@@ -130,12 +129,12 @@ Layer 6: Optimization
 
 **Pure Sources (provide only):**
 - 09_drivers → 14 modules
-- 28_ageclass → 3 modules
-- 45_climate → 1 module
+- 28_ageclass → 1 module (35_natveg)
+- 45_climate → 4 modules (14_yields, 52_carbon, 58_peatland, 59_som)
 
 **Pure Sinks (consume only):**
-- 80_optimization ← all cost components
-- 11_costs ← 27 modules
+- 80_optimization ← vm_cost_glo (from 11_costs) + vm_landdiff (from 10_land)
+- 11_costs ← 19 cost variables from various modules
 
 **Central Hubs (high bidirectional):**
 - 17_production: 13 out, 1 in
@@ -159,11 +158,11 @@ Layer 6: Optimization
 2. **Land-Vegetation Bidirectional**
    ```
    10_land ←→ 35_natveg
-   10_land ←→ 22_land_conservation
-   35_natveg ←→ 22_land_conservation
+   22_land_conservation → 35_natveg (unidirectional: pm_land_conservation)
+   10_land → 22_land_conservation (unidirectional: vm_land)
    ```
-   - Natural vegetation competes for land
-   - Conservation constraints affect both
+   - Natural vegetation competes for land (true bidirectional)
+   - Conservation constrains natural vegetation land (unidirectional)
 
 3. **Croparea-Irrigation Cycle**
    ```
@@ -187,14 +186,14 @@ Layer 6: Optimization
    12_interest_rate → 13_tc → 14_yields → 17_production → 71_disagg_lvst → 11_costs
    ```
 
-2. **Demand-to-Land Chain** (Length 5):
+2. **Demand-to-Land Chain** (Length 3):
    ```
-   16_demand → 70_livestock → 14_yields → 10_land → 32_forestry
+   70_livestock → 17_production → 11_costs
    ```
 
-3. **Policy-to-Production Chain** (Length 4):
+3. **Policy-to-Forestry Chain** (Length 2):
    ```
-   56_ghg_policy → 32_forestry → 30_croparea → 17_production
+   56_ghg_policy → 32_forestry (via vm_carbon_stock pricing)
    ```
 
 ### 5. System Subsystem Analysis
@@ -365,7 +364,7 @@ Only 2-3 connections per module, minimal integration with core system.
 
 ### 9. Dependency Matrix
 
-**Full 45x45 Dependency Matrix Summary:**
+**Full 46x46 Dependency Matrix Summary:**
 
 ```
 From\To  09 10 11 12 13 14 15 16 17 18 20 21 22 28 29 30 31 32 34 35...

@@ -7,7 +7,7 @@ MAgPIE (Model of Agricultural Production and its Impact on the Environment) is a
 
 **Core Design Principles:**
 - Modular architecture with 46 independent modules
-- Phase-based execution flow (8 distinct phases)
+- Phase-based execution flow (12 distinct phases)
 - Recursive dynamic optimization (5-year time steps)
 - Spatial disaggregation (12 world regions, 200 cluster cells)
 
@@ -61,7 +61,10 @@ Where `[phase]` can be:
 - `scaling` - Set variable scaling factors
 - `start` - Initialize before time loop
 - `preloop` - Execute ONCE before the time step loop (not per-timestep)
+- `presolve_ini` - Pre-solve initialization (e.g., 22_land_conservation bounds)
 - `presolve` - Prepare for solving
+- `solve` - Solver execution (80_optimization)
+- `intersolve` - Between-solve iteration (15_food demand coupling)
 - `postsolve` - Post-processing after solving
 
 ### 3. Core Components
@@ -199,23 +202,34 @@ Each module processes through these phases sequentially:
 5. **scaling** - Configure numerical scaling for solver stability
 6. **start** - One-time initialization before time loop
 7. **preloop** - Execute ONCE before the time step loop (not per-timestep)
-8. **presolve** - Prepare data for current time step
-9. **[SOLVE]** - Optimization solver execution
-10. **postsolve** - Process results after solving
+8. **presolve_ini** - Pre-solve initialization (e.g., 22_land_conservation sets bounds)
+9. **presolve** - Prepare data for current time step
+10. **solve** - Optimization solver execution (routed through 80_optimization)
+11. **intersolve** - Between-solve iteration (15_food demand coupling)
+12. **postsolve** - Process results after solving
 
 #### 5.2 Time Step Execution
 
 ```
-ONCE before loop: Execute all module preloop phases
+ONCE before loop:
+    Execute all module start phases
+    Execute all module preloop phases
 
 FOR each time step t:
-    1. Set ct(t) = current time
-    2. Execute all module presolve phases
-    3. SOLVE optimization model
-    4. Execute all module postsolve phases
-    5. Store results
-    6. Advance to next time step
+    1. Set ct(t) = current time, pt(t) = previous time
+    2. Execute all module presolve_ini phases
+    3. Execute all module presolve phases
+    4. WHILE (sm_intersolve = 0):
+        a. Load GDX starting points
+        b. Execute solve phase (80_optimization → CONOPT/IPOPT)
+        c. Execute intersolve phase (15_food sets sm_intersolve)
+    5. Execute all module postsolve phases
+    6. Execute_Unload "fulldata.gdx"
+    7. Clear ct/pt, save restart point, advance to next time step
 ```
+
+**Note**: The WHILE loop (steps 4a-4c) implements food demand coupling — Module 15 iterates
+between food demand and the optimizer until convergence (typically 2-5 iterations).
 
 ### 6. Variable Naming Convention
 

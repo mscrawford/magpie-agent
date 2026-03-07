@@ -13,7 +13,7 @@ MAgPIE processes approximately 72 MB of input data across ~172 files through a s
 |--------|-------|---------|---------------|
 | `.cs3` | 20 | 3D GAMS data (time×region×category) | `lpj_yields.cs3`, `f14_region_yields.cs3` |
 | `.cs4` | 10 | 4D GAMS data | `f53_EFch4Rice.cs4` |
-| `.mz` | 26 | Binary compressed spatial data (0.5°) | `LUH2_croparea_0.5.mz`, `wdpa_baseline_0.5.mz` |
+| `.mz` | 26 | Binary compressed spatial data (0.5°) | `luh2_side_layers_0.5.mz`, `wdpa_baseline_0.5.mz` |
 | `.csv` | 76 | Standard comma-separated values | `f09_gdp_ppp_iso.csv`, `f09_pop_iso.csv` |
 | `.cs2` | Legacy | 2D GAMS data | `lpj_watavail_grper.cs2` |
 | `.rds` | 22 | R data serialization | Configuration files |
@@ -28,7 +28,7 @@ MAgPIE processes approximately 72 MB of input data across ~172 files through a s
 - Soil carbon: `modules/59_som/input/lpj_carbon_topsoil.cs2b`
 - Water availability: `modules/43_water_availability/input/lpj_watavail_grper.cs2`
 - Irrigation requirements: `modules/42_water_demand/input/lpj_airrig.cs2`
-- Grassland productivity: `modules/31_past/input/lpj_grper_0.5.mz`
+- Grassland productivity: `input/lpj_grper_0.5.mz`
 
 **Agricultural Statistics (FAO):**
 - Historical yields: `modules/14_yields/managementcalib_aug19/input/f14_region_yields.cs3`
@@ -37,7 +37,7 @@ MAgPIE processes approximately 72 MB of input data across ~172 files through a s
 - Livestock production: `modules/70_livestock/fbask_jan16/input/f70_hist_prod_livst.cs3`
 
 **Land Use (LUH2 - Land-Use Harmonization v2):**
-- Initial cropland: `input/LUH2_croparea_0.5.mz`
+- Initial land use: `input/luh2_side_layers_0.5.mz`
 - Land-use layers: `modules/10_land/landmatrix_dec18/input/fm_luh2_side_layers()`
 
 **Climate & Emissions (IPCC):**
@@ -140,14 +140,21 @@ i14_yields_calib(t,j,knbe14,w) = i14_managementcalib(t,j,knbe14,w)
 
 **Loop Structure:**
 ```gams
-loop (t$(m_year(t) > start_year),
+loop (t$(m_year(t) > %TIMESTEP%),
     ct(t) = yes;  # Activate current timestep
+    pt(t-1) = yes;  # Set previous timestep
+
+    # PRESOLVE_INI: Initialize pre-solve (e.g., conservation bounds)
+    $batinclude "./modules/include.gms" presolve_ini
 
     # PRESOLVE: Update dynamic parameters
     $batinclude "./modules/include.gms" presolve
 
-    # SOLVE: Run optimization
-    $batinclude "./modules/include.gms" solve
+    # SOLVE + INTERSOLVE: Iterate until food demand converges
+    while(sm_intersolve = 0,
+        $batinclude "./modules/include.gms" solve       # 80_optimization
+        $batinclude "./modules/include.gms" intersolve  # 15_food coupling
+    );
 
     # POSTSOLVE: Extract and store results
     $batinclude "./modules/include.gms" postsolve
@@ -198,19 +205,19 @@ minimize vm_cost_glo = Σ costs - Σ benefits
 | `vm_area(j,kcr,w)` | Crop area by crop and water type | mio. ha |
 | `vm_prod(j,k)` | Production by product | mio. tDM |
 | `vm_yld(j,kve,w)` | Realized yields | tDM/ha/yr |
-| `vm_carbon_stock(j,land,c_pools)` | Carbon storage | mio. tC |
-| `vm_tau(h,tax)` | Technology change factor | 1 |
-| `vm_trade(i,k)` | Trade flows | mio. tDM |
+| `vm_carbon_stock(j,land,c_pools,stockType)` | Carbon storage | mio. tC |
+| `vm_tau(j,tautype)` | Technology change factor | 1 |
+| `v21_trade(i_ex,i_im,k_trade)` | Trade flows | mio. tDM |
 | `vm_watdem(wat_dem,j)` | Water use by sector | mio. m³ |
 
 **Core Constraint Types:**
 ```gams
 # Example: Yield constraint with technology change
-q14_yield_crop(j,kcr,w) ..
-    vm_yld(j,kcr,w) =e=
-        sum(ct, i14_yields_calib(ct,j,kcr,w))
-        * sum((cell(i,j), supreg(h,i)),
-            vm_tau(h,"crop") / fm_tau1995(h));
+q14_yield_crop(j2,kcr,w) ..
+    vm_yld(j2,kcr,w) =e=
+        sum(ct, i14_yields_calib(ct,j2,kcr,w))
+        * sum((cell(i2,j2), supreg(h2,i2)),
+            vm_tau(j2,"crop") / fm_tau1995(h2));
 ```
 
 #### 3.5 Phase 4: Output Extraction (postsolve.gms)
@@ -288,7 +295,7 @@ p35_secdforest(t,j,ac)$(ord(ac) > s35_shift) =
 
 **Production System:**
 - `i14_yields_calib(t,j,kve,w)` - Calibrated yields
-- `vm_tau(h,tax)` - Technology factor
+- `vm_tau(j,tautype)` - Technology factor
 - Flow: Module 14 → 30 → 17
 
 #### 5.2 Calibration Feedback Loops
