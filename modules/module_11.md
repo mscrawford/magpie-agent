@@ -20,7 +20,7 @@ Module 11 is the **central cost aggregation hub** and **defines MAgPIE's optimiz
 ### 1.2 Key Features
 
 1. **Global Cost Aggregation** (`equations.gms:10`): Sums regional costs to produce global total
-2. **Regional Cost Aggregation** (`equations.gms:15-45`): Sums 30+ cost components from production, land use, emissions, and policy modules
+2. **Regional Cost Aggregation** (`equations.gms:15-45`): Sums **30 cost components** (29 positive + 1 negative term) from production, land use, emissions, and policy modules
 3. **Objective Function Definition:** `vm_cost_glo` is the variable MAgPIE minimizes
 4. **Scaling for Numerical Stability** (`scaling.gms:8-10`): Applies scaling factors to improve solver performance
 5. **Zero Configuration:** Module has no input files, switches, or parameters of its own
@@ -178,7 +178,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Residue Production Costs
 
 **Variable:** `vm_cost_prod_kres(i,kres)`
-**Source Module:** Module 38 (Factor Costs)
+**Source Module:** Module 18 (Residues)
 **Description:** Costs for residue collection and processing (crop residues, wood fuel)
 **Dimensions:** i (regions), kres (residue types)
 **Citation:** `equations.gms:16`
@@ -188,7 +188,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Pasture Production Costs
 
 **Variable:** `vm_cost_prod_past(i)`
-**Source Module:** Module 38 (Factor Costs)
+**Source Module:** Module 31 (Pasture)
 **Description:** Labor and capital costs for pasture management
 **Dimensions:** i (regions)
 **Citation:** `equations.gms:17`
@@ -198,7 +198,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Fish Production Costs
 
 **Variable:** `vm_cost_prod_fish(i)`
-**Source Module:** Module 38 (Factor Costs)
+**Source Module:** Module 70 (Livestock)
 **Description:** Costs for fish production (aquaculture and capture fisheries)
 **Dimensions:** i (regions)
 **Citation:** `equations.gms:18`
@@ -208,7 +208,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Livestock Production Costs
 
 **Variable:** `vm_cost_prod_livst(i,factors)`
-**Source Module:** Module 38 (Factor Costs)
+**Source Module:** Module 70 (Livestock)
 **Description:** Labor and capital costs for livestock production
 **Dimensions:** i (regions), factors (labor, capital)
 **Citation:** `equations.gms:19`, documented in `equations.gms:51`
@@ -242,7 +242,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Cropland Costs
 
 **Variable:** `vm_cost_cropland(j)`
-**Source Module:** Module 10 (Land) or Module 30 (Crop)
+**Source Module:** Module 29 (Cropland)
 **Description:** Costs specific to cropland management (likely maintenance or baseline costs)
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
@@ -512,7 +512,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 
 **v11_cost_reg(i)** - Regional total production cost (mio. USD17MER/yr)
 **Purpose:** Intermediate aggregation for cleaner code structure
-**Calculated by:** Equation q11_cost_reg (sum of 30+ cost components)
+**Calculated by:** Equation q11_cost_reg (sum of **30 terms**: 29 positive cost components + 1 negative reward term)
 **Used by:** Equation q11_cost_glo (aggregated to global total)
 **Citation:** `declarations.gms:10`
 
@@ -520,7 +520,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 
 ### 4.3 Inputs (Received from Other Modules)
 
-Module 11 receives **30+ cost variables** from other modules. See Section 3 for complete mapping.
+Module 11 receives **30 cost variables** (29 costs + 1 reward) from other modules. See Section 3 for complete mapping.
 
 **Key Pattern:** All cost variables have naming convention `vm_cost_*` or `vm_*_cost*` and units of mio. USD17MER/yr.
 
@@ -581,9 +581,11 @@ Only **one realization exists:** `default`
 **Module 11 depends on 30+ modules** providing cost variables:
 
 **Core Production Modules:**
-- Module 38 (Factor Costs): Production costs for crops, livestock, pasture
+- Module 38 (Factor Costs): Production costs for crops only (`vm_cost_prod_crop`)
+- Module 70 (Livestock): Livestock and fish production costs (`vm_cost_prod_livst`, `vm_cost_prod_fish`)
+- Module 31 (Pasture): Pasture production costs (`vm_cost_prod_past`)
+- Module 18 (Residues): Residue production costs (`vm_cost_prod_kres`)
 - Module 30 (Crop): Cropland and rotation costs
-- Module 31 (Pasture): Pasture management costs
 
 **Land Use Modules:**
 - Module 39 (Land Conversion): Conversion costs
@@ -727,7 +729,7 @@ grep "^[ ]*q11_" modules/11_costs/default/declarations.gms | wc -l
 
 **After running MAgPIE:**
 
-1. **Check that all 30+ cost variables are non-negative** (except `vm_reward_cdr_aff`):
+1. **Check that all 30 cost variables are non-negative** (except `vm_reward_cdr_aff`):
    ```gams
    * Inspect solution values for all cost variables listed in Section 3
    * Flag any negative costs (would indicate source module error)
@@ -741,7 +743,7 @@ grep "^[ ]*q11_" modules/11_costs/default/declarations.gms | wc -l
 
 3. **Identify dominant cost components:**
    ```gams
-   * Rank all 30+ cost variables by magnitude
+   * Rank all 30 cost variables by magnitude
    * Top 5-10 components should account for >90% of total
    * Typical dominants: vm_cost_prod_crop, vm_emission_costs, vm_tech_cost
    ```
@@ -926,7 +928,7 @@ MAgPIE minimizes costs **one time step at a time**, without anticipating future 
 **30+ modules** — see complete list in Section 3
 
 **Key Providers:**
-- Module 38 (Factor Costs): Largest contributor (labor, capital, land)
+- Module 38 (Factor Costs): Crop production costs (`vm_cost_prod_crop`) — largest contributor
 - Module 56 (GHG Policy): Emission costs and CDR rewards
 - Module 21 (Trade): Trade costs
 - Module 13 (Technological Change): Investment costs for intensification
@@ -942,7 +944,7 @@ Module 11 is at the **end of the dependency chain** — it aggregates costs but 
 ### 14.1 Current Realization (default)
 
 **Features:**
-- Simple summation of 30+ cost components
+- Simple summation of **30 cost components** (29 positive + 1 negative reward)
 - No dynamic weighting or prioritization
 - No cost uncertainty or risk aversion
 
@@ -1006,7 +1008,7 @@ Module 11 is at the **end of the dependency chain** — it aggregates costs but 
 
 1. **No discounting of future costs**: Module 11 does not apply discount rates to costs from future time steps. Each time step is optimized independently (recursive dynamic, not forward-looking). Long-term costly land transitions (e.g., reforestation) appear equally expensive regardless of when they occur (`equations.gms:10`).
 
-2. **Blind aggregation with no validation**: Module 11 unconditionally sums 30+ cost variables from other modules without conditional logic or sign checks (`equations.gms:15-45`). Errors in source modules propagate directly to the objective function.
+2. **Blind aggregation with no validation**: Module 11 unconditionally sums 30 cost variables from other modules without conditional logic or sign checks (`equations.gms:15-45`). Errors in source modules propagate directly to the objective function.
 
 3. **Single currency, no real vs. nominal distinction**: All costs in USD17MER (2017 US dollars, Market Exchange Rates). No PPP adjustment or inflation mechanism exists between time periods.
 
@@ -1261,7 +1263,7 @@ Module 11 participates in **zero circular dependencies**:
 ---
 
 **Documentation Status:** ✅ Fully Verified (2025-10-12)
-**Verification Method:** All source files read, 2 equations verified against declarations.gms, 147 lines analyzed, 30+ cost components catalogued from equations.gms
+**Verification Method:** All source files read, 2 equations verified against declarations.gms, 147 lines analyzed, 30 cost components (29 positive + 1 negative) catalogued from equations.gms
 **Citation Density:** 50+ file:line references
 **Next Module:** Module 17 (Production) — another core hub module
 

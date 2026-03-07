@@ -50,7 +50,7 @@ Module 42 calculates water demand across five sectors (module.gms:10-11):
 
 The module has **two realizations** (module.gms:22-23):
 - `agr_sector_aug13`: Only agriculture sector endogenous
-- `all_sectors_aug13`: All five sectors explicitly modeled
+- `all_sectors_aug13`: All five sectors explicitly modeled - DEFAULT
 
 This documentation covers `all_sectors_aug13` as the more comprehensive option.
 
@@ -560,7 +560,7 @@ sum(kli, vm_prod(j2,kli) * ic42_wat_req_k(j2,kli) * v42_irrig_eff(j2))
 
 **Options**:
 - `"agr_sector_aug13"`: Only agriculture endogenous (manufacturing/electricity/domestic exogenous)
-- `"all_sectors_aug13"`: All five sectors explicitly modeled (RECOMMENDED)
+- `"all_sectors_aug13"`: All five sectors explicitly modeled - DEFAULT
 
 #### 2. Non-Agricultural Water Scenario (input.gms:9)
 

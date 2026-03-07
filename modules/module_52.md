@@ -151,6 +151,8 @@ m_growth_litc_soilc(start,end,ac) =
   end$(ac > 20/5)
 ```
 
+> **⚠️ Macro name is misleading**: Despite being named `m_growth_litc_soilc`, this macro is applied **only to litter carbon (litc)** in Module 52 (start.gms:20, 31, 38). Soil carbon (`soilc`) has **no age-class growth function** in Module 52 — it is read directly from LPJmL static input data and is not age-class-specific (see also Section 4, line 717: "Soil carbon (soilc) NOT age-class-specific").
+
 **Parameters**:
 - `start` = Initial litter carbon (tC/ha) = pasture litc (start.gms:10)
 - `end` = Equilibrium litter carbon (tC/ha) = target land type litc from LPJmL

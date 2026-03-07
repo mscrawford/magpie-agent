@@ -745,7 +745,7 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 
 #### 9.1 Disturbance Mode
 
-**c35_forest_damage** (scalar, 0-4):
+**s35_forest_damage** (scalar, 0-4):
 - **Default**: 2 (shifting agriculture with fade-out)
 - See Section 4 for details on all modes
 

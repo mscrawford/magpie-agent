@@ -201,7 +201,7 @@ minimize vm_cost_glo = Σ costs - Σ benefits
 | `vm_carbon_stock(j,land,c_pools)` | Carbon storage | mio. tC |
 | `vm_tau(h,tax)` | Technology change factor | 1 |
 | `vm_trade(i,k)` | Trade flows | mio. tDM |
-| `vm_water_demand(j,wat_src,wat_dem)` | Water use | mio. m³ |
+| `vm_watdem(wat_dem,j)` | Water use by sector | mio. m³ |
 
 **Core Constraint Types:**
 ```gams

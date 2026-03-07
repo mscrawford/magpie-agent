@@ -73,7 +73,7 @@ Module 58 calculates GHG emissions from peatlands and tracks peatland area chang
 2. Intact peatland can only decrease (cannot be restored to "intact" status)
 3. Drained peatland (crop/past/forestry/unused) scales with managed land changes
 4. Peat extraction area is fixed
-5. Rewetted and intact have identical emission factors (prevents artificial intact→rewetted conversion)
+5. In the raw input data (`f58_ipcc_wetland_ef2.cs3`), intact peatland has **no entries** (zero emission factors by default). The preloop artificially sets intact EFs equal to rewetted EFs to prevent the optimizer from exploiting intact's zero EFs (which would otherwise create an artificial incentive for intact→rewetted conversion).
 
 ---
 
@@ -85,7 +85,7 @@ Module 58 calculates GHG emissions from peatlands and tracks peatland area chang
 
 | State | Code | Description | Managed? | Emissions |
 |-------|------|-------------|----------|-----------|
-| intact | intact | Undrained natural peatland | No | Low (same as rewetted) |
+| intact | intact | Undrained natural peatland | No | Zero in raw data (f58_ipcc_wetland_ef2.cs3 has no intact entries); artificially set equal to rewetted EFs in preloop |
 | crop | crop | Drained for cropland | Yes | High CO2, moderate N2O |
 | past | past | Drained for pasture | Yes | Moderate CO2, low N2O |
 | forestry | forestry | Drained for plantations | Yes | Low-moderate CO2 |
@@ -743,7 +743,7 @@ vm_emissions_reg(i2,"peatland",poll58) =e=
 5. **Emission bounds**: Fix non-peatland pollutants to zero, free poll58 pollutants (lines 31-33)
 6. **Climate mapping**: Map cells to simple climate classes (line 36)
 7. **Initialization**: Set pc58_peatland to zero (line 39)
-8. **Intact EF fix**: Set intact EF = rewetted EF to prevent artificial conversion (line 43)
+8. **Intact EF fix**: The raw input data has **no emission factor entries for intact peatland** (zero by default in `f58_ipcc_wetland_ef2.cs3`). The preloop overrides this by setting intact EF = rewetted EF to prevent the optimizer from exploiting the zero-EF intact state (line 43)
 
 **Key Lines**:
 - 9: `m_linear_time_interpol(i58_peatland_rewetting_fader, 2025, 2050, 0, 0.5)`
@@ -841,7 +841,7 @@ vm_emissions_reg(i2,"peatland",poll58) =e=
   1. Tiemeyer et al. 2020 (temperate regions, all drained unused)
   2. IPCC Wetlands 2014 (boreal, tropical baseline)
   3. Wilson et al. 2016 (tropical adjustments)
-- **Note**: Intact factors set equal to rewetted in preloop (preloop.gms:43)
+- **Note**: In the raw input data (`f58_ipcc_wetland_ef2.cs3`), intact peatland has **no emission factor entries** (effectively zero). The preloop sets intact EFs equal to rewetted EFs (preloop.gms:43) to prevent the optimizer from exploiting the zero EF. Rewetted EFs are non-zero and include negative CO₂ values for carbon sequestration in boreal (−0.34 t CO₂-C/ha/yr) and temperate (−0.40 t CO₂-C/ha/yr) climates.
 
 **Emission Factor Summary** (from f58_ipcc_wetland_ef2.cs3 header):
 
@@ -1017,9 +1017,11 @@ Lower bound: v58_peatland(j,"intact") ≥ pc58_peatland(j,"intact")
 4. **Peat extraction is fixed** (presolve.gms:41)
    - `v58_peatland.fx("peatExtract") = pc58_peatland("peatExtract")`
 
-5. **Intact and rewetted have identical emission factors** (preloop.gms:43)
+5. **Intact peatland has zero EFs in raw data; preloop sets them equal to rewetted** (preloop.gms:43)
+   - Raw data (`f58_ipcc_wetland_ef2.cs3`) has **no entries for "intact"** — intact EFs are zero by default
+   - Rewetted EFs are non-zero (including negative CO₂ for carbon sequestration in boreal/temperate)
    - `f58_ipcc_wetland_ef(clcl58,"intact",emis58) = f58_ipcc_wetland_ef(clcl58,"rewetted",emis58)`
-   - Prevents optimizer from converting intact → rewetted for cost reasons
+   - Prevents optimizer from exploiting zero EFs to artificially convert intact → rewetted
 
 6. **Emission factors are climate-specific** (equations.gms:84-87)
    - 3 climate zones: tropical, temperate, boreal
@@ -1859,7 +1861,7 @@ display p_emis_intensity;
 
 **Peat extraction**: Mining of peat for fuel or horticulture (fixed area, not optimized)
 
-**Rewetted peatland**: Previously drained peatland that has been hydrologically restored (near-zero emissions, similar to intact)
+**Rewetted peatland**: Previously drained peatland that has been hydrologically restored (non-zero EFs including negative CO₂ in boreal/temperate; intact peatland EFs are set equal to rewetted in preloop — see preloop.gms:43)
 
 **Scaling factor**: Ratio used to estimate peatland drainage/rewetting from managed land expansion/reduction
 

@@ -319,7 +319,7 @@ Trees planted today sequester carbon over decades. Price expectations must refle
 
 ## 3. Pollutant Price Configuration (Preloop Phase)
 
-Module 56's complexity lies in extensive preloop logic that configures GHG prices based on policy scenarios. The process has 8 stages:
+Module 56's complexity lies in extensive preloop logic that configures GHG prices based on policy scenarios. The preloop performs multiple sequential configuration stages (at least 11 distinct operations, see preloop.gms:35–124):
 
 ### 3.1 Stage 1: Select Price Scenario
 
@@ -496,7 +496,7 @@ Dimensions: 60+ policies × 15 pollutants × 20+ emission sources
 Example policies:
 - **"none":** All entries = 0 (no pricing)
 - **"all":** All entries = 1 (price everything)
-- **"reddnatveg_nosoil"** (default, `input.gms:86`): Price CO2 from natural vegetation loss, exclude soil C
+- **"reddnatveg_nosoil"** (default): Prices CO2 from natural vegetation carbon stocks — specifically **vegc AND litc** for primforest, secdforest, and other land, plus peatland emissions. Does **not** price soil carbon (soilc) or cropland/pasture/forestry carbon stocks. Verified from `f56_emis_policy.csv`: co2_c entries = 1 for primforest_vegc, primforest_litc, secdforest_vegc, secdforest_litc, other_vegc, other_litc, and peatland.
 - **"all_nosoil":** Price all gases except soil CO2
 - **"sdp_all":** Comprehensive pricing for Sustainable Development Pathway scenarios
 
@@ -658,7 +658,7 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 | **none** | ✗ | ✗ | ✗ | ✗ | Reference (no policy) |
 | **all** | ✓ | ✓ | ✓ | ✓ | Comprehensive carbon pricing |
 | **all_nosoil** | ✓ | ✗ | ✓ | ✓ | Price all except soil C (measurement challenges) |
-| **reddnatveg_nosoil** (default) | ✓ (natural veg only) | ✗ | ✗ | ✗ | REDD+ (reduce deforestation emissions) |
+| **reddnatveg_nosoil** (default) | ✓ (primforest vegc+litc, secdforest vegc+litc, other vegc+litc, peatland) | ✗ | ✗ | ✗ | REDD+ (reduce deforestation emissions) |
 | **redd+natveg_nosoil** | ✓ (deforestation + reforestation) | ✗ | ✗ | ✗ | REDD+ with forestry emission pricing |
 | **sdp_all** | ✓ | ✓ | ✓ | ✓ | Sustainable Development Pathway |
 
@@ -673,7 +673,7 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 ### 6.1 Pricing Parameters
 
 **im_pollutant_prices(t,i,pollutants,emis_source)** - Configured GHG prices (USD17MER/Tg)
-**Constructed in:** `preloop.gms:35-91` through 8-stage process
+**Constructed in:** `preloop.gms:35-124` through multi-stage configuration process
 **Citation:** `declarations.gms:9`
 
 ---
@@ -964,7 +964,7 @@ With `c56_pollutant_prices = "R34M410-SSP2-NPi2025"` (No Policy Improvement) and
 
 ### 11.2 Policy Choice Matters More Than Price Level
 
-A high C price ($500/tC) with policy "reddnatveg_nosoil" (only deforestation CO2) produces **less** mitigation than moderate price ($100/tC) with "all_nosoil" (all gases except soil).
+A high C price ($500/tC) with policy "reddnatveg_nosoil" (CO2 from natural vegetation loss — vegc+litc for primforest/secdforest/other + peatland only) produces **less** mitigation than moderate price ($100/tC) with "all_nosoil" (all gases except soil).
 
 **Implication:** Comprehensive coverage (policy matrix) is often more important than price ambition for total emission reduction.
 
@@ -1056,7 +1056,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 **What It Does:**
 - Multiplies emissions by GHG prices to calculate costs (7 equations)
-- Constructs complex price scenarios through 8-stage preloop configuration
+- Constructs complex price scenarios through multi-stage preloop configuration (preloop.gms:35–124)
 - Calculates discounted CDR rewards for afforestation with price foresight
 - Distinguishes one-off (deforestation) vs. annual (fertilizer) emissions via annuity factors
 - Provides 100+ price scenarios × 60+ policy scenarios = vast policy space
@@ -1095,7 +1095,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 ---
 
 **Documentation Status:** ✅ Fully Verified (2025-10-12)
-**Verification Method:** All source files read, 7 equations verified, 708 lines analyzed, 8-stage preloop logic traced, policy matrix structure documented
+**Verification Method:** All source files read, 7 equations verified, 708 lines analyzed, multi-stage preloop logic traced, policy matrix structure documented
 **Citation Density:** 80+ file:line references
 **Next Module:** Module 21 (Trade) or Module 30 (Crop) — core production/supply-demand hubs
 

@@ -106,9 +106,7 @@ MAgPIE has 13 slack variables with high penalty costs. When they activate, the m
 | `v32_land_missing` | 32 | $1,000,000/ha | Forestry land target gap |
 | `v21_import_for_feasibility` | 21 | $1,500/tDM | Wood/woodfuel import (only!) |
 | `v21_excess_prod` | 21 | $300/tDM | Excess production disposal |
-| `v30_fallow_missing` | 30 | $100/ha | Fallow land target gap |
-| `v35_secdforest_missing` | 35 | ~$100/ha | Forest regeneration gap |
-| `v35_other_missing` | 35 | ~$100/ha | Other natural land gap |
+| `v29_fallow_missing` | 29 | $615/ha | Fallow land target gap |
 
 **⚠️ Critical gap**: Food, feed, and standard crop production have **NO slack variables**. If food demand can't be met, the model goes infeasible — there's no "import food for feasibility" option.
 
