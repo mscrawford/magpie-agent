@@ -1001,4 +1001,4 @@ loop(i,
 
 ---
 
-**Final Phase**: [Phase 6: Best Practices](GAMS_Phase6_Best_Practices.md) - Model scaling, numerical stability, performance, debugging, and common pitfalls.
+**Next**: [Best Practices](GAMS_Best_Practices.md) - Model scaling, numerical stability, performance, debugging, and common pitfalls.

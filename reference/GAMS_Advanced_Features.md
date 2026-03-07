@@ -1294,4 +1294,4 @@ total_years = m_year(t) - m_year(t_past);   * Since start
 
 ---
 
-**Next Phase**: [Phase 4: Functions & Operations](GAMS_Phase4_Functions_Operations.md) - Mathematical functions, logical operators, aggregation, and conditional assignments.
+**Next**: [Functions & Operations](GAMS_Functions_Operations.md) - Mathematical functions, logical operators, aggregation, and conditional assignments.

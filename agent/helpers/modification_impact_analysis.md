@@ -155,7 +155,7 @@ MAgPIE solves one time step at a time. Variables from previous time steps are pa
 | Safety protocols for critical modules | `cross_module/modification_safety_guide.md` |
 | Conservation laws | `cross_module/land_balance_conservation.md` (and other `*_balance.md`) |
 | Circular dependencies | `cross_module/circular_dependency_resolution.md` |
-| GAMS coding patterns | `reference/GAMS_Phase5_MAgPIE_Patterns.md` |
+| GAMS coding patterns | `reference/GAMS_MAgPIE_Patterns.md` |
 | Module architecture | `core_docs/Core_Architecture.md` |
 
 ---

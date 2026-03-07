@@ -223,8 +223,8 @@ for ref in $PHASE_REFS_CORE; do
 done
 
 # Check GAMS reference documents (in reference/ directory)
-GAMS_REFS=$(grep -r "GAMS_Phase[0-9]" AGENT.md modules/*.md 2>/dev/null | \
-    grep -oE "GAMS_Phase[0-9]_[A-Za-z_]+\.md" | sort -u)
+GAMS_REFS=$(grep -r "GAMS_[A-Z][A-Za-z_]*\.md" AGENT.md modules/*.md 2>/dev/null | \
+    grep -oE "GAMS_[A-Za-z_]+\.md" | sort -u)
 
 BROKEN_GAMS_REFS=0
 VALID_GAMS_REFS=0
@@ -240,7 +240,7 @@ done
 
 if [ $BROKEN_PHASE_REFS -eq 0 ] && [ $BROKEN_GAMS_REFS -eq 0 ]; then
     TOTAL_PHASE_REFS=$((VALID_PHASE_REFS + VALID_GAMS_REFS))
-    check_pass "All $TOTAL_PHASE_REFS Phase/GAMS document references valid"
+    check_pass "All $TOTAL_PHASE_REFS GAMS document references valid"
 fi
 
 # ===============================
@@ -338,7 +338,7 @@ FEEDBACK_COUNT=$(ls -1 feedback/integrated/*.md 2>/dev/null | wc -l | tr -d ' ')
 check_pass "Feedback integrated: $FEEDBACK_COUNT files"
 
 # Count GAMS reference docs
-GAMS_COUNT=$(ls -1 reference/GAMS_Phase*.md 2>/dev/null | wc -l | tr -d ' ')
+GAMS_COUNT=$(ls -1 reference/GAMS_*.md 2>/dev/null | wc -l | tr -d ' ')
 if [ "$GAMS_COUNT" -eq 6 ]; then
     check_pass "GAMS reference: $GAMS_COUNT files (matches expected 6)"
 else

@@ -895,4 +895,4 @@ if (round(value, 6) = target, ...
 
 ---
 
-**Next Phase**: [Phase 5: MAgPIE-Specific Patterns](GAMS_Phase5_MAgPIE_Patterns.md) - Module structure, interface variables, time management, calibration, and common MAgPIE idioms.
+**Next**: [MAgPIE-Specific Patterns](GAMS_MAgPIE_Patterns.md) - Module structure, interface variables, time management, calibration, and common MAgPIE idioms.

@@ -1082,4 +1082,4 @@ abort$(error_flag) "Error";  * Too vague!
 
 ---
 
-**Next Phase**: [Phase 3: Advanced Features](GAMS_Phase3_Advanced_Features.md) - Macros, dollar control options, variable attributes, set operations, and time indexing patterns.
+**Next**: [Advanced Features](GAMS_Advanced_Features.md) - Macros, dollar control options, variable attributes, set operations, and time indexing patterns.

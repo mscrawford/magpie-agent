@@ -132,12 +132,12 @@ magpie-agent/
 │   └── Tool_Usage_Patterns.md
 │
 ├── reference/                 ← GAMS Programming & Guides (9 files)
-│   ├── GAMS_Phase1_Fundamentals.md
-│   ├── GAMS_Phase2_Control_Structures.md
-│   ├── GAMS_Phase3_Advanced_Features.md
-│   ├── GAMS_Phase4_Functions_Operations.md
-│   ├── GAMS_Phase5_MAgPIE_Patterns.md
-│   ├── GAMS_Phase6_Best_Practices.md
+│   ├── GAMS_Fundamentals.md
+│   ├── GAMS_Control_Structures.md
+│   ├── GAMS_Advanced_Features.md
+│   ├── GAMS_Functions_Operations.md
+│   ├── GAMS_MAgPIE_Patterns.md
+│   ├── GAMS_Best_Practices.md
 │   ├── Code_Truth_Principles.md
 │   ├── Infeasibility_Debugging_Guide.md
 │   └── Verification_Protocol.md

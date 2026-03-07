@@ -26,7 +26,7 @@
     "name": "Module Documentation",
     "completion_date": "2025-10-13",
     "achievement": "46/46 modules fully verified with 100% equation accuracy",
-    "archived_at": "completed_phases/PHASE_1_MODULES_COMPLETE_2025-10-13.json"
+    "archived_at": "reference/archive/PHASE_1_MODULES_COMPLETE_2025-10-13.json"
   },
   "phase_2_completed": {
     "name": "Cross-Module Analysis & Patterns",
@@ -443,7 +443,7 @@
             "module_facts": "modules/module_XX.md (authoritative)",
             "dependencies": "Phase2_Module_Dependencies.md (authoritative)",
             "conservation_laws": "cross_module/*_balance.md (authoritative)",
-            "gams_syntax": "reference/GAMS_Phase*.md (authoritative)"
+            "gams_syntax": "reference/GAMS_*.md (authoritative)"
           },
           "when_to_duplicate": "Different contexts require different explanations (overview vs detailed)",
           "when_to_link": "Exact same information, numbers, formulas, counts that must stay synchronized"
@@ -833,9 +833,9 @@
       "\u2705 Documented common equation patterns (conservation, mass balance, constraints)",
       "\u2705 Added syntax highlighting and code examples throughout",
       "\u2705 Created comprehensive plan document (GAMS_Programming_Reference_Plan.md)",
-      "\u2705 Completed Phase 1 document (GAMS_Phase1_Fundamentals.md)"
+      "\u2705 Completed Phase 1 document (GAMS_Fundamentals.md)"
     ],
-    "notes": "\ud83d\udcd8 GAMS PROGRAMMING REFERENCE INITIATED: Created comprehensive GAMS reference documentation to improve agent's ability to read, understand, and work with GAMS code in MAgPIE. Research sources: (1) Official GAMS documentation (gams.com/latest/docs), (2) GAMS tutorials and best practices papers, (3) Real MAgPIE codebase patterns (modules/, core/macros.gms, core/sets.gms). Documentation structure: 6 phases covering fundamentals \u2192 control structures \u2192 advanced features \u2192 functions \u2192 MAgPIE-specific patterns \u2192 best practices (~38K words total planned). Phase 1 Complete (Fundamentals): Covers GAMS basics, sets (indices), parameters (data), variables (decision variables), equations (constraints), model & solve statements. All concepts illustrated with MAgPIE examples. Key value: Enables AI agents to understand GAMS algebraic modeling language without prior knowledge, bridging gap between general programming knowledge and domain-specific optimization language. Files: reference/GAMS_Programming_Reference_Plan.md (plan), reference/GAMS_Phase1_Fundamentals.md (Phase 1 complete). Remaining phases 2-6 ready for future implementation. Git workflow documentation also added to CLAUDE.md."
+    "notes": "\ud83d\udcd8 GAMS PROGRAMMING REFERENCE INITIATED: Created comprehensive GAMS reference documentation to improve agent's ability to read, understand, and work with GAMS code in MAgPIE. Research sources: (1) Official GAMS documentation (gams.com/latest/docs), (2) GAMS tutorials and best practices papers, (3) Real MAgPIE codebase patterns (modules/, core/macros.gms, core/sets.gms). Documentation structure: 6 phases covering fundamentals \u2192 control structures \u2192 advanced features \u2192 functions \u2192 MAgPIE-specific patterns \u2192 best practices (~38K words total planned). Phase 1 Complete (Fundamentals): Covers GAMS basics, sets (indices), parameters (data), variables (decision variables), equations (constraints), model & solve statements. All concepts illustrated with MAgPIE examples. Key value: Enables AI agents to understand GAMS algebraic modeling language without prior knowledge, bridging gap between general programming knowledge and domain-specific optimization language. Files: reference/GAMS_Programming_Reference_Plan.md (plan), reference/GAMS_Fundamentals.md (Phase 1 complete). Remaining phases 2-6 ready for future implementation. Git workflow documentation also added to CLAUDE.md."
   },
   "audit_angles": {
     "completed": [

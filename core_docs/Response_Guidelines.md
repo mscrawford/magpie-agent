@@ -336,7 +336,7 @@ User asks MAgPIE question
   → module_XX_notes.md (WARNINGS/LESSONS if how-to/troubleshooting)
   → cross_module/*.md (SYSTEM-LEVEL if safety/dependencies)
   → core_docs/*.md (ARCHITECTURE if structural question)
-  → reference/GAMS_Phase*.md (GAMS CODE if writing/debugging code)
+  → reference/GAMS_*.md (GAMS CODE if writing/debugging code)
 ```
 
 **DO NOT read** (noise for MAgPIE questions):
@@ -396,10 +396,10 @@ Reason: Notes may be outdated, main doc is verified against code
 
 **GAMS Syntax:**
 - **Authoritative source**: Official GAMS documentation (gams.com)
-- **MAgPIE patterns**: `reference/GAMS_Phase5_MAgPIE_Patterns.md`
+- **MAgPIE patterns**: `reference/GAMS_MAgPIE_Patterns.md`
 - **Quick reference**: `Core_Architecture.md` (naming conventions overview)
 
-**If patterns differ** → Trust GAMS_Phase5 for MAgPIE-specific patterns
+**If patterns differ** → Trust GAMS_MAgPIE_Patterns for MAgPIE-specific patterns
 
 ### **Quality Assurance**
 

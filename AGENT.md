@@ -349,12 +349,12 @@ This supplements the "docs first" workflow — docs are still the starting point
 
 | When you need to... | Load this reference |
 |---------------------|-------------------|
-| Read/write any MAgPIE GAMS code | `reference/GAMS_Phase5_MAgPIE_Patterns.md` (**always load first**) — module structure, naming conventions, MAgPIE idioms |
-| Understand sets, parameters, variables, equations | `reference/GAMS_Phase1_Fundamentals.md` — core GAMS concepts |
-| Understand loops, conditionals, `$()` syntax | `reference/GAMS_Phase2_Control_Structures.md` |
-| Understand `sum()`, `prod()`, macros, includes | `reference/GAMS_Phase3_Advanced_Features.md` |
-| Understand built-in functions, string ops | `reference/GAMS_Phase4_Functions_Operations.md` |
-| Follow best practices, debugging, performance | `reference/GAMS_Phase6_Best_Practices.md` |
+| Read/write any MAgPIE GAMS code | `reference/GAMS_MAgPIE_Patterns.md` (**always load first**) — module structure, naming conventions, MAgPIE idioms |
+| Understand sets, parameters, variables, equations | `reference/GAMS_Fundamentals.md` — core GAMS concepts |
+| Understand loops, conditionals, `$()` syntax | `reference/GAMS_Control_Structures.md` |
+| Understand `sum()`, `prod()`, macros, includes | `reference/GAMS_Advanced_Features.md` |
+| Understand built-in functions, string ops | `reference/GAMS_Functions_Operations.md` |
+| Follow best practices, debugging, performance | `reference/GAMS_Best_Practices.md` |
 
 **Phase 5 is mandatory** for any GAMS work. Load additional phases as needed for the specific task.
 
@@ -380,7 +380,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 
 | User intent detected | Load this helper | Trigger keywords |
 |---------------------|-----------------|-----------------|
-| Reading/writing/explaining GAMS code | `reference/GAMS_Phase5_MAgPIE_Patterns.md` + other phases as needed | "GAMS", "gms file", "equation", "variable declaration", "write code", "modify code", "code means", "explain this code", "debug code", "what does this do", ".gms" |
+| Reading/writing/explaining GAMS code | `reference/GAMS_MAgPIE_Patterns.md` + other phases as needed | "GAMS", "gms file", "equation", "variable declaration", "write code", "modify code", "code means", "explain this code", "debug code", "what does this do", ".gms" |
 | Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort" |
 | Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget" |
 | Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "impact of changing", "safe to modify", "can I change", "extend", "add to module" |
@@ -681,7 +681,7 @@ User asks MAgPIE question
   → Response_Guidelines.md (for quality/efficiency guidance)
   → cross_module/*.md (SYSTEM-LEVEL if safety/dependencies)
   → core_docs/ (ARCHITECTURE if structural question)
-  → reference/GAMS_Phase*.md (GAMS CODE if writing/debugging code)
+  → reference/GAMS_*.md (GAMS CODE if writing/debugging code)
 
 User asks to WRITE or EDIT module documentation
   → reference/Verification_Protocol.md (verification steps)
@@ -711,7 +711,7 @@ User asks to WRITE or EDIT module documentation
 | Module equations, parameters, variables | `modules/module_XX.md` | `modules/module_XX.md#equation-name` |
 | Dependency counts & lists | `core_docs/Module_Dependencies.md` | `core_docs/Module_Dependencies.md#module-XX` |
 | Conservation law equations | `cross_module/*_balance.md` | `cross_module/land_balance_conservation.md#enforcement` |
-| GAMS syntax & patterns | `reference/GAMS_Phase*.md` | `reference/GAMS_Phase5_MAgPIE_Patterns.md#topic` |
+| GAMS syntax & patterns | `reference/GAMS_*.md` | `reference/GAMS_MAgPIE_Patterns.md#topic` |
 | Data file sources | `core_docs/Data_Flow.md` | `core_docs/Data_Flow.md#file-name` |
 
 ### When to Link vs When to Duplicate

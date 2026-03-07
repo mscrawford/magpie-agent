@@ -9,7 +9,7 @@
 
 ## Issue
 
-The file `reference/GAMS_Phase4_Functions_Operations.md:534` contains an unverified performance claim:
+The file `reference/GAMS_Functions_Operations.md:534` contains an unverified performance claim:
 
 > **Performance**: Multi-index sum (single call) usually faster than nested.
 
@@ -56,7 +56,7 @@ Or simply:
 
 ## Target Files
 
-- `reference/GAMS_Phase4_Functions_Operations.md` line 534
+- `reference/GAMS_Functions_Operations.md` line 534
 
 ## Priority
 

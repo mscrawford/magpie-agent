@@ -63,7 +63,7 @@ Common link patterns to check:
 - `Module_Dependencies.md#module-XX`
 - `cross_module/*.md`
 - `core_docs/*.md`
-- `reference/GAMS_Phase*.md`
+- `reference/GAMS_*.md`
 
 #### **Check 4: Verification Timestamp Freshness**
 
