@@ -172,18 +172,20 @@ Mark each cell with the round number (R1, R2, ...) when tested.
 
 Track across rounds:
 
-| Metric | R1 | R2 | R3 | R4 | R5 | R6 |
-|--------|-----|-----|-----|-----|-----|-----|
-| Mean accuracy score | 6.7 | 8.2 | 5.8 | 8.6 | 7.2 | 8.7 |
-| Total bugs | 40 | 17 | 52 | 11 | 16 | 7 |
-| Critical bugs | 3 | 0 | 4 | 0 | 0 | 0 |
-| Doc errors | ~20 | ~9 | 32 | 3 | 0 | 0 |
-| Answerer errors | ~20 | ~8 | 44 | 8 | 16 | 7 |
-| Module coverage | 16 | 26 | 38 | 42 | 45 | 45 |
+| Metric | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9 | R10 |
+|--------|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|
+| Mean accuracy score | 6.7 | 8.2 | 5.8 | 8.6 | 7.2 | 8.7 | 6.9 | 6.0 | 7.5 | 7.0 |
+| Total bugs | 40 | 17 | 52 | 11 | 16 | 7 | 26 | 47 | 18 | 22 |
+| Critical bugs | 3 | 0 | 4 | 0 | 0 | 0 | 6 | 12 | 1 | 7 |
+| Doc errors | ~20 | ~9 | 32 | 3 | 0 | 0 | 26 | 47 | 16 | 17 |
+| Answerer errors | ~20 | ~8 | 44 | 8 | 16 | 7 | 0 | 0 | 2 | 5 |
+| Scope | modules | modules | modules | modules | modules | modules | cross-mod | core/arch | modules | ref docs |
 
-**Targets achieved**: Mean ≥8.5 ✅ (R6: 8.7), zero Critical ✅ (since R4), zero doc errors ✅ (R5+R6).
+**R1-R6** (module docs): Mean ≥8.5 ✅ (R6: 8.7), zero Critical ✅ (since R4), zero doc errors ✅ (R5+R6).
 
-**Key insight**: Scores below 7 almost always come from modules whose docs haven't been validated yet. After validation, those same modules jump to 8-9. The validation flywheel's primary value is systematic doc correction, not ongoing monitoring.
+**R7-R10** (non-module docs): Revealed 113 bugs across 16 docs. Cross-module and architecture docs had worst scores (4.0-6.0) due to fabricated variables (vm_import/vm_export/vm_demand) and missing execution phases. After fixes: all Critical/Major resolved.
+
+**Key insight**: Module docs reached high quality by R5-R6. Non-module docs (cross-module, core architecture, GAMS reference) had significantly more errors — especially fabricated code examples and invented variable names. The validation flywheel is most valuable when applied to docs that haven't been validated yet.
 
 ---
 
