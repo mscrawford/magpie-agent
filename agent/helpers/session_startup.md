@@ -79,6 +79,46 @@ git -C .. --no-pager log --oneline ${LAST_SYNC}..HEAD 2>/dev/null | wc -l
 
 **Report format:** `📊 Docs synced: [badge] (X commits behind, last sync YYYY-MM-DD)`
 
+### Step 2b: Semantic Validation Freshness
+
+Check when the last semantic validation round was run:
+
+```bash
+# From magpie-agent directory (do NOT cd)
+python3 -c "
+import json, datetime
+with open('feedback/validation_rounds.json') as f:
+    data = json.load(f)
+rounds = data.get('rounds', [])
+if rounds:
+    last = rounds[-1]
+    last_date = last.get('date', 'unknown')
+    last_score = last.get('mean_score', 'N/A')
+    last_bugs = last.get('total_bugs', 0)
+    critical = last.get('critical_bugs', 0)
+    print(f'Last validation: {last_date} (R{len(rounds)})')
+    print(f'Score: {last_score}/10, Bugs: {last_bugs} ({critical} critical)')
+    # Check if overdue (>90 days)
+    try:
+        d = datetime.datetime.strptime(last_date, '%Y-%m-%d')
+        days = (datetime.datetime.now() - d).days
+        print(f'Days since: {days}')
+        if days > 90: print('STATUS: OVERDUE')
+        elif days > 60: print('STATUS: DUE_SOON')
+        else: print('STATUS: OK')
+    except: print('STATUS: UNKNOWN')
+else:
+    print('No validation rounds found')
+    print('STATUS: NEVER_RUN')
+"
+```
+
+**Reporting**:
+- If STATUS=OK: Include in one-liner: `Semantic: 🟢 R13 (8.6/10)`
+- If STATUS=DUE_SOON: `Semantic: 🟡 last validated [N] days ago`
+- If STATUS=OVERDUE: `Semantic: 🔴 overdue ([N] days) — suggest /validate-semantic`
+- If last round had Critical bugs: Always warn regardless of date
+
 ### 3. Recent Model Runs
 
 ```bash
@@ -114,6 +154,24 @@ for pkg in ['magpie4', 'gms', 'magclass', 'madrat']:
 grep -E "^cfg\$gms\$c56_pollutant_prices|^cfg\$gms\$c15_food_scenario|^cfg\$gms\$c21_trade_liberalization" ../config/default.cfg 2>/dev/null | head -5
 ```
 
+### Step 6: Maintenance Status Summary
+
+Combine all checks into a maintenance health assessment:
+
+| Check | Status | Action if Yellow/Red |
+|-------|--------|---------------------|
+| Code sync | 🟢/🟡/🔴 | Run `/sync` |
+| Syntactic validator | ✅/❌ | Run `/validate` |
+| Semantic validation | 🟢/🟡/🔴 | Run `/validate-semantic` |
+| AGENT.md deployment | ✅/❌ | `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md` |
+
+**Surface in greeting ONLY if any check is 🟡 or 🔴**:
+```
+⚠️ Maintenance: [list yellow/red items]
+```
+
+If all green, just show the one-liner — don't clutter the greeting.
+
 ---
 
 ## How to Report
@@ -121,7 +179,7 @@ grep -E "^cfg\$gms\$c56_pollutant_prices|^cfg\$gms\$c15_food_scenario|^cfg\$gms\
 In your session greeting, include a brief status line:
 
 ```
-📊 MAgPIE 4.13.0-dev on develop | Docs: 🟢 synced (0 commits behind) | Runs: 2 recent
+📊 MAgPIE 4.13.0-dev on develop | Docs: 🟢 synced (0 commits behind) | Semantic: 🟢 R13 (8.6/10) | Runs: 2 recent
 ```
 
 If there are issues, add specific notes:

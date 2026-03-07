@@ -393,6 +393,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 | Creating new scenarios | `agent/helpers/adding_new_scenario.md` | "scenario", "new scenario", "policy scenario", "combine policies", "config switches", "scenario design" |
 | Comparing model runs | `agent/helpers/comparing_model_runs.md` | "compare runs", "compare scenarios", "model comparison", "output comparison", "multiple runs", "scenario comparison", "diff runs" |
 | Water scarcity analysis | `agent/helpers/water_scarcity_scenarios.md` | "water", "water scarcity", "irrigation", "water availability", "water demand", "water constraint", "groundwater", "environmental flow" |
+| Documentation maintenance | `agent/helpers/maintenance_protocol.md` | "maintenance", "keep docs current", "docs outdated", "documentation drift", "update docs", "stale documentation", "doc maintenance" |
 
 ### Sync freshness badges
 

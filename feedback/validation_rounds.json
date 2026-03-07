@@ -1336,20 +1336,130 @@
           ".fx missing .l reset"
         ]
       }
+    },
+    {
+      "round": 13,
+      "date": "2026-03-07",
+      "commit_before": "7c91e3b",
+      "commit_after": "e1017b4",
+      "answerer_model": "claude-sonnet-4.6",
+      "auditor_model": "claude-opus-4.6",
+      "questions": [
+        {
+          "id": "R13-Q1",
+          "topic": "Residue-livestock-soil carbon interaction",
+          "modules_tested": [
+            18,
+            70,
+            59
+          ],
+          "score": 8.5,
+          "bugs_total": 1,
+          "bugs_critical": 0,
+          "bugs_significant": 0,
+          "bugs_minor": 1,
+          "bug_sources": {
+            "doc_error": 0,
+            "answerer_confabulation": 1,
+            "ambiguous": 0
+          }
+        },
+        {
+          "id": "R13-Q2",
+          "topic": "Trade-prices feedback loop",
+          "modules_tested": [
+            21,
+            22
+          ],
+          "score": 9.0,
+          "bugs_total": 1,
+          "bugs_critical": 0,
+          "bugs_significant": 0,
+          "bugs_minor": 1,
+          "bug_sources": {
+            "doc_error": 0,
+            "answerer_confabulation": 1,
+            "ambiguous": 0
+          }
+        },
+        {
+          "id": "R13-Q3",
+          "topic": "Forestry-land conservation interaction",
+          "modules_tested": [
+            32,
+            10,
+            35,
+            39
+          ],
+          "score": 9.0,
+          "bugs_total": 1,
+          "bugs_critical": 0,
+          "bugs_significant": 0,
+          "bugs_minor": 1,
+          "bug_sources": {
+            "doc_error": 0,
+            "answerer_confabulation": 1,
+            "ambiguous": 0
+          }
+        },
+        {
+          "id": "R13-Q4",
+          "topic": "Yields-demand-cropland intensification costs",
+          "modules_tested": [
+            14,
+            15,
+            29
+          ],
+          "score": 7.0,
+          "bugs_total": 4,
+          "bugs_critical": 0,
+          "bugs_significant": 2,
+          "bugs_minor": 2,
+          "bug_sources": {
+            "doc_error": 2,
+            "answerer_confabulation": 2,
+            "ambiguous": 0
+          }
+        },
+        {
+          "id": "R13-Q5",
+          "topic": "Carbon pricing-emissions-peatland",
+          "modules_tested": [
+            56,
+            52,
+            53,
+            58
+          ],
+          "score": 9.5,
+          "bugs_total": 0,
+          "bugs_critical": 0,
+          "bugs_significant": 0,
+          "bugs_minor": 0,
+          "bug_sources": {
+            "doc_error": 0,
+            "answerer_confabulation": 0,
+            "ambiguous": 0
+          }
+        }
+      ],
+      "mean_score": 8.6,
+      "total_bugs": 7,
+      "fixes_applied": 7,
+      "notes": "Re-tested previously-weak modules post-fix. M14/M29 still weakest (realization confusion, fabricated counts). M52/53/56/58 near-perfect. Plus meta-check found missing M45 in DOT graph and 5 stale counts."
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 12,
-    "total_docs_validated": 74,
+    "total_rounds": 13,
+    "total_docs_validated": 79,
     "module_docs_validated": 46,
-    "non_module_docs_validated": 28,
-    "total_bugs_found": 281,
-    "total_bugs_fixed": 246,
+    "non_module_docs_validated": 33,
+    "total_bugs_found": 291,
+    "total_bugs_fixed": 256,
     "validator_checks": 17,
     "validator_sub_checks": 32,
-    "gams_variables_verified": 777,
+    "gams_variables_verified": 778,
     "gams_equations_verified": 269,
     "gams_realizations_verified": 68,
-    "file_line_citations_verified": 2229
+    "file_line_citations_verified": 2231
   }
 }

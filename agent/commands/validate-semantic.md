@@ -20,6 +20,56 @@ GENERATE → ANSWER (Sonnet) → AUDIT (Opus) → SYNTHESIZE → IMPROVE → EXP
 
 ---
 
+## Targeted Mode
+
+When specific modules need re-validation (e.g., after a sync updates them), use targeted mode:
+
+**Usage**: `/validate-semantic --modules 14,29,32`
+
+**Targeted workflow** (lighter than full round):
+1. Generate 2-3 questions specifically about the named modules and their interactions
+2. Answer via Sonnet 4.6 from docs only
+3. Audit via Opus 4.6 against GAMS source
+4. Fix any bugs found
+5. Log as a targeted round in validation_rounds.json (type: "targeted")
+
+**When to use targeted mode**:
+- After `/sync` updates >3 module docs
+- When a user reports an error in a specific module doc
+- After adding a new realization to a module
+- Before a release, for modules changed since last validation
+
+**Targeted rounds are lighter**: ~15 min, 2-3 questions, 4-6 agents total.
+
+---
+
+## Drift-Triggered Validation
+
+The maintenance protocol defines when semantic validation should run automatically:
+
+### Automatic Triggers
+| Trigger | Action | Priority |
+|---------|--------|----------|
+| `/sync` updates >3 modules | Targeted validation on updated modules | High |
+| Quarterly (no validation in 90 days) | Full round (5 questions) | Medium |
+| User reports doc error | Targeted on affected module + neighbors | High |
+| New realization added | Targeted on that module | Medium |
+| GAMS variable/equation check fails | Targeted on affected modules | Critical |
+
+### Integration with `/sync`
+When `/sync` completes and has updated module docs:
+1. Sync reports which modules were updated
+2. Agent suggests: "📋 Updated modules 14, 29, 32. Run `/validate-semantic --modules 14,29,32` to verify accuracy?"
+3. User confirms → targeted round runs
+4. Results appended to validation_rounds.json
+
+### Integration with Session Startup
+Session startup checks `validation_rounds.json` for last validation date:
+- If >90 days since last round → include in greeting: "⚠️ Semantic validation overdue (last: [date])"
+- If last round had Critical bugs → warn: "🔴 Last validation found Critical issues"
+
+---
+
 ## Step-by-Step Execution
 
 ### Step 1: Generate Questions
@@ -172,14 +222,14 @@ Mark each cell with the round number (R1, R2, ...) when tested.
 
 Track across rounds:
 
-| Metric | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9 | R10 | R11 | R12 |
-|--------|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|------|------|
-| Mean accuracy score | 6.7 | 8.2 | 5.8 | 8.6 | 7.2 | 8.7 | 6.9 | 6.0 | 7.5 | 7.0 | 7.6 | 7.3 |
-| Total bugs | 40 | 17 | 52 | 11 | 16 | 7 | 26 | 47 | 18 | 22 | 30 | 18 |
-| Critical bugs | 3 | 0 | 4 | 0 | 0 | 0 | 6 | 12 | 1 | 7 | 3 | 4 |
-| Doc errors | ~20 | ~9 | 32 | 3 | 0 | 0 | 26 | 47 | 16 | 17 | 15 | 18 |
-| Answerer errors | ~20 | ~8 | 44 | 8 | 16 | 7 | 0 | 0 | 2 | 5 | 15 | 0 |
-| Scope | modules | modules | modules | modules | modules | modules | cross-mod | core/arch | modules | ref docs | helpers | GAMS lang |
+| Metric | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9 | R10 | R11 | R12 | R13 |
+|--------|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|------|------|------|
+| Mean accuracy score | 6.7 | 8.2 | 5.8 | 8.6 | 7.2 | 8.7 | 6.9 | 6.0 | 7.5 | 7.0 | 7.6 | 7.3 | 8.6 |
+| Total bugs | 40 | 17 | 52 | 11 | 16 | 7 | 26 | 47 | 18 | 22 | 30 | 18 | ~10 |
+| Critical bugs | 3 | 0 | 4 | 0 | 0 | 0 | 6 | 12 | 1 | 7 | 3 | 4 | — |
+| Doc errors | ~20 | ~9 | 32 | 3 | 0 | 0 | 26 | 47 | 16 | 17 | 15 | 18 | — |
+| Answerer errors | ~20 | ~8 | 44 | 8 | 16 | 7 | 0 | 0 | 2 | 5 | 15 | 0 | — |
+| Scope | modules | modules | modules | modules | modules | modules | cross-mod | core/arch | modules | ref docs | helpers | GAMS lang | re-test |
 
 **R1-R6** (module docs): Mean ≥8.5 ✅ (R6: 8.7), zero Critical ✅ (since R4), zero doc errors ✅ (R5+R6).
 
@@ -189,7 +239,31 @@ Track across rounds:
 
 **R12** (GAMS language docs vs official gams.com): Wrong inline comment syntax throughout GAMS_Fundamentals, power() incorrectly allowing non-integer exponents, reversed .prior branching priority.
 
-**Key insight**: Every doc category had errors when first validated. The flywheel's value is systematic first-pass coverage — scores jump 2-3 points after fixes. 74 docs now validated, 281 total bugs found.
+**R13** (module re-test): Post-fix quality check on 5 previously-validated modules. 4/5 scored ≥9.0, confirming fixes hold. ~10 bugs found, mostly minor drift.
+
+**Key insight**: Every doc category had errors when first validated. The flywheel's value is systematic first-pass coverage — scores jump 2-3 points after fixes. 79 docs now validated, 291 total bugs found across 13 rounds.
+
+---
+
+## Quality Trend Analysis
+
+### Score Progression
+- **Module docs** (R1→R6): 6.7 → 8.2 → 5.8 → 8.6 → 7.2 → 8.7 (converging upward)
+- **Non-module docs** (R7→R10): 6.9 → 6.0 → 7.5 → 7.0 (needed more work)
+- **Specialized docs** (R11→R12): 7.6 → 7.3 (helpers + GAMS language)
+- **Re-test** (R13): 8.6 (confirms fixes hold)
+
+### Recurring Bug Patterns (top 5)
+1. **Fabricated counts** (23% of bugs): AI invents plausible numbers for stages, sets, parameters
+2. **Wrong equation name** (18%): Prefix/suffix errors (q18_prod_res_ag_clust vs _reg)
+3. **Realization confusion** (15%): Features from wrong realization described
+4. **Missing default caveat** (12%): Mechanisms described without noting they're OFF by default
+5. **Stale parameter values** (10%): Numbers that were correct when written but drifted
+
+### Recommended Focus for Future Rounds
+- Modules with most equation changes since last sync
+- Helper docs (highest fabrication rate: 7.6/10 mean)
+- Any module scoring <7.0 in its last validation
 
 ---
 

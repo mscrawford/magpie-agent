@@ -10,6 +10,9 @@
 
 This command performs a **deep sync** between MAgPIE code and agent documentation. Unlike the automatic freshness check at session start (which only counts new commits), this command reads each commit's diff and updates module documentation accordingly.
 
+> 📋 This command is Layer 2 of the [maintenance protocol](../helpers/maintenance_protocol.md). 
+> Layer 1 = `/validate` (syntactic). Layer 3 = `/validate-semantic` (semantic accuracy).
+
 ## Workflow
 
 ### Step 1: Check Current Sync Status
@@ -103,6 +106,29 @@ After reviewing/updating, update `project/sync_log.json`:
 
 Add entry to `recent_syncs` array with details of what was reviewed.
 
+### Step 6b: Assess Change Impact
+
+For each updated module doc, classify the change:
+
+| Change Type | Impact | Semantic Re-validation? |
+|-------------|--------|------------------------|
+| New/changed equations | High | Yes — equation formulations may be wrong |
+| New realization added | High | Yes — realization descriptions needed |
+| Variable renamed/added | Medium | Yes if interface variable (vm_, pm_) |
+| Parameter default changed | Medium | Check if helpers reference old default |
+| Input file changed only | Low | No — docs reference logic, not data |
+| Comment/formatting only | None | No |
+
+Track changes in sync_log.json with a new field:
+```json
+{
+  "modules_updated": ["14", "29"],
+  "change_impact": "high",
+  "semantic_validation_recommended": true,
+  "semantic_validation_done": false
+}
+```
+
 ### Step 7: Report Results
 
 Present a summary:
@@ -128,6 +154,29 @@ Present a summary:
 
 🎯 Status: Documentation is current with develop branch
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Step 8: Recommend Semantic Validation
+
+After sync completes, check if semantic validation is warranted:
+
+**Triggers for recommendation**:
+- 3+ module docs were updated during this sync
+- Any equation formulations were changed
+- New realizations were added
+- Config defaults changed that affect helper docs
+
+**If triggered**, report to user:
+```
+📋 Sync updated [N] module docs. Recommend running targeted semantic validation:
+   /validate-semantic --modules [list of updated module numbers]
+   
+   This will verify the updated docs still produce accurate answers (~15 min).
+```
+
+**If NOT triggered** (minor changes only):
+```
+✅ Sync complete. Changes were minor — semantic re-validation not needed.
 ```
 
 ---
