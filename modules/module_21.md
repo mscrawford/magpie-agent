@@ -500,6 +500,36 @@ k_import21(k_trade) = / wood, woodfuel /
 
 ---
 
+### Structural Comparison: `selfsuff_reduced` vs `selfsuff_reduced_bilateral22`
+
+**Equation count**: 8 (default) → 11 (bilateral22). The bilateral22 realization keeps 6 equations unchanged, modifies 2, and adds 3 new ones.
+
+**Equations with dimension changes** (h→i shift):
+
+| Equation | Default dims | Bilateral22 dims | Change |
+|----------|-------------|------------------|--------|
+| `q21_cost_trade_reg` | `(h2,k_trade)` | `(i,k_trade)` | Superregional → regional |
+| `q21_cost_trade` | `(h2)` | `(i2)` | Superregional → regional |
+
+**New equations in bilateral22** (not in default):
+
+| Equation | Dims | Purpose |
+|----------|------|---------|
+| `q21_trade_bilat` | `(h,k_trade)` | Bilateral trade balance using `v21_trade(i_ex,i_im,k)` |
+| `q21_costs_tariffs` | `(i,k_trade)` | Bilateral tariff costs per exporter |
+| `q21_costs_margins` | `(i,k_trade)` | Bilateral margin costs per exporter |
+
+**Key parameter dimension changes**:
+
+| Parameter | Default dims | Bilateral22 dims | Semantic change |
+|-----------|-------------|------------------|-----------------|
+| `i21_trade_tariff` | `(h,k_trade)` | `(t_all,i_ex,i_im,k_trade)` | Single superregional → bilateral, time-varying |
+| `i21_trade_margin` | `(h,k_trade)` | `(i_ex,i_im,k_trade)` | Single superregional → bilateral |
+
+**Export share parameter change**: Default uses `i21_exp_shr(t_all,h,k_trade)` — a parameter **computed** in `preloop.gms` from self-sufficiency ratios. Bilateral22 uses `f21_exp_shr(ct,h2,k_trade)` — a parameter **loaded directly from input data** (`f`-prefix = file input). This is a semantic shift from model-derived to data-driven export allocation.
+
+---
+
 ## Configuration Options
 
 ### Global Settings
