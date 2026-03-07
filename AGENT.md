@@ -149,6 +149,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | Command | Purpose | Who Uses It |
 |---------|---------|-------------|
 | `/guide` | Quick start + full capabilities guide | Everyone |
+| `/explain` | Explain a GAMS equation, variable, or parameter | Everyone |
 | `/sync` | Check MAgPIE code for changes, update docs | Everyone |
 | `/feedback` | Submit feedback to improve the agent | Everyone |
 | `/bootstrap` | First-time setup | New users |
@@ -442,7 +443,7 @@ MAgPIE has **comprehensive AI-readable documentation** (~290,000 words) organize
 | **Query_Patterns_Reference.md** | Complex query patterns, parameterization vs. mechanistic modeling |
 | **Response_Guidelines.md** | Token efficiency, examples, quality checklist, complete workflows |
 | **Tool_Usage_Patterns.md** | Best practices for AI agent tools (file operations, shell commands, paths) |
-| **Bug_Taxonomy.md** | 11 recurring doc error patterns, prevention strategies, improvement flywheel |
+| **Bug_Taxonomy.md** | 14 recurring doc error patterns, prevention strategies, improvement flywheel |
 | **Verification_Protocol.md** | Step-by-step module verification, accuracy checks (in `reference/`) |
 
 ### Module Documentation (~48,000 lines)
@@ -685,7 +686,7 @@ User asks MAgPIE question
 
 User asks to WRITE or EDIT module documentation
   → reference/Verification_Protocol.md (verification steps)
-  → core_docs/Bug_Taxonomy.md (11 error patterns to avoid)
+  → core_docs/Bug_Taxonomy.md (14 error patterns to avoid)
   → AGENT.md Critical Warnings (top lessons)
   → After editing: run scripts/validate_consistency.sh
 ```

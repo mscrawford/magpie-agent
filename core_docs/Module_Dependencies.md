@@ -393,7 +393,7 @@ All analysis outputs are available in `/tmp/magpie_analysis/`:
 - `dependency_analysis.json` - Machine-readable data
 
 **Visualizations (GraphViz DOT format):**
-- `full_dependencies.dot` - Complete 45-module graph
+- `full_dependencies.dot` - Complete 46-module graph
 - `core_dependencies.dot` - Top 20 modules
 - `degradation_system.dot` - Degradation subsystem
 - `forestry_system.dot` - Forestry subsystem

@@ -32,6 +32,7 @@ digraph MAgPIE_Dependencies {
   "42_water_demand" [fillcolor="#E8F8E8", fontsize=16, width=1.3, label="42\nwater\ndemand"];
   "43_water_availability" [fillcolor="#E8F8E8", fontsize=12, width=1.1, label="43\nwater\navailability"];
   "44_biodiversity" [fillcolor="#E8F8E8", fontsize=17, width=1.35, label="44\nbiodiversity"];
+  "45_climate" [fillcolor="#E8F8E8", fontsize=11, width=1.05, label="45\nclimate"];
   "50_nr_soil_budget" [fillcolor="#F0E8F8", fontsize=20, width=1.6, label="50\nnr\nsoil\nbudget"];
   "51_nitrogen" [fillcolor="#F0E8F8", fontsize=16, width=1.3, label="51\nnitrogen"];
   "52_carbon" [fillcolor="#F0E8F8", fontsize=15, width=1.25, label="52\ncarbon"];
@@ -83,6 +84,7 @@ digraph MAgPIE_Dependencies {
   "12_interest_rate" -> "13_tc" [penwidth=1.3];
   "10_land" -> "14_yields" [penwidth=1.3];
   "13_tc" -> "14_yields" [penwidth=1.3];
+  "45_climate" -> "14_yields" [penwidth=1.3];
   "52_carbon" -> "14_yields" [penwidth=1.9];
   "70_livestock" -> "14_yields" [penwidth=1.3];
   "09_drivers" -> "15_food" [penwidth=2.8];
@@ -178,6 +180,7 @@ digraph MAgPIE_Dependencies {
   "56_ghg_policy" -> "51_nitrogen" [penwidth=1.3];
   "57_maccs" -> "51_nitrogen" [penwidth=1.3];
   "59_som" -> "51_nitrogen" [penwidth=1.3];
+  "45_climate" -> "52_carbon" [penwidth=1.3];
   "56_ghg_policy" -> "52_carbon" [penwidth=1.6];
   "18_residues" -> "53_methane" [penwidth=1.3];
   "30_croparea" -> "53_methane" [penwidth=1.3];
@@ -193,10 +196,12 @@ digraph MAgPIE_Dependencies {
   "36_employment" -> "57_maccs" [penwidth=1.6];
   "38_factor_costs" -> "57_maccs" [penwidth=1.3];
   "56_ghg_policy" -> "57_maccs" [penwidth=1.6];
+  "45_climate" -> "58_peatland" [penwidth=1.3];
   "10_land" -> "58_peatland" [penwidth=1.9];
   "12_interest_rate" -> "58_peatland" [penwidth=1.3];
   "32_forestry" -> "58_peatland" [penwidth=1.9];
   "56_ghg_policy" -> "58_peatland" [penwidth=1.3];
+  "45_climate" -> "59_som" [penwidth=1.3];
   "10_land" -> "59_som" [penwidth=2.2];
   "29_cropland" -> "59_som" [penwidth=1.9];
   "30_croparea" -> "59_som" [penwidth=1.3];

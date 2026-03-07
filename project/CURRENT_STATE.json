@@ -1,6 +1,6 @@
 {
   "_comment": "\ud83d\udea8 THIS IS THE SINGLE SOURCE OF TRUTH FOR ALL PROJECT STATUS \ud83d\udea8",
-  "_instructions": "Update this file after completing work. Do NOT update START_HERE.md, README.md, RULES_OF_THE_ROAD.md, or modules/README.md with status information.",
+  "_instructions": "Update this file after completing work. Do NOT update README.md or modules/README.md with status information.",
   "project": "MAgPIE AI Documentation",
   "last_updated": "2026-03-07",
   "version": "3.0",

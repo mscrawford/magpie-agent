@@ -10,7 +10,7 @@
 
 ## 🚀 Quick Start
 
-**I'm your AI assistant for MAgPIE**, with ~95,000 words of curated documentation about all 46 modules. Here's what you need to know:
+**I'm your AI assistant for MAgPIE**, with ~230,000 words of curated documentation about all 46 modules. Here's what you need to know:
 
 ### Just ask me anything
 ```
@@ -36,6 +36,7 @@ Type these to access specific features:
 | Command | What it does |
 |---------|-------------|
 | `/guide` | This guide |
+| `/explain` | Explain a GAMS equation, variable, or parameter |
 | `/sync` | Update docs after MAgPIE code changes |
 | `/feedback` | Submit feedback to improve the agent |
 | `/validate` | Check documentation consistency (maintainers) |

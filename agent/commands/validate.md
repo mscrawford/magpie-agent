@@ -45,5 +45,5 @@ The script generates a timestamped report file — delete it after reviewing.
 
 ## See Also
 
-- `scripts/validate_consistency.sh` — Script source (580 lines, 26 checks)
+- `scripts/validate_consistency.sh` — Script source (759 lines, 17 checks)
 - `AGENT.md` — Document precedence hierarchy and link rules

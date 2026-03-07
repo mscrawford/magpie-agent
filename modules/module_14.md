@@ -55,8 +55,12 @@ Calculates cellular crop yields by scaling calibrated baseline yields (`i14_yiel
 **Mathematical Structure:**
 
 ```
-Yield(j,crop,water) = CalibratedYield(j,crop,water) × (τ_current(j) / τ_1995(h))
+Yield(j,crop,water) = sum(ct, CalibratedYield(ct,j,crop,water))
+                      × τ_current(j,"crop")
+                      / sum((cell(i2,j), supreg(h2,i2)), τ_1995(h2))
 ```
+
+Note: `sum(ct,...)` selects the current time step, and `fm_tau1995` uses a spatial mapping through `cell(i2,j2)` and `supreg(h2,i2)` to look up the super-regional baseline τ for each cluster.
 
 **Components:**
 
@@ -119,7 +123,7 @@ Pastures use **previous time step** τ (`pcm_tau`) instead of current τ (`vm_ta
 
 ## 3. Calibration System (Preloop Phase)
 
-The true complexity of Module 14 lies in the preloop phase, where raw LPJmL yields are transformed into calibrated, model-ready yields through six calibration stages.
+The true complexity of Module 14 lies in the preloop phase, where raw LPJmL yields are transformed into calibrated, model-ready yields through four major calibration blocks in `preloop.gms` (documented below as six processing steps for clarity).
 
 ### 3.1 Stage 1: Bioenergy Yield Correction
 
@@ -1279,14 +1283,12 @@ s14_yld_past_switch = 1.0
 
 ## 20. Summary
 
-Module 14 is the **calibration and delivery module** for agricultural yields in MAgPIE. It transforms spatially explicit, climate-sensitive LPJmL biophysical yields into model-ready values through six calibration stages:
+Module 14 is the **calibration and delivery module** for agricultural yields in MAgPIE. It transforms spatially explicit, climate-sensitive LPJmL biophysical yields into model-ready values through four calibration blocks in `preloop.gms`:
 
-1. **Bioenergy correction:** Scale to realistic management levels
-2. **Pasture correction:** Adjust for regional grazing patterns
-3. **Limited calibration:** Match FAO regional yields using λ-blended approach
-4. **Irrigated-rainfed calibration:** Match AQUASTAT yield ratios
-5. **Yield calibration factors:** Optional post-calibration adjustments
-6. **Degradation effects:** Optional soil loss and pollination impacts
+1. **Bioenergy correction** (`***YIELD CORRECTION FOR 2ND GENERATION BIOENERGY CROPS***`): Scale to realistic management levels
+2. **Pasture correction** (`***YIELD CORRECTION FOR PASTURE***`): Adjust for regional grazing patterns
+3. **Yield management calibration** (`***YIELD MANAGEMENT CALIBRATION***`): Match FAO regional yields using λ-blended approach, then calibrate irrigated-rainfed ratios to AQUASTAT data
+4. **Yield calibration & post-processing** (`***YIELD CALIBRATION***` + degradation section): Optional post-calibration adjustments and degradation effects (soil loss, pollination impacts)
 
 The module implements only **2 equations** but performs extensive data preparation in the preloop phase. Equations scale calibrated yields using the **τ (tau) technological change factor** from Module 13, with crop yields responding immediately and pasture yields responding with a one-time-step lag.
 

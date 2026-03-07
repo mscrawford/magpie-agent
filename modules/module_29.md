@@ -68,23 +68,31 @@ Cropland = Croparea + Fallow Land + Tree Cover
 
 ### 1. Total Cropland (`q29_cropland`)
 
-**Formula** (`equations.gms:11-12`):
+**⚠️ Realization-dependent:** The form of this equation differs between realizations.
+
+**simple_apr24** (`equations.gms:12-13`):
+```gams
+q29_cropland(j2)..
+  vm_land(j2,"crop") =e= sum((kcr,w), vm_area(j2,kcr,w));
+```
+**Meaning**: Cropland = harvested area only (no fallow or treecover in this realization)
+
+**detail_apr24** (`equations.gms:11-12`):
 ```gams
 q29_cropland(j2)..
   vm_land(j2,"crop") =e=
     sum((kcr,w), vm_area(j2,kcr,w)) + vm_fallow(j2) + sum(ac, v29_treecover(j2,ac));
 ```
-
 **Meaning**: Cropland = harvested area + fallow + treecover (all age classes)
 
 **Components**:
-- `vm_area(j,kcr,w)` - Harvested area by crop and water type (from Module 30)
-- `vm_fallow(j)` - Fallow land (optimized in this module)
-- `v29_treecover(j,ac)` - Tree cover by age class (optimized in this module)
+- `vm_area(j,kcr,w)` - Harvested area by crop and water type (from Module 30) — both realizations
+- `vm_fallow(j)` - Fallow land (optimized in this module) — **detail_apr24 only**
+- `v29_treecover(j,ac)` - Tree cover by age class (optimized in this module) — **detail_apr24 only**
 
 **Interface**: `vm_land(j,"crop")` used by Module 10 (Land) for total land balance
 
-**Source**: `equations.gms:9-12`
+**Source**: `equations.gms:9-13`
 
 ---
 
@@ -96,21 +104,21 @@ q29_avl_cropland(j2)..
   vm_land(j2,"crop") =l= sum(ct, p29_avl_cropland(ct,j2));
 ```
 
-**Meaning**: Total cropland ≤ available cropland
+**Meaning**: Total cropland ≤ available cropland. The equation itself is a simple upper bound — it does **not** subtract SNV directly. SNV land requirements are enforced separately by `q29_land_snv` (see Section 4 below).
 
 **Purpose** (`equations.gms:14-20`): Cropland production restricted to suitable areas based on:
 - Suitability Index (SI) map from Zabel et al. 2014
 - Excludes low-suitability areas (steep slopes, poor soils, etc.)
-- Can be further reduced for compositional heterogeneity
 
-**Available Cropland Calculation** (`presolve.gms`):
+**Available Cropland Calculation** (`presolve.gms:32`):
+The parameter `p29_avl_cropland` used in this equation is pre-computed in the presolve phase, where the SNV share is incorporated:
 ```gams
 p29_avl_cropland(t,j) = f29_avl_cropland(j,"%c29_marginal_land%") * (1 - p29_snv_shr(t,j));
 ```
 
 **Components**:
 - `f29_avl_cropland(j,marginal_land)` - Base suitability-constrained area
-- `p29_snv_shr(t,j)` - SNV share that withholds land from cropland
+- `p29_snv_shr(t,j)` - SNV share applied during presolve (reduces available cropland before optimization)
 
 **Marginal Land Options** (`input.gms:8`, `sets.gms:10-11`):
 - `all_marginal` - Include all marginal land
@@ -813,9 +821,9 @@ Module 29 participates in **FOUR of the five conservation laws** - one of the mo
 
 Module 29 provides **total cropland area** to the land balance equation in Module 10:
 
-- **Cropland Components**:
-  - `vm_land(j,"crop") = vm_area(j,kcr) + vm_fallow(j) + vm_treecover(j)`
-  - Three land use types within cropland: harvested area (Module 30), fallow, tree cover
+- **Cropland Components** (realization-dependent):
+  - **simple_apr24**: `vm_land(j,"crop") = sum((kcr,w), vm_area(j,kcr,w))` — harvested area only
+  - **detail_apr24**: `vm_land(j,"crop") = sum((kcr,w), vm_area(j,kcr,w)) + vm_fallow(j) + sum(ac, v29_treecover(j,ac))` — harvested area + fallow + tree cover
 
 - **Constraint**: Total cropland cannot exceed available cropland
   - Equation: `q29_avl_cropland` limits `vm_land(j,"crop")`
