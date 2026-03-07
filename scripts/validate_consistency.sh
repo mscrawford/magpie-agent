@@ -405,6 +405,7 @@ CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/n
     | grep -v "agent/commands/bootstrap.md" \
     | grep -v "agent/helpers/session_startup.md" \
     | grep -v "agent/helpers/maintenance_protocol.md" \
+    | grep -v "agent/commands/update.md" \
     || true)
 
 if [ -z "$CLAUDE_REFS" ]; then

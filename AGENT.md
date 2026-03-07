@@ -151,6 +151,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/guide` | Quick start + full capabilities guide | Everyone |
 | `/explain` | Explain a GAMS equation, variable, or parameter | Everyone |
 | `/trace` | Trace a variable's flow through the model | Everyone |
+| `/update` | Full pipeline: pull agent + sync MAgPIE + semantic freshness | Everyone |
 | `/sync` | Check MAgPIE code for changes, update docs | Everyone |
 | `/feedback` | Submit feedback to improve the agent | Everyone |
 | `/bootstrap` | First-time setup | New users |
@@ -158,7 +159,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/validate-module` | Validate specific module docs | Maintainers |
 | `/validate-semantic` | Run adversarial semantic accuracy flywheel | Maintainers |
 
-**Note**: Agent auto-update and AGENT.md deployment happen automatically at session start (see session_startup.md Step 0). No manual `/update` command is needed.
+**Note**: Agent auto-update and AGENT.md deployment happen automatically at session start (see session_startup.md Step 0). Use `/update` when you want to also sync docs with MAgPIE develop and run semantic freshness validation on affected modules.
 
 ### How Commands Work
 
