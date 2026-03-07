@@ -353,7 +353,7 @@ mv *_2025-10-*.md archive/
 
 ### Dependency Graphs
 
-Available in `reference/phase2_dependency_analysis/`:
+Available in `reference/dependency_analysis/`:
 - `core_dependencies.dot` - Top 20 modules
 - `degradation_system.dot` - Degradation subsystem
 - `forestry_system.dot` - Forestry/timber system
@@ -361,7 +361,7 @@ Available in `reference/phase2_dependency_analysis/`:
 
 Generate PNG:
 ```bash
-cd reference/phase2_dependency_analysis
+cd reference/dependency_analysis
 dot -Tpng core_dependencies.dot -o core_dependencies.png
 ```
 
