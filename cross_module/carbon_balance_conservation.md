@@ -258,7 +258,7 @@ vegc(ac) = 0 + (A - 0) * (1 - exp(-k * ac*5))^m
 **Source**: Module 52, `equations.gms:16-19`
 
 ```gams
-q52_emis_co2_actual(i2) ..
+q52_emis_co2_actual(i2,emis_oneoff) ..
   vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
     sum((cell(i2,j2),emis_land(emis_oneoff,land,c_pools)),
       (pcm_carbon_stock(j2,land,c_pools,"actual")
@@ -379,7 +379,7 @@ v59_som_pool(j,land) =e=
 | Timestep Length | Loss Rate | Remaining Legacy |
 |-----------------|-----------|------------------|
 | 1 year | 15% | 85% |
-| 5 years | 44% | 56% |
+| 5 years | 56% | 44% |
 | 10 years | 80% | 20% |
 | 20 years | 96% | 4% |
 
@@ -389,7 +389,7 @@ lossrate = 1 - 0.85^years
 ```
 
 **Interpretation**:
-- After 5 years: 44% toward new equilibrium, 56% legacy
+- After 5 years: 56% toward new equilibrium, 44% legacy
 - After 10 years: 80% toward new equilibrium, 20% legacy
 - After 20 years: Essentially at equilibrium (96%)
 
@@ -489,9 +489,9 @@ m_eff = Σ(climate_class) climate_share × m(climate_class)
 
 **Provides**:
 - `fm_carbon_density(t,j,land,c_pools)`: Base carbon densities (tC/ha) from LPJmL
-- `pm_carbon_density_plantation_ac(t,j,ac,c_pools)`: Age-class densities for plantations
-- `pm_carbon_density_secdforest_ac(t,j,ac,c_pools)`: Age-class densities for secondary forests
-- `pm_carbon_density_other_ac(t,j,ac,c_pools)`: Age-class densities for other land
+- `pm_carbon_density_plantation_ac(t,j,ac,ag_pools)`: Age-class densities for plantations
+- `pm_carbon_density_secdforest_ac(t,j,ac,ag_pools)`: Age-class densities for secondary forests
+- `pm_carbon_density_other_ac(t,j,ac,ag_pools)`: Age-class densities for other land
 
 **Receives**:
 - `vm_carbon_stock(j,land,c_pools,"actual")`: Current carbon stocks from all land modules
@@ -552,7 +552,7 @@ v59_som_pool(j,land) = lossrate × target + (1-lossrate) × legacy
 - `vm_emissions_reg(i,emis_source,"ch4")`: Regional CH₄ emissions → to Module 56
 
 **Receives**:
-- `vm_feed_intake(i,kli,kfo)`: Livestock feed from Module 70 → for enteric fermentation
+- `vm_feed_intake(i,kap,kall)`: Livestock feed from Module 70 → for enteric fermentation
 - `vm_area(j,kcr,w)`: Rice area from Module 30 → for rice emissions
 - `im_maccs_mitigation(t,i,emis_source,"ch4")`: Mitigation fractions from Module 57
 

@@ -343,7 +343,7 @@ vm_water_cost(i) =e= sum(cell(i,j), vm_watdem("agriculture",j)) * ic42_pumping_c
 
 **Irrigation Efficiency** (`modules/42_water_demand/all_sectors_aug13/presolve.gms:12-22`):
 - Default: GDP-based sigmoidal function (richer regions more efficient)
-- Range: ~50% (low GDP) to ~90% (high GDP)
+- Range: ~64% (low GDP) to ~90% (high GDP)
 - Affects agricultural water demand (higher efficiency → lower withdrawals)
 
 ---
@@ -354,8 +354,8 @@ vm_water_cost(i) =e= sum(cell(i,j), vm_watdem("agriculture",j)) * ic42_pumping_c
 
 **Key Equation** (`modules/43_water_availability/total_water_aug13/equations.gms:10-11`):
 ```gams
-q43_water(j) ..
-  sum(wat_dem, vm_watdem(wat_dem,j)) =l= sum(wat_src, v43_watavail(wat_src,j));
+q43_water(j2) ..
+  sum(wat_dem, vm_watdem(wat_dem,j2)) =l= sum(wat_src, v43_watavail(wat_src,j2));
 ```
 
 **Provides to Module 42**:

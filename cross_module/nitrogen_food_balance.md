@@ -31,15 +31,15 @@
 |--------|--------|-------------|-------------------|
 | **Mineral Fertilizer** | 51 | Synthetic N applied to crops | 50-250 kg N/ha/yr (optimized) |
 | **Biological N Fixation** | 50 | Legume crops (soybean, pulses) | 50-300 kg N/ha/yr (crop-specific) |
-| **Manure** | 50, 18 | Livestock excreta recycled to crops | Variable (regional) |
+| **Manure** | 50, 55 | Livestock excreta recycled to crops (`vm_manure_recycling` from M55) | Variable (regional) |
 | **Atmospheric Deposition** | 50 | Wet/dry deposition from atmosphere | 1-20 kg N/ha/yr (exogenous) |
 | **SOM Mineralization** | 59 | N release from soil organic matter loss | Variable (land-use dependent) |
 
 **Source**: Module 50, `equations.gms:18-30`
 
-**Key Equation** (Module 51, crop N demand):
+**Key Equation** (Module 50, nitrogen soil budget):
 ```gams
-vm_nr_inorg_fert(j,kcr) + inputs_other ≥ N_demand
+vm_nr_inorg_fert_reg(i,land_ag) + other_inputs ≥ N_withdrawal
 ```
 
 **Optimization**: MAgPIE minimizes fertilizer costs subject to meeting crop N requirements
@@ -51,20 +51,21 @@ vm_nr_inorg_fert(j,kcr) + inputs_other ≥ N_demand
 | Pathway | Module | Description | Typical Magnitude |
 |---------|--------|-------------|-------------------|
 | **Harvest Removal** | 51 | N in harvested biomass (food/feed/fiber) | 50-150 kg N/ha/yr |
-| **N₂O Emissions** | 51, 53 | Direct + indirect nitrous oxide | 1-3% of N applied (IPCC) |
-| **NH₃ Volatilization** | 50 | Ammonia losses from fertilizer/manure | 10-30% of N applied |
-| **NO₃⁻ Leaching** | 50 | Nitrate runoff to groundwater | 10-40% of N surplus |
-| **NOₓ Emissions** | 50 | Nitrogen oxides | <5% of N applied |
+| **N₂O Emissions** | 51 | Direct + indirect nitrous oxide (`n2o_n_direct`, `n2o_n_indirect`) | 1-3% of N applied (IPCC) |
+| **NH₃ Volatilization** | 51 | Ammonia losses from fertilizer/manure (`nh3_n`) | 10-30% of N applied |
+| **NO₃⁻ Leaching** | 51 | Nitrate runoff to groundwater (`no3_n`) | 10-40% of N surplus |
+| **NO₂ Emissions** | 51 | Nitrogen dioxide (`no2_n`) | <5% of N applied |
 
-**Source**: Module 50, `equations.gms:35-60`
+**Source**: Module 51 (`q51_emissions_*` equations) calculates all emission pathways. Module 50 calculates nitrogen surplus (`v50_nr_surplus_cropland`).
 
 **Critical Emissions** (Module 51, N₂O calculation):
-```gams
-N2O_direct = N_applied × EF_direct × (1 - MACC_mitigation)
-EF_direct = 0.01 (1% IPCC default)
+Emissions are calculated via NUE-rescaling, NOT simple emission factors:
 ```
+emission = source / (1 - s51_snupe_base) * (1 - vm_nr_eff) * ef
+```
+Where `ef` = IPCC emission factor (e.g., 0.01 for direct N₂O). MACCs for soil N₂O work indirectly through NUE in Module 50, NOT as a direct multiplier on emissions.
 
-**Source**: Module 51, `equations.gms:20-45`
+**Source**: Module 51, `equations.gms` (`q51_emissions_*`)
 
 ---
 
@@ -115,11 +116,12 @@ Harvest + N2O + NH3 + Leaching + NOx + ΔSoil_pool
 - **Module 17 (Production)**: Aggregates crop and livestock production
 - **Module 21 (Trade)**: Balances regional supply and demand via trade
 
-**Mathematical Statement**:
+**Mathematical Statement** (simplified):
 ```
-∀ i ∈ Regions, ∀ k ∈ Products:
-  Production(i,k) + Imports(i,k) - Exports(i,k) ≥ Demand(i,k)
+∀ k ∈ Tradeable Products:
+  sum(i, vm_prod_reg(i,k)) ≥ sum(i, vm_supply(i,k))
 ```
+At global level, total production must meet total supply requirements (which includes food, feed, processing, material, seed, and waste demands).
 
 ---
 
@@ -162,20 +164,14 @@ vm_prod_reg(i,k) = sum(cell(i,j), vm_prod(j,k))
 
 ### 2.4 Food Balance Constraint
 
-**Regional Self-Sufficiency** (optional):
+**Global Trade Balance** (Module 21, `q21_trade_glo`):
 ```gams
-vm_prod_reg(i,k) ≥ vm_demand(i,k)  [if trade disabled]
+sum(i2, vm_prod_reg(i2,k_trade)) =g= sum(i2, vm_supply(i2,k_trade))
 ```
+Global production must meet or exceed global supply requirements. `vm_supply` (from M16) aggregates all demand streams (food, feed, processing, material, seed, waste).
 
-**Global Trade Balance** (Module 21):
-```gams
-vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) = vm_demand(i,k)
-```
-
-**Global Check**:
-```gams
-sum(i, vm_prod_reg(i,k)) = sum(i, vm_demand(i,k))  [at global level]
-```
+**Regional Balance** (Module 21, `q21_trade_reg`):
+Regional self-sufficiency is managed through `vm_supply` and trade variables (`v21_excess_dem`, `v21_excess_prod`), NOT through `vm_import`/`vm_export` (these variables do not exist in MAgPIE).
 
 **Trade Costs**: Transport costs proportional to distance (Module 21)
 
@@ -254,9 +250,7 @@ stopifnot(max_shortage < 0.01)  # Small tolerance for numerical error
 
 ### 2.8 Limitations
 
-**1. No Food Waste**: Waste not modeled explicitly
-- Reality: ~30% of food wasted globally
-- Implication: Actual demand for production lower than gross consumption
+**1. Food Waste Modeled as Share**: Module 16 explicitly models waste via `v16_dem_waste(i,kall)` using equation `q16_waste_demand` with waste shares `f16_waste_shr`. Waste is a component of `vm_supply`, but waste reduction policies are not endogenous.
 
 **2. No Strategic Reserves**: No stocks or buffer storage
 - Reality: Countries maintain emergency grain reserves
@@ -280,7 +274,7 @@ stopifnot(max_shortage < 0.01)  # Small tolerance for numerical error
 |-----|------|-------------|---------|--------------|
 | **Land Balance** | Stock (Equality) | Hard | 10, 29-35 | No - model fails if violated |
 | **Water Balance** | Flow (Inequality) | Soft (buffer) | 42, 43 | Yes - groundwater buffer for exogenous |
-| **Carbon Balance** | Stock-Flow | None | 52, 53, 59 | N/A - emissions allowed (open system) |
+| **Carbon Balance** | Stock-Flow | None | 52, 56, 59 | N/A - emissions allowed (open system) |
 | **Nitrogen Balance** | Flow | None | 50, 51, 59 | N/A - inputs/outputs allowed |
 | **Food Balance** | Flow (Equality) | Hard (with trade) | 16, 17, 21 | No - trade adjusts to meet demand |
 
