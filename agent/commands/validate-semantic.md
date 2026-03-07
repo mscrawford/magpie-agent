@@ -16,7 +16,7 @@ The semantic validation flywheel generates expert questions, answers them from d
 GENERATE → ANSWER (Sonnet) → AUDIT (Opus) → SYNTHESIZE → IMPROVE → EXPAND
 ```
 
-**Baseline from Round 1 (2026-03-07)**: 6.7/10 mean accuracy, 40 bugs across 5 questions.
+**Baseline**: See `feedback/validation_rounds.json` for full history. Round 1: 6.7/10, Round 2: 8.2/10, Round 3: 5.8/10 (bimodal — 85% confabulation).
 
 ---
 
@@ -128,6 +128,16 @@ Fix bugs in priority order:
 Use Sonnet 4.6 agents (NOT Opus) for fixes — the audit reports already specify exactly what's wrong and what the correct code says.
 
 After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic regressions.
+
+### Step 5b: Record Results
+
+**MANDATORY**: Append results to `feedback/validation_rounds.json`. This is the persistent record for tracking quality over time. Include:
+- Round number, date, commit hashes (before/after)
+- Per-question: topic, modules tested, score, bug counts by severity
+- Summary: mean score, total bugs, bug sources (doc_error vs answerer_confabulation), root causes, files fixed, safeguards added
+- Update `cumulative_stats` at the bottom
+
+This file allows future agents to compute trends: score over time, confabulation rate, which modules are reliable vs fragile.
 
 ### Step 6: Expand Coverage
 

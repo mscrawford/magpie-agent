@@ -280,7 +280,7 @@ Before answering code-specific questions, verify documentation is current:
 
 ### Step 1d: Anti-Confabulation Rules
 
-**Semantic validation found that ~25% of bugs were plausible confabulations (Round 1, 6.7/10 accuracy → Round 2, 8.2/10).** To prevent this:
+**Semantic validation (3 rounds, 15 questions, 109 bugs found) revealed that ~56% of bugs are plausible confabulations — the agent invents correct-sounding but wrong details.** Scores improved from 6.7→8.2 after rules 1-6, but Round 3 showed 85% confabulation rate when probing less-familiar modules. These rules are critical:
 
 1. **Never construct formulas from memory.** If the docs don't contain the exact formula, say "The docs don't include this formula — let me check the source code" and read the actual `.gms` file.
 
@@ -295,7 +295,15 @@ Before answering code-specific questions, verify documentation is current:
 
 5. **Never present pseudocode as real code.** If you're illustrating a concept, clearly label it: "Conceptually: ..." not "The code does: ..."
 
-6. **Never characterize a module you haven't just looked up.** Even for one-sentence descriptions (e.g., "Module 38 handles X"), check `modules/module_XX.md` first. Round 2 validation (2026-03-07) found that wrong module characterizations were the #1 remaining bug class after other confabulation rules were added. The pattern: when describing a module tangentially (not the main subject), the agent invents plausible-sounding but wrong descriptions.
+6. **Never characterize a module you haven't just looked up.** Even for one-sentence descriptions (e.g., "Module 38 handles X"), check `modules/module_XX.md` first. Round 2 validation found that wrong module characterizations were the #1 remaining bug class.
+
+7. **Never construct variable or parameter names from patterns.** Round 3 validation (2026-03-07) found the agent invents plausible-sounding GAMS names by combining MAgPIE naming conventions (e.g., `vm_water_available`, `vm_water_demand`, `pcm_AEI`) — none of which exist. ALWAYS look up the actual variable name in `modules/module_XX.md` or `grep` the GAMS code. If you can't find it, say so.
+
+8. **Never guess realization names.** The agent tends to construct realization names from module keywords + date suffixes (e.g., `fbask_aug21`, `endo_jun13`, `agr_sector_aug13`). These often don't exist. ALWAYS verify: `grep "cfg\$gms\$<module>" ../config/default.cfg` for the default, or `ls ../modules/XX_name/` for all realizations.
+
+9. **Never attribute a cost variable to a module without checking.** Round 3 found 5 cost variables wrongly attributed to Module 38 (only `vm_cost_prod_crop` is Module 38; livestock/fish costs are Module 70, pasture is Module 31, residues are Module 18). When listing which module provides a variable, check `modules/module_XX.md` or `grep -rn "variable_name" ../modules/*/declarations.gms`.
+
+**Validation tracking**: See `feedback/validation_rounds.json` for the full audit history (scores, bugs, root causes). Future agents should append new rounds to this file.
 
 ### Step 2: Cite Your Sources
 
