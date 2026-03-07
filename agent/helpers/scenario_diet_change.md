@@ -34,6 +34,8 @@ Diet scenarios are configured entirely in **Module 15** (`anthro_iso_jun22`). Th
 
 ### EAT-Lancet Diet Settings (only active when `s15_exo_diet` > 0)
 
+> **Note**: `c15_EAT_scen` only controls food composition in diet modes 1 and 2. In diet=3, composition is determined by `f15_rec_EATLancet` min/max bounds and `c15_EAT_scen` is ignored. `c15_kcal_scen` is active in all three modes.
+
 | Parameter | Default | Options | File:Line |
 |-----------|---------|---------|-----------|
 | `c15_kcal_scen` | `healthy_BMI` | `healthy_BMI`, `2100kcal`, `2500kcal`, `endo`, `no_underweight`, `no_overweight`, `half_overweight`, `no_underweight_half_overweight` | `input.gms:21` |
@@ -41,7 +43,7 @@ Diet scenarios are configured entirely in **Module 15** (`anthro_iso_jun22`). Th
 
 **Commodity sub-switches** (`input.gms:82–95`) — all default ON (1) except `s15_exo_brans` (0).
 Set any to 0 to exclude that food group from the exogenous diet shift:
-`s15_exo_monogastric`, `s15_exo_ruminant`, `s15_exo_fish`, `s15_exo_fruitvegnut`, `s15_exo_roots` (diet=3 only), `s15_exo_pulses`, `s15_exo_sugar`, `s15_exo_oils`, `s15_exo_brans` (⚠️ ON sets brans→0), `s15_exo_scp`, `s15_exo_alcohol` (diet=1,3 only).
+`s15_exo_monogastric`, `s15_exo_ruminant`, `s15_exo_fish`, `s15_exo_fruitvegnut`, `s15_exo_roots` (diet=3 only), `s15_exo_pulses`, `s15_exo_sugar`, `s15_exo_oils`, `s15_exo_brans` (⚠️ ON sets brans→0), `s15_exo_scp`, `s15_exo_alcohol` (diet=1,2,3).
 Alcohol ceiling: `s15_alc_scen` (default 0 = no alcohol; 0.014 = 1.4% of kcal).
 
 ### Food Substitution Settings (independent of `s15_exo_diet`)
@@ -87,8 +89,9 @@ cfg$gms$s15_exo_diet <- 3; cfg$gms$c15_kcal_scen <- "healthy_BMI"; cfg$gms$c15_E
 
 ### Recipe 2: Vegan Diet
 ```r
-cfg$gms$s15_exo_diet <- 3; cfg$gms$c15_kcal_scen <- "healthy_BMI"; cfg$gms$c15_EAT_scen <- "VGN"
+cfg$gms$s15_exo_diet <- 2; cfg$gms$c15_kcal_scen <- "healthy_BMI"; cfg$gms$c15_EAT_scen <- "VGN"
 ```
+> ⚠️ **Must use `s15_exo_diet` = 1 or 2 here.** Diet=3 uses `f15_rec_EATLancet` min/max bounds and **completely ignores** `c15_EAT_scen`. Setting diet=3 with `VGN` would silently produce a non-vegan diet.
 
 ### Recipe 3: 50% Livestock Reduction (no EAT-Lancet)
 ```r
@@ -199,4 +202,4 @@ Modules 10/20/30/34/35 ── production needs → cropland/pasture/forest alloc
 
 ## Lessons Learned
 <!-- APPEND-ONLY: Record practical insights from real usage below this line -->
-- 2026-03-06: Module 15 has 18 equations fully documented. The BMI-related equations (q15_bmi_shr, q15_bmi_shr_verylow, etc.) use cumulative normal distribution lookups — if BMI targets seem to have no effect, check that s15_exo_diet=1 is set. Default s15_exo_diet=0 silently ignores all EAT-Lancet settings. (source: deep validation of module 15)
+- 2026-03-06: Module 15 has 18 equations fully documented. The BMI-related equations (q15_bmi_shr, q15_bmi_shr_verylow, etc.) use cumulative normal distribution lookups — if BMI targets seem to have no effect, check that s15_exo_diet > 0 is set. Default s15_exo_diet=0 silently ignores all EAT-Lancet settings. (source: deep validation of module 15)

@@ -114,10 +114,19 @@ $include "./modules/10_land/landmatrix_dec18/declarations.gms"
 
 ### 1.6 Comments & Documentation
 
-**Line comments**: Start with asterisk `*`
+**Line comments**: Asterisk `*` in **column 1** (first character of the line)
 ```gams
-* This is a comment
-sets i regions / USA, EUR, CHN /;  * inline comment after statement
+* This is a full-line comment (asterisk must be in column 1)
+sets i regions / USA, EUR, CHN /;
+```
+
+**End-of-line comments**: Not available by default. Requires a compiler directive:
+- `$onEolCom` enables `!!` as end-of-line comment marker
+- `$onInline` enables `/* */` inline comment syntax
+```gams
+$onEolCom
+sets i regions / USA, EUR, CHN /;  !! end-of-line comment
+$offEolCom
 ```
 
 **Block comments**: Use `$ontext` / `$offtext`
@@ -156,10 +165,12 @@ pop("USA") = 330;                   ← Required
 ```gams
 * All valid:
 x = 1;
-x = 1; y = 2; z = 3;    * Multiple per line (avoid)
+* Multiple statements per line (avoid):
+x = 1; y = 2; z = 3;
+* Statements can continue across lines until semicolon:
 x = a + b
-    + c + d             * Statement continues
-    + e;                * Until semicolon
+    + c + d
+    + e;
 ```
 
 ### 1.8 MAgPIE Example Walkthrough
@@ -244,7 +255,7 @@ Sets
 - Set names (identifiers) should be short (i, j, k common for spatial indices)
 - Text descriptions are documentation (printed in outputs)
 - Elements are listed in `/` slashes, comma-separated
-- Elements are also identifiers (alphanumeric, start with letter)
+- Elements are labels (alphanumeric, can start with letter or digit)
 
 ### 2.3 Sequential Sets
 
@@ -312,8 +323,9 @@ Set
 
 **Dynamic subsets**: Defined by conditions at runtime
 ```gams
-Set active_regions(i);  * Declare empty
-active_regions(i) = yes$(population(i) > 1000000);  * Populate conditionally
+* Declare empty, then populate conditionally:
+Set active_regions(i);
+active_regions(i) = yes$(population(i) > 1000000);
 ```
 
 ### 2.6 Aliases
@@ -322,11 +334,13 @@ active_regions(i) = yes$(population(i) > 1000000);  * Populate conditionally
 
 ```gams
 Set i regions / USA, EUR, CHN /;
-Alias(i, i2);      * i2 is another name for i
-Alias(i, src, dest);  * Multiple aliases
+* i2 is another name for i:
+Alias(i, i2);
+* Multiple aliases at once:
+Alias(i, src, dest);
 
-* Use for pairs from same set:
-distance(src,dest) = ...;  * All combinations of regions
+* Use for pairs from same set (all combinations of regions):
+distance(src,dest) = ...;
 ```
 
 **When needed**:
@@ -406,7 +420,8 @@ vm_lu_transitions(j,land_from,land_to)$(not sameas(land_from,land_to))
 
 **Subset iteration**: Looping over subsets
 ```gams
-loop(kcr(kall),  * Loop only over crop products
+* Loop only over crop products:
+loop(kcr(kall),
   processing(kall) = ...;
 );
 ```
@@ -501,7 +516,7 @@ Table distance(i,j) shipping distance in 1000 km
 - Row headers = first index
 - Column headers = second index
 - Missing values = zero
-- Only works for 2D data
+- Requires at least 2 dimensions (can have more using dot notation for composite labels)
 
 **MAgPIE example** (input files use CSV, loaded via $load):
 ```gams
@@ -564,14 +579,17 @@ price("USA") = 100;
 price("EUR") = 150;
 * price("CHN") is ZERO (not undefined, not missing)
 
-total = sum(i, price(i));  * Includes zero for CHN
+* Includes zero for CHN:
+total = sum(i, price(i));
 ```
 
 **Implication**: Don't need to initialize every element
 ```gams
 * Only set non-zero values:
-calibration_factor(i) = 1.0;  * Default for all i
-calibration_factor("special_region") = 1.5;  * Override specific
+* Set default for all i:
+calibration_factor(i) = 1.0;
+* Override specific element:
+calibration_factor("special_region") = 1.5;
 ```
 
 ### 3.6 Multi-Dimensional Parameters
@@ -592,7 +610,7 @@ cell_carbon = carbon_density("y2020","CAZ_1","primforest","vegc","NatGr");
 **Partial summing**: Aggregate over some dimensions
 ```gams
 * Total carbon across all pools in a cell:
-total_carbon(t,j,land) = sum(ag_pools, carbon_density(t,j,land,ag_pools));
+total_carbon(t,j,land) = sum((ag_pools,potnatveg), carbon_density(t,j,land,ag_pools,potnatveg));
 ```
 
 ### 3.7 Time-Dependent Parameters
@@ -770,7 +788,7 @@ Binary Variable
 **Note**: Binary variables invoke **mixed-integer programming (MIP)**, which is much slower than continuous optimization. MAgPIE uses very few binary variables.
 
 #### Integer Variables
-**Only integer values**: {..., -2, -1, 0, 1, 2, ...}
+**Non-negative integer values by default**: {0, 1, 2, ...} (lower bound can be changed)
 
 ```gams
 Integer Variable
@@ -796,25 +814,32 @@ Every variable has **five attributes** (database fields):
 
 **Lower bound**:
 ```gams
-vm_land.lo(j,land) = 0;  * Non-negative (redundant for Positive Variable)
-vm_prod.lo(j,"wheat") = min_production(j);  * Minimum production requirement
+* Non-negative (redundant for Positive Variable):
+vm_land.lo(j,land) = 0;
+* Minimum production requirement:
+vm_prod.lo(j,"wheat") = min_production(j);
 ```
 
 **Upper bound**:
 ```gams
-vm_land.up(j,land) = pm_cell_area(j);  * Cannot exceed total cell area
-vm_emissions.up(i,t) = emission_cap(i,t);  * Emission cap
+* Cannot exceed total cell area:
+vm_land.up(j,land) = pm_cell_area(j);
+* Emission cap:
+vm_emissions.up(i,t) = emission_cap(i,t);
 ```
 
 **Unbounded** (remove default bounds):
 ```gams
-vm_net_balance.up(i) = Inf;   * No upper limit
-vm_net_balance.lo(i) = -Inf;  * No lower limit
+* No upper limit:
+vm_net_balance.up(i) = Inf;
+* No lower limit:
+vm_net_balance.lo(i) = -Inf;
 ```
 
 **Fixing** (set both bounds equal):
 ```gams
-vm_land.fx(j,"urban") = pm_urban_area(j);  * Urban area fixed (not optimized)
+* Urban area fixed (not optimized):
+vm_land.fx(j,"urban") = pm_urban_area(j);
 * Equivalent to:
 * vm_land.lo(j,"urban") = pm_urban_area(j);
 * vm_land.up(j,"urban") = pm_urban_area(j);
@@ -834,8 +859,8 @@ vm_feed_balanceflow.lo(i,kli_rum,"pasture") = -Inf;
 
 **Level** (.l): The optimized value
 ```gams
-* After solve:
-display vm_land.l;  * Show all land allocations
+* After solve — show all land allocations:
+display vm_land.l;
 
 * Store in parameter for further use:
 parameter p_land_result(j,land);
@@ -844,8 +869,8 @@ p_land_result(j,land) = vm_land.l(j,land);
 
 **Marginal** (.m): Shadow price (sensitivity)
 ```gams
-* After solve:
-display vm_land.m;  * How much objective would improve if bound relaxed
+* After solve — how much objective would improve if bound relaxed:
+display vm_land.m;
 
 * Interpretation:
 * If vm_land.m(j,"cropland") = 1500
@@ -868,7 +893,8 @@ pcm_land(j,land) = vm_land.l(j,land);
 **Setting initial values**:
 ```gams
 * Before solve:
-vm_land.l(j,"cropland") = pm_land_initial(j,"cropland");  * Start from historical
+* Start from historical data:
+vm_land.l(j,"cropland") = pm_land_initial(j,"cropland");
 vm_prod.l(j,kcr) = historical_production(j,kcr);
 ```
 
@@ -1315,7 +1341,7 @@ Model magpie / all /;
 
 **Syntax**:
 ```gams
-Solve model_name using solver_type minimizing|maximizing objective_variable ;
+Solve model_name using model_type minimizing|maximizing objective_variable ;
 ```
 
 **Example**:
@@ -1325,15 +1351,15 @@ Solve magpie using nlp minimizing vm_cost_glo ;
 
 **Components**:
 1. **Model name**: Previously declared model
-2. **Solver type**: Algorithm to use (lp, nlp, mip, etc.)
+2. **Model type**: Problem class to use (lp, nlp, mip, etc.)
 3. **Direction**: `minimizing` (reduce objective) or `maximizing` (increase objective)
-4. **Objective variable**: The variable to optimize (must be scalar, i.e., no indices)
+4. **Objective variable**: The variable to optimize (must be scalar, of type `free`, and appear in at least one equation)
 
-### 6.4 Solver Types
+### 6.4 Model Types
 
-GAMS supports many solver types for different problem classes:
+GAMS supports many model types for different problem classes:
 
-| Solver Type | Problem Class | Example Use |
+| Model Type | Problem Class | Example Use |
 |-------------|--------------|-------------|
 | `lp` | **Linear Programming** | Linear objective, linear constraints |
 | `nlp` | **Nonlinear Programming** | Nonlinear objective or constraints, continuous |
@@ -1455,8 +1481,10 @@ p_binding_constraint(j,land)$(abs(vm_land.m(j,land)) > 0.01) = 1;
 **Equation levels and marginals**:
 ```gams
 * Check if constraint is binding:
-display q10_land_area.l;   * LHS value at solution
-display q10_land_area.m;   * Shadow price of constraint
+* LHS value at solution:
+display q10_land_area.l;
+* Shadow price of constraint:
+display q10_land_area.m;
 ```
 
 ### 6.9 Solver Options
@@ -1464,18 +1492,19 @@ display q10_land_area.m;   * Shadow price of constraint
 **Setting solver options** (advanced):
 
 ```gams
-* Option file number:
-option nlp = conopt;        * Use CONOPT solver for NLP
-magpie.optfile = 1;         * Use option file "conopt.opt"
+* Use CONOPT solver for NLP:
+option nlp = conopt;
+* Use option file "conopt.opt":
+magpie.optfile = 1;
 
-* Solver time limit:
-magpie.reslim = 36000;      * 10 hours max
+* Solver time limit (10 hours max):
+magpie.reslim = 36000;
 
 * Iteration limit:
 magpie.iterlim = 1000000;
 
-* Optimality tolerance:
-option optcr = 0.01;        * 1% optimality gap acceptable
+* Optimality tolerance (1% gap acceptable):
+option optcr = 0.01;
 ```
 
 **MAgPIE typically uses**:

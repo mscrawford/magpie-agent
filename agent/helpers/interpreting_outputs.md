@@ -114,7 +114,7 @@ readGDX(gdx, "p80_modelstat")                  # Read modelstat parameter
 | `ov_cost_glo(t,type)` | `costs()` | mio. USD17MER/yr | 11_costs |
 | `ov_cost_land_transition(t,j,type)` | — | mio. USD17MER/yr | 10_land |
 | `ov_lu_transitions(t,j,from,to,type)` | — | mio. ha | 10_land |
-| `oq52_emis_co2_actual(t,i,emis,type)` | `emissions()` | — | 52_carbon |
+| `oq52_emis_co2_actual(t,i,emis_oneoff,type)` | `emissions()` | — | 52_carbon |
 | `p80_modelstat(t)` | `modelstat()` | 1 (unitless) | 80_optimization |
 
 ## Understanding Model Status

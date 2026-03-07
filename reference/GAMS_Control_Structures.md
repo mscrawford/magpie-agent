@@ -440,7 +440,7 @@ else
 
 **Example where dollar is clearer**:
 ```gams
-value(i,j) $ (i <> j) = distance(i,j);  * Off-diagonal only
+value(i,j) $ (not sameas(i,j)) = distance(i,j);  !! Off-diagonal only
 ```
 
 ### 2.8 Common Patterns in MAgPIE

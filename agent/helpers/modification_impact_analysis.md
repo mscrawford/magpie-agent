@@ -57,7 +57,7 @@ If your module participates in a conservation law, your change MUST preserve the
 
 | Conservation Law | Core Equation | File |
 |---|---|---|
-| Land balance | `q10_land_area: Σ(land) vm_land(j,land) =e= f10_land(j)` | `cross_module/land_balance_conservation.md` |
+| Land balance | `q10_land_area: Σ(land) vm_land(j,land) =e= Σ(land) pcm_land(j,land)` | `cross_module/land_balance_conservation.md` |
 | Water balance | `q43_water: water_demand ≤ water_supply` | `cross_module/water_balance_conservation.md` |
 | Carbon balance | `vm_carbon_stock` tracking across pools | `cross_module/carbon_balance_conservation.md` |
 | Nitrogen balance | `vm_nr_som` + fertilizer + manure | `cross_module/nitrogen_food_balance.md` |

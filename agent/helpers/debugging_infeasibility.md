@@ -19,7 +19,7 @@ The optimizer cannot satisfy all constraints simultaneously. Common causes:
 ### First diagnostic steps
 ```r
 # Load the fulldata.gdx produced on failure
-library(gdx)
+library(gdx2)
 gdx <- "fulldata.gdx"
 
 # 1. Which timestep failed?
@@ -89,9 +89,9 @@ Start by relaxing the most likely constraint (based on marginals) and re-run.
 | `s32_aff_plantation` | 32 | 0-1 | > available land |
 | `s56_cprice_red_factor` | 56 | 0-0.5 | > 0.8 with early start |
 | `s13_max_gdp_shr` | 13 | Inf (default) | Any finite value |
-| `c21_trade_liberalization` | 21 | "regionalized" | "autarky" removes trade flexibility |
-| `s60_2ndgen_bioenergy` | 60 | "phaseout" | "demandside" with high targets |
-| `s43_watdem_nonagr_scenario` | 43 | depends | high non-ag water demand |
+| `c21_trade_liberalization` | 21 | "regionalized" | "fragmented" removes trade flexibility |
+| `c60_2ndgen_biodem` | 60 | low demand scenario | high demand scenario with limited land |
+| `s42_watdem_nonagr_scenario` | 42 | depends | high non-ag water demand |
 
 ---
 
@@ -105,7 +105,6 @@ MAgPIE has 13 slack variables with high penalty costs. When they activate, the m
 | `v44_bii_missing` | 44 | $1,000,000/unit | Biodiversity target gap |
 | `v32_land_missing` | 32 | $1,000,000/ha | Forestry land target gap |
 | `v21_import_for_feasibility` | 21 | $1,500/tDM | Wood/woodfuel import (only!) |
-| `v21_excess_prod` | 21 | $300/tDM | Excess production disposal |
 | `v29_fallow_missing` | 29 | $615/ha | Fallow land target gap |
 
 **⚠️ Critical gap**: Food, feed, and standard crop production have **NO slack variables**. If food demand can't be met, the model goes infeasible — there's no "import food for feasibility" option.
@@ -139,9 +138,9 @@ MAgPIE has 13 slack variables with high penalty costs. When they activate, the m
 **Cause**: High carbon price forces land-use changes that conflict with food/conservation
 **Fix**: Reduce `s56_cprice_red_factor`, increase CDR availability, or relax conservation
 
-### 6. Modelstat = 7 (intermediate infeasible) — NOT a real failure
+### 6. Modelstat = 7 (intermediate non-optimal) — NOT a real failure
 **Symptom**: Model continues but results seem odd
-**Cause**: MAgPIE tolerates modelstat=7 (doesn't abort). Solution exists but isn't fully optimal.
+**Cause**: MAgPIE tolerates modelstat=7 (doesn't abort). Solution is feasible but not fully optimal.
 **Action**: Check results carefully but don't assume failure. May indicate near-binding constraints.
 
 ---

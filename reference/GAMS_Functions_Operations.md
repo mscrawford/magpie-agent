@@ -57,7 +57,7 @@ GAMS supports a comprehensive set of mathematical functions for use in assignmen
 | `exp(x)` | Exponential (e^x) | All x | `exp(1)` = 2.71828 |
 | `log(x)` | Natural logarithm (ln x) | x > 0 | `log(2.71828)` = 1 |
 | `log10(x)` | Base-10 logarithm | x > 0 | `log10(100)` = 2 |
-| `power(x,y)` | Integer power (x^y) | x ≥ 0 for y non-integer | `power(2,10)` = 1024 |
+| `power(x,y)` | Integer power (x^y, Y must be integer) | All x (Y must be integer) | `power(2,10)` = 1024 |
 
 **MAgPIE usage** - Chapman-Richards growth function (`core/macros.gms:18`):
 ```gams
@@ -72,7 +72,7 @@ Uses `exp()` for exponential decay term.
 |----------|-------------|---------|
 | `sqrt(x)` | Square root (√x) | `sqrt(16)` = 4 |
 | `sqr(x)` | Square (x²) | `sqr(5)` = 25 |
-| `power(x,y)` | General power | `power(3, 0.5)` = 1.732 |
+| `power(x,y)` | Integer power (Y must be integer) | `power(3, 2)` = 9 |
 
 **Protection pattern** (avoid negative sqrt):
 ```gams
@@ -168,7 +168,7 @@ loop(i,
 
 | Function | Description |
 |----------|-------------|
-| `errorf(x)` | Error function |
+| `errorf(x)` | Standard normal CDF Φ(x) |
 
 **Rarely used** in typical optimization models.
 
@@ -554,7 +554,7 @@ final_value = initial * prod(t, (1 + growth_rate(t)));
 
 ### 4.4 smin / smax - Set Min/Max
 
-**Purpose**: Find minimum or maximum value over set (and identify which element).
+**Purpose**: Find minimum or maximum value over set.
 
 **Official**: "The smin and smax operations are used to find the largest and smallest values over the domain of the index set or sets" ([Smin, Smax](https://www.gams.com/mccarlGuide/smin__smax.htm))
 

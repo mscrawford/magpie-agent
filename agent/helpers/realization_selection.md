@@ -61,7 +61,7 @@ Of 46 modules, **22 have multiple realizations**. The rest have a single impleme
 | 37 | labor_prod | `off` | `exo` | Labor productivity fixed at 1 vs climate-impacted (only used by `sticky_labor` factor costs) |
 | 38 | factor_costs | `sticky_feb18` | `per_ton_fao_may22`, `sticky_labor` | Capital investment vs per-ton vs capital+labor productivity ⚠️ recalib |
 | 40 | transport | `gtap_nov12` | `off` | GTAP-calibrated transport costs vs none |
-| 41 | irrigation | `endo_apr13` | `static` | Endogenous irrigation investment vs no expansion |
+| 41 | area_equipped_for_irrigation | `endo_apr13` | `static` | Endogenous irrigation investment vs no expansion |
 | 42 | water_demand | `all_sectors_aug13` | `agr_sector_aug13` | All-sector WATERGAP data vs ag-only with flat reservation |
 | 44 | biodiversity | `bii_target` | `bv_btc_mar21` | BII per 71 biomes vs range-rarity weighted biodiversity value |
 | 51 | nitrogen | `rescaled_jan21` | `off` | IPCC N₂O with rescaled efficiency vs disabled |

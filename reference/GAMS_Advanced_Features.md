@@ -570,7 +570,7 @@ Can span multiple lines.
 $offText
 ```
 
-**Inline comments**: Use `*` (not dollar control)
+**Inline comments**: Use `/* */` (requires `$onInline`) or `!!` (requires `$onEolCom`). Note: `*` in column 1 is a full-line comment, not an inline comment.
 
 ---
 
@@ -653,7 +653,7 @@ vm_trade.up(i,k) = Inf;  * Explicitly set to infinity (default for positive vari
 
 **Official**: "If set it results in the upper and lower bounds of the variable to be set to the value of the `.fx` attribute" ([UG_Variables](https://www.gams.com/latest/docs/UG_Variables.html))
 
-**Effect**: `.fx = value` is equivalent to `.lo = value` AND `.up = value`
+**Effect**: `.fx = value` is equivalent to `.lo = value`, `.up = value`, AND `.l = value` (the activity level is also reset to the fixed value)
 
 **Syntax**:
 ```gams
@@ -777,7 +777,7 @@ vm_large_number.scale = 1e6;  * Internally divide by 1 million
 
 **Priority (.prior)** - MIP branching priority:
 ```gams
-vm_binary_choice.prior(i) = importance(i);  * Higher = branch first
+vm_binary_choice.prior(i) = importance(i);  * Lower value = higher branching priority
 ```
 
 **Stage (.stage)** - Stochastic programming:
@@ -793,8 +793,9 @@ vm_operation.stage(t,scenario) = 2;  * Second-stage decision
 
 **Slack (.slack, .slacklo, .slackup)** - Distance from bounds:
 ```gams
-* .slack = .l - .lo (lower slack)
-* .slackup = .up - .l (upper slack)
+* .slacklo = max(0, .l - .lo)  (lower slack)
+* .slackup = max(0, .up - .l)  (upper slack)
+* .slack   = min(.slacklo, .slackup)  (minimum slack from either bound)
 ```
 
 ---

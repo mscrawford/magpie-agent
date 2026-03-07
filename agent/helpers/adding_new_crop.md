@@ -36,7 +36,7 @@ The 19 crops in `kcr`: `tece, maiz, trce, rice_pro, soybean, rapeseed, groundnut
 |----------|------|----------|
 | `kfo` (food) vs `knf` (non-food) | `modules/15_food/anthro_iso_jun22/sets.gms:77,118` | Is it consumed as food? |
 | `kpr` (processable) vs `knpr` (non-processable) | `modules/20_processing/substitution_may21/sets.gms:10,15` | Does it produce secondary products? |
-| `k_trade` vs `k_notrade` | `modules/21_trade/selfsuff_reduced/sets.gms:11,17` | Is it internationally tradable? |
+| `k_notrade` vs `k_trade` | `modules/21_trade/selfsuff_reduced/sets.gms:11,17` | Is it internationally tradable? |
 | `crop_ann30` vs `crop_per30` | `modules/30_croparea/simple_apr24/sets.gms:45,48` | Annual or perennial? |
 | `k_conc53` vs `k_noconc53` | `modules/53_methane/ipcc2006_aug22/sets.gms:10,16` | Concentrate or roughage feed? |
 
@@ -130,17 +130,17 @@ See the **Required Input Data** table below. The most critical and hardest to ob
 | Residue attributes (AG) | `(attributes,kve)` | `modules/18_residues/input/f18_attributes_residue_ag.csv` | 18 |
 | Residue attributes (BG) | `(dm_nr,kve)` | `modules/18_residues/input/f18_attributes_residue_bg.csv` | 18 |
 | Crop growth functions | `(cgf,kve)` | `modules/18_residues/*/input/f18_cgf.csv` | 18 |
-| N fixation (free-living) | `(kcr)` | `modules/50_nr_soil_budget/*/input/f50_fixation_freeliving.cs4` | 50 |
-| N fixation (biological) | `(t_all,i,kcr)` | `modules/50_nr_soil_budget/*/input/f50_ndfa.cs4` | 50 |
+| N fixation (free-living) | `(kcr)` | `modules/50_nr_soil_budget/input/f50_fixation_freeliving.cs4` | 50 |
+| N fixation (biological) | `(t_all,i,kcr)` | `modules/50_nr_soil_budget/input/f50_ndfa.cs4` | 50 |
 | SOM land-use factor | `(i,climate59,kcr)` | `modules/59_som/*/input/f59_ch5_F_LU*.cs3` | 59 |
 | SOM irrigation factor | `(climate59,w,kcr)` | `modules/59_som/*/input/f59_ch5_F_IRR.cs3` | 59 |
 | Seed share | `(t_all,i,kcr)` | `modules/16_demand/sector_may15/input/f16_seed_shr.csv` | 16 |
 | Waste share | `(t_all,i,kall)` | `modules/16_demand/sector_may15/input/f16_waste_shr.csv` | 16 |
 | Domestic balance flow | `(t_all,i,kall)` | `modules/16_demand/sector_may15/input/f16_domestic_balanceflow.csv` | 16 |
-| Self-sufficiency ratios | `(t_all,h,kall)` | `modules/21_trade/*/input/f21_self_suff.cs3` | 21 |
-| Trade margins | `(h,kall)` | `modules/21_trade/*/input/f21_trade_margin.cs3` | 21 |
-| Trade tariffs | `(h,kall)` | `modules/21_trade/*/input/f21_trade_tariff.cs3` | 21 |
-| Food demand (if food) | `(t_all,iso,kfo)` | `modules/15_food/*/input/f15_kcal_pc_iso.cs3` | 15 |
+| Self-sufficiency ratios | `(t_all,h,kall)` | `modules/21_trade/input/f21_trade_self_suff.cs3` | 21 |
+| Trade margins | `(h,kall)` | `modules/21_trade/input/f21_trade_margin.cs3` | 21 |
+| Trade tariffs | `(h,kall)` | `modules/21_trade/input/f21_trade_tariff.cs3` | 21 |
+| Food demand (if food) | `(t_all,iso,kfo)` | `modules/15_food/input/f15_kcal_pc_iso.csv` | 15 |
 | Processing (if processable) | `(t_all,processing20,ksd,kpr)` | `modules/20_processing/*/input/f20_processing_*.cs3` | 20 |
 
 ---
@@ -242,4 +242,4 @@ NUTRIENT BALANCE
 
 ## Lessons Learned
 <!-- APPEND-ONLY -->
-- 2026-03-06: The kcr set (core/sets.gms) has 20 crop types. Adding a new crop requires entries in at least 15 set definition files and ~25 input data files. The most commonly missed step is forgetting to add the crop to SUBSETS (knbe14, kbe14, kcr_analog14, etc.) — the model compiles but produces wrong results because the new crop is excluded from key equations. (source: code analysis of set hierarchy)
+- 2026-03-06: The kcr set has 19 crop types. Adding a new crop requires entries in at least 15 set definition files and ~25 input data files. The most commonly missed step is forgetting to add the crop to SUBSETS (knbe14, kbe30, crop_ann30, etc.) — the model compiles but produces wrong results because the new crop is excluded from key equations. (source: code analysis of set hierarchy)
