@@ -172,20 +172,24 @@ Mark each cell with the round number (R1, R2, ...) when tested.
 
 Track across rounds:
 
-| Metric | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9 | R10 |
-|--------|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|
-| Mean accuracy score | 6.7 | 8.2 | 5.8 | 8.6 | 7.2 | 8.7 | 6.9 | 6.0 | 7.5 | 7.0 |
-| Total bugs | 40 | 17 | 52 | 11 | 16 | 7 | 26 | 47 | 18 | 22 |
-| Critical bugs | 3 | 0 | 4 | 0 | 0 | 0 | 6 | 12 | 1 | 7 |
-| Doc errors | ~20 | ~9 | 32 | 3 | 0 | 0 | 26 | 47 | 16 | 17 |
-| Answerer errors | ~20 | ~8 | 44 | 8 | 16 | 7 | 0 | 0 | 2 | 5 |
-| Scope | modules | modules | modules | modules | modules | modules | cross-mod | core/arch | modules | ref docs |
+| Metric | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9 | R10 | R11 | R12 |
+|--------|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|------|------|
+| Mean accuracy score | 6.7 | 8.2 | 5.8 | 8.6 | 7.2 | 8.7 | 6.9 | 6.0 | 7.5 | 7.0 | 7.6 | 7.3 |
+| Total bugs | 40 | 17 | 52 | 11 | 16 | 7 | 26 | 47 | 18 | 22 | 30 | 18 |
+| Critical bugs | 3 | 0 | 4 | 0 | 0 | 0 | 6 | 12 | 1 | 7 | 3 | 4 |
+| Doc errors | ~20 | ~9 | 32 | 3 | 0 | 0 | 26 | 47 | 16 | 17 | 15 | 18 |
+| Answerer errors | ~20 | ~8 | 44 | 8 | 16 | 7 | 0 | 0 | 2 | 5 | 15 | 0 |
+| Scope | modules | modules | modules | modules | modules | modules | cross-mod | core/arch | modules | ref docs | helpers | GAMS lang |
 
 **R1-R6** (module docs): Mean ≥8.5 ✅ (R6: 8.7), zero Critical ✅ (since R4), zero doc errors ✅ (R5+R6).
 
-**R7-R10** (non-module docs): Revealed 113 bugs across 16 docs. Cross-module and architecture docs had worst scores (4.0-6.0) due to fabricated variables (vm_import/vm_export/vm_demand) and missing execution phases. After fixes: all Critical/Major resolved.
+**R7-R10** (non-module docs): 113 bugs across 16 docs. Worst: fabricated variables, missing execution phases.
 
-**Key insight**: Module docs reached high quality by R5-R6. Non-module docs (cross-module, core architecture, GAMS reference) had significantly more errors — especially fabricated code examples and invented variable names. The validation flywheel is most valuable when applied to docs that haven't been validated yet.
+**R11** (helpers): Found vegan diet recipe silently broken (diet=3 ignores c15_EAT_scen), fabricated slack variable, wrong file paths. debugging_infeasibility.md was worst helper (5/10).
+
+**R12** (GAMS language docs vs official gams.com): Wrong inline comment syntax throughout GAMS_Fundamentals, power() incorrectly allowing non-integer exponents, reversed .prior branching priority.
+
+**Key insight**: Every doc category had errors when first validated. The flywheel's value is systematic first-pass coverage — scores jump 2-3 points after fixes. 74 docs now validated, 281 total bugs found.
 
 ---
 

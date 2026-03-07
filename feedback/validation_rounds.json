@@ -1143,17 +1143,208 @@
           "Wrong debugging advice"
         ]
       }
+    },
+    {
+      "round": 11,
+      "date": "2026-03-07",
+      "commit_before": "ce65893",
+      "commit_after": "293afc6",
+      "answerer_model": "direct-opus-audit",
+      "auditor_model": "claude-opus-4.6",
+      "scope": "missed module + helper docs",
+      "questions": [
+        {
+          "id": "R11-D1",
+          "topic": "Module 34 (urban)",
+          "docs_tested": [
+            "modules/module_34.md"
+          ],
+          "score": 8.5,
+          "bugs_total": 7,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 7
+        },
+        {
+          "id": "R11-D2",
+          "topic": "Adding new crop helper",
+          "docs_tested": [
+            "agent/helpers/adding_new_crop.md"
+          ],
+          "score": 7.0,
+          "bugs_total": 7,
+          "bugs_critical": 0,
+          "bugs_major": 4,
+          "bugs_minor": 3
+        },
+        {
+          "id": "R11-D3",
+          "topic": "Scenario diet change helper",
+          "docs_tested": [
+            "agent/helpers/scenario_diet_change.md"
+          ],
+          "score": 7.0,
+          "bugs_total": 4,
+          "bugs_critical": 1,
+          "bugs_major": 1,
+          "bugs_minor": 2
+        },
+        {
+          "id": "R11-D4",
+          "topic": "Realization selection helper",
+          "docs_tested": [
+            "agent/helpers/realization_selection.md"
+          ],
+          "score": 9.0,
+          "bugs_total": 2,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 1
+        },
+        {
+          "id": "R11-D5",
+          "topic": "Modification impact helper",
+          "docs_tested": [
+            "agent/helpers/modification_impact_analysis.md"
+          ],
+          "score": 8.0,
+          "bugs_total": 1,
+          "bugs_critical": 1,
+          "bugs_major": 0,
+          "bugs_minor": 0
+        },
+        {
+          "id": "R11-D6",
+          "topic": "Interpreting outputs helper",
+          "docs_tested": [
+            "agent/helpers/interpreting_outputs.md"
+          ],
+          "score": 7.0,
+          "bugs_total": 3,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 2
+        },
+        {
+          "id": "R11-D7",
+          "topic": "Debugging infeasibility helper",
+          "docs_tested": [
+            "agent/helpers/debugging_infeasibility.md"
+          ],
+          "score": 5.0,
+          "bugs_total": 6,
+          "bugs_critical": 1,
+          "bugs_major": 5,
+          "bugs_minor": 0
+        },
+        {
+          "id": "R11-D8",
+          "topic": "Scenario carbon pricing helper",
+          "docs_tested": [
+            "agent/helpers/scenario_carbon_pricing.md"
+          ],
+          "score": 9.0,
+          "bugs_total": 0,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0
+        }
+      ],
+      "summary": {
+        "mean_score": 7.6,
+        "total_bugs": 30,
+        "critical": 3,
+        "major": 12,
+        "minor": 15,
+        "doc_errors_fixed": 15,
+        "systemic_patterns": [
+          "Fabricated slack variable (v21_excess_prod)",
+          "Wrong diet mode interaction (c15_EAT_scen ignored in diet=3)",
+          "Wrong file extensions/paths for input data"
+        ]
+      }
+    },
+    {
+      "round": 12,
+      "date": "2026-03-07",
+      "commit_before": "ce65893",
+      "commit_after": "293afc6",
+      "answerer_model": "direct-opus-audit",
+      "auditor_model": "claude-opus-4.6",
+      "scope": "GAMS language docs (vs official GAMS docs)",
+      "questions": [
+        {
+          "id": "R12-D1",
+          "topic": "GAMS Fundamentals",
+          "docs_tested": [
+            "reference/GAMS_Fundamentals.md"
+          ],
+          "score": 6.0,
+          "bugs_total": 9,
+          "bugs_critical": 2,
+          "bugs_major": 4,
+          "bugs_minor": 3
+        },
+        {
+          "id": "R12-D2",
+          "topic": "GAMS Control Structures",
+          "docs_tested": [
+            "reference/GAMS_Control_Structures.md"
+          ],
+          "score": 9.0,
+          "bugs_total": 1,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 0
+        },
+        {
+          "id": "R12-D3",
+          "topic": "GAMS Advanced Features",
+          "docs_tested": [
+            "reference/GAMS_Advanced_Features.md"
+          ],
+          "score": 7.0,
+          "bugs_total": 5,
+          "bugs_critical": 1,
+          "bugs_major": 2,
+          "bugs_minor": 2
+        },
+        {
+          "id": "R12-D4",
+          "topic": "GAMS Functions & Operations",
+          "docs_tested": [
+            "reference/GAMS_Functions_Operations.md"
+          ],
+          "score": 7.0,
+          "bugs_total": 3,
+          "bugs_critical": 1,
+          "bugs_major": 0,
+          "bugs_minor": 2
+        }
+      ],
+      "summary": {
+        "mean_score": 7.3,
+        "total_bugs": 18,
+        "critical": 4,
+        "major": 7,
+        "minor": 7,
+        "doc_errors_fixed": 18,
+        "systemic_patterns": [
+          "Wrong inline comment syntax (* vs !! throughout)",
+          "power() allows non-integer Y (wrong)",
+          "Wrong .prior branching priority direction",
+          ".fx missing .l reset"
+        ]
+      }
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 10,
-    "total_docs_validated": 62,
+    "total_rounds": 12,
+    "total_docs_validated": 74,
     "module_docs_validated": 46,
-    "non_module_docs_validated": 16,
-    "total_bugs_found": 233,
-    "total_bugs_fixed": 213,
-    "mean_score_modules_r6": 8.7,
-    "mean_score_non_modules_r7_10": 6.8,
+    "non_module_docs_validated": 28,
+    "total_bugs_found": 281,
+    "total_bugs_fixed": 246,
     "validator_checks": 17,
     "validator_sub_checks": 32,
     "gams_variables_verified": 777,
