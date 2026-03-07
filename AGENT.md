@@ -345,9 +345,18 @@ This supplements the "docs first" workflow — docs are still the starting point
 
 ### Step 3: Working with GAMS Code (CRITICAL)
 
-**BEFORE** reading or writing complex GAMS code, **ALWAYS check**:
-- `reference/GAMS_Phase5_MAgPIE_Patterns.md` - Module structure, naming conventions, MAgPIE idioms
-- Other GAMS_Phase*.md files for syntax, control structures, functions as needed
+**BEFORE** reading, writing, explaining, or debugging GAMS code, **ALWAYS load the relevant GAMS reference docs**:
+
+| When you need to... | Load this reference |
+|---------------------|-------------------|
+| Read/write any MAgPIE GAMS code | `reference/GAMS_Phase5_MAgPIE_Patterns.md` (**always load first**) — module structure, naming conventions, MAgPIE idioms |
+| Understand sets, parameters, variables, equations | `reference/GAMS_Phase1_Fundamentals.md` — core GAMS concepts |
+| Understand loops, conditionals, `$()` syntax | `reference/GAMS_Phase2_Control_Structures.md` |
+| Understand `sum()`, `prod()`, macros, includes | `reference/GAMS_Phase3_Advanced_Features.md` |
+| Understand built-in functions, string ops | `reference/GAMS_Phase4_Functions_Operations.md` |
+| Follow best practices, debugging, performance | `reference/GAMS_Phase6_Best_Practices.md` |
+
+**Phase 5 is mandatory** for any GAMS work. Load additional phases as needed for the specific task.
 
 **See `Response_Guidelines.md` for complete workflow details, token efficiency, and quality checklist.**
 
@@ -371,6 +380,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 
 | User intent detected | Load this helper | Trigger keywords |
 |---------------------|-----------------|-----------------|
+| Reading/writing/explaining GAMS code | `reference/GAMS_Phase5_MAgPIE_Patterns.md` + other phases as needed | "GAMS", "gms file", "equation", "variable declaration", "write code", "modify code", "code means", "explain this code", "debug code", "what does this do", ".gms" |
 | Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort" |
 | Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget" |
 | Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "impact of changing", "safe to modify", "can I change", "extend", "add to module" |
