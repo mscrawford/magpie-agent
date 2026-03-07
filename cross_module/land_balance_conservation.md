@@ -151,8 +151,10 @@ urban      ✗       ✗        ✗        ✗      ✗      ✗       ✓
 
 **Legend**:
 - ✓ = Transition allowed via vm_lu_transitions
-- ✗ = Transition forbidden by `presolve.gms` restrictions
-- M35 = Transition handled internally by Module 35 (not via vm_lu_transitions)
+- ✗ = Transition forbidden by `presolve.gms` restrictions or economic constraints
+- M35 = Transition driven by Module 35 age-class dynamics (area change captured in vm_lu_transitions)
+
+**Note on urban row**: Urban transitions are not explicitly restricted in presolve.gms. Instead, Module 34's regional constraint (`q34_urban_land`) and high deviation costs (1e6 USD/ha) effectively prevent urban land from decreasing.
 
 ### 4.2 Transition Balance Equations
 

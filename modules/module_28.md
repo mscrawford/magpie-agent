@@ -183,12 +183,12 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 **Time-varying sets**: ac_est and ac_sub **change each timestep** based on m_yeardiff_forestry(t).
 
 **First timestep** (t=1): m_yeardiff_forestry(t) = 5 years (core/macros.gms)
-- ac_est = {ac0, ac5} (0-5 years)
-- ac_sub = {ac10, ac15, ..., acx} (10+ years)
+- ac_est = {ac0} (threshold = 5/5 = 1, so ord(ac) ≤ 1)
+- ac_sub = {ac5, ac10, ..., acx} (5+ years)
 
 **Subsequent timesteps** (t>1): m_yeardiff_forestry(t) = m_year(t) - m_year(t-1)
-- If 5-year timesteps: ac_est = {ac0, ac5}
-- If 10-year timesteps: ac_est = {ac0, ac5, ac10}
+- If 5-year timesteps: ac_est = {ac0}
+- If 10-year timesteps: ac_est = {ac0, ac5}
 - If variable timesteps: ac_est size varies dynamically
 
 **Implication**: Longer timesteps mean more age-classes in ac_est, broader "establishment period" where forests cannot be harvested.
@@ -213,7 +213,7 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 
 **Used by**:
 1. **Module 35 (Natural Vegetation)** - Secondary forest initialization
-   `pot_forest_may24/preloop.gms:~150`
+   `modules/35_natveg/pot_forest_may24/preloop.gms:20`
    `p35_secdf_ageclass(j,ac) = im_forest_ageclass(j,ac)`
 
    Purpose: Initialize secondary forest area distribution at model start (year 1995 or user-specified). GFAD provides historical age-class structure for natural regrowth forests.
@@ -228,7 +228,7 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 
 **Used by**:
 1. **Module 32 (Forestry)** - Plantation dynamics
-   `dynamic_may24/presolve.gms:~280-320`
+   `dynamic_may24/presolve.gms:9-10`
 
    Key uses:
    - Fix harvesting to zero: `v32_hvarea_forestry.fx(j,ac_est) = 0`
@@ -302,7 +302,7 @@ calcOutput(type = "AgeClassDistribution",
 
 **Purpose**: Initialize secondary forest age-class distribution at model start
 
-**Usage Location**: `modules/35_natveg/pot_forest_may24/preloop.gms:~150`
+**Usage Location**: `modules/35_natveg/pot_forest_may24/preloop.gms:20`
 
 **Mechanism** (preloop phase, executed once at model start):
 ```gams
@@ -324,7 +324,7 @@ p35_secdf_ageclass(j,ac) = im_forest_ageclass(j,ac)
 
 **Purpose**: Define establishment vs. harvestable age-classes for plantation management
 
-**Usage Location**: `modules/32_forestry/dynamic_may24/presolve.gms:~280-320`
+**Usage Location**: `modules/32_forestry/dynamic_may24/presolve.gms:9-10`
 
 **Mechanism**: ac_est and ac_sub sets control variable bounds and disturbance calculations.
 
@@ -440,8 +440,8 @@ Module 28 is a **reference data module** with zero equations and zero optimizati
 
 **Data Source**: Global Forest Age Dataset (GFAD v1.1)
 - Original: 10-year age-classes
-- MAgPIE: Remapped to 5-year age-classes (ac1...ac15)
-- Plus dynamic sets: ac_sub, ac_est, ac_ff
+- MAgPIE: Remapped to 5-year age-classes (ac0, ac5, ac10, ..., ac300, acx)
+- Plus dynamic sets: ac_sub, ac_est
 
 **Reference**: `core_docs/Module_Dependencies.md` (Section 4, Pure Source Modules)
 
@@ -566,19 +566,19 @@ m_yeardiff_forestry(t) = 5$(ord(t)=1) + (m_year(t)-m_year(t-1))$(ord(t)>1)
 
 **Scenario A: Uniform 5-year timesteps**
 - m_yeardiff_forestry(t) = 5 for all t
-- ac_est = {ac0, ac5} (0-5 years)
-- ac_sub = {ac10, ac15, ..., acx} (10+ years)
+- ac_est = {ac0} (threshold = 5/5 = 1)
+- ac_sub = {ac5, ac10, ..., acx} (5+ years)
 
 **Scenario B: Uniform 10-year timesteps**
 - m_yeardiff_forestry(t) = 10 for all t
-- ac_est = {ac0, ac5, ac10} (0-10 years)
-- ac_sub = {ac15, ac20, ..., acx} (15+ years)
+- ac_est = {ac0, ac5} (threshold = 10/5 = 2)
+- ac_sub = {ac10, ac15, ..., acx} (10+ years)
 
 **Scenario C: Variable timesteps (5, 10, 10, 20 years)**
-- t=1: m_yeardiff_forestry = 5 → ac_est = {ac0, ac5}
-- t=2: m_yeardiff_forestry = 10 → ac_est = {ac0, ac5, ac10}
-- t=3: m_yeardiff_forestry = 10 → ac_est = {ac0, ac5, ac10}
-- t=4: m_yeardiff_forestry = 20 → ac_est = {ac0, ac5, ac10, ac15, ac20}
+- t=1: m_yeardiff_forestry = 5 → ac_est = {ac0}
+- t=2: m_yeardiff_forestry = 10 → ac_est = {ac0, ac5}
+- t=3: m_yeardiff_forestry = 10 → ac_est = {ac0, ac5}
+- t=4: m_yeardiff_forestry = 20 → ac_est = {ac0, ac5, ac10, ac15}
 
 **Consequence of longer timesteps**: Broader establishment period means:
 - More age-classes protected from harvest (larger ac_est)

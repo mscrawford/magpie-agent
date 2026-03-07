@@ -420,10 +420,10 @@ if (model.solvestat <> 1,
 );
 ```
 
-**2. Display infeasible equations**:
+**2. Check listing file for diagnostics**:
 ```gams
-option limrow = 0;      * Show all infeasible equations
-option limcol = 0;      * Show all nonoptimal variables
+option limrow = 3;      * Show equation listings (default; increase for more detail)
+option limcol = 3;      * Show variable listings
 ```
 
 **Check listing file** for equations marked `INFES`.
@@ -695,15 +695,16 @@ else
 
 **Error**:
 ```gams
-* In equation (can't reference loop index t directly)
-equation q_example;
-q_example.. vm_var(t) =e= pm_param(t);  * ERROR: t not in scope
+* In equation — using t generates constraints for ALL timesteps
+equation q_example(t);
+q_example(t).. vm_var(t) =e= pm_param(t);  * WRONG: creates constraints for all t
 ```
 
-**Solution**: Use `ct` (current timestep marker):
+**Solution**: Use `ct` (current timestep marker, contains only one element):
 ```gams
+* ct(t) = yes is set in core/calculations.gms before each solve
 equation q_example;
-q_example.. vm_var(ct) =e= pm_param(ct);  * OK
+q_example.. sum(ct, vm_var(ct)) =e= sum(ct, pm_param(ct));  * OK: only current timestep
 ```
 
 ### 5.10 Unit Mismatches

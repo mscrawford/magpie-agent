@@ -16,7 +16,7 @@ Module 45 (Climate) provides **static Köppen-Geiger climate classification data
 
 The module provides climate-weighted factors for biophysical calculations in other modules, enabling spatially explicit parameterization of vegetation growth, soil dynamics, and crop yields across ~200 simulation cells.
 
-**Key Purpose**: Supply climate classification shares (30 Köppen-Geiger types per cell) for climate-sensitive parameters in Modules 14 (Yields), 52 (Carbon), 58 (Peatland), and 59 (SOM).
+**Key Purpose**: Supply climate classification shares (31 Köppen-Geiger types per cell) for climate-sensitive parameters in Modules 14 (Yields), 52 (Carbon), 58 (Peatland), and 59 (SOM).
 
 ---
 
@@ -52,7 +52,7 @@ modules/45_climate/
 
 ### Köppen-Geiger Climate Types
 
-Module 45 defines **30 climate types** in the set `clcl` (sets.gms:11-45):
+Module 45 defines **31 climate types** in the set `clcl` (sets.gms:11-45):
 
 #### Tropical (A) - 4 types:
 - `Af` - Tropical rainforest climate
@@ -66,7 +66,7 @@ Module 45 defines **30 climate types** in the set `clcl` (sets.gms:11-45):
 - `BWh` - Hot deserts climate
 - `BWk` - Cold desert climate
 
-#### Temperate (C) - 10 types:
+#### Temperate (C) - 9 types:
 - `Cfa` - Humid subtropical climate
 - `Cfb` - Temperate oceanic climate
 - `Cfc` - Subpolar oceanic climate
@@ -77,7 +77,7 @@ Module 45 defines **30 climate types** in the set `clcl` (sets.gms:11-45):
 - `Cwb` - Dry-winter subtropical highland climate
 - `Cwc` - Dry-winter subpolar oceanic climate
 
-#### Continental (D) - 10 types:
+#### Continental (D) - 12 types:
 - `Dfa` - Hot-summer humid continental climate
 - `Dfb` - Warm-summer humid continental climate
 - `Dfc` - Subarctic climate
@@ -95,7 +95,7 @@ Module 45 defines **30 climate types** in the set `clcl` (sets.gms:11-45):
 - `EF` - Ice cap climate
 - `ET` - Tundra
 
-**Total**: 30 climate types covering all terrestrial climates globally.
+**Total**: 31 climate types covering all terrestrial climates globally.
 
 ### Climate Data Structure
 
@@ -136,21 +136,21 @@ pm_climate_class("CAZ_1",other) = 0.20  → 20% other climate types
 
 **Used by**:
 1. **Module 14 (Yields)** - IPCC biomass conversion efficiency factors
-   `managementcalib_aug19/presolve.gms:~300-350`
+   `modules/14_yields/managementcalib_aug19/presolve.gms:29-56`
    Climate-weighted BCE: `sum(clcl, pm_climate_class(j,clcl) * f14_ipcc_bce(clcl,type))`
 
 2. **Module 52 (Carbon)** - Climate-weighted growth parameters for Chapman-Richards equation
-   `normal_dec17/start.gms:~90-105`
+   `modules/52_carbon/normal_dec17/start.gms:17-35`
    k parameter: `sum(clcl, pm_climate_class(j,clcl) * f52_growth_par(clcl,"k",forest_type))`
    m parameter: `sum(clcl, pm_climate_class(j,clcl) * f52_growth_par(clcl,"m",forest_type))`
 
 3. **Module 58 (Peatland)** - Simplified climate mapping
    `v2/preloop.gms:~50`
-   Maps 30 climate types → 6 aggregated peatland climate zones
+   Maps 31 climate types → 6 aggregated peatland climate zones
 
 4. **Module 59 (SOM)** - Soil organic matter climate parameters
-   `cellpool_jan23/preloop.gms:~150-250`
-   Maps 30 climate types → 3 SOM climate categories
+   `cellpool_jan23/preloop.gms:16-89`
+   Maps 31 climate types → 3 SOM climate categories
 
 **Common usage pattern**: Climate-weighted averaging
 ```gams
@@ -196,7 +196,7 @@ calcOutput(type = "ClimateClass",
 
 **Purpose**: Climate-weighted growth parameters for Chapman-Richards equation
 
-**Usage Location**: `modules/52_carbon/normal_dec17/start.gms:~90-105`
+**Usage Location**: `modules/52_carbon/normal_dec17/start.gms:17-35`
 
 **Mechanism**:
 - Plantation vegetation carbon: `pm_carbon_density_plantation_ac(t,j,ac,"vegc")`
@@ -216,7 +216,7 @@ calcOutput(type = "ClimateClass",
 
 **Purpose**: Climate-specific IPCC biomass conversion efficiency (BCE) factors
 
-**Usage Location**: `modules/14_yields/managementcalib_aug19/presolve.gms:~300-350`
+**Usage Location**: `modules/14_yields/managementcalib_aug19/presolve.gms:29-56`
 
 **Mechanism**: Climate-weighted BCE for plantations vs. natural vegetation
 `sum(clcl, pm_climate_class(j,clcl) * f14_ipcc_bce(clcl,"plantations"/"natveg"))`
@@ -225,7 +225,7 @@ calcOutput(type = "ClimateClass",
 
 ### 3. Module 58 (Peatland) - Peatland Climate Zones
 
-**Purpose**: Map 30 Köppen-Geiger types to 6 simplified peatland climate zones
+**Purpose**: Map 31 Köppen-Geiger types to 6 simplified peatland climate zones
 
 **Usage Location**: `modules/58_peatland/v2/preloop.gms:~50`
 
@@ -239,9 +239,9 @@ calcOutput(type = "ClimateClass",
 
 **Purpose**: Climate-specific C:N ratios and decomposition rates
 
-**Usage Location**: `modules/59_som/cellpool_jan23/preloop.gms:~150-250`
+**Usage Location**: `modules/59_som/cellpool_jan23/preloop.gms:16-89`
 
-**Mapping**: 30 Köppen-Geiger types → 3 SOM climate categories (sets.gms:8)
+**Mapping**: 31 Köppen-Geiger types → 3 SOM climate categories (sets.gms:8)
 
 **Mechanism**: Climate-weighted C:N ratios for cropland
 `sum(clcl_climate59(clcl,climate59), pm_climate_class(j,clcl)) * f59_cratio_landuse(i,climate59,kcr)`
@@ -400,7 +400,7 @@ $offdelim;
 
 ### 10. **Simplified Peatland/SOM Mappings**
 
-**Full system**: 30 Köppen-Geiger climate types (Module 45)
+**Full system**: 31 Köppen-Geiger climate types (Module 45)
 
 **Module 58 (Peatland)**: Maps to 6 peatland climate zones (sets.gms:8)
 
@@ -428,7 +428,7 @@ $offdelim;
 - `pm_climate_class(j,clcl)` - Climate shares by cell (30 types, shares sum to 1)
 
 ### Climate Types
-- **30 Köppen-Geiger types**: Af, Am, As, Aw (tropical), BS*/BW* (arid), C** (temperate), D** (continental), EF/ET (polar)
+- **31 Köppen-Geiger types**: Af, Am, As, Aw (tropical), BS*/BW* (arid), C** (temperate), D** (continental), EF/ET (polar)
 
 ### Data Sources
 - **Source**: Rubel et al. 2010 (http://koeppen-geiger.vu-wien.ac.at/)

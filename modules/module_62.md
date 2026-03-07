@@ -154,7 +154,9 @@ q62_dem_material_forestry(i2,kforestry) ..
 **Location**: `presolve.gms:21-22`
 **Formula**:
 ```gams
-p62_scaling_factor(i) = sum(kfo, vm_dem_food.l(i,kfo)) / p62_dem_food_lastcalibyear(i)
+p62_scaling_factor(i) = 1;
+p62_scaling_factor(i)$(p62_dem_food_lastcalibyear(i) > 0) =
+    sum(kfo, vm_dem_food.l(i,kfo)) / p62_dem_food_lastcalibyear(i);
 ```
 
 **Interpretation**:
@@ -184,7 +186,7 @@ Module 62 includes an optional bioplastic substrate demand component with three 
 
 ---
 
-#### Mode 1: No Bioplastic (Default)
+#### Mode 1: No Bioplastic
 
 **Setting**: `s62_include_bioplastic = 0` (disabled)
 **Result**: `p62_dem_bioplastic(t,i) = 0` for all future years - `preloop.gms:25-27`
@@ -443,7 +445,7 @@ kall_excl_kforestry = {crops (tece, maiz, rice, soybean, etc.),
                        livestock (livst_rum, livst_pig, etc.),
                        residues (res_cereals, etc.)}
 ```
-- 47 commodities listed (crops, processed, livestock, residues, energy crops begr/betr)
+- 39 commodities listed (crops, processed, livestock, residues, energy crops begr/betr)
 - Excludes: wood, woodfuel (handled separately by forestry equation)
 
 **Forestry commodities**:

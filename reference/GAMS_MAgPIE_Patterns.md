@@ -55,7 +55,7 @@ modules/[NN]_[name]/[realization]/
 | `scaling.gms` | Equation scaling factors | Once, before solve |
 | `start.gms` | (Optional) Startup logic | Varies by module |
 
-**File pattern**: Each file has `.gms` (source) and `.gsp` (preprocessed) versions.
+**File pattern**: GAMS source files use the `.gms` extension.
 
 ### 1.3 Module File Execution Order
 
@@ -199,15 +199,15 @@ MAgPIE uses **strict prefixes** to indicate scope and type:
 | Prefix | Scope | Example |
 |--------|-------|---------|
 | `vm_` | **Interface** (shared between modules) | `vm_land`, `vm_prod` |
-| `v{NN}_` | **Module-internal** (local to module NN) | `v10_lu_transitions`, `v70_feed` |
+| `v{NN}_` | **Module-internal** (local to module NN) | `v32_land`, `v70_feed_intake_pre` |
 
 **Example**:
 ```gams
 * Interface variable (Module 10 → used by many modules)
 positive variables vm_land(j,land);
 
-* Module-internal variable (only used within Module 10)
-positive variables v10_lu_transitions(j,land_from,land_to);
+* Module-internal variable (only used within Module 32)
+positive variables v32_land(j,type32,ac);
 ```
 
 #### Parameters
@@ -215,7 +215,7 @@ positive variables v10_lu_transitions(j,land_from,land_to);
 | Prefix | Scope | Example |
 |--------|-------|---------|
 | `pm_` | **Interface** (data shared between modules) | `pm_carbon_density`, `pm_gdp` |
-| `p{NN}_` | **Module-internal** (calculated within module) | `p70_feed_req`, `p10_land_start` |
+| `p{NN}_` | **Module-internal** (calculated within module) | `p70_cattle_stock_proxy`, `p10_balance_midnight` |
 | `pcm_` | **Previous Current Module** (rolling parameter from last timestep) | `pcm_land`, `pcm_carbon_stock` |
 | `f{NN}_` | **Input file** (loaded from external file) | `f10_land_init`, `f14_yields` |
 | `i{NN}_` | **Input intermediate** (processed from file data) | `i10_urban_area` |
@@ -309,7 +309,7 @@ scalars
 | Set | Meaning |
 |-----|---------|
 | `i` | Regions (10-14 aggregated regions) |
-| `j` | Simulation cells (~60,000 grid cells) |
+| `j` | Simulation cells (resolution-dependent; default ~200 clusters) |
 | `cell(i,j)` | Mapping: cell j belongs to region i |
 | `i2`, `j2` | Aliases for multi-index operations |
 
@@ -355,7 +355,7 @@ scalars
 
 **Interface variables** (`vm_` prefix) are **decision variables shared between modules**.
 
-**Declaration**: In `core/declarations.gms` (not in module files).
+**Declaration**: In module `declarations.gms` files (each module declares its own interface variables).
 
 **Usage**:
 - **Defined by** one module (primary owner)
@@ -371,17 +371,17 @@ scalars
 |----------|--------|---------|---------|
 | `vm_land(j,land)` | 10 | Many | Land allocation by type |
 | `vm_prod(j,k)` | 17 | 20, 21, 70 | Production by product |
-| `vm_carbon_stock(j,land,c_pools)` | 52 | 56, 57 | Carbon stocks |
-| `vm_water_demand(wat_src,j)` | 42 | 43 | Water demand |
+| `vm_carbon_stock(j,land,c_pools,stockType)` | 56 | 52, 32, 35 | Carbon stocks |
+| `vm_watdem(wat_dem,j)` | 42 | 43 | Water demand |
 | `vm_cost_glo` | 11 | - | Global costs (objective) |
 
 ### 3.3 Interface Parameters
 
 **Interface parameters** (`pm_` prefix) pass **data** between modules.
 
-**Example**: `pm_carbon_density(t,j,land,c_pools)`
-- **Calculated**: Module 52 (Carbon) in `postsolve.gms`
-- **Used by**: Module 56 (GHG policy), Module 57 (MACC)
+**Example**: `fm_carbon_density(t_all,j,land,c_pools)`
+- **Loaded**: Module 52 (Carbon) from input data
+- **Used by**: Module 56 (GHG policy), Module 32 (Forestry)
 
 ### 3.4 Dependency Pattern
 
@@ -391,19 +391,23 @@ scalars
 
 **Module 56 (GHG policy)**:
 ```gams
-* In postsolve.gms
-pm_carbon_price(t,i) = v56_carbon_price.l(i);  * Store for next modules
+* In equations.gms — carbon pricing creates incentive
+q56_emis_pricing_co2(i2) ..
+    vm_emission_costs(i2) =e=
+    sum((emis_source, pollutants_co2),
+        vm_emissions_reg(i2,emis_source,pollutants_co2)
+        * sum(ct, im_pollutant_prices(ct,i2,pollutants_co2,emis_source)));
 ```
 
 **Module 32 (Forestry)**:
 ```gams
-* In equations.gms
-q32_cost_afforestation(j)..
-    vm_cost_afforestation(j) =e=
-    sum((kcr,w), vm_afforestation(j,kcr,w) * pm_carbon_price(t,i));
+* In equations.gms — forestry costs include land conversion
+q32_cost_total(i2) ..
+    vm_cost_fore(i2) =e=
+    sum(cell(i2,j2), v32_cost_establishment(j2) + ... );
 ```
 
-Module 32 **reads** `pm_carbon_price` that Module 56 **wrote**.
+Module 32 responds to carbon prices indirectly through `vm_carbon_stock` → `vm_emission_costs`.
 
 ### 3.5 Circular Dependencies
 
@@ -517,7 +521,7 @@ q10_land_area(j)..
 ```gams
 * In presolve.gms
 if (ord(t) = 1,
-    im_demandshare_reg.l(i,kall) = f17_prod_init(i,kall)/sum(i2,f17_prod_init(i2,kall));
+    pm_prod_init(j,kcr) = sum(ct, f17_prod_ini(ct,j,kcr));
 );
 ```
 
@@ -611,14 +615,14 @@ q_accumulation.. vm_stock(ct) =e= vm_stock_prev + vm_flow(ct) * m_timestep_lengt
 
 ```gams
 * In input.gms
-table f10_land_hist(t_all,j,land) Historical land use (mio. ha)
+table f10_land(t_ini10,j,land) Land area (mio. ha)
 $ondelim
-$include "./modules/10_land/input/land_history.csv"
+$include "./modules/10_land/input/avl_land_t.cs3"
 $offdelim
 ;
 
 * Assign to parameter
-pm_land_hist(t_all,j,land) = f10_land_hist(t_all,j,land);
+pm_land_start(j,land) = f10_land("y1995",j,land);
 ```
 
 ### 5.3 Fixing Historical Period
@@ -653,15 +657,13 @@ else
 
 **Pattern**: Adjust parameters to match observations.
 
-**Example** (Module 70 - Feed calibration):
+**Example** (Module 70 - Feed requirement):
 
 ```gams
-* In presolve.gms
-* Calculate calibration factor to match historical production
-p70_calib_factor(t,i,kli) = f70_hist_prod(t,i,kli) / vm_prod_calibrated.l(i,kli);
-
-* Apply calibration
-vm_prod_final(i,kli) = vm_prod_raw(i,kli) * p70_calib_factor(t,i,kli);
+* In equations.gms — feed balance constraint
+q70_feed(i2,kap,kall) ..
+    sum(ct, im_feed_baskets(ct,i2,kap,kall))
+    * vm_prod_reg(i2,kap) =g= vm_feed_intake(i2,kap,kall);
 ```
 
 ### 5.6 Transition Calibration
@@ -726,10 +728,7 @@ q10_transition_to(j,land_to) ..
 **Excluding diagonal** (land type to itself):
 
 ```gams
-* In presolve.gms
-vm_lu_transitions.fx(j,land,land) = 0;  * No self-transitions allowed
-
-* OR in equation (with dollar condition)
+* In presolve.gms — exclude diagonal via equation dollar condition
 sum(land_to$(not sameas(land_from,land_to)),
     vm_lu_transitions(j,land_from,land_to))
 ```
@@ -812,9 +811,10 @@ annual_cost = investment_cost / m_annuity_due(interest_rate, lifetime);
 **Regional cost aggregation**:
 
 ```gams
-q11_cost_reg(i) ..
-    vm_cost_reg(i) =e=
-    sum(cost_type, vm_cost_component(i,cost_type));
+q11_cost_reg(i2) ..
+    v11_cost_reg(i2) =e=
+    vm_cost_prod_crop(i2) + vm_cost_prod_past(i2) + vm_cost_prod_livst(i2)
+    + vm_cost_trade(i2) + vm_emission_costs(i2) + ... ;
 ```
 
 **Global cost** (objective function):
@@ -822,7 +822,7 @@ q11_cost_reg(i) ..
 ```gams
 q11_cost_glo ..
     vm_cost_glo =e=
-    sum(i, vm_cost_reg(i));
+    sum(i2, v11_cost_reg(i2));
 ```
 
 ### 6.7 Fixing and Bounding Pattern
