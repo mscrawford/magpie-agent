@@ -152,11 +152,16 @@ pm_climate_class("CAZ_1",other) = 0.20  → 20% other climate types
    `cellpool_jan23/preloop.gms:16-89`
    Maps 31 climate types → 3 SOM climate categories
 
-**Common usage pattern**: Climate-weighted averaging
+**Usage patterns**: Modules 14 and 52 use climate-weighted averaging:
 ```gams
 sum(clcl, pm_climate_class(j,clcl) * f_climate_parameter(clcl))
 ```
 This formula calculates the **cell-average parameter value** accounting for sub-cell climate heterogeneity.
+
+Modules 58 and 59 use a **mapping/aggregation** pattern instead, summing climate shares into broader categories:
+```gams
+sum(clcl_mapping(clcl,clcl_agg), pm_climate_class(j,clcl))
+```
 
 ---
 

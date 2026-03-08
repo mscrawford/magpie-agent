@@ -7,7 +7,7 @@
 
 ### 1. Purpose & Overview
 
-**Core Function**: Module 10 is the **central land allocation hub** of MAgPIE, coordinating all land-related activities across the model. It maintains **total land area conservation**, tracks **net land transitions** between 7 land pools, and calculates **gross land-use change** metrics.
+**Core Function**: Module 10 is the **central land allocation hub** of MAgPIE, coordinating all land-related activities across the model. It maintains **total land area conservation**, tracks **land transitions** between 7 land pools via a full transition matrix, and calculates **gross land-use change** metrics.
 
 **Complexity**: CENTRAL HUB ⭐⭐⭐
 **Dependencies**: 17 total connections (2 inputs, 15 outputs) - **HIGHEST centrality in MAgPIE**
@@ -24,7 +24,7 @@
 
 **Realization**: `landmatrix_dec18` (only realization)
 - Tracks land transitions via transition matrix approach
-- Accounts for **net transitions only** (limitation)
+- Tracks between-type transitions per optimization step (sub-timestep dynamics not captured)
 - Enforces land conservation constraint
 
 ---
@@ -134,7 +134,7 @@ q10_landdiff ..
 
 **Purpose**: Calculate **global gross land-use change** across all cells and land types
 **Components**:
-1. `sum(vm_landexpansion + vm_landreduction)` - Net transitions between land types
+1. `sum(vm_landexpansion + vm_landreduction)` - Between-type transitions (from transition matrix)
 2. `vm_landdiff_natveg` - Within-natveg changes (e.g., Primary→Secondary, age-class shifts) from Module 35
 3. `vm_landdiff_forestry` - Within-forestry changes (e.g., rotation harvests, age-class shifts) from Module 32
 
@@ -221,7 +221,7 @@ $include "./modules/10_land/input/avl_land_t.cs3"
 ```
 
 **Source**: Land-Use Harmonization 2 (LUH2) dataset
-**Resolution**: 0.5° gridded, aggregated to 200 MAgPIE cells
+**Resolution**: 0.5° gridded, aggregated to ~200 MAgPIE cells (default h200 spatial resolution)
 **Years**: 1995, 2000, 2005, 2010, 2015
 **Correction**: Negative values (from rounding) set to zero (`input.gms:16`)
 
@@ -333,7 +333,7 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 - No land creation or destruction
 - Verified every timestep via `q10_land_area` constraint
 
-✅ **2. Tracks Net Land-Use Transitions** (`equations.gms:19-25`)
+✅ **2. Tracks Land-Use Transitions** (`equations.gms:19-25`)
 - Full 7×7 transition matrix per cell (49 transitions)
 - Knows source and target of every conversion
 - Example: Forest→Crop, Crop→Past, Past→Forest, etc.
@@ -355,7 +355,7 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 - Ensures smooth, realistic transitions
 
 ✅ **6. Aggregates Gross Land-Use Change** (`equations.gms:50-54`)
-- Combines net transitions (between types)
+- Combines between-type transitions
 - Adds within-natveg changes (Module 35)
 - Adds within-forestry changes (Module 32)
 - Produces global `vm_landdiff` metric
@@ -409,8 +409,8 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 - Total land conservation still enforced (urban expansion must come from somewhere)
 
 ❌ **7. Does NOT Model Sub-Grid Heterogeneity**
-- Each cell (200 total) treated as homogeneous
-- Reality: 67,420 original 0.5° cells aggregated to 200
+- Each cell (~200 at default h200 resolution) treated as homogeneous
+- Reality: 67,420 original 0.5° cells aggregated (cell count depends on spatial resolution setting)
 - Within-cell variation lost in aggregation
 
 ❌ **8. Does NOT Prevent Ecologically Unrealistic Transitions**
@@ -764,10 +764,10 @@ for(yr in hist_years) {
 
 **Core Functions**:
 1. **Enforce land conservation** (total area constant per cell)
-2. **Track net transitions** via 7×7 transition matrix (49 transitions/cell)
+2. **Track transitions** via 7×7 transition matrix (49 transitions/cell)
 3. **Calculate expansion/reduction** for use by other modules
 4. **Apply transition restrictions** (protect primary forest, prevent natveg conversions)
-5. **Aggregate gross land-use change** (net transitions + within-type changes)
+5. **Aggregate gross land-use change** (between-type transitions + within-type changes)
 6. **Initialize from LUH2 data** (1995-2015 historical)
 
 **Key Features**:
@@ -778,7 +778,7 @@ for(yr in hist_years) {
 - Recursive dynamics: current → previous via `postsolve.gms`
 
 **Limitations** (from `realization.gms:11`):
-- **Accounts for net transitions only** (not gross)
+- **Sub-timestep land dynamics not captured** (only optimized outcome per 5-year step)
 - No spatial clustering or edge effects
 - No sub-grid heterogeneity
 - No ecologically-driven restrictions (those come from other modules)

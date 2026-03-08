@@ -1587,22 +1587,318 @@
         "safeguards_added": [],
         "validator_status": "32/32 checks pass after fixes (778 vars, 269 eqs, 68 realizations, 2233 citations)"
       }
+    },
+    {
+      "round": 15,
+      "date": "2026-03-08",
+      "magpie_version": "4.13.0dev",
+      "magpie_commit": "ce6e1a89a",
+      "questions": [
+        {
+          "id": "R15-Q1",
+          "archetype": "quantitative",
+          "question": "What is the default interest rate in MAgPIE and how is it calculated? Trace exactly how pm_interest enters the factor cost equations (module 38) and land conversion cost equations (module 39).",
+          "modules_tested": [
+            12,
+            38,
+            39
+          ],
+          "score": 6,
+          "bugs_found": 5,
+          "bug_ids": [
+            "R15-Q1-1",
+            "R15-Q1-2",
+            "R15-Q1-3",
+            "R15-Q1-4",
+            "R15-Q1-5"
+          ]
+        },
+        {
+          "id": "R15-Q2",
+          "archetype": "causal_chain",
+          "question": "How does climate change data flow into MAgPIE? Trace the path from module 45_climate through yield adjustments (module 14) to cropland allocation (modules 29, 30).",
+          "modules_tested": [
+            45,
+            14,
+            30,
+            29
+          ],
+          "score": 8,
+          "bugs_found": 4,
+          "bug_ids": [
+            "R15-Q2-1",
+            "R15-Q2-2",
+            "R15-Q2-3",
+            "R15-Q2-4"
+          ]
+        },
+        {
+          "id": "R15-Q3",
+          "archetype": "default_switch",
+          "question": "Explain how MAgPIE disaggregates livestock production in module 71. How does feed demand from module 70 connect to the demand module (15/16)?",
+          "modules_tested": [
+            71,
+            70,
+            15,
+            16
+          ],
+          "score": 9.5,
+          "bugs_found": 2,
+          "bug_ids": [
+            "R15-Q3-1",
+            "R15-Q3-2"
+          ]
+        },
+        {
+          "id": "R15-Q4",
+          "archetype": "conservation",
+          "question": "How do MACCs work in MAgPIE? What is the relationship between module 57, module 53, and module 56? How does a carbon price translate into emission reductions?",
+          "modules_tested": [
+            57,
+            53,
+            56
+          ],
+          "score": 9,
+          "bugs_found": 1,
+          "bug_ids": [
+            "R15-Q4-1"
+          ]
+        },
+        {
+          "id": "R15-Q5",
+          "archetype": "edge_case",
+          "question": "What determines the cost of converting land between types? How does module 39 calculate costs? How does this interact with the land balance (module 10) and what causes infeasibility?",
+          "modules_tested": [
+            39,
+            10,
+            35,
+            31
+          ],
+          "score": 6,
+          "bugs_found": 8,
+          "bug_ids": [
+            "R15-Q5-1",
+            "R15-Q5-2",
+            "R15-Q5-3",
+            "R15-Q5-4",
+            "R15-Q5-5",
+            "R15-Q5-6",
+            "R15-Q5-7",
+            "R15-Q5-8"
+          ]
+        }
+      ],
+      "bugs": [
+        {
+          "id": "R15-Q1-1",
+          "severity": "Major",
+          "type": "answerer_confabulation",
+          "module": 38,
+          "description": "Wrong line numbers for M38 presolve.gms capital need computation (21-22 vs 25-26)"
+        },
+        {
+          "id": "R15-Q1-2",
+          "severity": "Major",
+          "type": "answerer_confabulation",
+          "module": 38,
+          "description": "Fabricated line numbers for q38_cost_prod_capital (46-49 vs 21-24; file only 45 lines)"
+        },
+        {
+          "id": "R15-Q1-3",
+          "severity": "Major",
+          "type": "answerer_confabulation",
+          "module": null,
+          "description": "Claims 13 use sites across 7 modules but lists 9 modules \u2014 arithmetic error"
+        },
+        {
+          "id": "R15-Q1-4",
+          "severity": "Major",
+          "type": "doc_error",
+          "module": 70,
+          "description": "M70 default fbask_jan16 does NOT use pm_interest; cited equations only in non-default fbask_jan16_sticky",
+          "fixed": false
+        },
+        {
+          "id": "R15-Q1-5",
+          "severity": "Minor",
+          "type": "answerer_confabulation",
+          "module": 56,
+          "description": "q56_reward_cdr_aff formula described with + but actual is multiplication x annuity"
+        },
+        {
+          "id": "R15-Q2-1",
+          "severity": "Major",
+          "type": "answerer_confabulation",
+          "module": 14,
+          "description": "f14_yields line number wrong (input.gms:44 vs 35-37)"
+        },
+        {
+          "id": "R15-Q2-2",
+          "severity": "Minor",
+          "type": "doc_error",
+          "module": 45,
+          "description": "Docs claim all 4 consumers use weighted-average pattern; M58/M59 use mapping/aggregation instead",
+          "fixed": true
+        },
+        {
+          "id": "R15-Q2-3",
+          "severity": "Major",
+          "type": "doc_error",
+          "module": 35,
+          "description": "sm_fix_cc controls 7 modules not 6 \u2014 missing M35 (natveg/pot_forest_may24)",
+          "fixed": false
+        },
+        {
+          "id": "R15-Q2-4",
+          "severity": "Nitpick",
+          "type": "answerer_confabulation",
+          "module": 14,
+          "description": "Unverifiable empirical claim about yield change magnitudes"
+        },
+        {
+          "id": "R15-Q3-1",
+          "severity": "Nitpick",
+          "type": "answerer_confabulation",
+          "module": 71,
+          "description": "kli_rum/kli_rd presented as synonyms but have different parent sets"
+        },
+        {
+          "id": "R15-Q3-2",
+          "severity": "Nitpick",
+          "type": "answerer_confabulation",
+          "module": 16,
+          "description": "Demand chain arrow direction misleading (M70 feeds INTO M16)"
+        },
+        {
+          "id": "R15-Q4-1",
+          "severity": "Minor",
+          "type": "answerer_confabulation",
+          "module": 57,
+          "description": "Cost integral described as trapezoid sum but is actually rectangular/Riemann sum"
+        },
+        {
+          "id": "R15-Q5-1",
+          "severity": "Major",
+          "type": "answerer_confabulation",
+          "module": 73,
+          "description": "Claims 13 slack variables \u2014 number fabricated"
+        },
+        {
+          "id": "R15-Q5-2",
+          "severity": "Minor",
+          "type": "doc_error",
+          "module": 10,
+          "description": "200 cells stated as fixed architectural constant; actually depends on spatial resolution",
+          "fixed": true
+        },
+        {
+          "id": "R15-Q5-3",
+          "severity": "Minor",
+          "type": "doc_error",
+          "module": 10,
+          "description": "Docs said NET transitions but matrix captures GROSS between-type transitions",
+          "fixed": true
+        },
+        {
+          "id": "R15-Q5-4",
+          "severity": "Minor",
+          "type": "doc_error",
+          "module": 31,
+          "description": "s31_fac_req_past described as calibration vs standard runs; actually first timestep vs subsequent",
+          "fixed": false
+        },
+        {
+          "id": "R15-Q5-5",
+          "severity": "Minor",
+          "type": "doc_error",
+          "module": 80,
+          "description": "Default realization is nlp_apr17, NOT lp_nlp_apr17 (Interesting Over Default antipattern)",
+          "fixed": true
+        },
+        {
+          "id": "R15-Q5-6",
+          "severity": "Minor",
+          "type": "doc_error",
+          "module": 39,
+          "description": "Reward condition described as runtime GAMS check but is offline-derived calibration data",
+          "fixed": false
+        },
+        {
+          "id": "R15-Q5-7",
+          "severity": "Nitpick",
+          "type": "doc_error",
+          "module": 39,
+          "description": "Incomplete: calibration applies to both cost AND reward dimensions"
+        },
+        {
+          "id": "R15-Q5-8",
+          "severity": "Nitpick",
+          "type": "doc_error",
+          "module": null,
+          "description": "Infeasibility risk ranking unverifiable from GAMS code"
+        }
+      ],
+      "summary": {
+        "mean_score": 7.7,
+        "total_bugs": 20,
+        "by_severity": {
+          "Critical": 0,
+          "Major": 7,
+          "Minor": 8,
+          "Nitpick": 5
+        },
+        "by_type": {
+          "doc_error": 10,
+          "answerer_confabulation": 10
+        },
+        "doc_fixes_applied": [
+          "module_80.md: default realization nlp_apr17 not lp_nlp_apr17 (Interesting Over Default #3)",
+          "module_10.md: net transitions \u2192 gross/between-type transitions (8 locations)",
+          "module_10.md: 200 cells \u2192 configurable spatial resolution (2 locations)",
+          "module_45.md: consumer pattern differentiated (weighted avg vs mapping)"
+        ],
+        "key_patterns": [
+          "Interesting Over Default antipattern strikes again (M80: lp_nlp_apr17 labeled default, actual is nlp_apr17)",
+          "Fabricated line numbers remain the #1 answerer confabulation pattern",
+          "Module 10 had semantic imprecision (net vs gross) propagated across 8 doc locations"
+        ],
+        "modules_tested": [
+          10,
+          12,
+          14,
+          15,
+          16,
+          29,
+          30,
+          31,
+          35,
+          38,
+          39,
+          45,
+          53,
+          56,
+          57,
+          70,
+          71,
+          80
+        ]
+      }
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 14,
+    "total_rounds": 15,
     "total_docs_validated": 79,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 312,
-    "total_bugs_fixed": 265,
+    "total_bugs_found": 332,
+    "total_bugs_fixed": 271,
     "validator_checks": 17,
     "validator_sub_checks": 32,
     "gams_variables_verified": 778,
     "gams_equations_verified": 269,
     "gams_realizations_verified": 68,
-    "file_line_citations_verified": 2231,
+    "file_line_citations_verified": 2233,
     "last_validation_date": "2026-03-08",
-    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8"
+    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7"
   }
 }

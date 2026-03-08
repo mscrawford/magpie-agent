@@ -1,7 +1,7 @@
 # Module 80: Optimization - MAgPIE Model Solver Module
 
 **Status**: Fully Verified
-**Realization**: lp_nlp_apr17 (default), nlp_apr17, nlp_par
+**Realization**: nlp_apr17 (default), lp_nlp_apr17, nlp_par
 **Equations**: 0 (pure solver module, no model equations defined)
 **Last Updated**: 2025-10-12
 
@@ -49,7 +49,7 @@ This includes ALL equations from all active module realizations, EXCEPT the food
 
 ---
 
-## Realization: lp_nlp_apr17 (Default - LP Warmstart + NLP)
+## Realization: lp_nlp_apr17 (LP Warmstart + NLP)
 
 **Strategy**: Two-stage approach: first solve a linearized version of the model, then use this solution as starting point for the full nonlinear optimization (realization.gms:8-12).
 
@@ -203,7 +203,7 @@ Failure (modelstat > 2 and ≠ 7):
 
 ---
 
-## Realization: nlp_apr17 (Direct NLP - No Warmstart)
+## Realization: nlp_apr17 (DEFAULT - Direct NLP)
 
 **Strategy**: Solve the full nonlinear model directly using CONOPT4, without LP warmstart (realization.gms:8-12).
 
@@ -750,8 +750,8 @@ Module 80 depends on ALL modules to:
 Module 80 behavior controlled by main configuration switches in `config/default.cfg`:
 
 **cfg$gms$optimization** (module realization):
-- "lp_nlp_apr17" (default)
-- "nlp_apr17"
+- "nlp_apr17" (default)
+- "lp_nlp_apr17"
 - "nlp_par"
 
 **cfg$gms$c80_nlp_solver** (solver selection):
