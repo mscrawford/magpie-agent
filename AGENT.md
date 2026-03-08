@@ -306,6 +306,12 @@ Before answering code-specific questions, verify documentation is current:
 
 9. **Never attribute a cost variable to a module without checking.** Round 3 found 5 cost variables wrongly attributed to Module 38 (only `vm_cost_prod_crop` is Module 38; livestock/fish costs are Module 70, pasture is Module 31, residues are Module 18). When listing which module provides a variable, check `modules/module_XX.md` or `grep -rn "variable_name" ../modules/*/declarations.gms`.
 
+10. **Never expand set-based sums into explicit member lists.** If code uses `sum(land, vm_land(j,land))`, report it as-is — do NOT rewrite as `vm_land(j,"crop") + vm_land(j,"past") + ...`. Set-based sums are intentionally generic; expanding them risks omitting members or inventing non-existent ones. (R14 Q1-B1, R16 Q4-B1, Q4-B2)
+
+11. **Never truncate or abbreviate ranges.** If docs say a set spans "ac0, ac5, ..., ac300, acx" (62 elements), report the full range — do NOT shorten to "ac0, ..., ac140, acx". This led to a critical bug in R16 Q3 where the answerer truncated the age-class range, contradicting the documentation.
+
+12. **Never generalize GAMS set member labels.** Use exact set element names from code: `livst_rum` not "beef", `total_wood_products` not "all products", `begr` not "grassy bioenergy". Generalized labels sound natural but can't be traced back to code, and may conflate distinct set elements.
+
 **Validation tracking**: See `feedback/validation_rounds.json` for the full audit history (scores, bugs, root causes). Future agents should append new rounds to this file.
 
 ### Step 2: Cite Your Sources

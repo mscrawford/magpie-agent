@@ -19,6 +19,13 @@ The module loads forest age data from the **Global Forest Age Dataset (GFAD) v1.
 
 **Key Purpose**: Initialize secondary forest age-class distribution (Module 35) and define establishment vs. sub-rotation age-classes for plantations (Module 32).
 
+> **⚠️ Age-Class Range Summary**
+> MAgPIE uses **62 five-year age-classes** spanning the full range:
+> `ac0, ac5, ac10, ac15, ..., ac295, ac300, acx`
+> - `ac0` through `ac300`: 61 regular classes in 5-year increments (0–300 years)
+> - `acx`: catch-all for mature/primary forests (≥150 years from GFAD class15)
+> - Total: **62 elements** in the `ac` set (not fewer — do NOT truncate this range)
+
 ---
 
 ## Module Structure

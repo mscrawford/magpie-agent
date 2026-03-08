@@ -80,7 +80,7 @@ cd "$AGENT_DIR"
 # ===========================
 # Check 1: Dependency Counts
 # ===========================
-print_section "1/17" "Checking dependency counts..."
+print_section "1/18" "Checking dependency counts..."
 
 # Check Module 10
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
@@ -134,7 +134,7 @@ fi
 # =====================================
 # Check 2: Equation Parameter Counts
 # =====================================
-print_section "2/17" "Checking equation parameters..."
+print_section "2/18" "Checking equation parameters..."
 
 # Chapman-Richards parameters
 CR_PARAMS=$(grep -r "Chapman-Richards\|Chapman Richards" \
@@ -178,7 +178,7 @@ fi
 # ============================
 # Check 3: Cross-References
 # ============================
-print_section "3/17" "Checking cross-references..."
+print_section "3/18" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
@@ -246,7 +246,7 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/17" "Checking duplicate equations..."
+print_section "4/18" "Checking duplicate equations..."
 
 # Check for common equations mentioned in multiple places
 # q70_feed
@@ -271,7 +271,7 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 # Check 5: Entry Point Consistency
 # =================================
-print_section "5/17" "Checking entry point consistency..."
+print_section "5/18" "Checking entry point consistency..."
 
 # README should point to CURRENT_STATE.json for project work
 if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
@@ -311,7 +311,7 @@ fi
 # =======================
 # Check 6: File Counts
 # =======================
-print_section "6/17" "Checking file counts..."
+print_section "6/18" "Checking file counts..."
 
 # Count module docs
 MODULE_COUNT=$(ls -1 modules/module_*.md 2>/dev/null | grep -v "_notes" | wc -l | tr -d ' ')
@@ -348,7 +348,7 @@ fi
 # ==========================================
 # Check 7: Convention Linter (stale formats)
 # ==========================================
-print_section "7/17" "Checking naming conventions..."
+print_section "7/18" "Checking naming conventions..."
 
 # Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
 STALE_CMD_COUNT=0
@@ -421,7 +421,7 @@ fi
 # ==============================================
 # Check 8: Markdown Link Validator (key files)
 # ==============================================
-print_section "8/17" "Checking markdown link targets..."
+print_section "8/18" "Checking markdown link targets..."
 
 BROKEN_LINKS=0
 
@@ -474,7 +474,7 @@ fi
 # ==============================================
 # Check 9: Trigger Keyword Sync
 # ==============================================
-print_section "9/17" "Checking helper trigger keyword sync..."
+print_section "9/18" "Checking helper trigger keyword sync..."
 
 TRIGGER_ISSUES=0
 
@@ -522,7 +522,7 @@ fi
 # =============================================
 # Check 10: AGENT.md Deployment Freshness
 # =============================================
-print_section "10/17" "Checking AGENT.md deployment..."
+print_section "10/18" "Checking AGENT.md deployment..."
 
 DEPLOY_OK=0
 DEPLOY_FAIL=0
@@ -558,7 +558,7 @@ fi
 # =============================================
 # Check 11: Anti-Hardcoding Guard
 # =============================================
-print_section "11/17" "Checking for hardcoded values in mechanism files..."
+print_section "11/18" "Checking for hardcoded values in mechanism files..."
 
 HARDCODED_ISSUES=0
 
@@ -584,7 +584,7 @@ fi
 # ================================================
 # Check 12: Path prefix check (magpie-agent/)
 # ================================================
-print_section "12/17" "Checking for stale path prefixes..."
+print_section "12/18" "Checking for stale path prefixes..."
 
 # Files inside magpie-agent/ should not use magpie-agent/ as a path prefix
 # (since the working directory IS magpie-agent/, this creates double-nesting)
@@ -613,7 +613,7 @@ fi
 # ================================================
 # Check 13: Unclosed code blocks
 # ================================================
-print_section "13/17" "Checking for unclosed code blocks..."
+print_section "13/18" "Checking for unclosed code blocks..."
 
 UNCLOSED=0
 for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./feedback/archive/*"); do
@@ -632,7 +632,7 @@ fi
 
 # Check 14: GAMS Variable Name Verification
 # ==========================================
-print_section "14/17" "Checking GAMS variable names in docs..."
+print_section "14/18" "Checking GAMS variable names in docs..."
 
 GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.sh"
 if [ -x "$GAMS_CHECK_SCRIPT" ]; then
@@ -654,7 +654,7 @@ fi
 
 # Check 15: GAMS Equation Name Verification
 # ==========================================
-print_section "15/17" "Checking GAMS equation names in docs..."
+print_section "15/18" "Checking GAMS equation names in docs..."
 
 EQ_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_equations.sh"
 if [ -x "$EQ_CHECK_SCRIPT" ]; then
@@ -676,7 +676,7 @@ fi
 
 # Check 16: GAMS Realization Name Verification
 # =============================================
-print_section "16/17" "Checking GAMS realization names in docs..."
+print_section "16/18" "Checking GAMS realization names in docs..."
 
 REAL_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_realizations.sh"
 if [ -x "$REAL_CHECK_SCRIPT" ]; then
@@ -698,7 +698,7 @@ fi
 
 # Check 17: File:Line Citation Verification
 # ==========================================
-print_section "17/17" "Checking file:line citations in docs..."
+print_section "17/18" "Checking file:line citations in docs..."
 
 CIT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_citations.sh"
 if [ -x "$CIT_CHECK_SCRIPT" ]; then
@@ -716,6 +716,28 @@ if [ -x "$CIT_CHECK_SCRIPT" ]; then
     fi
 else
     check_warning "File:line citation checker not found or not executable: $CIT_CHECK_SCRIPT"
+fi
+
+# Check 18: Default Realization Cross-Reference
+# ==============================================
+print_section "18/18" "Checking default realization labels against config/default.cfg..."
+
+DEFAULT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_default_realizations.py"
+if [ -f "$DEFAULT_CHECK_SCRIPT" ]; then
+    DEFAULT_OUTPUT=$(python3 "$DEFAULT_CHECK_SCRIPT" 2>&1)
+    DEFAULT_EXIT=$?
+    if [ $DEFAULT_EXIT -eq 0 ]; then
+        DEFAULT_SUMMARY=$(echo "$DEFAULT_OUTPUT" | head -1)
+        check_pass "Default realizations: $DEFAULT_SUMMARY"
+    else
+        DEFAULT_ISSUE_COUNT=$(echo "$DEFAULT_OUTPUT" | grep -oE "[0-9]+ default realization mismatch" | grep -oE "[0-9]+")
+        check_error "Default realization mismatches: $DEFAULT_ISSUE_COUNT (doc labels disagree with config/default.cfg)"
+        echo "$DEFAULT_OUTPUT" | grep "^    " | head -10 | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "Default realization checker not found: $DEFAULT_CHECK_SCRIPT"
 fi
 
 # ============

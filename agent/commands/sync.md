@@ -87,6 +87,16 @@ If documentation updates are needed:
    - Interface variables (if changed)
    - Add a note about the update with commit reference
 
+### Step 5b: Verify Default Realizations
+
+If any commit changed `config/default.cfg` (realization assignments), run Check 18:
+
+```bash
+python3 scripts/check_default_realizations.py
+```
+
+This cross-references "(default)" labels in module docs against `config/default.cfg` and flags mismatches. If a default realization changed in code, update the corresponding `modules/module_XX.md` header.
+
 ### Step 6: Update Sync Log
 
 After reviewing/updating, update `project/sync_log.json`:
