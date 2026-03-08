@@ -7,6 +7,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `rescaled_jan21`
+> Confirmed in `config/default.cfg`: `cfg$gms$nitrogen <- "rescaled_jan21"`. Alternative `off` disables nitrogen surplus accounting.
+
+
 ## Purpose
 
 Module 51 calculates **nitrogeneous emissions before technical mitigation**, including N₂O, NOₓ, NH₃, NO₃⁻, and N₂ from agricultural activities (`realization.gms:8-16`). The module receives nitrogen flow information from Modules 50 (NR Soil Budget), 55 (AWMS), 18 (Residues), and 59 (SOM), and provides emissions to Module 56 (GHG Policy) for potential pricing (`realization.gms:11-13`).

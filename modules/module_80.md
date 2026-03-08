@@ -7,6 +7,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `nlp_apr17`
+> Confirmed in `config/default.cfg`: `cfg$gms$optimization <- "nlp_apr17"`. Alternatives: `lp_nlp_apr17` (LP presolve then NLP), `nlp_par` (parallel NLP).
+
+
 ## Overview
 
 **Purpose**: Module 80 (Optimization) is THE CORE EXECUTION MODULE that solves the entire MAgPIE optimization problem at each timestep (module.gms:8-21). It does NOT define any model equations itself, but rather manages the solution strategy, solver selection, and error handling for the complete MAgPIE model containing all equations from the other 45 modules.

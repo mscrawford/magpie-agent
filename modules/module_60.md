@@ -9,6 +9,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `1st2ndgen_priced_feb24`
+> Confirmed in `config/default.cfg`: `cfg$gms$bioenergy <- "1st2ndgen_priced_feb24"`. Alternative `1stgen_priced_dec18` supports only first-generation bioenergy pricing.
+
+
 ## Overview
 
 Module 60 (Bioenergy) provides regional and crop-specific bioenergy demand `vm_dem_bioen(i,kall)` to Module 16 (Demand) (`module.gms:10-11`). The module distinguishes between **1st generation** bioenergy (oils, ethanol from food crops) and **2nd generation** bioenergy (dedicated energy crops like bioenergy grasses/trees, plus crop residues) (`equations.gms:9-14`).

@@ -6,6 +6,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `bii_target`
+> Confirmed in `config/default.cfg`: `cfg$gms$biodiversity <- "bii_target"`. Alternatives: `bii_target_apr24` (updated BII formulation), `bv_btc_mar21` (biodiversity value with BTC approach).
+
+
 ## Purpose
 
 Module 44 estimates terrestrial biodiversity stocks for all land types in MAgPIE using the **Biodiversity Intactness Index (BII)** approach. The module aggregates biodiversity values calculated by land-use modules (29, 30, 31, 32, 34, 35) and computes BII at the biome level. It can enforce minimum BII targets over time through a penalty cost mechanism.

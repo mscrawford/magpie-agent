@@ -7,6 +7,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `endo_jan22`
+> Confirmed in `config/default.cfg`: `cfg$gms$tc <- "endo_jan22"`. Alternative `exo` provides prescriptive (exogenous) technological change trajectories instead of endogenous optimization.
+
+
 ## Overview
 
 Module 13 implements endogenous technological change and land use intensification through the tau factor (τ) framework. The module calculates the cost of investments needed to increase agricultural yields via land use intensification, creating an endogenous feedback loop where the optimization balances intensification costs against land expansion costs.

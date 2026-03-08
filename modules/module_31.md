@@ -19,6 +19,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `endo_jun13`
+> Confirmed in `config/default.cfg`: `cfg$gms$past <- "endo_jun13"`. Alternative `static` fixes pastureland area at initial levels without endogenous optimization.
+
+
 ## Core Functionality
 
 ### What This Module DOES

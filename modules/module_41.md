@@ -4,6 +4,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `endo_apr13`
+> Confirmed in `config/default.cfg`: `cfg$gms$area_equipped_for_irrigation <- "endo_apr13"`. Alternative `static` fixes irrigated area at initial levels without endogenous investment.
+
+
 ## Quick Summary
 
 **Purpose**: Manage irrigation infrastructure capacity and investment decisions

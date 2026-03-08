@@ -9,6 +9,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `fbask_jan16`
+> Confirmed in `config/default.cfg`: `cfg$gms$livestock <- "fbask_jan16"`. Alternative `fbask_jan16_sticky` adds production stickiness to prevent abrupt regional livestock shifts.
+
+
 ## Overview
 
 Module 70 (Livestock) calculates regional feed demand for livestock production using exogenous feed baskets and livestock productivity trajectories (`realization.gms:8-81`). The module implements the methodology of Weindl et al. (2017) based on Wirsenius (2000), converting livestock production targets into feed requirements across multiple feed types (cereals, fodder, pasture, crop residues, etc.) (`realization.gms:20-35`).

@@ -35,6 +35,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `cellpool_jan23`
+> Confirmed in `config/default.cfg`: `cfg$gms$som <- "cellpool_jan23"`. Alternatives: `cellpool_aug16` (earlier cell-level pooling), `static_jan19` (static SOC without dynamics).
+
+
 ### 1. Core Purpose
 
 **VERIFIED**: Module 59 calculates soil organic carbon dynamics following IPCC 2019 methodology (`modules/59_som/cellpool_jan23/realization.gms:9-16`).

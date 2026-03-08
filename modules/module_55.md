@@ -7,6 +7,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `ipcc2006_aug16`
+> Confirmed in `config/default.cfg`: `cfg$gms$awms <- "ipcc2006_aug16"`. Alternative `off` disables animal waste management emission accounting.
+
+
 ## Purpose
 
 Module 55 calculates **nutrient (N, P, K) flows within animal waste management systems** using a mass balance approach (`module.gms:10`, `realization.gms:9-10`). The module receives feed intake data from Module 70 (Livestock) and provides manure flows to Module 50 (NR Soil Budget) and emission source data to Modules 51 (Nitrogen) and 53 (Methane) (`module.gms:11-13`).

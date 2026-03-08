@@ -8,6 +8,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `detail_apr24`
+> Confirmed in `config/default.cfg`: `cfg$gms$cropland <- "detail_apr24"`. Alternative `simple_apr24` uses simplified crop allocation without rotational constraints.
+
+
 ## Overview
 
 Module 29 defines **total cropland** as the sum of **croparea** (from Module 30), **fallow land**, and **tree cover on cropland**. The module manages available cropland constraints, carbon stocks, and implements three policy mechanisms: **Semi-Natural Vegetation (SNV)** share requirements, **tree cover** targets, and **fallow land** targets.

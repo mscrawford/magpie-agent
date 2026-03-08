@@ -15,6 +15,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `ipcc2006_aug22`
+> Confirmed in `config/default.cfg`: `cfg$gms$methane <- "ipcc2006_aug22"`. Alternative `off` disables methane emission accounting.
+
+
 ## Module Structure
 
 **Files**:

@@ -7,6 +7,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `exo_nov21`
+> Confirmed in `config/default.cfg`: `cfg$gms$urban <- "exo_nov21"`. Alternative `static` fixes urban land at initial levels without exogenous growth trajectories.
+
+
 ## Purpose
 
 Module 34 (Urban Land) represents urban settlement areas in MAgPIE as one of the land modules (alongside cropland 30, pasture 31, forestry 32, and natural vegetation 35). It provides exogenous urban land expansion trajectories based on SSP scenarios and calculates corresponding biodiversity values (`module.gms:8-14`).

@@ -10,6 +10,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `v2`
+> Confirmed in `config/default.cfg`: `cfg$gms$peatland <- "v2"`. Alternative `off` disables peatland dynamics and emissions.
+
+
 ## 1. Module Overview
 
 ### 1.1 Purpose

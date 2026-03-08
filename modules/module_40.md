@@ -7,6 +7,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `gtap_nov12`
+> Confirmed in `config/default.cfg`: `cfg$gms$transport <- "gtap_nov12"`. Alternative `off` disables transport cost accounting.
+
+
 ## Executive Summary
 
 Module 40 (Transport) calculates intraregional transportation costs for agricultural products between production sites and urban market centers. The module uses a simple multiplicative formula combining cell-level production, travel distance to cities, and commodity-specific transport costs calibrated to GTAP 7 data. Transportation costs add to the objective function via Module 11 (Costs), influencing optimal land allocation by penalizing production in remote areas.

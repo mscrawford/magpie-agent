@@ -11,6 +11,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `off`
+> Confirmed in `config/default.cfg`: `cfg$gms$labor_prod <- "off"`. Alternative `exo` enables exogenous labor productivity trajectories affecting factor costs.
+
+
 ## 1. Purpose & Overview
 
 **Primary Function**: Provide exogenous labor productivity factors that capture heat stress impacts on agricultural workers under climate change.

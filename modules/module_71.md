@@ -6,6 +6,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `foragebased_jul23`
+> Confirmed in `config/default.cfg`: `cfg$gms$disagg_lvst <- "foragebased_jul23"`. Alternatives: `foragebased_aug18` (earlier forage-based formulation), `off` (no livestock disaggregation).
+
+
 ## Purpose
 
 Module 71 distributes regional livestock production onto simulation cells (0.5° grid), accounting for spatial constraints on livestock systems. Without this module, cellular livestock distribution would be determined solely by transport costs (Module 40) and water availability (Module 42), leading to unrealistic spatial concentration.

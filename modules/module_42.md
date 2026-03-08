@@ -6,6 +6,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `all_sectors_aug13`
+> Confirmed in `config/default.cfg`: `cfg$gms$water_demand <- "all_sectors_aug13"`. Alternative `agr_sector_aug13` accounts for agricultural water demand only (excludes industrial/domestic).
+
+
 ## Quick Reference
 
 **Purpose**: Determines water demand across five sectors: agriculture (endogenous), manufacturing, electricity, domestic, and ecosystem (all exogenous except agriculture).

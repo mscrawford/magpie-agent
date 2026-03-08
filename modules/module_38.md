@@ -6,6 +6,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `sticky_feb18`
+> Confirmed in `config/default.cfg`: `cfg$gms$factor_costs <- "sticky_feb18"`. Alternatives: `sticky_labor` (adds capital immobility and CES labor-capital substitution), `per_ton_fao_may22` (simplified per-ton costs).
+
+
 ## 1. Purpose & Overview
 
 Module 38 calculates the costs of production factors (labor and capital) in crop production activities. These costs are crop-specific and spatially explicit, influencing the model's choice of production patterns through the cost function in Module 11.

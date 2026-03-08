@@ -8,6 +8,10 @@
 
 ---
 
+> ⚙️ **Default Realization**: `flexreg_apr16`
+> Confirmed in `config/default.cfg`: `cfg$gms$residues <- "flexreg_apr16"`. Alternatives: `flexcluster_jul23` (cluster-based aggregation), `off` (no residue accounting).
+
+
 ## Overview
 
 Module 18 calculates **production of crop residues** (aboveground and belowground biomass) and their **allocation to different uses**: burning on fields, removal for feed/bioenergy, recycling to soils, or other purposes (construction, fuel).
