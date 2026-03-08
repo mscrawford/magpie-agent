@@ -110,7 +110,7 @@ vm_cdr_aff(j2,ac,"bgc") =e=
 sum(ac_est, v32_land(j2,"aff",ac_est)) * sum(ct, p32_cdr_ac(ct,j2,ac));
 ```
 
-**Per-hectare CDR by age class** (`presolve.gms:65-66`):
+**Per-hectare CDR by age class** (`presolve.gms:71-72`):
 ```gams
 p32_cdr_ac(t,j,ac)$(ord(ac) > 1 AND (ord(ac)-1) <= s32_planning_horizon/5)
 = p32_carbon_density_ac(t,j,"aff",ac,"vegc") - p32_carbon_density_ac(t,j,"aff",ac-1,"vegc");
@@ -569,7 +569,7 @@ p32_land(t,j,type32,"acx") = p32_land(t,j,type32,"acx")
 
 #### 6.2 Establishment Age Classes
 
-**Reset to zero before optimization** (`presolve.gms:88`):
+**Reset to zero before optimization** (`presolve.gms:94`):
 ```gams
 p32_land(t,j,type32,ac_est) = 0;
 ```
@@ -586,7 +586,7 @@ v32_land(j2,type32,ac_est) =e= sum(ac_est2, v32_land(j2,type32,ac_est2))/card(ac
 
 #### 6.3 Rotation-Based Bounds
 
-**Timber plantations fixed until rotation** (`presolve.gms:125-127`):
+**Timber plantations fixed until rotation** (`presolve.gms:108-136`, three modes via `s32_hvarea`):
 ```gams
 v32_land.fx(j,"plant",ac)$(ac.off < p32_rotation_cellular_harvesting(t,j)) = pc32_land(j,"plant",ac);
 v32_land.lo(j,"plant",ac)$(ac.off >= p32_rotation_cellular_harvesting(t,j)) = 0;
@@ -913,7 +913,7 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 - **Age-dependent**: Different densities for each 5-year age class
 
 **p32_cdr_ac(t,j,ac)** - `declarations.gms:31`:
-- **Calculation**: Carbon density increment per age class (`presolve.gms:65-66`)
+- **Calculation**: Carbon density increment per age class (`presolve.gms:71-72`)
 - **Limitation**: Only for ages ≤ planning horizon
 - **Units**: tC per ha per 5-year period
 

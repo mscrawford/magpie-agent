@@ -3,8 +3,8 @@
 **Status**: Fully documented
 **Location**: `modules/37_labor_prod/`
 **Realizations**:
-- `exo` (exogenous climate-driven productivity, default)
-- `off` (no productivity change, fixed at 1.0)
+- `off` (no productivity change, fixed at 1.0, **default** — `cfg$gms$labor_prod <- "off"`)
+- `exo` (exogenous climate-driven productivity)
 **Code Size**: 140 lines across 8 files
 **Complexity**: Low (simple data provider, no equations)
 **Authors**: Florian Humpenöder, Michael Windisch
@@ -318,7 +318,7 @@ $setglobal c37_labor_uncertainty  ensmean
 
 Module 37 has **2 realizations**:
 
-#### 7.1 Realization: exo (Exogenous Heat Stress Impacts) - DEFAULT
+#### 7.1 Realization: exo (Exogenous Heat Stress Impacts)
 
 **Purpose**: Include climate change impacts on labor productivity
 
@@ -347,7 +347,7 @@ c37_labor_prod_scenario = "cc"
 
 **Code Size**: 104 lines (5 files)
 
-#### 7.2 Realization: off (No Heat Stress Impacts)
+#### 7.2 Realization: off (No Heat Stress Impacts) - DEFAULT
 
 **Purpose**: Counterfactual scenario without labor productivity changes
 

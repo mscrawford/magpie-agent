@@ -1,7 +1,7 @@
 # Module 38: Factor Costs - Comprehensive Documentation
 
 **Location**: `modules/38_factor_costs/`
-**Current Realization**: `sticky_labor` (most sophisticated)
+**Current Realization**: `sticky_feb18` (default, as set in `config/default.cfg`); `sticky_labor` is an advanced alternative (non-default)
 **Authors**: Jan Philipp Dietrich, Benjamin Bodirsky, Kristine Karstens, Edna J. Molina Bacca, Debbora Leip
 
 ---
@@ -59,7 +59,7 @@ vm_cost_prod_crop(i,"capital") = sum(kcr, vm_prod_reg(i,kcr) * i38_fac_req(i,kcr
 
 **Innovation**: Creates spatial inertia - expansion favored in locations with existing capital stocks
 
-### 2.3 sticky_labor: Full Factor Substitution (Current Default)
+### 2.3 sticky_labor: Full Factor Substitution (Non-Default)
 
 **Built on sticky_feb18 + adds**:
 - CES production function for labor-capital substitution
@@ -1369,7 +1369,7 @@ abline(h=0.4, col="red", lty=2)  # Target line
 
 **Name**: Factor Costs (Module 38)
 **Purpose**: Calculate labor and capital costs for crop production
-**Current Realization**: `sticky_labor` (most sophisticated)
+**Current Realization**: `sticky_feb18` (default, as set in `config/default.cfg`); `sticky_labor` is an advanced alternative (non-default)
 **Key Innovation**: Capital stickiness + labor-capital substitution via CES function + climate/wage impacts
 
 ### 18.2 Critical Mechanisms

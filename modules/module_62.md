@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-Module 62 (Material) estimates demand for non-food, non-feed, non-energy agricultural material usage based on FAO's "other utilities" category. This includes cosmetics, chemicals, textiles, and industrial uses of agricultural products (excluding bioenergy which is handled by Module 60). Material demand is exogenous: in historical periods it uses direct FAO data, in future periods it scales proportionally to food demand growth. An optional bioplastic production component can add logistic growth of bioplastic substrate demand.
+Module 62 (Material) estimates demand for non-food, non-feed, non-energy agricultural material usage based on FAO's "other utilities" category. This includes cosmetics, chemicals, textiles, and industrial uses of agricultural products (excluding bioenergy which is handled by Module 60). Material demand is exogenous: in historical periods it uses direct FAO data, in future periods it scales proportionally to food demand growth. A bioplastic production component can add logistic growth of bioplastic substrate demand (`s62_include_bioplastic = 1` by default — **ON**; set to 0 to disable).
 
 **Core mechanism**:
 - **Historical mode** (y1965-y2010): Material demand = FAO observed values
@@ -71,7 +71,7 @@ Where:
 **Variables**:
 - `vm_dem_material(i2,kall_excl_kforestry)`: Material demand (output positive variable) - `declarations.gms:25`
 - `f62_dem_material(ct,i2,kall_excl_kforestry)`: FAO historical material demand (input parameter) - `input.gms:9-12`
-- `s62_historical`: Binary switch (1 = historical period, 0 = future period) - `presolve.gms:15-19`
+- `s62_historical`: Binary switch (1 = historical period, 0 = future period) - declared `declarations.gms:9-10`, set `presolve.gms:15-19`
 
 **Parameters**:
 - `p62_dem_material_lastcalibyear(i2,kall)`: Material demand in last historical timestep (e.g., y2010) - `declarations.gms:15`
@@ -182,7 +182,7 @@ p62_scaling_factor(i)$(p62_dem_food_lastcalibyear(i) > 0) =
 
 ### Bioplastic Production System
 
-Module 62 includes an optional bioplastic substrate demand component with three operating modes:
+Module 62 includes a bioplastic substrate demand component that is **ON by default** (`s62_include_bioplastic = 1`), with three operating modes:
 
 ---
 
@@ -214,6 +214,7 @@ p62_dem_bioplastic(t>2020,i) = s62_max_dem_bioplastic
 ```
 
 **Logistic growth parameters**:
+- `s62_include_bioplastic`: Switch to include/exclude bioplastic demand (0 = off, **1 = on**) - **default 1 (ON)** - `input.gms:30`
 - `s62_max_dem_bioplastic`: Global bioplastic production target (Mio tDM/yr) - default 0, user sets scenario value - `input.gms:31`
 - `s62_midpoint_dem_bioplastic`: Year when production reaches 50% of maximum - default 2050 - `input.gms:32`
 - `s62_growth_rate_bioplastic`: Calculated growth rate parameter (dimensionless) - `declarations.gms:11`
@@ -859,7 +860,7 @@ Material demand is relatively **small** compared to food and feed:
 - f62_dem_material: ✓ (`input.gms:9-12`)
 - f62_biomass2bioplastic_conversion_ratio: ✓ (`input.gms:14-20`)
 - f62_hist_dem_bioplastic: ✓ (`input.gms:22-28`)
-- s62_historical switch: ✓ (`presolve.gms:15-19`)
+- s62_historical switch: declared `declarations.gms:9-10`, set `presolve.gms:15-19` ✓
 - p62_scaling_factor: ✓ (`presolve.gms:21-22`)
 - p62_bioplastic_substrate: ✓ (`preloop.gms:30`)
 - p62_bioplastic_substrate_double_counted: ✓ (`presolve.gms:26-38`)

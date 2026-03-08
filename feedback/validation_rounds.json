@@ -1446,20 +1446,163 @@
       "total_bugs": 7,
       "fixes_applied": 7,
       "notes": "Re-tested previously-weak modules post-fix. M14/M29 still weakest (realization confusion, fabricated counts). M52/53/56/58 near-perfect. Plus meta-check found missing M45 in DOT graph and 5 stale counts."
+    },
+    {
+      "round": 14,
+      "date": "2026-03-08",
+      "type": "full",
+      "magpie_commit_before": "ce6e1a89a",
+      "agent_commit_before": "06746f4",
+      "scope": "under-tested modules",
+      "questions": [
+        {
+          "id": "Q1",
+          "topic": "Labor supply \u2192 employment \u2192 factor costs \u2192 objective function",
+          "archetype": "causal_chain",
+          "modules_tested": [
+            9,
+            36,
+            37,
+            38,
+            11
+          ],
+          "score": 5.0,
+          "verdict": "SIGNIFICANT ERRORS",
+          "bugs": {
+            "Critical": 1,
+            "Major": 1,
+            "Minor": 2,
+            "Nitpick": 2
+          },
+          "key_finding": "Module 38 described as sticky_labor but default is sticky_feb18; Module 37 described as exo but default is off. Entire CES causal chain doesn't exist in default config."
+        },
+        {
+          "id": "Q2",
+          "topic": "Phosphorus cycle and nitrogen interaction",
+          "archetype": "quantitative",
+          "modules_tested": [
+            54,
+            50,
+            51,
+            18,
+            55
+          ],
+          "score": 10.0,
+          "verdict": "ACCURATE",
+          "bugs": {
+            "Critical": 0,
+            "Major": 0,
+            "Minor": 0,
+            "Nitpick": 0
+          },
+          "key_finding": "Perfect score \u2014 module 54 stub correctly documented, P infrastructure in M18/M55 accurately described."
+        },
+        {
+          "id": "Q3",
+          "topic": "Age classes, timber harvesting, forestry lifecycle",
+          "archetype": "timing_sequencing",
+          "modules_tested": [
+            28,
+            73,
+            32,
+            52
+          ],
+          "score": 8.0,
+          "verdict": "MOSTLY ACCURATE",
+          "bugs": {
+            "Critical": 0,
+            "Major": 0,
+            "Minor": 5,
+            "Nitpick": 2
+          },
+          "key_finding": "Core mechanics correct. Line number drift (off by 6 lines in M32), GDP vs GDP per capita conflation, missing wood_fuel elasticity exception."
+        },
+        {
+          "id": "Q4",
+          "topic": "Urban land expansion defaults and conservation interactions",
+          "archetype": "default_switch",
+          "modules_tested": [
+            34,
+            22,
+            10,
+            44
+          ],
+          "score": 8.0,
+          "verdict": "MOSTLY ACCURATE",
+          "bugs": {
+            "Critical": 0,
+            "Major": 1,
+            "Minor": 4,
+            "Nitpick": 1
+          },
+          "key_finding": "Core urban mechanics well-documented. Conservation type oversimplification, static realization description imprecise, BII aggregation context misleading."
+        },
+        {
+          "id": "Q5",
+          "topic": "Bioenergy-material-processing chain and optimization",
+          "archetype": "edge_case",
+          "modules_tested": [
+            60,
+            62,
+            20,
+            80
+          ],
+          "score": 8.0,
+          "verdict": "MOSTLY ACCURATE",
+          "bugs": {
+            "Critical": 0,
+            "Major": 1,
+            "Minor": 1,
+            "Nitpick": 0
+          },
+          "key_finding": "s62_include_bioplastic defaults to 1 (ON), not 0 (OFF). s62_historical file reference wrong."
+        }
+      ],
+      "summary": {
+        "mean_score": 7.8,
+        "total_bugs": 21,
+        "bugs_by_severity": {
+          "Critical": 1,
+          "Major": 3,
+          "Minor": 12,
+          "Nitpick": 5
+        },
+        "bug_sources": {
+          "doc_error": 9,
+          "answerer_confabulation": 12
+        },
+        "root_causes": [
+          "Interesting Over Default (M37 off\u2192exo, M38 sticky_feb18\u2192sticky_labor): 2 bugs, Critical+Major",
+          "Wrong default value (M62 bioplastic ON not OFF): 1 Major bug",
+          "Line number drift (M32 presolve.gms shifted ~6 lines): 3 Minor bugs",
+          "Oversimplification of complex mechanisms: 2 Minor bugs",
+          "Plausible confabulation (GDP vs GDP/cap, conservation types): remaining"
+        ],
+        "files_fixed": [
+          "modules/module_37.md (default realization: off, not exo)",
+          "modules/module_38.md (default realization: sticky_feb18, not sticky_labor)",
+          "modules/module_62.md (s62_include_bioplastic = 1 default, s62_historical file ref)",
+          "modules/module_32.md (3 line number corrections: presolve.gms:88\u219294, 65-66\u219271-72, 125-127\u2192108-136)"
+        ],
+        "safeguards_added": [],
+        "validator_status": "32/32 checks pass after fixes (778 vars, 269 eqs, 68 realizations, 2233 citations)"
+      }
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 13,
+    "total_rounds": 14,
     "total_docs_validated": 79,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 291,
-    "total_bugs_fixed": 256,
+    "total_bugs_found": 312,
+    "total_bugs_fixed": 265,
     "validator_checks": 17,
     "validator_sub_checks": 32,
     "gams_variables_verified": 778,
     "gams_equations_verified": 269,
     "gams_realizations_verified": 68,
-    "file_line_citations_verified": 2231
+    "file_line_citations_verified": 2231,
+    "last_validation_date": "2026-03-08",
+    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8"
   }
 }
