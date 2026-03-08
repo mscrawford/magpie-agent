@@ -2105,7 +2105,8 @@
           ],
           "score": 7,
           "bugs_found": 8,
-          "bugs_fixed": 7
+          "bugs_fixed": 7,
+          "question": "Trace the SSP driver chain: What default SSP scenario does MAgPIE use? How do module 09 population/GDP projections flow into module 12 interest rate calculation? What is the default realization of module 80 and how does the optimization type affect solver behavior?"
         },
         {
           "id": "Q2",
@@ -2118,7 +2119,8 @@
           ],
           "score": 8,
           "bugs_found": 5,
-          "bugs_fixed": 3
+          "bugs_fixed": 3,
+          "question": "Quantify the GHG impact of peatland rewetting: What are the exact emission factor values for boreal rewetted peatlands (CO2, DOC, CH4, N2O) in module 58? How does module 45 climate data feed into module 52 carbon stock calculations? What is the phosphorus budget approach in module 54?"
         },
         {
           "id": "Q3",
@@ -2131,7 +2133,8 @@
           ],
           "score": 8.5,
           "bugs_found": 5,
-          "bugs_fixed": 3
+          "bugs_fixed": 3,
+          "question": "Trace the material demand chain: How does module 62 calculate bioplastic demand? What happens when s62_include_bioplastic is switched on/off? How does material demand flow through module 20 processing to module 17 production costs and module 60 bioenergy?"
         },
         {
           "id": "Q4",
@@ -2144,7 +2147,8 @@
           ],
           "score": 9,
           "bugs_found": 5,
-          "bugs_fixed": 0
+          "bugs_fixed": 0,
+          "question": "Edge case: What does s71_lp_fix do in module 71 livestock disaggregation? How does module 70 handle feed demand when livestock mix changes? What are the transport cost equations in module 40? How does module 16 handle demand elasticities at extreme price changes?"
         },
         {
           "id": "Q5",
@@ -2157,7 +2161,8 @@
           ],
           "score": 8,
           "bugs_found": 4,
-          "bugs_fixed": 2
+          "bugs_fixed": 2,
+          "question": "Conservation law: How does module 34 urban land expansion interact with module 10 land balance? What land types are in the land_consv set in module 22? How does module 39 landconversion calculate costs and what are the key cost parameters?"
         }
       ],
       "summary": {
@@ -2181,14 +2186,134 @@
           "module_22.md"
         ]
       }
+    },
+    {
+      "round": 18,
+      "date": "2026-03-08",
+      "magpie_version": "4.13.0dev",
+      "magpie_branch": "develop",
+      "answerer_model": "claude-sonnet-4.6",
+      "auditor_model": "claude-opus-4.6",
+      "is_retest": true,
+      "retest_bias_note": "RE-TEST ROUND: Questions reused from R15-R16. Docs may have been specifically fixed for issues these questions originally exposed. Scores are biased upward for doc-related improvements but unbiased for confabulation-related changes.",
+      "questions": [
+        {
+          "id": "Q1",
+          "archetype": "default_switch",
+          "modules_tested": [
+            12,
+            38,
+            39
+          ],
+          "question": "What is the default interest rate in MAgPIE and how is it calculated? Trace exactly how pm_interest enters the factor cost equations (module 38) and land conversion cost equations (module 39).",
+          "original_round": 15,
+          "original_id": "R15-Q1",
+          "original_score": 6,
+          "score": 5.5,
+          "delta": -0.5,
+          "bugs_found": 9,
+          "bugs_fixed": 0
+        },
+        {
+          "id": "Q2",
+          "archetype": "conservation",
+          "modules_tested": [
+            39,
+            10,
+            35,
+            31
+          ],
+          "question": "What determines the cost of converting land between types? How does module 39 calculate costs? How does this interact with the land balance (module 10) and what causes infeasibility?",
+          "original_round": 15,
+          "original_id": "R15-Q5",
+          "original_score": 6,
+          "score": 8.0,
+          "delta": 2.0,
+          "bugs_found": 7,
+          "bugs_fixed": 0
+        },
+        {
+          "id": "Q3",
+          "archetype": "timing_sequencing",
+          "modules_tested": [
+            28,
+            32,
+            73,
+            52
+          ],
+          "question": "Trace the complete age-class lifecycle in MAgPIE: How is the ac set defined? How does GFAD remapping work? Explain the shift logic, rotation constraints, timber demand interaction (module 73), and Chapman-Richards growth parameters (module 32, module 52).",
+          "original_round": 16,
+          "original_id": "Q3",
+          "original_score": 6,
+          "score": 8.5,
+          "delta": 2.5,
+          "bugs_found": 7,
+          "bugs_fixed": 0
+        },
+        {
+          "id": "Q4",
+          "archetype": "causal_chain",
+          "modules_tested": [
+            45,
+            14,
+            30,
+            29
+          ],
+          "question": "How does climate change data flow into MAgPIE? Trace the path from module 45_climate through yield adjustments (module 14) to cropland allocation (modules 29, 30).",
+          "original_round": 15,
+          "original_id": "R15-Q2",
+          "original_score": 8,
+          "score": 8.5,
+          "delta": 0.5,
+          "bugs_found": 9,
+          "bugs_fixed": 0
+        },
+        {
+          "id": "Q5",
+          "archetype": "causal_chain",
+          "modules_tested": [
+            36,
+            37,
+            38,
+            70
+          ],
+          "question": "Trace the employment chain in MAgPIE: How does the GDP-wage regression work (module 36)? How is labor productivity calculated (module 37)? How do crop and livestock factor costs incorporate labor (module 38, module 70)? How is employment back-calculated?",
+          "original_round": 16,
+          "original_id": "Q4",
+          "original_score": 8,
+          "score": 8.0,
+          "delta": 0.0,
+          "bugs_found": 9,
+          "bugs_fixed": 0
+        }
+      ],
+      "summary": {
+        "mean_score": 7.7,
+        "original_mean_score": 6.8,
+        "mean_delta": 0.9,
+        "total_bugs": 41,
+        "severity": {
+          "critical": 2,
+          "major": 9,
+          "minor": 17,
+          "nitpick": 13
+        },
+        "root_causes": {
+          "doc_error": 0,
+          "answerer_confabulation": 39,
+          "doc_gap": 2
+        },
+        "docs_fixed": [],
+        "key_finding": "Documentation is essentially error-free for re-tested questions (0 doc_errors). 95% of bugs are answerer confabulation. Score improvement (+0.9) driven by Q2 (+2.0) and Q3 (+2.5) where doc fixes directly addressed original failures. Q1 regressed (-0.5) due to new confabulations (fabricated realization name, wrong realization code)."
+      }
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 17,
+    "total_rounds": 18,
     "total_docs_validated": 79,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 372,
+    "total_bugs_found": 413,
     "total_bugs_fixed": 287,
     "validator_checks": 18,
     "validator_sub_checks": 33,
