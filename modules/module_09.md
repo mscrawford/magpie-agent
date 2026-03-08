@@ -129,7 +129,7 @@ $setglobal c09_pal_scenario  SSP2  * Physical Activity Level
 **Location**: `declarations.gms:10`
 **Dimensions**: (t_all, iso) - time × 249 ISO countries
 **Units**: mio. people per yr
-**Used by**: 11 modules (most widely used driver)
+**Used by**: 10 modules (most widely used driver)
 **Source**: SSP/SDP population projections from IIASA
 **Calculation**: Direct load from `f09_pop_iso.csv` (`preloop.gms:40, 49`)
 
@@ -145,7 +145,7 @@ $setglobal c09_pal_scenario  SSP2  * Physical Activity Level
 **Location**: `declarations.gms:11`
 **Dimensions**: (t_all, i) - time × 12 MAgPIE regions
 **Units**: mio. people per yr
-**Used by**: 4 modules
+**Used by**: 3 modules (15, 62, 70)
 **Calculation**: Aggregation from ISO (`preloop.gms:41, 50`)
 ```gams
 im_pop(t_all,i) = i09_pop_raw(t_all,i,"%c09_pop_scenario%");
@@ -157,7 +157,7 @@ i09_pop_raw(t_all,i,pop_gdp_scen09) = sum(i_to_iso(i,iso), f09_pop_iso(t_all,iso
 **Location**: `declarations.gms:34`
 **Dimensions**: (t_all, iso, sex, age) - time × country × M/F × 21 age groups
 **Units**: mio. people per yr
-**Used by**: 2 modules (15_food, 55_awms)
+**Used by**: 1 module (15_food)
 **Age groups**: 0-4, 5-9, ..., 95-99, 100+ (5-year bins)
 **Small constant added**: +0.000001 to avoid division by zero (`preloop.gms:39, 48`)
 
@@ -170,7 +170,7 @@ i09_pop_raw(t_all,i,pop_gdp_scen09) = sum(i_to_iso(i,iso), f09_pop_iso(t_all,iso
 **Location**: `declarations.gms:16`
 **Dimensions**: (t_all, iso)
 **Units**: USD17MER per capita per yr (2017 US dollars, Market Exchange Rates)
-**Used by**: 3 modules
+**Used by**: 2 modules (15, 36)
 **Calculation** (`preloop.gms:29-33`):
 ```gams
 i09_gdp_pc_mer_iso_raw(t_all,iso,pop_gdp_scen09) =
@@ -187,7 +187,7 @@ i09_gdp_pc_mer_iso_raw(t_all,iso,pop_gdp_scen09)$(i09_gdp_pc_mer_iso_raw(t_all,i
 **Location**: `declarations.gms:20`
 **Dimensions**: (t_all, i) - time × 12 regions
 **Units**: USD17MER per capita per yr
-**Used by**: 2 modules
+**Used by**: 1 module (42)
 **Calculation** (`preloop.gms:14-16`):
 ```gams
 i09_gdp_pc_mer_raw(t_all,i,pop_gdp_scen09)$(i09_pop_raw(t_all,i,pop_gdp_scen09) > 0 ) =
@@ -199,14 +199,14 @@ i09_gdp_pc_mer_raw(t_all,i,pop_gdp_scen09)$(i09_pop_raw(t_all,i,pop_gdp_scen09) 
 **Location**: `declarations.gms:29`
 **Dimensions**: (t_all, iso)
 **Units**: USD17PPP per capita per yr (2017 US dollars, Purchasing Power Parity)
-**Used by**: 5 modules (most widely used GDP metric)
+**Used by**: 4 modules (13, 15, 38, 73)
 **PPP vs MER**: PPP accounts for cost-of-living differences between countries
 
 **Use cases**:
 - Income-elastic food demand (Module 15)
 - Technology adoption (Module 13)
 - Timber demand elasticity (Module 73)
-- Physical activity transitions (Module 55)
+- Factor costs (Module 38)
 
 **Calculation** (`preloop.gms:23-27`):
 ```gams
@@ -233,7 +233,7 @@ i09_gdp_pc_ppp_iso_raw(t_all,iso,pop_gdp_scen09)$(i09_gdp_pc_ppp_iso_raw(t_all,i
 **Location**: `declarations.gms:33`
 **Dimensions**: (t_all, iso, sex, age)
 **Units**: Share (0-1), fraction of population physically inactive
-**Used by**: 2 modules (15_food, 55_awms)
+**Used by**: 1 module (15_food)
 **Purpose**: Physical Activity Level (PAL) affects caloric requirements
 
 **Source**: WHO Global Health Observatory data + SSP projections
@@ -342,7 +342,7 @@ i09_gdp_pc_ppp_iso_raw(t_all,iso,pop_gdp_scen09)$(i09_gdp_pc_ppp_iso_raw(t_all,i
 4. **Module 18 (residues)** ← `im_development_state`
    - Residue use varies by development
 
-5. **Module 36 (employment)** ← `im_pop`, `im_demography`
+5. **Module 36 (employment)** ← `im_pop`
    - Labor force from working-age population
 
 6. **Module 38 (factor_costs)** ← `im_gdp_pc_mer`, `im_development_state`
@@ -354,10 +354,10 @@ i09_gdp_pc_ppp_iso_raw(t_all,iso,pop_gdp_scen09)$(i09_gdp_pc_ppp_iso_raw(t_all,i
 8. **Module 50 (nr_soil_budget)** ← `im_development_state`
    - Nutrient management practices by development
 
-9. **Module 55 (awms - animal waste management)** ← `im_physical_inactivity`, `im_demography`
+9. **Module 55 (awms - animal waste management)** ← `im_gdp_pc_ppp_iso`, `im_pop_iso`
    - Livestock product demand by demographics
 
-10. **Module 56 (ghg_policy)** ← `im_gdp_pc_mer`, `im_development_state`
+10. **Module 56 (ghg_policy)** ← `im_development_state`
     - Carbon price implementation varies by income/development
 
 11. **Module 60 (bioenergy)** ← `im_gdp_pc_mer_iso`, `im_development_state`
@@ -480,9 +480,9 @@ else
    - Selected scenario after 2025: `preloop.gms:46-55`
 
 6. ✅ **Provides 8 interface variables**:
-   - im_pop_iso (11 modules), im_pop (4 modules)
-   - im_gdp_pc_ppp_iso (5 modules), im_gdp_pc_mer_iso (3 modules), im_gdp_pc_mer (2 modules)
-   - im_development_state (6 modules), im_demography (2 modules), im_physical_inactivity (2 modules)
+   - im_pop_iso (10 modules), im_pop (3 modules)
+   - im_gdp_pc_ppp_iso (4 modules), im_gdp_pc_mer_iso (2 modules), im_gdp_pc_mer (1 module)
+   - im_development_state (6 modules), im_demography (1 module), im_physical_inactivity (1 module)
 
 7. ✅ **Small constant for demographics**:
    - +0.000001 added to demography to avoid division by zero: `preloop.gms:39, 48`
@@ -798,7 +798,7 @@ stopifnot(max_error < 0.01)  # Less than 1% error
 **Key Features**:
 - Only 216 lines of code (smallest foundational module)
 - Pure data provider (no equations, no optimization)
-- Most widely used variables: im_pop_iso (11 modules), im_gdp_pc_ppp_iso (5 modules)
+- Most widely used variables: im_pop_iso (10 modules), im_gdp_pc_ppp_iso (4 modules)
 - Supports scenario mixing (population ≠ GDP scenario)
 - Handles missing data (fills with SSP2 regional averages)
 
@@ -852,9 +852,9 @@ Module 09 does **not directly participate** in any conservation laws:
 - **Dependents**: 14 modules depend on Module 09 variables
 
 **Key Interface Variables**:
-- `im_pop_iso(t,iso)` → Used by 11 modules (highest usage)
-- `im_gdp_pc_ppp_iso(t,iso)` → Used by 5 modules
-- `im_pop(t,i)` → Used by 7 modules
+- `im_pop_iso(t,iso)` → Used by 10 modules (highest usage)
+- `im_gdp_pc_ppp_iso(t,iso)` → Used by 4 modules
+- `im_pop(t,i)` → Used by 3 modules
 - `im_gdp_pc_ppp(t,i)` → Used by 4 modules
 
 **Modules that depend on 09**:

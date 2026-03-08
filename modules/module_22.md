@@ -8,7 +8,7 @@
 
 ### 1. Purpose & Overview
 
-**Core Function**: Module 22 provides **exogenous land conservation targets** that prevent conversion of natural vegetation and enable active restoration. It operates as a **data provider module** (no equations) that calculates protection and restoration requirements in `presolve`, which are then used as constraints in Modules 10 (Land), 35 (NatVeg), and 31 (Pasture).
+**Core Function**: Module 22 provides **exogenous land conservation targets** that prevent conversion of natural vegetation and enable active restoration. It operates as a **data provider module** (no equations) that calculates protection and restoration requirements in `presolve_ini`, which are then used as constraints in Modules 10 (Land), 35 (NatVeg), and 31 (Pasture).
 
 **Two Conservation Types**:
 1. **Protection** (`consv_type = "protect"`): Prevents conversion of existing land to other uses
@@ -60,7 +60,7 @@ pm_land_conservation(t,j,land,"protect")  pm_land_conservation(t,j,land,"restore
 
 ### 2. Mechanisms & Logic
 
-Module 22 has **NO EQUATIONS** - it's a **parameter calculation module** that runs only in `preloop` and `presolve` phases.
+Module 22 has **NO EQUATIONS** - it's a **parameter calculation module** that runs only in `preloop` and `presolve_ini` phases.
 
 ---
 
@@ -380,10 +380,16 @@ if (m_year(t) >= s22_base_protect_reversal,
 - `PBL_HalfEarth`: Half-Earth scenario (PBL Netherlands)
 
 **Land Types Covered**:
+
+*WDPA baseline protection* (all periods) applies to all 4 land types:
 - `primforest`: Primary forest
 - `secdforest`: Secondary forest
 - `other`: Other natural land
 - `past`: Pasture/grassland
+
+*Future additional conservation* (`land_consv` set, defined in `input.gms:51`) applies to only 3 types:
+- `primforest`, `secdforest`, `other`
+- Note: `past` receives WDPA-baseline historical protection but is **NOT** in the `land_consv` set for future scenario-driven conservation.
 
 ---
 
@@ -491,7 +497,7 @@ i22_land_iso(iso) = sum(land, fm_land_iso("y1995",iso,land));
      - `pcm_land(j,land)`: Previous timestep land area (mio. ha)
      - `vm_land.lo(j,"crop")`: Minimum cropland requirement (mio. ha)
    - **Why critical**: Cannot calculate restoration potential without knowing current land allocation
-   - **Timing**: Module 10 runs in optimization, Module 22 in presolve (uses previous timestep values)
+   - **Timing**: Module 10 runs in optimization, Module 22 in presolve_ini (uses previous timestep values)
    - **File**: `presolve_ini.gms:54-111`
 
 **Additional Dependencies** (indirect):
@@ -525,7 +531,7 @@ i22_land_iso(iso) = sum(land, fm_land_iso("y1995",iso,land));
 #### **Circular Dependencies**: NONE
 
 Module 22 has **NO circular dependencies** because:
-1. It runs in `presolve` (before optimization)
+1. It runs in `presolve_ini` (before optimization)
 2. Uses only previous timestep values (`pcm_land`, not `vm_land`)
 3. Provides parameters to other modules, not variables
 
@@ -604,20 +610,20 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 ```
 
 **Why NOT a Within-Timestep Circular Dependency**:
-1. **Module 22 runs in `presolve`** (before optimization), NOT during solve
+1. **Module 22 runs in `presolve_ini`** (before optimization), NOT during solve
 2. **Uses previous timestep values**: `pcm_land(t-1,j,land)`, not current `vm_land(t,j,land)`
 3. **Provides parameters** (`pm_land_conservation`), not optimization variables
 4. **One-way flow**: Conservation targets → Land allocation (no backward link within timestep)
 
 **Temporal Feedback Mechanism** (across timesteps):
 - **Time t-1**: Land allocation produces `vm_land(t-1,j,land)`
-- **Time t presolve**: Module 22 calculates targets using `pcm_land(t-1,j,land)`
+- **Time t presolve_ini**: Module 22 calculates targets using `pcm_land(t-1,j,land)`
 - **Time t solve**: Module 10 respects new conservation constraints
 - **Impact**: Protection targets can increase if previous land exceeded thresholds
 
 **Resolution Mechanism**: **Type 1 - Temporal Feedback** (NOT simultaneous)
 - No circular equations within a single timestep
-- Sequential execution: presolve → solve
+- Sequential execution: presolve_ini → solve
 - Feedback occurs across time steps, not within them
 
 **Testing Protocol** (if modifying Module 22):
@@ -1294,7 +1300,7 @@ if(reversal_year < 9999) {  # Reversal enabled
 7. **Gradual phase-in**: Sigmoid fader (2025→2050 default)
 
 **Key Features**:
-- **No equations**: Parameter calculation only (runs in preloop/presolve)
+- **No equations**: Parameter calculation only (runs in preloop/presolve_ini)
 - **Exogenous targets**: Not optimized, provided as scenarios
 - **20+ conservation scenarios**: From 14.3% (WDPA + China 2020) to 50% (Half-Earth)
 - **2 conservation types**: Protection (prevent conversion) + Restoration (active recovery)

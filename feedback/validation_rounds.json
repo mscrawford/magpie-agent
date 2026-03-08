@@ -556,7 +556,7 @@
               "severity": "Minor",
               "source": "confabulation",
               "module": 10,
-              "desc": "nothing→primforest=0 is ambiguous natural language in context of specific set element references"
+              "desc": "nothing\u2192primforest=0 is ambiguous natural language in context of specific set element references"
             },
             {
               "severity": "Minor",
@@ -584,10 +584,10 @@
           "dimension_imprecision"
         ],
         "root_causes": [
-          "Anti-confabulation rules dramatically effective: 82% reduction in confabulation bugs (44→8)",
+          "Anti-confabulation rules dramatically effective: 82% reduction in confabulation bugs (44\u21928)",
           "Remaining confabulations are qualitatively different: shortcuts/truncations rather than fabrications",
           "Zero Critical bugs for the first time across 4 rounds",
-          "Module 21 (trade) most error-prone: 4 of 11 bugs, including the only Major confabulation (q21_excess_prod→q21_excess_supply)"
+          "Module 21 (trade) most error-prone: 4 of 11 bugs, including the only Major confabulation (q21_excess_prod\u2192q21_excess_supply)"
         ],
         "files_fixed": [],
         "safeguards_added": [
@@ -691,7 +691,7 @@
             "doc_error": 0
           },
           "critical_bugs": [],
-          "root_cause": "Perfect score — prior validation rounds fixed all N-cycle doc issues"
+          "root_cause": "Perfect score \u2014 prior validation rounds fixed all N-cycle doc issues"
         }
       ],
       "summary": {
@@ -701,7 +701,7 @@
         "major": 9,
         "minor": 6,
         "doc_fixes_needed": 1,
-        "key_insight": "Paradigm shift: 0 doc errors found. All 16 bugs are answerer errors (75% incomplete, 25% confabulation). Docs are now accurate — the bottleneck has moved from doc quality to answerer reading comprehension. Only M21 needed a structural comparison table addition."
+        "key_insight": "Paradigm shift: 0 doc errors found. All 16 bugs are answerer errors (75% incomplete, 25% confabulation). Docs are now accurate \u2014 the bottleneck has moved from doc quality to answerer reading comprehension. Only M21 needed a structural comparison table addition."
       }
     },
     {
@@ -758,7 +758,7 @@
             {
               "severity": "Minor",
               "source": "answerer_error",
-              "description": "Fabricated quote from realization.gms — paraphrased content presented as direct citation"
+              "description": "Fabricated quote from realization.gms \u2014 paraphrased content presented as direct citation"
             }
           ]
         },
@@ -808,7 +808,7 @@
             {
               "severity": "Major",
               "source": "answerer_error",
-              "description": "Called cost multiplier an 'annuity factor' — actual formula is capital recovery factor (pm_interest+depreciation)/(1+pm_interest)"
+              "description": "Called cost multiplier an 'annuity factor' \u2014 actual formula is capital recovery factor (pm_interest+depreciation)/(1+pm_interest)"
             },
             {
               "severity": "Major",
@@ -837,7 +837,7 @@
             {
               "severity": "Minor",
               "source": "answerer_error",
-              "description": "q44_cost LHS is sum(cell(i2,j2), vm_cost_bv_loss(j2)), not bare vm_cost_bv_loss — spatial summation omitted"
+              "description": "q44_cost LHS is sum(cell(i2,j2), vm_cost_bv_loss(j2)), not bare vm_cost_bv_loss \u2014 spatial summation omitted"
             },
             {
               "severity": "Minor",
@@ -1457,7 +1457,7 @@
       "questions": [
         {
           "id": "Q1",
-          "topic": "Labor supply → employment → factor costs → objective function",
+          "topic": "Labor supply \u2192 employment \u2192 factor costs \u2192 objective function",
           "archetype": "causal_chain",
           "modules_tested": [
             9,
@@ -1495,7 +1495,7 @@
             "Minor": 0,
             "Nitpick": 0
           },
-          "key_finding": "Perfect score — module 54 stub correctly documented, P infrastructure in M18/M55 accurately described."
+          "key_finding": "Perfect score \u2014 module 54 stub correctly documented, P infrastructure in M18/M55 accurately described."
         },
         {
           "id": "Q3",
@@ -1572,7 +1572,7 @@
           "answerer_confabulation": 12
         },
         "root_causes": [
-          "Interesting Over Default (M37 off→exo, M38 sticky_feb18→sticky_labor): 2 bugs, Critical+Major",
+          "Interesting Over Default (M37 off\u2192exo, M38 sticky_feb18\u2192sticky_labor): 2 bugs, Critical+Major",
           "Wrong default value (M62 bioplastic ON not OFF): 1 Major bug",
           "Line number drift (M32 presolve.gms shifted ~6 lines): 3 Minor bugs",
           "Oversimplification of complex mechanisms: 2 Minor bugs",
@@ -1582,7 +1582,7 @@
           "modules/module_37.md (default realization: off, not exo)",
           "modules/module_38.md (default realization: sticky_feb18, not sticky_labor)",
           "modules/module_62.md (s62_include_bioplastic = 1 default, s62_historical file ref)",
-          "modules/module_32.md (3 line number corrections: presolve.gms:88→94, 65-66→71-72, 125-127→108-136)"
+          "modules/module_32.md (3 line number corrections: presolve.gms:88\u219294, 65-66\u219271-72, 125-127\u2192108-136)"
         ],
         "safeguards_added": [],
         "validator_status": "32/32 checks pass after fixes (778 vars, 269 eqs, 68 realizations, 2233 citations)"
@@ -1708,7 +1708,7 @@
           "severity": "Major",
           "type": "answerer_confabulation",
           "module": null,
-          "description": "Claims 13 use sites across 7 modules but lists 9 modules — arithmetic error"
+          "description": "Claims 13 use sites across 7 modules but lists 9 modules \u2014 arithmetic error"
         },
         {
           "id": "R15-Q1-4",
@@ -1745,7 +1745,7 @@
           "severity": "Major",
           "type": "doc_error",
           "module": 35,
-          "description": "sm_fix_cc controls 7 modules not 6 — missing M35 (natveg/pot_forest_may24)",
+          "description": "sm_fix_cc controls 7 modules not 6 \u2014 missing M35 (natveg/pot_forest_may24)",
           "fixed": false
         },
         {
@@ -1781,7 +1781,7 @@
           "severity": "Major",
           "type": "answerer_confabulation",
           "module": 73,
-          "description": "Claims 13 slack variables — number fabricated"
+          "description": "Claims 13 slack variables \u2014 number fabricated"
         },
         {
           "id": "R15-Q5-2",
@@ -1853,8 +1853,8 @@
         },
         "doc_fixes_applied": [
           "module_80.md: default realization nlp_apr17 not lp_nlp_apr17 (Interesting Over Default #3)",
-          "module_10.md: net transitions → gross/between-type transitions (8 locations)",
-          "module_10.md: 200 cells → configurable spatial resolution (2 locations)",
+          "module_10.md: net transitions \u2192 gross/between-type transitions (8 locations)",
+          "module_10.md: 200 cells \u2192 configurable spatial resolution (2 locations)",
           "module_45.md: consumer pattern differentiated (weighted avg vs mapping)"
         ],
         "key_patterns": [
@@ -1911,7 +1911,7 @@
               "severity": "minor",
               "type": "answerer_confabulation",
               "module": 10,
-              "description": "Fabricated expanded q10_land_area equation — actual code uses set-based sum"
+              "description": "Fabricated expanded q10_land_area equation \u2014 actual code uses set-based sum"
             },
             {
               "id": "Q1-B2",
@@ -1946,7 +1946,7 @@
               "severity": "nitpick",
               "type": "answerer_confabulation",
               "module": 54,
-              "description": "Added 'phosphorus' to vm_p_fert_costs description — code just says 'mineral fertilizers'"
+              "description": "Added 'phosphorus' to vm_p_fert_costs description \u2014 code just says 'mineral fertilizers'"
             }
           ]
         },
@@ -1968,28 +1968,28 @@
               "severity": "critical",
               "type": "answerer_confabulation",
               "module": 28,
-              "description": "Claimed age classes go to ac140,acx — actual set extends to ac300 (62 elements). Docs are correct at line 443."
+              "description": "Claimed age classes go to ac140,acx \u2014 actual set extends to ac300 (62 elements). Docs are correct at line 443."
             },
             {
               "id": "Q3-B2",
               "severity": "major",
               "type": "doc_error",
               "module": 28,
-              "description": "class15 described as '140+ years' in 6 locations — code comment says '150 years or older'. FIXED."
+              "description": "class15 described as '140+ years' in 6 locations \u2014 code comment says '150 years or older'. FIXED."
             },
             {
               "id": "Q3-B3",
               "severity": "minor",
               "type": "answerer_confabulation",
               "module": 73,
-              "description": "Omitted wood_fuel exception to income elasticity zeroing — docs cover it at line 148"
+              "description": "Omitted wood_fuel exception to income elasticity zeroing \u2014 docs cover it at line 148"
             },
             {
               "id": "Q3-B4",
               "severity": "minor",
               "type": "answerer_confabulation",
               "module": 32,
-              "description": "Showed only endogenous harvest mode — docs cover all 3 modes (s32_hvarea=0,1,2) at lines 793-810"
+              "description": "Showed only endogenous harvest mode \u2014 docs cover all 3 modes (s32_hvarea=0,1,2) at lines 793-810"
             },
             {
               "id": "Q3-B5",
@@ -2018,14 +2018,14 @@
               "severity": "minor",
               "type": "answerer_confabulation",
               "module": 38,
-              "description": "Showed i38_fac_req and pm_factor_cost_shares as separate factors — code pre-bakes them into p38_labor_need"
+              "description": "Showed i38_fac_req and pm_factor_cost_shares as separate factors \u2014 code pre-bakes them into p38_labor_need"
             },
             {
               "id": "Q4-B2",
               "severity": "minor",
               "type": "doc_ambiguity",
               "module": 38,
-              "description": "Wage/productivity terms shown outside sum(kcr) — in code they're inside nested sums"
+              "description": "Wage/productivity terms shown outside sum(kcr) \u2014 in code they're inside nested sums"
             }
           ]
         },
@@ -2038,7 +2038,7 @@
             53,
             50
           ],
-          "question_summary": "Manure N flow: AWMS balance, 4 categories, confinement→N₂O/CH₄ emissions, pasture emissions, manure recycling to cropland N budget",
+          "question_summary": "Manure N flow: AWMS balance, 4 categories, confinement\u2192N\u2082O/CH\u2084 emissions, pasture emissions, manure recycling to cropland N budget",
           "score": 9,
           "bugs_found": 2,
           "bugs": [
@@ -2047,14 +2047,14 @@
               "severity": "minor",
               "type": "answerer_confabulation",
               "module": 53,
-              "description": "Said Ym=0.03 for 'beef concentrates' — applies to all non-dairy ruminants (livst_rum)"
+              "description": "Said Ym=0.03 for 'beef concentrates' \u2014 applies to all non-dairy ruminants (livst_rum)"
             },
             {
               "id": "Q5-B2",
               "severity": "nitpick",
               "type": "doc_ambiguity",
               "module": 53,
-              "description": "Grouped Ym=0.065 as 'dairy/non-conc.' — actually 3 distinct terms"
+              "description": "Grouped Ym=0.065 as 'dairy/non-conc.' \u2014 actually 3 distinct terms"
             }
           ]
         }
@@ -2074,7 +2074,7 @@
           "doc_gap": 0
         },
         "docs_fixed": [
-          "module_28.md (class15 threshold: 140+ → 150+ in 6 locations)"
+          "module_28.md (class15 threshold: 140+ \u2192 150+ in 6 locations)"
         ],
         "mean_score": 8.0,
         "scores": [
@@ -2085,22 +2085,118 @@
           9
         ]
       }
+    },
+    {
+      "round": 17,
+      "date": "2026-03-08",
+      "magpie_version": "4.13.0dev",
+      "magpie_branch": "develop",
+      "answerer_model": "claude-sonnet-4.6",
+      "auditor_model": "claude-opus-4.6",
+      "note": "First round after Check 18 (default realization validator) and anti-confabulation rules 10-12. Confab rate dropped to 22%. Found additional tropical rewetted EF errors beyond audit scope.",
+      "questions": [
+        {
+          "id": "Q1",
+          "archetype": "default_switch",
+          "modules_tested": [
+            9,
+            12,
+            80
+          ],
+          "score": 7,
+          "bugs_found": 8,
+          "bugs_fixed": 7
+        },
+        {
+          "id": "Q2",
+          "archetype": "quantitative",
+          "modules_tested": [
+            45,
+            58,
+            52,
+            54
+          ],
+          "score": 8,
+          "bugs_found": 5,
+          "bugs_fixed": 3
+        },
+        {
+          "id": "Q3",
+          "archetype": "causal_chain",
+          "modules_tested": [
+            62,
+            20,
+            17,
+            60
+          ],
+          "score": 8.5,
+          "bugs_found": 5,
+          "bugs_fixed": 3
+        },
+        {
+          "id": "Q4",
+          "archetype": "edge_case",
+          "modules_tested": [
+            71,
+            70,
+            40,
+            16
+          ],
+          "score": 9,
+          "bugs_found": 5,
+          "bugs_fixed": 0
+        },
+        {
+          "id": "Q5",
+          "archetype": "conservation",
+          "modules_tested": [
+            34,
+            10,
+            22,
+            39
+          ],
+          "score": 8,
+          "bugs_found": 4,
+          "bugs_fixed": 2
+        }
+      ],
+      "summary": {
+        "mean_score": 8.1,
+        "total_bugs": 27,
+        "severity": {
+          "critical": 0,
+          "major": 4,
+          "minor": 18,
+          "nitpick": 5
+        },
+        "root_causes": {
+          "doc_error": 19,
+          "answerer_confabulation": 6,
+          "doc_gap": 2
+        },
+        "docs_fixed": [
+          "module_09.md",
+          "module_58.md",
+          "module_62.md",
+          "module_22.md"
+        ]
+      }
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 16,
+    "total_rounds": 17,
     "total_docs_validated": 79,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 345,
-    "total_bugs_fixed": 272,
-    "validator_checks": 17,
-    "validator_sub_checks": 32,
+    "total_bugs_found": 372,
+    "total_bugs_fixed": 287,
+    "validator_checks": 18,
+    "validator_sub_checks": 33,
     "gams_variables_verified": 778,
     "gams_equations_verified": 269,
     "gams_realizations_verified": 68,
     "file_line_citations_verified": 2233,
     "last_validation_date": "2026-03-08",
-    "mean_score_trend": "6.7→8.2→5.8→8.6→7.2→8.7→6.9→6.0→7.5→7.0→7.6→7.3→8.6→7.8→7.7→8.0"
+    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0"
   }
 }

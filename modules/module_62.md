@@ -69,7 +69,7 @@ Where:
 **Units**: Million tons dry matter per year (mio. tDM/yr)
 
 **Variables**:
-- `vm_dem_material(i2,kall_excl_kforestry)`: Material demand (output positive variable) - `declarations.gms:25`
+- `vm_dem_material(i,kall)`: Material demand (output positive variable) - `declarations.gms:25`
 - `f62_dem_material(ct,i2,kall_excl_kforestry)`: FAO historical material demand (input parameter) - `input.gms:9-12`
 - `s62_historical`: Binary switch (1 = historical period, 0 = future period) - declared `declarations.gms:9-10`, set `presolve.gms:15-19`
 
@@ -110,7 +110,7 @@ q62_dem_material_forestry(i2,kforestry) ..
 **Units**: Million tons dry matter per year (mio. tDM/yr)
 
 **Variables**:
-- `vm_dem_material(i2,kforestry)`: Material demand for forestry products (output) - `declarations.gms:25`
+- `vm_dem_material(i,kall)`: Material demand for forestry products (output) - `declarations.gms:25`
 - `pm_demand_forestry(ct,i2,kforestry)`: Forestry demand from Module 73 (input parameter) - `equations.gms:37`
 
 **Usage**: Provides timber demand to Module 16 (Demand) which aggregates with food, feed, bioenergy, and other demands to drive production optimization
@@ -189,7 +189,7 @@ Module 62 includes a bioplastic substrate demand component that is **ON by defau
 #### Mode 1: No Bioplastic
 
 **Setting**: `s62_include_bioplastic = 0` (disabled)
-**Result**: `p62_dem_bioplastic(t,i) = 0` for all future years - `preloop.gms:25-27`
+**Result**: `p62_dem_bioplastic(t,i)$(m_year(t)>2020) = 0` — only years after 2020 are zeroed; historical bioplastic demand (≤2020) is preserved - `preloop.gms:25-27`
 
 ---
 
@@ -322,7 +322,7 @@ Future year 2050:
 ### Upstream Dependencies
 
 **Module 15 (Food Demand)**:
-- Provides: `vm_dem_food(i,kfo)` - Regional food demand by food commodity
+- Provides: `vm_dem_food.l(i,kfo)` - Regional food demand by food commodity (accessed via `.l` level value, not as a free variable in equations)
 - Usage: Calculate p62_scaling_factor in presolve (`presolve.gms:22`)
 - Relationship: Material demand scales proportionally to food demand growth
 
@@ -852,7 +852,7 @@ Material demand is relatively **small** compared to food and feed:
 
 **Interface variables verified**:
 - vm_dem_material (output to Module 16): ✓ (`declarations.gms:25`)
-- vm_dem_food (input from Module 15): ✓ (`presolve.gms:22`, `postsolve.gms:15`)
+- vm_dem_food.l (input from Module 15, accessed via `.l` level value): ✓ (`presolve.gms:22`, `postsolve.gms:15`)
 - pm_demand_forestry (input from Module 73): ✓ (`equations.gms:37`)
 - im_pop (input from Module 09): ✓ (`preloop.gms:17, 18, 22`)
 

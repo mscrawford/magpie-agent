@@ -66,7 +66,7 @@ Module 58 calculates GHG emissions from peatlands and tracks peatland area chang
 - Tiemeyer et al. 2020 (temperate EFs)
 - Wilson et al. 2016 (tropical EFs)
 
-**Source**: `modules/58_peatland/v2/realization.gms:8-16`
+**Source**: `modules/58_peatland/module.gms:12`
 
 **Key Design Principles** (realization.gms:19-25):
 1. Total peatland area is constant over time
@@ -161,7 +161,7 @@ p58_scalingFactorRed(manPeat58) = manPeatland(manPeat58) / totalPeatland
 | Tropical | crop | 14.0 | 0.82 | 0.007 | 0.005 |
 | Temperate | crop | 9.5 | 0.31 | 0.0206 | 0.0111 |
 | Boreal | crop | 7.9 | 0.12 | 0 | 0.013 |
-| Tropical | rewetted | -0.06 | 0.82 | 0.0091 | 5e-4 |
+| Tropical | rewetted | 0 | 0.51 | 0.041 | 1e-4 |
 
 **Key Insight**: Drained tropical peatland (crop) emits ~14 t CO2-C/ha/yr, while rewetted emits near-zero or negative.
 
@@ -849,11 +849,11 @@ vm_emissions_reg(i2,"peatland",poll58) =e=
 |---------|-------|-----------------|-----------------|-------------------|-----------------|
 | Tropical | crop | 14.0 | 0.82 | 0.007 | 0.005 |
 | Tropical | past | 9.6 | 0.82 | 0.007 | 0.005 |
-| Tropical | rewetted | -0.06 | 0.82 | 0.0091 | 5e-4 |
+| Tropical | rewetted | 0 | 0.51 | 0.041 | 1e-4 |
 | Temperate | crop | 9.5 | 0.31 | 0.0206 | 0.0111 |
 | Temperate | past | 8.0 | 0.31 | 0.0217 | 0.0042 |
 | Boreal | crop | 7.9 | 0.12 | 0 | 0.013 |
-| Boreal | rewetted | -0.24 | 0.12 | 0.0076 | 5e-4 |
+| Boreal | rewetted | -0.34 | 0.08 | 0.041 | 1e-4 |
 
 **Key Insights**:
 - Tropical drained cropland emits highest CO2 (14 t C/ha/yr)
