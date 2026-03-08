@@ -77,7 +77,7 @@ class11: 100-110 years
 class12: 110-120 years
 class13: 120-130 years
 class14: 130-140 years
-class15: 140+ years (includes primary forests)
+class15: 150+ years (includes primary forests)
 ```
 
 **class15 special treatment**: Includes all forests ≥150 years old, including primary forests (preloop.gms:12-13).
@@ -109,14 +109,14 @@ class11 → (ac105, ac110)
 class12 → (ac115, ac120)
 class13 → (ac125, ac130)
 class14 → (ac135, ac140)
-class15 → acx              [140+ years, no splitting]
+class15 → acx              [150+ years, no splitting]
 ```
 
 **Oldest class exception** (preloop.gms:14):
 ```gams
 im_forest_ageclass(j,"acx") = f28_forestageclasses(j,"class15")
 ```
-class15 (140+ years) maps directly to `acx` without splitting, representing mature/primary forests.
+class15 (150+ years) maps directly to `acx` without splitting, representing mature/primary forests.
 
 ### Young Age-Classes
 
@@ -536,7 +536,7 @@ im_forest_ageclass(j,ac) = sum(ac_gfad_to_ac(ac_gfad,ac), f28_forestageclasses(j
 im_forest_ageclass(j,"acx") = f28_forestageclasses(j,"class15")
 ```
 
-class15 (140+ years, including primary) maps directly to `acx` without splitting. Represents **mature forests** with stable age structure.
+class15 (150+ years, including primary) maps directly to `acx` without splitting. Represents **mature forests** with stable age structure.
 
 ### Dynamic Set Calculation
 
@@ -674,10 +674,10 @@ m_yeardiff_forestry(t) = 5$(ord(t)=1) + (m_year(t)-m_year(t-1))$(ord(t)>1)
 
 **Impact**: Acceptable for regional/global analysis, problematic for fine-scale forest management scenarios.
 
-### 7. **Class15 (140+ years) Aggregation**
+### 7. **Class15 (150+ years) Aggregation**
 
-**GFAD class15**: All forests ≥140 years old, including:
-- 140-200 year old managed forests
+**GFAD class15**: All forests ≥150 years old (preloop.gms:12), including:
+- 150-200 year old managed forests
 - 200-500 year old old-growth forests
 - 500+ year old primary forests
 
@@ -747,7 +747,7 @@ m_yeardiff_forestry(t) = 5$(ord(t)=1) + (m_year(t)-m_year(t-1))$(ord(t)>1)
 - **ac_sub(ac)** - Sub-rotation age-classes (dynamic set), used by Module 32
 
 ### Age-Class Structure
-- **15 GFAD classes**: class1-class15 (10-year bands, class15 is 140+ years)
+- **15 GFAD classes**: class1-class15 (10-year bands, class15 is 150+ years)
 - **MAgPIE mapping**: 2:1 split (each GFAD class → two 5-year classes), except class15 → acx
 - **Young age-classes**: ac_young = {ac0, ac5, ac10, ac15, ac20, ac25, ac30} (0-30 years)
 
