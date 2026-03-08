@@ -2306,6 +2306,101 @@
         "docs_fixed": [],
         "key_finding": "Documentation is essentially error-free for re-tested questions (0 doc_errors). 95% of bugs are answerer confabulation. Score improvement (+0.9) driven by Q2 (+2.0) and Q3 (+2.5) where doc fixes directly addressed original failures. Q1 regressed (-0.5) due to new confabulations (fabricated realization name, wrong realization code)."
       }
+    },
+    {
+      "round": 19,
+      "date": "2026-03-08",
+      "magpie_version": "4.13.0dev",
+      "magpie_branch": "develop",
+      "answerer_model": "claude-sonnet-4.6 (magpie-helper agent)",
+      "auditor_model": "claude-opus-4.6 (general-purpose agent)",
+      "questions": [
+        {
+          "id": "Q1",
+          "archetype": "default_switch",
+          "modules_tested": [
+            38
+          ],
+          "question": "What equations does the default realization of Module 38 (factor_costs) use? Show the complete equation set with their GAMS names, mathematical formulations, and explain the difference between the default and the sticky_labor alternative. Be specific about which equations exist in one realization but not the other.",
+          "score": 9,
+          "bugs_found": 2,
+          "bugs_fixed": 0
+        },
+        {
+          "id": "Q2",
+          "archetype": "default_switch",
+          "modules_tested": [
+            71
+          ],
+          "question": "In Module 71 (disagg_lvst), what is the default realization and how does its forage-based livestock disaggregation work? What are the key equations? How does the foragebased_aug18 alternative differ from the default foragebased_jul23? What happens when the off realization is selected?",
+          "score": 7,
+          "bugs_found": 4,
+          "bugs_fixed": 2,
+          "note": "Auditor incorrectly flagged default as off (auditor error \u2014 misread realization description comments). 2 doc fixes: M71 aug18 differences corrected (had division-by-zero protection, different equation structure)."
+        },
+        {
+          "id": "Q3",
+          "archetype": "default_switch",
+          "modules_tested": [
+            80
+          ],
+          "question": "Explain how Module 80 (optimization) works. What is the default realization and what solver does it use? How does the lp_nlp_apr17 alternative differ \u2014 what does it do in the LP presolve phase vs the NLP phase? What are the key switches and parameters that control optimization behavior?",
+          "score": 9,
+          "bugs_found": 1,
+          "bugs_fixed": 0
+        },
+        {
+          "id": "Q4",
+          "archetype": "causal_chain",
+          "modules_tested": [
+            41,
+            42,
+            30
+          ],
+          "question": "How does Module 41 (area_equipped_for_irrigation) determine how much irrigated area is available? What is the default realization's approach? How does the endogenous investment equation work \u2014 what are the costs and constraints? How does the static alternative differ? Trace how vm_area_equipped_for_irrigation connects to Module 42 (water_demand) and Module 30 (croparea).",
+          "score": 9,
+          "bugs_found": 3,
+          "bugs_fixed": 0
+        },
+        {
+          "id": "Q5",
+          "archetype": "default_switch",
+          "modules_tested": [
+            59,
+            56
+          ],
+          "question": "What is the default realization of Module 59 (som \u2014 soil organic matter) and how does it model SOC dynamics? Show the key equations. How do the cellpool_aug16 and static_jan19 alternatives differ? What input data drives SOC calculations and how do land-use transitions affect soil carbon? How does Module 59 connect to the carbon balance through Module 56?",
+          "score": 8,
+          "bugs_found": 1,
+          "bugs_fixed": 1,
+          "note": "cellpool_aug16 removed from model (no code files, only input/ dir remains). Doc updated to reflect this."
+        }
+      ],
+      "summary": {
+        "total_bugs": 11,
+        "bugs_by_severity": {
+          "Critical": 0,
+          "Major": 3,
+          "Minor": 4,
+          "Nitpick": 4
+        },
+        "bugs_by_root_cause": {
+          "doc_error": 1,
+          "answerer_confabulation": 5,
+          "doc_gap": 5
+        },
+        "mean_score": 8.4,
+        "score_range": "7-9",
+        "bugs_fixed": 3,
+        "key_findings": [
+          "All 5 questions were default_switch archetype targeting our new callout blocks",
+          "0 wrong-realization confabulations (Tier 1 target) \u2014 callout blocks appear effective",
+          "Highest mean score in any round (8.4/10)",
+          "1 auditor error: misread realization comments as default setting for M71",
+          "Found cellpool_aug16 is deprecated (removed from module.gms) \u2014 doc updated",
+          "Found M71 aug18 section incorrectly described differences \u2014 doc corrected"
+        ]
+      }
     }
   ],
   "cumulative_stats": {

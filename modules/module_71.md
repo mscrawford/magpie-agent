@@ -526,12 +526,13 @@ s71_lp_fix = 0    # After nl_release
 
 **Key differences from foragebased_jul23**:
 
-1. **No nl_fix/nl_release support**: Cannot be used with Module 80 lp_nlp_apr17
-2. **No minimal production bound**: May encounter division by zero errors
-3. **Same core logic**: Forage-based ruminant and urban-based monogastric distribution
+1. **No nl_fix/nl_release support**: Cannot be used with Module 80 `lp_nlp_apr17`
+2. **Different equation structure**: Uses 5 equations with a **multiplicative** balance flow approach (`q71_balanceflow_constraint` with `v71_feed_balanceflow_share`) instead of jul23's 6 equations with an **additive** approach (`q71_feed_balanceflow_nlp`/`q71_feed_balanceflow_lp` with `v71_feed_balanceflow`)
+3. **Has division-by-zero protection**: `vm_prod_reg.lo = 10⁻⁶` (unconditional in `preloop.gms:16`) AND `+ 10⁻¹⁰` epsilon in the `q71_balanceflow_constraint` denominator (`equations.gms:32`)
+4. **No NLP/LP switching**: Only one balance flow equation (no `s71_lp_fix` toggle)
 
 **When to use**:
-- `foragebased_jul23`: Default, supports LP warmstart, numerically stable
+- `foragebased_jul23`: Default, supports LP warmstart, has NLP/LP switching
 - `foragebased_aug18`: Legacy realization, use only if reproducing old results
 
 ---

@@ -36,7 +36,7 @@
 ---
 
 > ⚙️ **Default Realization**: `cellpool_jan23`
-> Confirmed in `config/default.cfg`: `cfg$gms$som <- "cellpool_jan23"`. Alternatives: `cellpool_aug16` (earlier cell-level pooling), `static_jan19` (static SOC without dynamics).
+> Confirmed in `config/default.cfg`: `cfg$gms$som <- "cellpool_jan23"`. Alternative: `static_jan19` (static SOC without dynamics). Note: `cellpool_aug16` directory exists but has been removed from the model (no code files, not listed in `module.gms`).
 
 
 ### 1. Core Purpose
