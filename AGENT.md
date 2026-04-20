@@ -312,6 +312,14 @@ Before answering code-specific questions, verify documentation is current:
 
 12. **Never generalize GAMS set member labels.** Use exact set element names from code: `livst_rum` not "beef", `total_wood_products` not "all products", `begr` not "grassy bioenergy". Generalized labels sound natural but can't be traced back to code, and may conflate distinct set elements.
 
+13. **When documenting a new interface parameter, GREP ALL CONSUMERS across the codebase before writing.** R20 (2026-04-20) found that documenting only the one consumer mentioned in a commit message misses other consumers that already existed or were added in the same PR. Before writing: `grep -rn "<new_parameter_name>" ../modules/ ../core/ --include="*.gms"` and enumerate EVERY consumer. Example failure: when `pm_carbon_density_*_ac_uncalib` was introduced, the doc listed only M29 tree cover; M32 afforestation and NDC (at `presolve.gms:59,61,68`) were also consumers — producing a Major bug in validation.
+
+14. **For deprecated variable names in historical context, use `*italics*` (NOT backticks).** The GAMS variable checker matches backtick-wrapped names against current GAMS code. Sentences like "renamed from `old_name`" flag forever as missing. Convention: `*old_name*` for the deprecated name, `` `new_name` `` for the current one. Example: `formerly *pm_timber_yield*, now `im_growing_stock``.
+
+15. **After any global rename, grep EVERY affected doc for the old name.** R20 post-sync had 10 stale backtick references because the first-pass doc update only touched the "primary" sections. When renaming in AGENT docs: `grep -rn "<old_name>" modules/module_*.md` and update ALL occurrences before committing. Then run `scripts/check_gams_variables.sh` to confirm zero stale references.
+
+16. **For file:line citations, use FULL relative paths.** The citation checker resolves bare filenames by "first match within module number" — if a module has both `simple_apr24/preloop.gms` and `detail_apr24/preloop.gms`, the first is picked even if you meant the second. Always cite as `modules/XX_name/realization_dir/file.gms:NN`. Also: draft line numbers from the FINAL merged code (post `git pull`), not from diff output during triage — R20 had 13 line-drift bugs from this pattern.
+
 **Validation tracking**: See `feedback/validation_rounds.json` for the full audit history (scores, bugs, root causes). Future agents should append new rounds to this file.
 
 ### Step 2: Cite Your Sources

@@ -87,6 +87,36 @@ If documentation updates are needed:
    - Interface variables (if changed)
    - Add a note about the update with commit reference
 
+**🔑 Three rules learned from R20 (2026-04-20) semantic validation:**
+
+**Rule 1 — GREP ALL CONSUMERS for new interface parameters.**
+When a commit introduces a new `im_`, `pm_`, `fm_`, or `sm_` parameter (or a new `_uncalib` variant, etc.), the driving commit usually documents ONE consumer. Other modules may already consume it or will in the same PR. Before writing the doc, grep the entire codebase:
+```bash
+grep -rn "<new_parameter_name>" ../modules/ ../core/ --include="*.gms"
+```
+Enumerate EVERY consumer in the doc. R20-Q1-B1 (Major bug) was caused by documenting only M29 as a consumer of `pm_carbon_density_*_ac_uncalib` when M32 also used them for afforestation and NDC.
+
+**Rule 2 — GREP FOR OLD NAMES after any rename.**
+When a variable/scalar/parameter is renamed (e.g., `pm_timber_yield` → `im_growing_stock`), the old name persists in many doc sections that aren't being directly edited — interface tables, modification checklists, testing sections, cross-module references. After updating the "primary" section, grep every affected doc file for the old name:
+```bash
+grep -rn "<old_name>" modules/module_*.md
+```
+Update ALL occurrences, then verify with `scripts/check_gams_variables.sh`. R20 post-pull had 10 stale references across 5 files because the first-pass doc update missed them.
+
+**Rule 3 — USE ITALICS (not backticks) for deprecated names in historical context.**
+The GAMS variable checker matches backtick-wrapped names. When writing "formerly named X" or "previously called X" sentences for deprecated parameters, wrap the deprecated name in `*italics*` rather than `` `backticks` `` so the checker only flags genuinely-orphaned current-tense references. Example:
+- ❌ Renamed from `pm_timber_yield` (flags forever since the name no longer exists in GAMS)
+- ✅ Renamed from *pm_timber_yield* (clear historical reference, not flagged)
+
+**Rule 4 — CITE LINES FROM THE FINAL MERGED CODE, not intermediate diffs.**
+Line numbers in citations should come from reading `origin/develop` (or whatever the sync target is) AFTER the pull, not from reading diff output during triage. R20 had 13 line-drift bugs because citations were drafted against diff output. Workflow:
+1. Finish all code merging first (pull/fast-forward complete)
+2. THEN read the final files to extract citations
+3. Run `scripts/check_gams_citations.sh` before committing — it compares doc citations against actual file line counts
+
+**Rule 5 — USE FULL RELATIVE PATHS in file:line citations to avoid ambiguity.**
+The citation checker resolves bare filenames by "first match within module number" — if a module has both `simple_apr24/preloop.gms` and `detail_apr24/preloop.gms`, the first is picked even when you meant the second. Always write citations as `modules/XX_name/realization_dir/file.gms:NN`, not just `file.gms:NN` or `realization_dir/file.gms:NN`.
+
 ### Step 5b: Verify Default Realizations
 
 If any commit changed `config/default.cfg` (realization assignments), run Check 18:
