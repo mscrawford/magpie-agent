@@ -2,11 +2,11 @@
   "_comment": "Tracks synchronization between MAgPIE codebase and agent documentation",
   "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
   "sync_status": {
-    "last_sync_date": "2026-03-06",
-    "last_sync_commit": "ce6e1a89a",
-    "last_sync_commit_date": "2026-02-24",
-    "last_sync_commit_message": "Merge pull request #858 from bodirsky/magpie_calib_expansion",
-    "synced_by": "AI agent",
+    "last_sync_date": "2026-04-20",
+    "last_sync_commit": "451d1fbad",
+    "last_sync_commit_date": "2026-04-02",
+    "last_sync_commit_message": "Merge pull request #874 from mishkos/f_calibration",
+    "synced_by": "AI agent (Claude, Opus 4.7)",
     "magpie_branch": "develop"
   },
   "pending_review": {
@@ -14,6 +14,126 @@
     "commits": []
   },
   "recent_syncs": [
+    {
+      "date": "2026-04-20",
+      "commit_range": "ce6e1a89a..451d1fbad",
+      "summary": "Large sync — 49 commits across 30 modules. Major theme: forestry/timber/carbon overhaul (PR #869 ipopt_part1, PR #872 bef-bcef-option2). Updated module_14, module_32, module_35, module_52, module_73 docs + module_29_notes. Scaling.gms refactor across 30+ modules deemed no doc update needed (solver scaling only).",
+      "changes_reviewed": [
+        {
+          "commit": "75d7ee167",
+          "date": "2026-03-16",
+          "description": "PR #869 (ipopt_part1): Forestry module overhaul — BEF/BCEF fix, IPCC wood density, stacking factor, growing stock calibration",
+          "modules_affected": ["13_tc", "14_yields", "21_trade", "29_cropland", "32_forestry", "35_natveg", "52_carbon", "73_timber"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "Largest single commit in sync. Renamed pm_timber_yield → im_growing_stock (flux → stock). Renamed p32_yield_forestry_future → i32_growing_stock_at_harvest. Promoted s14_carbon_fraction → sm_carbon_fraction (superset). Renamed f14_ipcc_bce (2D) → fm_ipcc_bef (1D, interface). Renamed f14_aboveground_fraction → fm_aboveground_fraction (interface). Added Module 52 growing-stock calibration (preloop.gms, 118 new lines) with FRA 2025 targets, iter52 set, s52_growingstock_calib switch (default on). Added uncalib variants (pm_carbon_density_*_ac_uncalib) for afforestation/tree-cover. Added pm_land_plantation interface (M32 → M52). Added im_vol_conv (M52 → M73). im_timber_prod_cost now (i, kforestry). Added s32_est_cost_plant_reest replanting discount."
+        },
+        {
+          "commit": "a0d5767ef",
+          "date": "2026-03-25",
+          "description": "PR #872 (fix/bef-bcef-option2): refinement on top of PR #869",
+          "modules_affected": ["14_yields", "29_cropland", "32_forestry", "35_natveg", "52_carbon", "73_timber"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "Overlaps with PR #869 — both mutate the same modules. Net diff captured in the end-state on origin/develop."
+        },
+        {
+          "commit": "b42f30dd5",
+          "date": "2026-03-17",
+          "description": "Rewrite residue equation for clarity and consistency",
+          "modules_affected": ["73_timber"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "q73_prod_residues now includes both plantation + natveg + both wood+woodfuel as sources; excludes slack variable. Updated citation to Thiffault 2015 + Oswalt 2019 + Di Fulvio 2016."
+        },
+        {
+          "commit": "7ec6d8104",
+          "date": "2026-03-24",
+          "description": "residues share documentation",
+          "modules_affected": ["73_timber"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Comment-only improvements in M73 equations.gms — captured in the PR #869 sync update."
+        },
+        {
+          "commit": "e3004a303",
+          "date": "2026-03-21",
+          "description": "documentation of costs",
+          "modules_affected": ["73_timber"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Config/default.cfg and input.gms comment updates only. Captured in doc sync (comments improved explanation of new scalars)."
+        },
+        {
+          "commit": "e22fe52db",
+          "date": "2026-03-21",
+          "description": "revert s21_min_trade_margin_forestry",
+          "modules_affected": ["21_trade"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Pre-existing parameter value restored in config/default.cfg. No semantic change; module_21 doc already describes the parameter."
+        },
+        {
+          "commit": "322b9a052",
+          "date": "2026-03-23",
+          "description": "fix indentation issues",
+          "modules_affected": ["14_yields", "32_forestry", "52_carbon"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Whitespace only."
+        },
+        {
+          "commit": "16fb719e4",
+          "date": "2026-03-12",
+          "description": "automatic update of realization files",
+          "modules_affected": ["13_tc", "14_yields", "16_demand", "17_production", "29_cropland", "30_croparea", "52_carbon", "55_awms", "58_peatland", "62_material", "71_disagg_lvst"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Auto-generated description header updates in realization.gms files (single-line additions). No semantic change."
+        },
+        {
+          "commit": "da316ed4a",
+          "date": "2026-03-12",
+          "description": "changelog entries — systematic scaling.gms refactor",
+          "modules_affected": ["10_land", "11_costs", "13_tc", "14_yields", "15_food", "16_demand", "17_production", "18_residues", "20_processing", "21_trade", "29_cropland", "30_croparea", "32_forestry", "34_urban", "35_natveg", "38_factor_costs", "39_landconversion", "41_area_equipped_for_irrigation", "42_water_demand", "43_water_availability", "50_nr_soil_budget", "52_carbon", "55_awms", "56_ghg_policy", "57_maccs", "58_peatland", "59_som", "60_bioenergy", "62_material", "70_livestock", "71_disagg_lvst", "73_timber"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "Solver scaling directives (`.scale(...)`) across 30+ modules. Affects solver convergence, not equations/variables/parameters. M52 and M14 gained new scaling.gms files (captured in PR #869 sync). No doc impact for the rest."
+        },
+        {
+          "commit": "451d1fbad",
+          "date": "2026-04-02",
+          "description": "PR #874 (f_calibration): Updated calibration factors for land conversion costs",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "R-script calibration expansion only (CHANGELOG + config/default.cfg bump). No GAMS module impact."
+        },
+        {
+          "commit": "7440d1f5b",
+          "date": "2026-03-19",
+          "description": "PR #870: feature/eur-output-scripts (aggregated region mapping)",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "R reporting scripts only (scripts/output/extra/rds_report_aggr_region.R). No GAMS impact."
+        },
+        {
+          "commit": "ffe27502a",
+          "date": "2026-03-20",
+          "description": "PR #867 (f_btc2): Output script for 'Bending the Curve 2' project land use reporting",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "R reporting script only (scripts/output/projects/BtC2_reportDisaggLandUse.R). No GAMS impact."
+        }
+      ],
+      "validation_results": {
+        "check_18_default_realizations": "pass (46 modules, all default labels match config/default.cfg)",
+        "syntactic_validator": "17/18 checks pass; Check 14 (GAMS variable names) flags 27 mismatches — ALL EXPECTED: new variables exist on origin/develop (im_growing_stock, im_vol_conv, fm_ipcc_bef, fm_aboveground_fraction, pm_carbon_density_secdforest_ac_uncalib, pm_carbon_density_plantation_ac_uncalib, i32_growing_stock_at_harvest, s52_growingstock_calib, s73_natveg_cost_premium, s73_woodfuel_stacking_factor, s32_est_cost_plant_reest, s73_residue_removal_cost, s14_minimum_growing_stock, i52_bef_avg, i52_m_avg_natveg, i52_m_avg_plant, f52_fra_nrf_gs, f52_fra_pla_gs, f52_volumetric_conversion, i73_timber_prod_cost_natveg) but not in the user's local working tree (still at ce6e1a89a). Validator will pass once the user runs `git pull origin develop`.",
+        "cross_check": "docs match origin/develop state; local working tree is 49 commits behind docs until user pulls"
+      }
+    },
     {
       "date": "2026-03-06",
       "commit_range": "ba821a980..ce6e1a89a",
@@ -170,26 +290,50 @@
     "potentially_stale": [],
     "recently_updated": [
       {
+        "module": "14_yields",
+        "update_date": "2026-04-20",
+        "reason": "PR #869: pm_timber_yield → im_growing_stock (flux → stock semantic); fm_ipcc_bef / fm_aboveground_fraction / sm_carbon_fraction promoted to interface/superset; s14_minimum_growing_stock replaces s14_minimum_wood_yield.",
+        "commit": "75d7ee167"
+      },
+      {
+        "module": "29_cropland",
+        "update_date": "2026-04-20",
+        "reason": "PR #869: Tree-cover on cropland now reads pm_carbon_density_*_ac_uncalib (new uncalibrated variants from M52). Documented in module_29_notes.md.",
+        "commit": "75d7ee167"
+      },
+      {
+        "module": "32_forestry",
+        "update_date": "2026-04-20",
+        "reason": "PR #869: p32_yield_forestry_future → i32_growing_stock_at_harvest; s32_est_cost_plant_reest replanting discount; im_timber_prod_cost now (i, kforestry); pm_land_plantation new interface parameter to M52.",
+        "commit": "75d7ee167"
+      },
+      {
+        "module": "35_natveg",
+        "update_date": "2026-04-20",
+        "reason": "PR #869: All three production equations (q35_prod_secdforest, q35_prod_primforest, q35_prod_other) use im_growing_stock instead of pm_timber_yield. Corrected upstream dependency attribution (was mis-attributed to M73; now correctly attributed to M14).",
+        "commit": "75d7ee167"
+      },
+      {
+        "module": "52_carbon",
+        "update_date": "2026-04-20",
+        "reason": "PR #869: Major addition — 118-line preloop.gms for Chapman-Richards k calibration to FRA 2025 growing-stock targets via bisection. New FRA target input files. New interface im_vol_conv (consumed by M73). New uncalib variants preserved for afforestation. New reads from M28, M32, M14 (sm_carbon_fraction, fm_ipcc_bef, fm_aboveground_fraction).",
+        "commit": "75d7ee167"
+      },
+      {
+        "module": "73_timber",
+        "update_date": "2026-04-20",
+        "reason": "PR #869 + PR #872: Cost equation rewritten (4 terms now — base, natveg premium, residue, slack). im_timber_prod_cost now (i, kforestry) using im_vol_conv from M52. Scalar units changed (USD17MER/tDM → USD17MER/m3 at source, 148→89, 74→44). New scalars s73_natveg_cost_premium (0.15), s73_woodfuel_stacking_factor (0.65). Renamed s73_reisdue_removal_cost → s73_residue_removal_cost (typo fix, 2.5→2.7). Residue equation rewritten (includes plantation + natveg + both products). Removed f73_volumetric_conversion.csv (moved to M52's f52_volumetric_conversion).",
+        "commit": "75d7ee167"
+      },
+      {
         "module": "13_tc",
         "update_date": "2026-01-20",
         "reason": "f_btc2 conservation tau feature - new equations, cluster-level vm_tau",
         "commit": "480e300b1"
-      },
-      {
-        "module": "14_yields",
-        "update_date": "2026-01-20",
-        "reason": "f_btc2 - vm_tau now at cluster level (j) instead of super-region (h)",
-        "commit": "480e300b1"
-      },
-      {
-        "module": "32_forestry",
-        "update_date": "2025-11-29",
-        "reason": "Synced equation fix from commit 9ccd6290d",
-        "commit": "9ccd6290d"
       }
     ],
     "verified_current": "all_46_modules",
-    "last_full_audit": "2026-01-20"
+    "last_full_audit": "2026-04-20"
   },
   "sync_workflow": {
     "description": "How to keep documentation in sync with MAgPIE code",

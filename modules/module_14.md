@@ -388,30 +388,36 @@ Where:
 
 ---
 
-## 4. Timber Yield Calculation (Presolve Phase)
+## 4. Harvestable Growing Stock Calculation (Presolve Phase)
 
 **File:** `presolve.gms:10-66`
 
-Module 14 also calculates timber yields (harvestable wood biomass) for forestry and natural vegetation by converting carbon density to dry matter biomass.
+> **🔄 Updated 2026-04-20 (sync from MAgPIE PR #869 "ipopt_part1", commit `75d7ee167`):**
+> The former `pm_timber_yield` (flux, tDM/ha/yr) was renamed to **`im_growing_stock`** (stock, tDM/ha) — a per-age-class stem biomass state variable. Consumers (M32, M35) accordingly divide by `m_timestep_length_forestry` in their production equations to derive a per-year flux.
+> The former `f14_ipcc_bce(clcl,forest_type)` (a 2-D table with separate values for plantations vs natveg) was replaced by a 1-D interface parameter **`fm_ipcc_bef(clcl)`** — the IPCC Biomass Expansion Factor, applied identically to all land_timber types.
+> `s14_carbon_fraction` was promoted to a superset scalar **`sm_carbon_fraction`** (now accessible to Module 52's growing-stock calibration).
+> `f14_aboveground_fraction` was renamed to **`fm_aboveground_fraction`** (interface).
+
+Module 14 calculates harvestable growing stock (stem biomass by age class) for forestry and natural vegetation by converting carbon density to dry matter stem biomass.
 
 ### 4.1 Conversion Formula
 
 **Mathematical Structure:**
 
 ```
-TimberYield [tDM/ha] = CarbonDensity [tC/ha] / CarbonFraction × AbovegroundFraction / BCE
+GrowingStock [tDM/ha] = CarbonDensity [tC/ha] / CarbonFraction × AbovegroundFraction / BEF
 ```
 
 Where:
-- **CarbonDensity:** Vegetation carbon from Module 52 (tC/ha)
-- **CarbonFraction:** 0.5 tC/tDM (`s14_carbon_fraction`, `input.gms:22`)
-- **AbovegroundFraction:** Root-to-shoot ratio, varies by forest type (0.75-0.8, `f14_aboveground_fraction.csv`)
-- **BCE:** IPCC Biomass Conversion and Expansion factor (1.4-1.6, `f14_ipcc_bce.cs3`)
+- **CarbonDensity:** Vegetation carbon from Module 52 (tC/ha) — post-calibration for secdforest/plantation when `s52_growingstock_calib = 1`
+- **CarbonFraction:** 0.5 tC/tDM (`sm_carbon_fraction`, `input.gms:22` — superset scalar)
+- **AbovegroundFraction:** Stem+branch fraction of total biomass, varies by land_timber type (`fm_aboveground_fraction`, interface parameter)
+- **BEF:** IPCC Biomass Expansion Factor (always > 1, converts aboveground biomass → stem-only biomass, `fm_ipcc_bef(clcl)`, 1-D by climate class)
 
 **Rationale:**
 - Divide by 0.5: Convert carbon to total dry matter (carbon = 50% of biomass)
-- Multiply by aboveground fraction: Only harvest stems/branches, not roots
-- Divide by BCE: BCE converts merchantable volume to total aboveground biomass; inverse converts total biomass to merchantable stem wood
+- Multiply by aboveground fraction: Only harvest aboveground biomass, not roots
+- **Divide by BEF:** BEF is AGB/stem_biomass (always > 1); dividing by BEF isolates stem-only biomass from total aboveground biomass
 
 ### 4.2 Implementation for Each Forest Type
 
@@ -420,78 +426,78 @@ Where:
 **File:** `presolve.gms:24-31`
 
 ```gams
-pm_timber_yield(t,j,ac,"forestry") =
+im_growing_stock(t,j,ac,"forestry") =
     (
      pm_carbon_density_plantation_ac(t,j,ac,"vegc")
-     / s14_carbon_fraction
-     * f14_aboveground_fraction("forestry")
-     / sum(clcl, pm_climate_class(j,clcl) * f14_ipcc_bce(clcl,"plantations"))
+     / sm_carbon_fraction
+     * fm_aboveground_fraction("forestry")
+     / sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))
     );
 ```
 
-**Source:** `pm_carbon_density_plantation_ac` from Module 52 (carbon)
+**Source:** `pm_carbon_density_plantation_ac` from Module 52 (calibrated to FRA 2025 plantation GS when `s52_growingstock_calib = 1`)
 
 #### Primary Forest
 
 **File:** `presolve.gms:33-40`
 
 ```gams
-pm_timber_yield(t,j,ac,"primforest") =
+im_growing_stock(t,j,ac,"primforest") =
     (
      fm_carbon_density(t,j,"primforest","vegc")
-     / s14_carbon_fraction
-     * f14_aboveground_fraction("primforest")
-     / sum(clcl, pm_climate_class(j,clcl) * f14_ipcc_bce(clcl,"natveg"))
+     / sm_carbon_fraction
+     * fm_aboveground_fraction("primforest")
+     / sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))
     );
 ```
 
-**Source:** `fm_carbon_density` for primary forest (fixed input)
+**Source:** `fm_carbon_density` for primary forest (fixed input, LPJmL potential vegetation)
 
 #### Secondary Forest
 
 **File:** `presolve.gms:42-49`
 
 ```gams
-pm_timber_yield(t,j,ac,"secdforest") =
+im_growing_stock(t,j,ac,"secdforest") =
     (
      pm_carbon_density_secdforest_ac(t,j,ac,"vegc")
-     / s14_carbon_fraction
-     * f14_aboveground_fraction("secdforest")
-     / sum(clcl, pm_climate_class(j,clcl) * f14_ipcc_bce(clcl,"natveg"))
+     / sm_carbon_fraction
+     * fm_aboveground_fraction("secdforest")
+     / sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))
     );
 ```
 
-**Source:** `pm_carbon_density_secdforest_ac` from Module 35 (natural vegetation)
+**Source:** `pm_carbon_density_secdforest_ac` from Module 52 (calibrated to FRA 2025 NRF GS when `s52_growingstock_calib = 1`)
 
 #### Other Natural Land
 
 **File:** `presolve.gms:51-58`
 
 ```gams
-pm_timber_yield(t,j,ac,"other") =
+im_growing_stock(t,j,ac,"other") =
     (
      pm_carbon_density_other_ac(t,j,ac,"vegc")
-     / s14_carbon_fraction
-     * f14_aboveground_fraction("other")
-     / sum(clcl, pm_climate_class(j,clcl) * f14_ipcc_bce(clcl,"natveg"))
+     / sm_carbon_fraction
+     * fm_aboveground_fraction("other")
+     / sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))
     );
 ```
 
-**Source:** `pm_carbon_density_other_ac` from Module 35 (other natural land)
+**Source:** `pm_carbon_density_other_ac` from Module 52 (uncalibrated; no FRA target for "other" land)
 
-### 4.3 Constraints on Timber Yields
+### 4.3 Constraints on Growing Stock
 
 **File:** `presolve.gms:62-65`
 
 ```gams
-pm_timber_yield(t,j,ac,land_timber) = pm_timber_yield(t,j,ac,land_timber)$(pm_timber_yield(t,j,ac,land_timber) > 0) + 0.0001$(pm_timber_yield(t,j,ac,land_timber) = 0);
-pm_timber_yield(t,j,ac,land_natveg)$(pm_timber_yield(t,j,ac,land_natveg) < s14_minimum_wood_yield) = 0;
+im_growing_stock(t,j,ac,land_timber) = im_growing_stock(t,j,ac,land_timber)$(im_growing_stock(t,j,ac,land_timber) > 0) + 0.0001$(im_growing_stock(t,j,ac,land_timber) = 0);
+im_growing_stock(t,j,ac,land_natveg)$(im_growing_stock(t,j,ac,land_natveg) < s14_minimum_growing_stock) = 0;
 ```
 
 **What These Do:**
 
-1. **Positive constraint:** Ensure all timber yields ≥ 0.0001 tDM/ha (prevents division by zero in harvest calculations)
-2. **Minimum harvest threshold:** Natural vegetation yields < 10 tDM/ha are set to 0 (too sparse to economically harvest, `s14_minimum_wood_yield`, `input.gms:19`)
+1. **Positive constraint:** Ensure all growing stock values ≥ 0.0001 tDM/ha (prevents division by zero in harvest calculations)
+2. **Minimum harvest threshold:** Natural vegetation growing stock < 5 tDM/ha (~10 m³/ha, very sparse woodland) is set to 0 — too sparse for commercial timber harvest (`s14_minimum_growing_stock = 5`, `input.gms:19`). Renamed from `s14_minimum_wood_yield` (was 10 tDM/ha/yr).
 
 **Citation:** `presolve.gms:62-65`
 
@@ -616,18 +622,20 @@ Module 14 reads 9 input data files:
 **Citation:** `@fao_aquastat_2016` in `module.gms:21`
 **Dimensions:** i (regions)
 
-### 6.5 IPCC Biomass Conversion Factors
+### 6.5 IPCC Biomass Expansion Factor (BEF)
 
-**File:** `f14_ipcc_bce.cs3` (read at `input.gms:75`)
-**Contents:** Climate-zone-specific Biomass Conversion and Expansion factors
-**Purpose:** Convert total biomass to merchantable stem wood for timber yield calculation
-**Dimensions:** clcl × forest_type (climate classes, forest types)
+**File:** `f14_ipcc_bef.cs3` (read at `input.gms:66`)
+**Parameter:** `fm_ipcc_bef(clcl)` — **interface parameter** (prefix `fm_`)
+**Contents:** Climate-zone-specific Biomass Expansion Factor (AGB/stem_biomass, always > 1)
+**Purpose:** Convert aboveground biomass to stem-only biomass in growing-stock calculation and in Module 52's growing-stock calibration
+**Dimensions:** clcl (climate class) — **1-D** (the former 2-D `f14_ipcc_bce(clcl, forest_type)` with separate plantation/natveg values was collapsed to a single BEF applied uniformly across land_timber types)
 
-### 6.6 Root-to-Shoot Ratios
+### 6.6 Aboveground Fraction
 
-**File:** `f14_aboveground_fraction.csv` (read at `input.gms:82`)
-**Contents:** Fraction of biomass that is aboveground (stems/branches vs. roots)
-**Purpose:** Timber calculation (only harvest aboveground biomass)
+**File:** `f14_aboveground_fraction.csv` (read at `input.gms:74`)
+**Parameter:** `fm_aboveground_fraction(land_timber)` — **interface parameter** (prefix `fm_`)
+**Contents:** Fraction of total biomass that is aboveground (stems/branches vs. roots)
+**Purpose:** Growing-stock calculation (only aboveground biomass is harvestable) and Module 52's growing-stock calibration
 **Dimensions:** land_timber (forestry, primforest, secdforest, other)
 
 ### 6.7 NCP Degradation Indicators
@@ -672,13 +680,22 @@ Module 14 reads 9 input data files:
 
 **Secondary Output:**
 
-**pm_timber_yield(t,j,ac,land_timber)** - Growing stock / harvestable wood biomass (tDM/ha/yr)
+**im_growing_stock(t,j,ac,land_timber)** - Harvestable stem biomass per ha by age class (tDM/ha)
 **Provided to:**
-- Module 32 (Forestry): Plantation harvest calculations
-- Module 35 (Natural Vegetation): Natural forest harvest calculations
+- Module 32 (Forestry): Plantation harvest calculations (`q32_prod_forestry`, `i32_growing_stock_at_harvest`, `pc32_prod_forestry_ini`)
+- Module 35 (Natural Vegetation): Natural forest harvest calculations (`q35_prod_secdforest`, `q35_prod_primforest`, `q35_prod_other`)
+
+**Units caveat:** This is a **stock** (tDM/ha), NOT a flux. Consumers divide by `m_timestep_length_forestry` to derive per-year production.
 
 **Dimensions:** t (time), j (cells), ac (age classes), land_timber (forestry, primforest, secdforest, other)
 **Citation:** `declarations.gms:17`
+
+**Renamed 2026-04-20** (PR #869, commit `75d7ee167`): formerly `pm_timber_yield(t,j,ac,land_timber)` with units "tDM per ha per yr". The rename aligns the variable name with its actual semantic (stem biomass stock, not annual flux).
+
+**Additional new interface parameters (see Section 6.5-6.6):**
+- `fm_ipcc_bef(clcl)` — IPCC Biomass Expansion Factor (also used by M52 preloop)
+- `fm_aboveground_fraction(land_timber)` — aboveground biomass fraction (also used by M52 preloop)
+- `sm_carbon_fraction` — carbon fraction of dry matter (0.5 tC/tDM, promoted from module-local `s14_carbon_fraction` to superset)
 
 ---
 

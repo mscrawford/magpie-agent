@@ -53,11 +53,17 @@
 - **Growth curve**: Fast-growing plantation species (e.g., pine, eucalyptus)
 - **Carbon density**: Uses `pm_carbon_density_plantation_ac` (`presolve.gms:59`)
 
-**Rotation length calculation** (`presolve.gms:174-175`):
+**Expected growing stock at harvest** (`presolve.gms:180-181`):
 ```gams
-p32_yield_forestry_future(t,j) = sum(ac$(ac.off = p32_rotation_cellular_estb(t,j)),
-                                     pm_timber_yield(t,j,ac,"forestry"));
+i32_growing_stock_at_harvest(t,j) = sum(ac$(ac.off = p32_rotation_cellular_estb(t,j)),
+                                        im_growing_stock(t,j,ac,"forestry"));
 ```
+
+> **🔄 Renamed 2026-04-20 (PR #869, commit `75d7ee167`):**
+> Old: `p32_yield_forestry_future(t,j)` using `pm_timber_yield` (tDM/ha/yr, flux).
+> New: `i32_growing_stock_at_harvest(t,j)` using `im_growing_stock` (tDM/ha, stock).
+> Semantic: was "yield at rotation age"; now "growing stock at rotation age."
+> Consumers divide by `m_timestep_length_forestry` to recover an annual flux.
 
 **Default costs** (`input.gms:23-26`):
 - Establishment: $2,460/ha
@@ -276,16 +282,16 @@ q32_land_reduction_forestry(j2,type32) ..
 
 #### 4.3 Establishment Decision
 
-**q32_prod_forestry_future** (`equations.gms:188-192`):
+**q32_prod_forestry_future** (`equations.gms:197-201`):
 ```gams
 q32_prod_forestry_future(i2) ..
               v32_prod_forestry_future(i2)
               =e=
               sum(cell(i2,j2), (sum(ac_est, v32_land(j2,"plant",ac_est)) + v32_land_missing(j2))
-                  * sum(ct, p32_yield_forestry_future(ct,j2))) / m_timestep_length_forestry;
+                  * sum(ct, i32_growing_stock_at_harvest(ct,j2))) / m_timestep_length_forestry;
 ```
 
-**Translation**: Expected future production = newly established area × expected yield at rotation age
+**Translation**: Expected future production = newly established area × expected growing stock at rotation age, divided by timestep length to annualize.
 
 **q32_establishment_demand** (`equations.gms:196-200`):
 ```gams
@@ -333,16 +339,16 @@ q32_establishment_fixed(j2)$s32_establishment_static ..
 
 #### 4.4 Timber Production
 
-**q32_prod_forestry** (`equations.gms:237-240`):
+**q32_prod_forestry** (`equations.gms:246-249`):
 ```gams
 q32_prod_forestry(j2)..
                          sum(kforestry, vm_prod_forestry(j2,kforestry))
                          =e=
-                         sum(ac_sub, v32_hvarea_forestry(j2,ac_sub) * sum(ct, pm_timber_yield(ct,j2,ac_sub,"forestry")))
+                         sum(ac_sub, v32_hvarea_forestry(j2,ac_sub) * sum(ct, im_growing_stock(ct,j2,ac_sub,"forestry")))
                              / m_timestep_length_forestry;
 ```
 
-**Translation**: Production = harvested area × yield / timestep length
+**Translation**: Production = harvested area × growing stock / timestep length. (Previously used `pm_timber_yield` (tDM/ha/yr); renamed to `im_growing_stock` (tDM/ha) on 2026-04-20.)
 
 **q32_hvarea_forestry** (`equations.gms:228-231`):
 ```gams
@@ -471,27 +477,32 @@ q32_bv_plant(j2,potnatveg) .. vm_bv(j2,"plant",potnatveg)
 
 ### 5. Cost Structure
 
-**VERIFIED**: Three cost types managed across plantation lifecycle (`equations.gms:14-20`).
+**VERIFIED** (2026-04-20): Three cost types managed across plantation lifecycle (`equations.gms:14-20`). As of 2026-04-20, establishment cost has a **replanting discount** term (see below).
 
 #### 5.1 Establishment Costs
 
-**q32_cost_establishment** (`equations.gms:158-164`):
+**q32_cost_establishment** (`equations.gms:157-172`):
 ```gams
 q32_cost_establishment(i2)..
   v32_cost_establishment(i2)
   =e=
-   (sum((cell(i2,j2),type32,ac_est), v32_land(j2,type32,ac_est) * p32_est_cost(type32)))
-     * sum(ct,pm_interest(ct,i2)/(1+pm_interest(ct,i2)))
+   (sum((cell(i2,j2),type32,ac_est), v32_land(j2,type32,ac_est) * p32_est_cost(type32))
+    - sum(cell(i2,j2), v32_land_replant(j2)) * (p32_est_cost("plant") - s32_est_cost_plant_reest)
+   ) * sum(ct,pm_interest(ct,i2)/(1+pm_interest(ct,i2)))
    + sum((ct,kforestry), v32_prod_forestry_future(i2) * p32_forestry_product_dist(ct,i2,kforestry)
-         * im_timber_prod_cost(kforestry))
+         * im_timber_prod_cost(i2,kforestry))
      / ((1+sum(ct,pm_interest(ct,i2)))**sum(ct, p32_rotation_regional(ct,i2)*5));
 ```
 
-**Note**: The discounting formula `(1+interest)**years` correctly applies compound discounting. Fixed in commit 9ccd6290d (2025-11-28).
+**Notes**:
+- The discounting formula `(1+interest)**years` correctly applies compound discounting. Fixed in commit `9ccd6290d` (2025-11-28).
+- **2026-04-20 change**: `im_timber_prod_cost` is now region-dimensioned `(i2, kforestry)` instead of `(kforestry)`.
+- **2026-04-20 change**: New replanting discount term `- v32_land_replant × (p32_est_cost("plant") − s32_est_cost_plant_reest)`. The replanted plantation area receives a reduced establishment cost of 1230 USD17MER/ha (50% of full 2460 USD17MER/ha) — no land clearing, existing roads, known site productivity. `s32_est_cost_plant_reest` = 1230 (`input.gms:23`).
 
 **Components**:
-1. **Upfront establishment**: Area × establishment cost × annuity factor
-2. **Present value of future harvesting costs**: Discounted to account for costs at rotation age
+1. **Upfront establishment for all plantation types**: Area × establishment cost × annuity factor
+2. **Replanting discount** (subtracted): Reduces the establishment cost for `v32_land_replant(j)` (replanted area) by the difference between full and discounted cost.
+3. **Present value of future harvesting costs**: Discounted to account for costs at rotation age, using region-specific `im_timber_prod_cost(i, kforestry)`.
 
 **Annuity factor**: `interest/(1+interest)` spreads investment over time
 
@@ -698,8 +709,8 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 | **44_biodiversity** | fm_bii_coeff | BII coefficients by age class | equations.gms:131, 136, 141 |
 | **52_carbon** | pm_carbon_density_* | Carbon densities for plantations and regrowth | presolve.gms:53-62 |
 | **73_timber** | pm_demand_forestry | Timber demand for establishment decision | presolve.gms:193-199 |
-| **73_timber** | pm_timber_yield | Timber yields by age class | equations.gms:240, presolve.gms:175 |
-| **73_timber** | im_timber_prod_cost | Timber production costs | equations.gms:163 |
+| **14_yields** | im_growing_stock | Harvestable stem biomass by age class (tDM/ha) — renamed 2026-04-20 from `pm_timber_yield` | equations.gms:249, presolve.gms:181,185 |
+| **73_timber** | im_timber_prod_cost(i,kforestry) | Regional timber production cost — now region-dimensioned (2026-04-20) | equations.gms:165 |
 
 #### 8.3 Circular Dependencies
 
@@ -933,12 +944,29 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 - **Aggregation**: Area-weighted average of cellular rotations
 - **Use**: Regional establishment decisions, cost discounting
 
-#### 10.4 Yield Projections
+#### 10.4 Growing Stock Projections (renamed 2026-04-20)
 
-**p32_yield_forestry_future(t,j)** - `declarations.gms:24`:
-- **Calculation**: Yield at rotation age (`presolve.gms:175`)
-- **Use**: Establishment cost-benefit analysis
-- **Formula**: `pm_timber_yield(t,j,ac_rotation,"forestry")`
+**i32_growing_stock_at_harvest(t,j)** - `declarations.gms:24`:
+- **Calculation**: Growing stock at rotation age (`presolve.gms:181`)
+- **Use**: Establishment cost-benefit analysis and `q32_prod_forestry_future`
+- **Formula**: `im_growing_stock(t,j,ac_rotation,"forestry")`
+- **Units**: tDM/ha (stock, not flux)
+
+**Renamed 2026-04-20** (PR #869): formerly `p32_yield_forestry_future(t,j)` with units tDM/ha/yr. The new name reflects the variable's actual semantic (biomass stock at harvest).
+
+**Additional new interface parameter (NEW 2026-04-20):**
+
+**pm_land_plantation(j,ac)** - `declarations.gms:59`:
+- **Description**: Plantation land by age class (mio. ha)
+- **Purpose**: Provides age-class-resolved plantation area to Module 52 for growing-stock calibration weighting
+- **Consumer**: Module 52 (`preloop.gms:83`)
+
+**New scalar (NEW 2026-04-20):**
+
+**s32_est_cost_plant_reest** - `input.gms:23`:
+- **Default**: 1230 USD17MER/ha (half of `s32_est_cost_plant` = 2460)
+- **Use**: Replanting cost in `q32_cost_establishment` for `v32_land_replant` area
+- **Rationale**: No land clearing, existing roads, known site productivity (expert estimate)
 
 #### 10.5 Biodiversity Coefficients
 

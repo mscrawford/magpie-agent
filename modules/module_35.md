@@ -439,36 +439,38 @@ v35_hvarea_other(j2,othertype35,ac_sub) =l= v35_other_reduction(j2,othertype35,a
 
 #### 6.6 Timber Production
 
-**q35_prod_secdforest** (`equations.gms:140-143`):
+> **🔄 Updated 2026-04-20 (PR #869):** Formerly `pm_timber_yield` (tDM/ha/yr, flux) → `im_growing_stock` (tDM/ha, stock). Same formula structure; consumers still divide by `m_timestep_length_forestry` to recover an annual flux. `im_growing_stock` is now provided by **Module 14** (was already Module 14's responsibility; just renamed). Under the new default `s52_growingstock_calib = 1`, the underlying `pm_carbon_density_secdforest_ac(vegc)` is calibrated to FRA 2025 NRF growing stock before M14 computes `im_growing_stock`.
+
+**q35_prod_secdforest** (`equations.gms:141-144`):
 ```gams
 sum(kforestry, vm_prod_natveg(j2,"secdforest",kforestry))
 =e=
-sum(ac_sub, v35_hvarea_secdforest(j2,ac_sub) * sum(ct,pm_timber_yield(ct,j2,ac_sub,"secdforest"))) / m_timestep_length_forestry;
+sum(ac_sub, v35_hvarea_secdforest(j2,ac_sub) * sum(ct,im_growing_stock(ct,j2,ac_sub,"secdforest"))) / m_timestep_length_forestry;
 ```
 
-**Purpose**: Production = harvested area × yield / timestep length
+**Purpose**: Production = harvested area × growing stock / timestep length
 
-**q35_prod_primforest** (`equations.gms:149-152`):
+**q35_prod_primforest** (`equations.gms:150-153`):
 ```gams
 sum(kforestry, vm_prod_natveg(j2,"primforest",kforestry))
 =e=
-v35_hvarea_primforest(j2) * sum(ct, pm_timber_yield(ct,j2,"acx","primforest")) / m_timestep_length_forestry;
+v35_hvarea_primforest(j2) * sum(ct, im_growing_stock(ct,j2,"acx","primforest")) / m_timestep_length_forestry;
 ```
 
-**Purpose**: Woody biomass production from primary forest = harvested area × yield at mature age class ("acx") / timestep length. Primary forest always uses the "acx" yield since it is assumed mature.
-**Key variables**: `v35_hvarea_primforest` (harvest area), `pm_timber_yield(t,j,"acx","primforest")` (timber yield for mature primary forest), `m_timestep_length_forestry` (timestep divisor)
+**Purpose**: Woody biomass production from primary forest = harvested area × growing stock at mature age class ("acx") / timestep length. Primary forest always uses the "acx" value since it is assumed mature.
+**Key variables**: `v35_hvarea_primforest` (harvest area), `im_growing_stock(t,j,"acx","primforest")` (stem biomass at mature age class), `m_timestep_length_forestry` (timestep divisor)
 
-**q35_prod_other** (`equations.gms:158-164`):
+**q35_prod_other** (`equations.gms:159-165`):
 ```gams
 sum(kforestry, vm_prod_natveg(j2,"other",kforestry))
 =e=
-(sum(ac_sub, v35_hvarea_other(j2,"othernat",ac_sub) * sum(ct, pm_timber_yield(ct,j2,ac_sub,"other")))
-+ sum(ac_sub, v35_hvarea_other(j2,"youngsecdf",ac_sub) * sum(ct, pm_timber_yield(ct,j2,ac_sub,"secdforest"))))
+(sum(ac_sub, v35_hvarea_other(j2,"othernat",ac_sub) * sum(ct, im_growing_stock(ct,j2,ac_sub,"other")))
++ sum(ac_sub, v35_hvarea_other(j2,"youngsecdf",ac_sub) * sum(ct, im_growing_stock(ct,j2,ac_sub,"secdforest"))))
 / m_timestep_length_forestry;
 ```
 
-**Purpose**: Woody biomass production from other land. `othernat` uses "other" yields while `youngsecdf` uses "secdforest" yields (since young secondary forest has timber characteristics closer to secondary forest). Both are summed and divided by timestep length.
-**Key variables**: `v35_hvarea_other` (harvest area by subtype and age), `pm_timber_yield` (yields differ by subtype: "other" vs "secdforest")
+**Purpose**: Woody biomass production from other land. `othernat` uses "other" growing stock while `youngsecdf` uses "secdforest" growing stock (since young secondary forest has timber characteristics closer to secondary forest). Both are summed and divided by timestep length.
+**Key variables**: `v35_hvarea_other` (harvest area by subtype and age), `im_growing_stock` (values differ by subtype: "other" vs "secdforest")
 
 #### 6.7 Regeneration
 
@@ -824,8 +826,8 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 - `pm_carbon_density_other_ac(t,j,ac,ag_pools)` - Other land carbon density
 - `fm_carbon_density(t,j,land,ag_pools)` - Primary forest carbon density
 
-**From Module 73 (Timber)**:
-- `pm_timber_yield(t,j,ac,land_natveg)` - Timber yields by age class
+**From Module 14 (Yields)** (was previously attributed to Module 73; corrected 2026-04-20):
+- `im_growing_stock(t,j,ac,land_timber)` — Harvestable stem biomass by age class (tDM/ha). Renamed 2026-04-20 from `pm_timber_yield` (tDM/ha/yr); semantic changed from flux to stock.
 
 **From Module 44 (Biodiversity)**:
 - `fm_bii_coeff(bii_class,potnatveg)` - Biodiversity intactness coefficients
