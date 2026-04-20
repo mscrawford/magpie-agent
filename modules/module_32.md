@@ -60,7 +60,7 @@ i32_growing_stock_at_harvest(t,j) = sum(ac$(ac.off = p32_rotation_cellular_estb(
 ```
 
 > **🔄 Renamed 2026-04-20 (PR #869, commit `75d7ee167`):**
-> Old: `p32_yield_forestry_future(t,j)` using `pm_timber_yield` (tDM/ha/yr, flux).
+> Old: *p32_yield_forestry_future(t,j)* using *pm_timber_yield* (tDM/ha/yr, flux).
 > New: `i32_growing_stock_at_harvest(t,j)` using `im_growing_stock` (tDM/ha, stock).
 > Semantic: was "yield at rotation age"; now "growing stock at rotation age."
 > Consumers divide by `m_timestep_length_forestry` to recover an annual flux.
@@ -348,7 +348,7 @@ q32_prod_forestry(j2)..
                              / m_timestep_length_forestry;
 ```
 
-**Translation**: Production = harvested area × growing stock / timestep length. (Previously used `pm_timber_yield` (tDM/ha/yr); renamed to `im_growing_stock` (tDM/ha) on 2026-04-20.)
+**Translation**: Production = harvested area × growing stock / timestep length. (Previously used *pm_timber_yield* (tDM/ha/yr); renamed to `im_growing_stock` (tDM/ha) on 2026-04-20.)
 
 **q32_hvarea_forestry** (`equations.gms:228-231`):
 ```gams
@@ -709,7 +709,7 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 | **44_biodiversity** | fm_bii_coeff | BII coefficients by age class | equations.gms:131, 136, 141 |
 | **52_carbon** | pm_carbon_density_* | Carbon densities for plantations and regrowth | presolve.gms:53-62 |
 | **73_timber** | pm_demand_forestry | Timber demand for establishment decision | presolve.gms:193-199 |
-| **14_yields** | im_growing_stock | Harvestable stem biomass by age class (tDM/ha) — renamed 2026-04-20 from `pm_timber_yield` | equations.gms:249, presolve.gms:181,185 |
+| **14_yields** | im_growing_stock | Harvestable stem biomass by age class (tDM/ha) — renamed 2026-04-20 from *pm_timber_yield* | equations.gms:249, presolve.gms:181,185 |
 | **73_timber** | im_timber_prod_cost(i,kforestry) | Regional timber production cost — now region-dimensioned (2026-04-20) | equations.gms:165 |
 
 #### 8.3 Circular Dependencies
@@ -952,7 +952,7 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 - **Formula**: `im_growing_stock(t,j,ac_rotation,"forestry")`
 - **Units**: tDM/ha (stock, not flux)
 
-**Renamed 2026-04-20** (PR #869): formerly `p32_yield_forestry_future(t,j)` with units tDM/ha/yr. The new name reflects the variable's actual semantic (biomass stock at harvest).
+**Renamed 2026-04-20** (PR #869): formerly *p32_yield_forestry_future(t,j)* with units tDM/ha/yr. The new name reflects the variable's actual semantic (biomass stock at harvest).
 
 **Additional new interface parameter (NEW 2026-04-20):**
 

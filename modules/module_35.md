@@ -439,7 +439,7 @@ v35_hvarea_other(j2,othertype35,ac_sub) =l= v35_other_reduction(j2,othertype35,a
 
 #### 6.6 Timber Production
 
-> **🔄 Updated 2026-04-20 (PR #869):** Formerly `pm_timber_yield` (tDM/ha/yr, flux) → `im_growing_stock` (tDM/ha, stock). Same formula structure; consumers still divide by `m_timestep_length_forestry` to recover an annual flux. `im_growing_stock` is now provided by **Module 14** (was already Module 14's responsibility; just renamed). Under the new default `s52_growingstock_calib = 1`, the underlying `pm_carbon_density_secdforest_ac(vegc)` is calibrated to FRA 2025 NRF growing stock before M14 computes `im_growing_stock`.
+> **🔄 Updated 2026-04-20 (PR #869):** Formerly *pm_timber_yield* (tDM/ha/yr, flux) → `im_growing_stock` (tDM/ha, stock). Same formula structure; consumers still divide by `m_timestep_length_forestry` to recover an annual flux. `im_growing_stock` is now provided by **Module 14** (was already Module 14's responsibility; just renamed). Under the new default `s52_growingstock_calib = 1`, the underlying `pm_carbon_density_secdforest_ac(vegc)` is calibrated to FRA 2025 NRF growing stock before M14 computes `im_growing_stock`.
 
 **q35_prod_secdforest** (`equations.gms:141-144`):
 ```gams
@@ -827,7 +827,7 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 - `fm_carbon_density(t,j,land,ag_pools)` - Primary forest carbon density
 
 **From Module 14 (Yields)** (was previously attributed to Module 73; corrected 2026-04-20):
-- `im_growing_stock(t,j,ac,land_timber)` — Harvestable stem biomass by age class (tDM/ha). Renamed 2026-04-20 from `pm_timber_yield` (tDM/ha/yr); semantic changed from flux to stock.
+- `im_growing_stock(t,j,ac,land_timber)` — Harvestable stem biomass by age class (tDM/ha). Renamed 2026-04-20 from *pm_timber_yield* (tDM/ha/yr); semantic changed from flux to stock.
 
 **From Module 44 (Biodiversity)**:
 - `fm_bii_coeff(bii_class,potnatveg)` - Biodiversity intactness coefficients

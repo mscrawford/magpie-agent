@@ -224,18 +224,18 @@ pm_carbon_density_other_ac(t_all,j,ac,"litc") =
 
 **Method**: Regional bisection over `k ∈ [0.001, 0.3]` (25 iterations, set `iter52 / iter1*iter25 /`). For each trial `k`, compute area-weighted growing stock and compare to FRA target. Shape parameter `m` is held fixed at region-average.
 
-**Step 1 — Regional wood density** (`preloop.gms:22`):
+**Step 1 — Regional wood density** (`preloop.gms:21`):
 ```gams
 im_vol_conv(i) = sum((cell(i,j), clcl), pm_climate_class(j,clcl) * f52_volumetric_conversion(clcl))
                / sum(cell(i,j), 1);
 ```
-This value is **always computed** (regardless of calibration switch) because Module 73 depends on it.
+This value is **always computed** (it's outside the `if(s52_growingstock_calib = 1, ...)` block) because Module 73 depends on it regardless of the switch.
 
-**Step 2 — Regional BEF and shape-parameter averages** (`preloop.gms:27-31`, only when calibration ON):
+**Step 2 — Regional BEF and shape-parameter averages** (`preloop.gms:28-33`, only when calibration ON):
 - `i52_bef_avg(i)` — area-weighted BEF from `fm_ipcc_bef(clcl)` (provided by Module 14)
 - `i52_m_avg_natveg(i)`, `i52_m_avg_plant(i)` — fixed `m` for each forest type
 
-**Step 3 — Secdforest `k` calibration** (`preloop.gms:43-65`):
+**Step 3 — Secdforest `k` calibration** (`preloop.gms:45-73`):
 Trial growing stock (m³/ha):
 ```
 GS_trial(i) = Σ(cell,ac) im_forest_ageclass(j,ac)
@@ -249,31 +249,31 @@ GS_trial(i) = Σ(cell,ac) im_forest_ageclass(j,ac)
 ```
 This is the **Chapman-Richards biomass** divided by the full conversion chain `tC → tDM → AGB → stem → m³`. The age distribution `im_forest_ageclass` is the GFAD dataset (including primforest `acx`), provided by Module 28.
 
-Bisection: if `GS_trial < f52_fra_nrf_gs(i)`, raise lower bound; else raise upper bound.
+Bisection: if `GS_trial < f52_fra_nrf_gs(i)`, raise lower bound; else raise upper bound. With 25 iterations and initial interval width 0.299, final interval width ≈ 9×10⁻⁹ — convergence is purely iteration-count-based (no explicit tolerance check).
 
-After convergence, **overwrite** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` with calibrated growth curve (`preloop.gms:66-69`).
+After convergence, **overwrite** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` with calibrated growth curve (`preloop.gms:71-73`).
 
-**Step 4 — Plantation `k` calibration** (`preloop.gms:79-106`):
-Analogous, but using plantation age distribution `pm_land_plantation(j,ac)` (from Module 32) and target `f52_fra_pla_gs(i)`.
+**Step 4 — Plantation `k` calibration** (`preloop.gms:84-116`):
+Analogous, but using plantation age distribution `pm_land_plantation(j,ac)` (from Module 32) and target `f52_fra_pla_gs(i)`. Note: the asymptote for the plantation bisection's trial formula uses `fm_carbon_density("y2025",j,"secdforest","vegc")` — the same LPJmL secondary-forest C_max as used for the secdforest bisection. Only the shape parameter `m` differs (`i52_m_avg_plant(i)`). Plantation vegc is overwritten at `preloop.gms:114-116`.
 
-**Step 5 — Diagnostic logging** (`preloop.gms:108-114`):
+**Step 5 — Diagnostic logging** (`preloop.gms:108-113`):
 Writes a per-region table of `(FRA target NRF, achieved NRF, FRA target plantation, achieved plantation)` to the GAMS log.
 
-**Uncalibrated copies**: `start.gms:33-34` saves `pm_carbon_density_secdforest_ac_uncalib` and `pm_carbon_density_plantation_ac_uncalib` BEFORE preloop overwrites the primary parameters. These uncalibrated versions are read by:
-- Module 29 (`detail_apr24/preloop.gms:46,48`): tree cover on cropland carbon density
-- (Potentially others — any consumer that represents *new establishment* rather than existing managed forest should prefer the uncalibrated version)
+**Uncalibrated copies**: `start.gms:43-44` saves `pm_carbon_density_secdforest_ac_uncalib` and `pm_carbon_density_plantation_ac_uncalib` BEFORE preloop overwrites the primary parameters. The copies capture the FULL start-phase state (both `vegc` and `litc` pools, since the assignment indexes on `ag_pools`). These uncalibrated versions are read by:
+- **Module 32 (Forestry)** for afforestation and NDC sub-types: `modules/32_forestry/dynamic_may24/presolve.gms:59,61` (type `"aff"` — `v32_cost_establishment` uses either secdforest or plantation uncalib depending on `s32_aff_plantation`) and `modules/32_forestry/dynamic_may24/presolve.gms:68` (type `"ndc"` — secdforest uncalib)
+- **Module 29 (Cropland)** for tree cover: `modules/29_cropland/detail_apr24/preloop.gms:46,48` — either secdforest or plantation uncalib depending on `s29_treecover_plantation`
 
-**Rationale**: Uncalibrated curves represent the potential Chapman-Richards growth from bare land toward the LPJmL asymptote — appropriate for afforestation and NDC forest commitments. Calibrated curves represent *existing* forests where realized growing stock is already below potential.
+**Rationale**: Uncalibrated curves represent the potential Chapman-Richards growth from bare land toward the LPJmL asymptote — appropriate for new establishment scenarios (afforestation, NDC forest commitments, tree cover on cropland). Calibrated curves represent *existing* forests where realized growing stock is already below potential; applying that suppressed growth rate to newly-planted trees would underestimate their accumulation trajectory.
 
 **Cross-module read/write**:
-- **Reads** `im_forest_ageclass(j,ac)` from Module 28 (GFAD age distribution)
-- **Reads** `pm_land_plantation(j,ac)` from Module 32 (provided as a new interface parameter in 2026-04-20)
+- **Reads** `im_forest_ageclass(j,ac)` from Module 28 (GFAD age distribution; weights secdforest bisection)
+- **Reads** `pm_land_plantation(j,ac)` from Module 32 (new interface parameter added by PR #869; weights plantation bisection)
 - **Reads** `fm_ipcc_bef(clcl)` and `fm_aboveground_fraction(land_timber)` from Module 14 (interface parameters)
-- **Reads** `sm_carbon_fraction` (superset scalar, value 0.5)
+- **Reads** `sm_carbon_fraction` (shared/interface scalar declared in Module 14's `input.gms:22`, value 0.5 tC/tDM)
 - **Writes** `im_vol_conv(i)` (consumed by Module 73)
-- **Writes** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Modules 14, 35)
+- **Writes** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Module 14's `im_growing_stock` presolve, then flows to Modules 32, 35)
 - **Writes** `pm_carbon_density_plantation_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Module 14)
-- **Writes** `pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib` (preserved for afforestation/NDC contexts; consumed by Module 29)
+- **Writes** `pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib` (preserved for new-establishment contexts; consumed by Module 32 afforestation+NDC and Module 29 tree cover)
 
 **Known caveat** (per `realization.gms:20`): LPJmL potential-vegetation asymptote `A` may exceed observed FRA growing stock in degraded tropical forests. Calibration adjusts `k` but cannot fix an over-estimated asymptote.
 
@@ -436,10 +436,10 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Consumers**: Module 14 (`im_growing_stock` computation), Module 35 (secondary forest carbon accounting)
 
 **1b. pm_carbon_density_secdforest_ac_uncalib** (NEW 2026-04-20, declarations.gms:10)
-- **Description**: Uncalibrated secondary forest carbon density (preserved from start.gms before preloop overwrite)
+- **Description**: Uncalibrated secondary forest carbon density (preserved from start.gms before preloop overwrite — captures both vegc and litc pools)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
-- **Calculation**: `start.gms:33` copies the uncalibrated start.gms value
-- **Consumers**: Module 29 (tree cover on cropland uses Chapman-Richards curve appropriate for new establishment, not existing managed forests)
+- **Calculation**: `start.gms:43` copies the uncalibrated start.gms value
+- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:59` and NDC forest `"ndc"` at `modules/32_forestry/dynamic_may24/presolve.gms:68`), Module 29 (tree cover on cropland at `modules/29_cropland/detail_apr24/preloop.gms:46`). All three use cases represent *new establishment* rather than existing managed forest.
 
 **2. pm_carbon_density_other_ac** (declarations.gms:12)
 - **Description**: Vegetation other land carbon density by age class (tC per ha)
@@ -456,10 +456,10 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Consumers**: Module 14 (`im_growing_stock`), Module 32 (plantation carbon accounting)
 
 **3b. pm_carbon_density_plantation_ac_uncalib** (NEW 2026-04-20, declarations.gms:14)
-- **Description**: Uncalibrated plantation carbon density (preserved from start.gms before preloop overwrite)
+- **Description**: Uncalibrated plantation carbon density (preserved from start.gms before preloop overwrite — captures both vegc and litc pools)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
-- **Calculation**: `start.gms:34` copies the uncalibrated start.gms value
-- **Consumers**: Module 29 (tree cover on cropland with plantation growth curve)
+- **Calculation**: `start.gms:44` copies the uncalibrated start.gms value
+- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:61`), Module 29 (tree cover on cropland with plantation growth curve, `modules/29_cropland/detail_apr24/preloop.gms:48` when `s29_treecover_plantation = 1`)
 
 **4. fm_carbon_density** (input.gms:16)
 - **Description**: LPJmL carbon density for all land types and carbon pools (tC per ha)
@@ -470,9 +470,9 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 **5. im_vol_conv** (NEW 2026-04-20, declarations.gms:23)
 - **Description**: Regional basic wood density (tDM per m³)
 - **Dimensions**: `(i)` (regions)
-- **Calculation**: `preloop.gms:22` — area-weighted `f52_volumetric_conversion(clcl)` using `pm_climate_class`
-- **Consumers**: Module 73 — converts per-m³ timber prices to per-tDM costs (`im_timber_prod_cost(i, kforestry) = s73_timber_prod_cost_<k> / im_vol_conv(i)`) and converts demand from mio. m³ to mio. tDM (`pm_demand_forestry`)
-- **Fallback**: `start.gms:36` initializes to 0.5 to avoid divide-by-zero if preloop is skipped
+- **Calculation**: `preloop.gms:21` — area-weighted `f52_volumetric_conversion(clcl)` using `pm_climate_class`
+- **Consumers**: Module 73 — converts per-m³ timber prices to per-tDM costs (`im_timber_prod_cost(i, kforestry) = s73_timber_prod_cost_<k> / im_vol_conv(i)`) and converts demand from mio. m³ to mio. tDM (`pm_demand_forestry`). Shared between wood and woodfuel (same density for both products).
+- **Fallback**: `start.gms:40` initializes to 0.5 to avoid divide-by-zero if preloop is skipped
 
 ### Parameters Read by Module 52
 
@@ -506,10 +506,10 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Usage**: Extracts aboveground biomass fraction in GS calibration (`preloop.gms:56`)
 - **Provider**: Module 14 (Yields)
 
-**6. sm_carbon_fraction** (NEW read 2026-04-20, superset)
+**6. sm_carbon_fraction** (NEW read 2026-04-20, interface scalar from M14)
 - **Description**: Carbon fraction of dry matter (0.5 tC/tDM)
-- **Usage**: Converts tC/ha to tDM/ha in GS calibration (`preloop.gms:55`)
-- **Source**: superset scalar in Module 14 (`input.gms`)
+- **Usage**: Converts tC/ha to tDM/ha in GS calibration (`preloop.gms:56`)
+- **Source**: Scalar declared in Module 14's `input.gms:22` with the `sm_` prefix (shared/interface scalar, accessible to any module)
 
 ---
 
@@ -610,7 +610,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - Used in the GS calibration bisection (via `im_vol_conv`)
 - Exposed as interface parameter for Module 73's demand/cost conversion
 
-**Note**: This **replaces** the per-kforestry `f73_volumetric_conversion.csv` that previously lived in Module 73. The new climate-class-based approach is physically more justified (basic wood density varies with climate/species) and shared between M52's calibration and M73's cost/demand conversion.
+**Note**: This **replaces** the per-kforestry *f73_volumetric_conversion.csv* that previously lived in Module 73. The new climate-class-based approach is physically more justified (basic wood density varies with climate/species) and shared between M52's calibration and M73's cost/demand conversion.
 
 ---
 
@@ -715,7 +715,7 @@ Module 52 **provides to** these modules:
 
 **6. Module 73 (Timber) [NEW consumer as of 2026-04-20]**:
 - `im_vol_conv(i)` — regional basic wood density (tDM/m³)
-- Used for demand and cost conversion (replaces M73's former `f73_volumetric_conversion.csv`)
+- Used for demand and cost conversion (replaces M73's former *f73_volumetric_conversion.csv*)
 
 **7. All Land Modules** (30, 31, 32, 34, 35):
 - `fm_carbon_density(t_all,j,land,c_pools)` — base carbon densities from LPJmL

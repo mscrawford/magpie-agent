@@ -2401,22 +2401,127 @@
           "Found M71 aug18 section incorrectly described differences \u2014 doc corrected"
         ]
       }
+    },
+    {
+      "round": 20,
+      "date": "2026-04-20",
+      "type": "targeted",
+      "magpie_version": "4.13.0dev",
+      "magpie_branch": "develop",
+      "magpie_commit": "451d1fbad",
+      "answerer_model": "claude-sonnet-4.6",
+      "auditor_model": "claude-opus-4.6",
+      "trigger": "post-sync targeted validation: 2026-04-20 sync of PR #869 forestry/timber/carbon overhaul updated 6 module docs (14,29,32,35,52,73), which exceeds the 3-module threshold",
+      "questions": [
+        {
+          "id": "R20-Q1",
+          "archetype": "causal_chain + default_switch",
+          "modules_tested": [
+            14,
+            28,
+            29,
+            32,
+            35,
+            52
+          ],
+          "question": "Describe end-to-end what happens when s52_growingstock_calib = 1 (the default as of 2026-04-20). From loading FRA 2025 targets, through bisection in M52 preloop, to how calibrated Chapman-Richards k flows into M14's im_growing_stock and ultimately M32/M35 production equations. Covers: input files, interface params, bisection mechanics (bounds, iterations), what's overwritten vs preserved, M14 presolve formula, M32/M35 equation usage, switch-off behavior, uncalib variant consumers.",
+          "score": 7.5,
+          "bugs_found": 10,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 9,
+          "notes": "Major bug: Q1-B1 \u2014 listed only M29 as _uncalib consumer; missed M32 afforestation/NDC (which is explicitly documented in M52 realization.gms). 5 line-number drifts in preloop.gms/start.gms citations (pre-sync docs were generated from a slightly different snapshot). 1 wrong date (pm_land_plantation 'new 2026-04-20' but PR #869 merged 2026-03-16). 1 terminology issue ('superset' for sm_carbon_fraction). 2 oversimplifications (shared C_max for plantation bisection; 'fixed LPJmL' for primforest under cc scenario)."
+        },
+        {
+          "id": "R20-Q2",
+          "archetype": "quantitative_verification + causal_chain",
+          "modules_tested": [
+            32,
+            52,
+            73
+          ],
+          "question": "Walk through how per-m3 roundwood price (s73_timber_prod_cost_wood = 89 USD17MER/m3) becomes regional per-tDM costs entering the objective function. Covers: default values and unit change; preloop conversion via im_vol_conv; FAO stacking correction; 4-term cost equation structure including natveg premium as differential; q32_cost_establishment flow (PV of future harvest); residue equation before/after rewrite.",
+          "score": 8.5,
+          "bugs_found": 8,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 7,
+          "bugs_nitpick": 1,
+          "notes": "5 line-number drifts (preloop.gms:41/42, :89-90/:90-91, equations.gms:16-27/:23-31, residue :72-79/:75-81, M32 :157-172/:166-173). Wrong date (Q2-B6, 'dimensionality change 2026-04-20' but actually 2026-03-21 in commit 896a9b728). Oversimplification of pre-update residue formula (Q2-B7). Stacking overstatement framing ~54% vs doc's 35% (Q2-B8 nitpick). Mechanistic content all correct \u2014 no fabricated variables or equations."
+        },
+        {
+          "id": "R20-Q3",
+          "archetype": "default_switch + timing",
+          "modules_tested": [
+            28,
+            29,
+            32,
+            52
+          ],
+          "question": "On cropland tree cover (Module 29), how does the model decide which carbon density growth curve to use, and why? Covers: default realization + s29_treecover_plantation; origin and phase of _uncalib variants; what's overwritten vs preserved under calibration; rationale for uncalib in new establishment; M29-M52 preloop sequencing; M28's role.",
+          "score": 8.5,
+          "bugs_found": 5,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 4,
+          "bugs_nitpick": 1,
+          "notes": "Line-number drifts: start.gms:33-34 should be 43-44, preloop.gms:66-69 should be 71-73, start.gms:17-38 is imprecise range. 'af_ndc realization' is mischaracterization (realization is dynamic_may24; aff/ndc are sub-types). 'No FRA target for other' inferred rationale stated as fact (Q3-B5 nitpick). All conceptual claims correct: default realization, switch behavior, _uncalib origin/phase/rationale, sequencing, M28 role."
+        }
+      ],
+      "summary": {
+        "total_bugs": 23,
+        "bugs_by_severity": {
+          "critical": 0,
+          "major": 1,
+          "minor": 20,
+          "nitpick": 2
+        },
+        "bugs_by_root_cause": {
+          "documentation_drift": 13,
+          "answerer_confabulation": 7,
+          "doc_error": 1,
+          "inferential": 2
+        },
+        "mean_score": 8.17,
+        "score_range": [
+          7.5,
+          8.5
+        ],
+        "bugs_fixed_this_session": [
+          "Q1-B1 (Major, doc_error): Added M32 afforestation/NDC to _uncalib consumer list in module_52.md Section 2.C and parameter entries 1b/3b",
+          "Q1-B2/B3/B4/B5/B6 (Minor, drift): Corrected line citations in module_52.md Section 2.C (preloop.gms:21, 28-33, 45-73, 71-73, 84-116, 108-113, 114-116; start.gms:40, 43-44)",
+          "Q1-B8 (Minor, confabulation): Replaced 'superset scalar' with 'shared/interface scalar' in module_14.md and module_52.md",
+          "Q3-B2/B3 (Minor, drift): Corrected start.gms and preloop.gms line numbers in module_52.md parameter descriptions"
+        ],
+        "bugs_deferred": [
+          "Q1-B7, Q2-B6 (Minor, date): 'new 2026-04-20' wording where commit was actually 2026-03-16 \u2014 the 2026-04-20 is the SYNC date, not the code-change date. Low impact; context is clear.",
+          "Q1-B9, Q1-B10, Q2-B7, Q2-B8, Q3-B4, Q3-B5 (Minor/Nitpick, oversimplifications): Shared C_max for plantation bisection; 'fixed LPJmL' for primforest; pre-update residue formula simplification; stacking framing; start.gms:17-38 imprecise range; inferred 'no FRA target' rationale. All defensible; worth documenting in a follow-up pass if user wants."
+        ],
+        "key_findings": [
+          "Mean score 8.17/10 \u2014 within 'Mostly Accurate' band. All three questions scored 7.5-8.5, indicating consistent quality after the 2026-04-20 sync.",
+          "Zero Critical or Fundamentally Flawed answers. No fabricated variables, no wrong equation names, no wrong realizations.",
+          "Dominant bug class: file:line citation drift (13/23 = 57%). This matches the historic pattern (71% in Bug_Taxonomy). Likely caused by drafting docs against one snapshot then not re-verifying citations after minor commits restructured the code. Mitigation: for citations in post-sync doc updates, derive lines from the final merged origin/develop, not from an intermediate commit.",
+          "One Major doc_error: M52 uncalib consumer list missed M32 afforestation/NDC. Rationale: my sync focused on the M29 tree-cover addition and didn't audit which OTHER modules had always consumed uncalib variants. Mitigation: when adding '_uncalib' parameters, grep the whole codebase for all consumers (grep `-uncalib` across modules/**/*.gms).",
+          "Answerer confabulation rate: 30% of bugs (7/23) \u2014 well within the 22-33% range of recent targeted rounds. The answerer reliably drew from the docs but introduced minor imprecisions.",
+          "Validation pipeline improvement: the first round of the syntactic validator post-sync flagged 27 GAMS variable mismatches, all expected (new variables on develop not yet in local tree). After git pull origin develop, 10 remained \u2014 all historical references in 'formerly X' context, which the checker couldn't distinguish. Resolved by switching backtick wrappers to italics for deprecated names. This is a reusable pattern for future sync cycles."
+        ]
+      }
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 18,
+    "total_rounds": 20,
     "total_docs_validated": 79,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 413,
-    "total_bugs_fixed": 287,
+    "total_bugs_found": 436,
+    "total_bugs_fixed": 295,
     "validator_checks": 18,
     "validator_sub_checks": 33,
     "gams_variables_verified": 778,
     "gams_equations_verified": 269,
     "gams_realizations_verified": 68,
     "file_line_citations_verified": 2233,
-    "last_validation_date": "2026-03-08",
-    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0"
+    "last_validation_date": "2026-04-20",
+    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2"
   }
 }

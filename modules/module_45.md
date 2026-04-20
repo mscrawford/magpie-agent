@@ -135,14 +135,15 @@ pm_climate_class("CAZ_1",other) = 0.20  → 20% other climate types
 **Loading**: `table pm_climate_class(j,clcl)` from `koeppen_geiger.cs3` (input.gms:10-13)
 
 **Used by**:
-1. **Module 14 (Yields)** - IPCC biomass conversion efficiency factors
-   `modules/14_yields/managementcalib_aug19/presolve.gms:29-56`
-   Climate-weighted BCE: `sum(clcl, pm_climate_class(j,clcl) * f14_ipcc_bce(clcl,type))`
+1. **Module 14 (Yields)** - IPCC biomass expansion factor (BEF, renamed 2026-04-20 from BCE)
+   `modules/14_yields/managementcalib_aug19/presolve.gms:27-62`
+   Climate-weighted BEF: `sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))` (1-D, uniform across land_timber types)
 
-2. **Module 52 (Carbon)** - Climate-weighted growth parameters for Chapman-Richards equation
-   `modules/52_carbon/normal_dec17/start.gms:17-35`
+2. **Module 52 (Carbon)** - Climate-weighted growth parameters for Chapman-Richards equation, and climate-weighted wood density for growing-stock calibration
+   `modules/52_carbon/normal_dec17/start.gms:17-35` and `modules/52_carbon/normal_dec17/preloop.gms:22-31` (NEW 2026-04-20)
    k parameter: `sum(clcl, pm_climate_class(j,clcl) * f52_growth_par(clcl,"k",forest_type))`
    m parameter: `sum(clcl, pm_climate_class(j,clcl) * f52_growth_par(clcl,"m",forest_type))`
+   wood density: `sum((cell(i,j), clcl), pm_climate_class(j,clcl) * f52_volumetric_conversion(clcl)) / sum(cell(i,j), 1)` → `im_vol_conv(i)`
 
 3. **Module 58 (Peatland)** - Simplified climate mapping
    `v2/preloop.gms:~50`
@@ -219,12 +220,14 @@ calcOutput(type = "ClimateClass",
 
 ### 2. Module 14 (Yields) - Biomass Conversion Efficiency
 
-**Purpose**: Climate-specific IPCC biomass conversion efficiency (BCE) factors
+**Purpose**: Climate-specific IPCC Biomass Expansion Factor (BEF)
 
-**Usage Location**: `modules/14_yields/managementcalib_aug19/presolve.gms:29-56`
+**Usage Location**: `modules/14_yields/managementcalib_aug19/presolve.gms:27-62`, and `modules/52_carbon/normal_dec17/preloop.gms:27`
 
-**Mechanism**: Climate-weighted BCE for plantations vs. natural vegetation
-`sum(clcl, pm_climate_class(j,clcl) * f14_ipcc_bce(clcl,"plantations"/"natveg"))`
+**Mechanism** (updated 2026-04-20): Climate-weighted BEF, 1-D (uniform across land_timber types)
+`sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))`
+
+_Prior to 2026-04-20, this was a 2-D table *f14_ipcc_bce(clcl, forest_type)* with separate values for plantations vs. natural vegetation; see PR #869._
 
 **Why climate matters**: Allocation between aboveground/belowground biomass and root-shoot ratios vary by climate zone (IPCC 2006 Guidelines, Vol 4, Chapter 4).
 

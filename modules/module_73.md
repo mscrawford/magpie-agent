@@ -177,21 +177,24 @@ p73_timber_demand_gdp_pop(t_all,i,kforestry) = sum((i_to_iso(i,iso),kforestry_to
 - `s73_timber_demand_switch = 1`: Demand ON (default)
 - `s73_timber_demand_switch = 0`: Demand OFF (no timber production)
 
-#### 3.5 Unit Conversion
+#### 3.5 Unit Conversion (updated 2026-04-20)
 
-**Location**: `preloop.gms:43-45`
+**Location**: `preloop.gms:46-48`
 
 ```gams
-pm_demand_forestry(t_ext,i,kforestry) = round(p73_timber_demand_gdp_pop("y2150",i,kforestry) * f73_volumetric_conversion(kforestry),3);
-pm_demand_forestry(t_all,i,kforestry) = round(p73_timber_demand_gdp_pop(t_all,i,kforestry) * f73_volumetric_conversion(kforestry),3);
+pm_demand_forestry(t_ext,i,kforestry) = round(p73_timber_demand_gdp_pop("y2150",i,kforestry) * im_vol_conv(i),3);
+pm_demand_forestry(t_all,i,kforestry) = round(p73_timber_demand_gdp_pop(t_all,i,kforestry) * im_vol_conv(i),3);
 ```
 
 **Conversion**:
 - **Input**: mio. m³/yr
 - **Output**: mio. tDM/yr
-- **Factor**: From `f73_volumetric_conversion` (`input.gms:47-52`)
+- **Factor**: `im_vol_conv(i)` — regional basic wood density (tDM/m³), provided by Module 52 (see `modules/module_52.md#5-basic-wood-density-by-climate-class-new-2026-04-20`)
+- **Stacking correction** (applied BEFORE conversion, `preloop.gms:41`): `p73_timber_demand_gdp_pop(t, i, "woodfuel") *= s73_woodfuel_stacking_factor` (0.65, converts FAO stacked-m3 to solid m3)
 
-**Post-2150 Behavior**: Demand held constant at 2150 levels (`preloop.gms:43`)
+**Prior to 2026-04-20**: conversion used a per-kforestry file *f73_volumetric_conversion.csv* (now removed). See PR #869 for migration details.
+
+**Post-2150 Behavior**: Demand held constant at 2150 levels (`preloop.gms:46`)
 
 ---
 
@@ -265,7 +268,7 @@ $endif
 > **🔄 Updated 2026-04-20 (sync from MAgPIE PR #869 "ipopt_part1" + PR #872 "bef-bcef-option2"):**
 > The cost equation now has **4 components** (was 3). Base costs are **region-dimensioned** via wood density `im_vol_conv(i)` (from Module 52). Natural-vegetation timber pays an **additional cost premium** on top of plantation timber.
 > Base scalars `s73_timber_prod_cost_wood` and `s73_timber_prod_cost_woodfuel` changed units (USD17MER/tDM → USD17MER/m3) and values (148→89, 74→44).
-> Scalar typo `s73_reisdue_removal_cost` corrected to `s73_residue_removal_cost`.
+> Scalar typo *s73_reisdue_removal_cost* corrected to `s73_residue_removal_cost`.
 
 **VERIFIED** (2026-04-20): Module 73 calculates total timber production costs (`equations.gms:16-27`).
 
@@ -303,7 +306,7 @@ q73_cost_timber(i2)..
 
 3. **Residue removal cost** (`v73_prod_residues × s73_residue_removal_cost`):
    - Cost: 2.7 USD17MER/tDM (`input.gms:19`) — collecting branches, tops from harvest site
-   - Note typo fix: formerly `s73_reisdue_removal_cost` (typo), now `s73_residue_removal_cost`
+   - Note typo fix: formerly *s73_reisdue_removal_cost* (typo), now `s73_residue_removal_cost`
 
 4. **Emergency slack cost** (`v73_prod_heaven_timber × s73_free_prod_cost`):
    - Cost: 1,000,000 USD17MER/tDM (`input.gms:17`) — prohibitively high
@@ -311,7 +314,7 @@ q73_cost_timber(i2)..
 
 **Cost Integration**: `vm_cost_timber` feeds into Module 11 (costs) for total objective function.
 
-**Cross-module coupling with Module 52**: The conversion from per-m3 prices to per-tDM costs (and from mio. m3 demand to mio. tDM demand in `pm_demand_forestry`) now uses `im_vol_conv(i)` — a regional basic wood density (tDM/m3) computed in M52's preloop from `f52_volumetric_conversion(clcl)` weighted by `pm_climate_class(j, clcl)`. This replaces the removed `f73_volumetric_conversion` input file.
+**Cross-module coupling with Module 52**: The conversion from per-m3 prices to per-tDM costs (and from mio. m3 demand to mio. tDM demand in `pm_demand_forestry`) now uses `im_vol_conv(i)` — a regional basic wood density (tDM/m3) computed in M52's preloop from `f52_volumetric_conversion(clcl)` weighted by `pm_climate_class(j, clcl)`. This replaces the removed *f73_volumetric_conversion* input file.
 
 ---
 
@@ -361,7 +364,7 @@ fibreboard,particle_board_and_osb,plywood,veneer_sheets,sawnwood
 /
 ```
 
-**USE**: For Churkina et al. 2020 construction scenarios (`input.gms:67-70`).
+**USE**: For Churkina et al. 2020 construction scenarios (`input.gms:53-57`).
 
 #### 6.4 Wood Panels
 
@@ -477,7 +480,7 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 | `s73_timber_demand_switch` | 1 | 1/0 | Turn timber demand on (1) or off (0) | input.gms:18 |
 | `s73_income_threshold` | 10,000 | USD17PPP/cap/yr | GDP threshold for demand saturation | input.gms:19 |
 | `s73_residue_ratio` | 0.15 | fraction | Proportion of timber harvest recoverable as logging residues (branches, tops) | input.gms:20 |
-| `s73_residue_removal_cost` | **2.7** | USD17MER/tDM | Cost of collecting residues (renamed 2026-04-20 from `s73_reisdue_removal_cost`; value changed 2.5→2.7) | input.gms:21 |
+| `s73_residue_removal_cost` | **2.7** | USD17MER/tDM | Cost of collecting residues (renamed 2026-04-20 from *s73_reisdue_removal_cost*; value changed 2.5→2.7) | input.gms:21 |
 | `s73_expansion` | 0 | fraction | Construction wood expansion factor by 2100 | input.gms:22 |
 | **`s73_natveg_cost_premium`** | **0.15** | fraction | NEW 2026-04-20: Cost premium for natveg timber relative to plantation (15%, expert estimate) | input.gms:23 |
 | **`s73_woodfuel_stacking_factor`** | **0.65** | solid m3 / stere | NEW 2026-04-20: FAO woodfuel statistics are reported in stacked m3 (stere); 1 stere ≈ 0.65 solid m3 (FAO 2004 UWET §5.1.3; FAO/ITTO/UNECE 2020 Table 2.2) | input.gms:24 |
@@ -513,7 +516,7 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 
 #### 9.3 Volumetric conversion — ⚠️ MOVED to Module 52
 
-**🔄 Changed 2026-04-20 (PR #869):** The former file `f73_volumetric_conversion.csv` (`kforestry` → tDM/m³) has been **removed**. Conversion now uses the regional wood density `im_vol_conv(i)` (tDM/m³) computed in Module 52's preloop from `f52_volumetric_conversion.csv` (climate-class-level basic wood density) weighted by `pm_climate_class(j, clcl)`.
+**🔄 Changed 2026-04-20 (PR #869):** The former file *f73_volumetric_conversion.csv* (`kforestry` → tDM/m³) has been **removed**. Conversion now uses the regional wood density `im_vol_conv(i)` (tDM/m³) computed in Module 52's preloop from `f52_volumetric_conversion.csv` (climate-class-level basic wood density) weighted by `pm_climate_class(j, clcl)`.
 
 **Where used in M73**:
 - `preloop.gms:44-48`: convert `p73_timber_demand_gdp_pop` (mio. m³) → `pm_demand_forestry` (mio. tDM) using `im_vol_conv(i)`
@@ -633,7 +636,7 @@ Natural Forests
    - Removal cost 2.5 USD17MER/tDM: `input.gms:25`, `equations.gms:21`
 
 4. ✅ **Construction wood scenarios**:
-   - Churkina et al. 2020 demand: `preloop.gms:67`, `input.gms:67-70`
+   - Churkina et al. 2020 demand: `preloop.gms:67`, `input.gms:53-57`
    - Simple expansion scenarios: `preloop.gms:72-73`, `input.gms:26`
 
 5. ✅ **Income-elastic demand**:
