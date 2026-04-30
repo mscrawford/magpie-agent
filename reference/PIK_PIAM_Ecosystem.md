@@ -23,7 +23,7 @@ used across PIK land-use and energy models. MAgPIE uses 34 of them (verified aga
 
 | Package | Role | GitHub |
 |---------|------|--------|
-| `gms` | GAMS/R interface — read/write GDX, manage GAMS runs from R | https://github.com/pik-piam/gms |
+| `gms` | GAMS modularization toolkit — provides the module/realization code structure and naming conventions that MAgPIE and REMIND are built on; monitors compliance with modular coding guidelines | https://github.com/pik-piam/gms |
 | `lucode2` | Run management, config handling, job submission | https://github.com/pik-piam/lucode2 |
 | `magclass` | Core array class for spatio-temporal model data | https://github.com/pik-piam/magclass |
 | `gdx2` | GDX file I/O bridge between GAMS and R | https://github.com/pik-piam/gdx2 |
