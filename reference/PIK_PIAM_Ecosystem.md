@@ -25,9 +25,8 @@ used across PIK land-use and energy models. MAgPIE uses 34 of them (verified aga
 |---------|------|--------|
 | `gms` | GAMS modularization toolkit — provides the module/realization code structure and naming conventions that MAgPIE and REMIND are built on; monitors compliance with modular coding guidelines | https://github.com/pik-piam/gms |
 | `lucode2` | Run management, config handling, job submission | https://github.com/pik-piam/lucode2 |
-| `magclass` | Core array class for spatio-temporal model data | https://github.com/pik-piam/magclass |
-| `gdx2` | GDX file I/O bridge between GAMS and R | https://github.com/pik-piam/gdx2 |
-| `goxygen` | GAMS code documentation generation | https://github.com/pik-piam/goxygen |
+| `magclass` | Array class for spatio-temporal model data with name-based dimension addressing and automatic consistency checks | https://github.com/pik-piam/magclass |
+| `gdx2` | Read GDX files into R via gamstransfer; the standard bridge between GAMS solve output and the R reporting pipeline | https://github.com/pik-piam/gdx2 |
 
 ## Output & reporting
 
@@ -64,16 +63,21 @@ used across PIK land-use and energy models. MAgPIE uses 34 of them (verified aga
 |---------|------|--------|
 | `magpiesets` | Regional/sectoral set definitions | https://github.com/pik-piam/magpiesets |
 | `quitte` | Tidy data helpers for IAM scenario data | https://github.com/pik-piam/quitte |
-| `luscale` | Scaling/aggregation helpers | https://github.com/pik-piam/luscale |
+| `luscale` | Aggregation and disaggregation of spatial/sectoral data | https://github.com/pik-piam/luscale |
 | `GDPuc` | GDP unit conversion | https://github.com/pik-piam/GDPuc |
 | `piamutils` | Shared utilities across piam packages | https://github.com/pik-piam/piamutils |
 | `piamenv` | R+conda environment reproducibility: checks/fixes R package deps (`checkDeps`, `fixDeps`), creates the `renv/archive/<version>_renv.lock` snapshots (`archiveRenv`), manages safe updates (`updateRenv` + `stopIfLoaded` to prevent lazy-load crashes), and initialises conda for external tool calls | https://github.com/pik-piam/piamenv |
-| `mstools` | Model statistics tools | https://github.com/pik-piam/mstools |
-| `lpjclass` | LPJmL data class (for land surface model coupling) | https://github.com/pik-piam/lpjclass |
-| `blackmagicc` | MAGICC climate model interface | https://github.com/pik-piam/blackmagicc |
-| `modelstats` | Run statistics collection | https://github.com/pik-piam/modelstats |
-| `gdxdt` | GDX to data.table helpers | https://github.com/pik-piam/gdxdt |
-| `citation` | Citation management | https://github.com/pik-piam/citation |
+| `mstools` | Shared helper functions for `madrat` and `magpie4` output routines | https://github.com/pik-piam/mstools |
+| `modelstats` | Tools for analyzing and monitoring model run performance | https://github.com/pik-piam/modelstats |
+| `goxygen` | Extracts model documentation from GAMS code comments — dev tool, not part of the runtime | https://github.com/pik-piam/goxygen |
+| `citation` | Extracts and formats citation metadata from R packages (CFF format) | https://github.com/pik-piam/citation |
+
+## Model coupling
+
+| Package | Role | GitHub |
+|---------|------|--------|
+| `lpjclass` | Data class for LPJmL land surface model output, used when coupling MAgPIE with LPJmL | https://github.com/pik-piam/lpjclass |
+| `blackmagicc` | Runs MAGICC climate projections from MAgPIE using REMIND reference scenarios for energy-sector emissions | https://github.com/pik-piam/blackmagicc |
 
 ---
 
