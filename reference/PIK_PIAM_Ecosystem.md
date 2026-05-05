@@ -34,11 +34,11 @@ used across PIK land-use and energy models. MAgPIE uses 34 of them (verified aga
 |---------|------|--------|
 | `magpie4` | MAgPIE output reporting — reads GDX, produces `.mif` | https://github.com/pik-piam/magpie4 |
 | `mip` | Model intercomparison plots | https://github.com/pik-piam/mip |
-| `piamInterfaces` | Variable mapping / IIASA template handling | https://github.com/pik-piam/piamInterfaces |
+| `piamInterfaces` | Interfaces for REMIND and MAgPIE output — maps model variables to project templates for IIASA database submission; includes summation checks and model intercomparison support | https://github.com/pik-piam/piamInterfaces |
 | `lusweave` | PDF report generation | https://github.com/pik-piam/lusweave |
-| `luplot` | Plotting utilities | https://github.com/pik-piam/luplot |
-| `trafficlight` | Validation traffic-light reporting | https://github.com/pik-piam/trafficlight |
-| `m4fsdp` | Food systems / sustainable development reporting | https://github.com/pik-piam/m4fsdp |
+| `luplot` | Spatial and time-series plot functions for MAgPIE objects, including map plots for land-use data | https://github.com/pik-piam/luplot |
+| `trafficlight` | Data validation and aggregation of validation results into traffic-light summaries | https://github.com/pik-piam/trafficlight |
+| `m4fsdp` | MAgPIE output routines for the Food Systems Demonstrated Pathways (FSDP) project | https://github.com/pik-piam/m4fsdp |
 
 ## Input data (madrat framework)
 
