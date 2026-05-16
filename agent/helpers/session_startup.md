@@ -172,6 +172,33 @@ Combine all checks into a maintenance health assessment:
 
 If all green, just show the one-liner — don't clutter the greeting.
 
+### 7. Detect the preproc-agent twin
+
+The preprocessing agent (`magpie-preproc-agent/`) is often installed alongside this one. Detect it so the greeting tells the user both agents are available and how questions route between them.
+
+```bash
+# preproc-agent lives at ../magpie-preproc-agent/ (run from magpie-agent/)
+if [ -f ../PREPROC_AGENT.md ] || [ -d ../magpie-preproc-agent ]; then
+  echo "preproc-agent: detected"
+  grep -q "PREPROC_AGENT" ../CLAUDE.md 2>/dev/null && echo "  wiring: ok" || echo "  wiring: MISSING"
+  test -f ../magpie-preproc-agent/index/functions.json && echo "  index: built" || echo "  index: not bootstrapped"
+  if [ -f ../magpie-preproc-agent/scripts/check_index_freshness.py ]; then
+    python3 ../magpie-preproc-agent/scripts/check_index_freshness.py >/dev/null 2>&1 \
+      && echo "  index: fresh" || echo "  index: stale"
+  fi
+else
+  echo "preproc-agent: not installed"
+fi
+```
+
+**Greeting line (mandatory when detected).** If the preproc-agent is detected, the session greeting ALWAYS includes one line for it — every session, in your first response. It is not a surface-only-if-there-is-a-problem item. Pick the variant from the checks above:
+- built + fresh: `🔬 preproc-agent also installed (index 🟢 fresh). R / input-data / preprocessing questions route to it; GAMS and modules stay here.`
+- built + stale: `🔬 preproc-agent also installed (⚠ index stale, run its /sync). R / preprocessing questions route to it.`
+- not bootstrapped: `🔬 preproc-agent also installed but not bootstrapped. Run its /bootstrap to use it for R / preprocessing questions.`
+- if wiring is MISSING, append: ` ⚠ not wired into CLAUDE.md, so preproc auto-load may not fire.`
+
+If the preproc-agent is not installed, omit the line entirely (no "not installed" line in the greeting).
+
 ---
 
 ## How to Report
@@ -181,6 +208,8 @@ In your session greeting, include a brief status line:
 ```
 📊 MAgPIE 4.13.0-dev on develop | Docs: 🟢 synced (0 commits behind) | Semantic: 🟢 R13 (8.6/10) | Runs: 2 recent
 ```
+
+When the preproc-agent twin is detected (Step 7), always add its one-line notice immediately below the status line.
 
 If there are issues, add specific notes:
 ```
@@ -192,7 +221,7 @@ If there are issues, add specific notes:
 
 ## When to Surface Findings
 
-- **Always**: Version, branch, sync status (one-liner in greeting)
+- **Always**: Version, branch, sync status (one-liner in greeting); the preproc-agent twin notice when detected (Step 7)
 - **If user asks about results**: Mention detected runs
 - **If user asks about a module**: Check if that module's docs were updated since last verification
 - **If docs are stale**: Warn before answering code-specific questions

@@ -9,6 +9,48 @@
 
 ---
 
+## 🔬 Preprocessing agent (R packages → input data)
+
+A companion agent covers the R preprocessing pipeline (pik-piam packages: `madrat`, `mrcommons`, `mrmagpie`, `mrland`, `mrwater`, `mrvalidation`, `mrdownscale`, `mrlandcore`, `mrdrivers`, and related packages) that produces the `input.tgz` files MAgPIE consumes.
+
+**Auto-load `PREPROC_AGENT.md`** (in this directory) when the question involves any of:
+- R package names: `madrat`, `mrcommons`, `mrmagpie`, `mrland`, `mrwater`, `mrdownscale`, `mrlandcore`, `mrdrivers`, `magclass`
+- Terms: `calcOutput`, `readSource`, `preprocessing`, `input data`, `renv.lock`, `.cs3 source`, `.mz file`, `madrat cache`
+- Questions like "where does this input file come from?", "how is [parameter] computed?", "what R function produces [file]?"
+
+When loading `PREPROC_AGENT.md`, follow its session startup instructions (check index freshness against `magpie-preproc-agent/project/sync_log.json`) and apply its anti-confabulation rules. For questions spanning both R preprocessing and GAMS consumption, use both agents together — `magpie-preproc-agent/index/boundary.json` is the R→GAMS pivot point.
+
+---
+
+## ⚠️ Twin-agent disambiguation (READ FIRST when terms below appear)
+
+Two independent agents share this workspace, each with its own flywheel and `feedback/validation_rounds.json`. This file (magpie-agent's CLAUDE.md) auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT. Counter that asymmetric prior.
+
+**Ambiguous terms** — `flywheel`, `round`, `round N`, `validation round`, `verification round`, `validation_rounds.json`, generic `validate` / `validation` without "consistency" or a specific module:
+→ **ASK which agent before acting**. Cost of a wrong run is ~1 hour of compute and a polluted validation_rounds.json.
+
+**Quick recency check** (run before assuming):
+```bash
+python3 -c "import json,os
+for label,path in [('magpie','magpie-agent/feedback/validation_rounds.json'),('preproc','magpie-preproc-agent/feedback/validation_rounds.json')]:
+  if os.path.exists(path):
+    d=json.load(open(path)); r=d.get('rounds',[])
+    print(f'{label}: {len(r)} rounds, latest R{r[-1].get(\"round\")} on {r[-1].get(\"date\")}' if r else f'{label}: 0 rounds')"
+```
+
+**Cues**:
+- GAMS modules / `module_XX.md` / `vm_*` / `q*` / `equations.gms` → magpie-agent
+- R packages / `calcOutput` / `readSource` / `pik-piam` / `.cs3` / `.mz` → preproc-agent
+- Both or neither match → ASK explicitly, even in auto mode.
+
+**Sentinels** — when confirming, use agent-prefixed labels: `magpie R3` / `preproc R3`, never bare `R3`. Round numbers do NOT compare across agents.
+
+**Discipline** — never edit the OTHER agent's files as collateral; never append to the wrong validation_rounds.json.
+
+(Origin: 2026-05-08 misroute incident — "round three" interpreted as magpie-agent re-test when user meant preproc-agent R3.)
+
+---
+
 **⚡ MOST IMPORTANT RULE ⚡**
 
 **Before answering ANY MAgPIE question, check the AI documentation FIRST!**
