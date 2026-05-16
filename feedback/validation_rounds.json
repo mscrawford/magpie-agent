@@ -2506,22 +2506,94 @@
           "Validation pipeline improvement: the first round of the syntactic validator post-sync flagged 27 GAMS variable mismatches, all expected (new variables on develop not yet in local tree). After git pull origin develop, 10 remained \u2014 all historical references in 'formerly X' context, which the checker couldn't distinguish. Resolved by switching backtick wrappers to italics for deprecated names. This is a reusable pattern for future sync cycles."
         ]
       }
+    },
+    {
+      "round": 21,
+      "date": "2026-05-16",
+      "commit_before": "e90a2b4",
+      "commit_after": "pending (this round's fixes recorded together)",
+      "answerer_model": "claude-sonnet-4.6",
+      "auditor_model": "claude-opus-4.7",
+      "type": "targeted",
+      "scope": "Post-sync targeted validation of the 6 modules updated in the 2026-05-16 develop sync (PR #866 trade, #871 nlp_ipopt, #876 secdforest carbon)",
+      "questions": [
+        {
+          "id": "R21-Q1",
+          "archetype": "cross_module causal chain + quantitative",
+          "modules_tested": [11, 21],
+          "question": "After PR #866's bilateral-trade overhaul, name the three trade-cost interface variables and their defining Module 21 equations, explain what each represents, explain how Module 11 aggregates them, and name the former single variable and the default trade realization.",
+          "score": 8.0,
+          "bugs_found": 3,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 1,
+          "bugs_nitpick": 1,
+          "notes": "All substantive claims correct: 3 variables (vm_cost_trade_tariff/margin/feasibility), 3 equations, formulas, M11 aggregation, former vm_cost_trade, selfsuff_reduced default, defaults s21_cost_import=1500 and s21_min_trade_margin_forestry=62. Q1-B1 (Major, answerer_confabulation): answer framed PR #866 as a clean rename of an equation pair, understating that one combined per-commodity cost stream was split into three and the objective-facing constraint changed from =e= to =g=. Q1-B2 (Minor): v11_cost_reg/vm_cost_glo objective path not spelled out. Q1-B3 (Nitpick): 'sums 32 cost terms' loose since vm_reward_cdr_aff is subtracted."
+        },
+        {
+          "id": "R21-Q2",
+          "archetype": "default_switch + timing",
+          "modules_tested": [80],
+          "question": "Is nlp_ipopt the default optimization realization? What solver does it use vs the default, how does it handle option files, and what is its retry/re-solve behavior?",
+          "score": 7.5,
+          "bugs_found": 3,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 2,
+          "bugs_nitpick": 0,
+          "notes": "Correct: nlp_ipopt non-default (default nlp_apr17), Ipopt vs CONOPT4, dynamic two-file put/putclose, ipopt.op2 written-but-never-activated, no s80_resolve_option cycling, scalar inventory. Q2-B1 (Major, doc_clarity): answer claimed nlp_apr17 does NOT write option files dynamically and uses a static conopt4.opt. False: nlp_apr17 also writes conopt4.opt via put/putclose; the real difference is conopt4.op2 via compile-time $onecho. module_80.md's 'Unlike the CONOPT-based realizations...' framing invited the misread; fixed this session. Q2-B2/B3 (Minor): retry-loop and default.cfg comment-block line ranges slightly off."
+        },
+        {
+          "id": "R21-Q3",
+          "archetype": "causal chain + quantitative",
+          "modules_tested": [35, 52],
+          "question": "How does Module 35 track natural-origin secondary forest for carbon density (parameters, blend formula, the equation and its density argument)? In Module 52, how does the growing-stock bisection determine Chapman-Richards k and what bounds it?",
+          "score": 8.5,
+          "bugs_found": 3,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 1,
+          "bugs_nitpick": 2,
+          "notes": "All load-bearing claims correct: p35_secdforest_natural / pc35_secdforest_natural / p35_carbon_density_secdforest, the blend formula, q35_carbon_secdforest density argument, the 25-iteration bisection, s52_k_high_secdf=0.1 and s52_k_high_plant=0.15, hardcoded 0.001 lower bound, replaced-0.3 history. Q3-B2 (Minor)/Q3-B3 (Nitpick): two citation ranges start on comment lines. Q3-B4 (Nitpick): 'FRA 2025 target' over-specifies the parameter name. Key missing nuance (added to module_52.md): the bisection has no convergence test, so k clamps to a bound if the FRA target is unreachable."
+        }
+      ],
+      "summary": {
+        "total_bugs": 9,
+        "bugs_by_severity": { "critical": 0, "major": 2, "minor": 4, "nitpick": 3 },
+        "bugs_by_root_cause": { "answerer_confabulation": 4, "documentation_drift": 3, "doc_clarity": 1, "inferential": 1 },
+        "mean_score": 8.0,
+        "score_range": [7.5, 8.5],
+        "bugs_fixed_this_session": [
+          "Q2-B1 (Major, doc_clarity): rewrote module_80.md's CONOPT-vs-Ipopt option-file contrast and the realization-comparison table row. CONOPT realizations also write conopt4.opt via put/putclose; the real difference is conopt4.op2 ($onecho) vs ipopt.op2 (put).",
+          "Q1-B1 (Major): reworded module_21.md's equation note to say PR #866 SPLIT one combined trade-cost stream into three, not a clean rename of an equation pair.",
+          "module_52.md: removed a confusing 'lower bound s52_k_high_secdf' phrase (it is an UPPER bound) and added a 'no convergence test' caveat to the bisection section (the Q3 missing nuance)."
+        ],
+        "bugs_deferred": [
+          "Q1-B2/B3, Q2-B2/B3, Q3-B2/B3/B4 (Minor/Nitpick): objective-path incompleteness, citation ranges that begin on comment lines, and 'FRA 2025' naming. Low impact, mostly answerer-side imprecision. Recorded, not separately fixed."
+        ],
+        "key_findings": [
+          "Mean 8.0/10, 'Mostly Accurate' band, consistent with the post-sync R20 result (8.17). Zero Critical bugs; no fabricated variables, equations, or realizations in any of the three answers.",
+          "Both Major bugs were contrast/causality framing errors, not factual fabrication: the answerer compressed a 'split into three' into a 'rename', and over-generalized a doc's 'static $onecho for .op2' into 'static option files'. The two doc passages that invited those misreads were tightened.",
+          "First round whose docs validate 33/33 with the hardened tooling (the validator set -e crash and the equation-checker italics-blindness were both found and fixed during the preceding sync).",
+          "Q3 surfaced a genuine model behavior worth documenting: Module 52's growing-stock bisection is a fixed 25-iteration loop with no convergence test, so k clamps to a bound when the FRA target is unreachable. Caveat added to module_52.md."
+        ]
+      }
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 20,
+    "total_rounds": 21,
     "total_docs_validated": 79,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 436,
-    "total_bugs_fixed": 295,
+    "total_bugs_found": 445,
+    "total_bugs_fixed": 297,
     "validator_checks": 18,
     "validator_sub_checks": 33,
-    "gams_variables_verified": 778,
-    "gams_equations_verified": 269,
-    "gams_realizations_verified": 68,
-    "file_line_citations_verified": 2233,
-    "last_validation_date": "2026-04-20",
-    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2"
+    "gams_variables_verified": 828,
+    "gams_equations_verified": 138,
+    "gams_realizations_verified": 72,
+    "file_line_citations_verified": 2332,
+    "last_validation_date": "2026-05-16",
+    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0"
   }
 }

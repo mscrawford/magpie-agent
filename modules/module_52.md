@@ -226,7 +226,9 @@ pm_carbon_density_other_ac(t_all,j,ac,"litc") =
 - Secdforest calibration: `i52_k_high(i) = s52_k_high_secdf` (default **0.1**, `input.gms:47`)
 - Plantation calibration: `i52_k_high(i) = s52_k_high_plant` (default **0.15**, `input.gms:48`)
 
-Previously both loops used a hardcoded `i52_k_high(i) = 0.3`. The lower bound `s52_k_high_secdf` reflects that FRA NRF growing stock is below the LPJmL potential in most regions; the plantation bound is slightly higher because plantations can exceed natural growth rates.
+Previously both loops used a hardcoded `i52_k_high(i) = 0.3`. `s52_k_high_secdf` is kept relatively low because FRA NRF growing stock is below the LPJmL potential in most regions; `s52_k_high_plant` is slightly higher because plantations can exceed natural growth rates. (The bisection's lower bound is the hardcoded `0.001`, not a named scalar.)
+
+> **Caveat — no convergence test**: the bisection runs a fixed 25 iterations with no early-exit or convergence check. If a region's FRA target lies outside the growing stock achievable within `[0.001, k_high]`, `k` is driven to and clamped at the nearest bound and the calibrated growing stock will not match the target. The `preloop.gms` log table prints per-region target-vs-achieved growing stock, so a bound-clamped (non-converged) region can be spotted there.
 
 **Step 1 — Regional wood density** (`preloop.gms:21`):
 ```gams

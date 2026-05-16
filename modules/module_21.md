@@ -88,7 +88,7 @@ livst_egg, livst_milk, fish
 
 ## Equations
 
-> **The default `selfsuff_reduced` realization has 9 equations** (`q21_trade_glo`, `q21_notrade`, `q21_trade_reg`, `q21_trade_reg_up`, `q21_excess_dem`, `q21_excess_supply`, `q21_cost_trade_tariff`, `q21_cost_trade_margin`, `q21_cost_trade_feasibility`). The three trade-cost equations replace the former single *q21_cost_trade_reg* + *q21_cost_trade* pair (PR #866). The `selfsuff_reduced_bilateral22` alternative has a different set of 8 equations — see the comparison table below.
+> **The default `selfsuff_reduced` realization has 9 equations** (`q21_trade_glo`, `q21_notrade`, `q21_trade_reg`, `q21_trade_reg_up`, `q21_excess_dem`, `q21_excess_supply`, `q21_cost_trade_tariff`, `q21_cost_trade_margin`, `q21_cost_trade_feasibility`). The three trade-cost equations replace a former pair of equations (*q21_cost_trade_reg* + *q21_cost_trade*) that computed trade cost as one combined stream; PR #866 split tariff, margin, and feasibility into separate equations and interface variables. The `selfsuff_reduced_bilateral22` alternative has a different set of 8 equations — see the comparison table below.
 
 ### 1. Global Production Constraint (`q21_trade_glo`)
 

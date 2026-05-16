@@ -328,7 +328,7 @@ magpie.holdfixed = 1 ;             // keep fixed variables out of basis
 
 **Step 2 - Write Ipopt option files at runtime** (solve.gms:16-50):
 
-Unlike the CONOPT-based realizations (which write only a short `conopt4.opt` and use a static `$onecho` for `conopt4.op2`), `nlp_ipopt` writes **two** Ipopt option files from GAMS using `put`/`putclose`, into the `File` objects declared in `preloop.gms` (`ipopt.opt` and `ipopt.op2`):
+The CONOPT-based realizations also write their primary option file (`conopt4.opt`) at runtime via `put`/`putclose`; they differ only in writing the secondary `conopt4.op2` via a compile-time `$onecho` block in `solve.gms`. `nlp_ipopt` writes **both** Ipopt option files from GAMS via `put`/`putclose`, into the `File` objects declared in `preloop.gms` (`ipopt.opt` and `ipopt.op2`):
 
 - **`ipopt.opt`** (default optfile, used when `s80_optfile = 1`) — solve.gms:18-29. Comment in code: "starting immediately with the monotone `mu_strategy` to make the behavior more consistent." Settings written: `tol` (= `s80_toloptimal`), `mu_strategy monotone`, `mu_init 1e-5`, `mu_linear_decrease_factor 0.85`, `mu_superlinear_decrease_power 1.02`, `nlp_scaling_method none`, `bound_relax_factor 1e-7`, `honor_original_bounds yes`, `constr_viol_tol 1e-6`, `dependency_detector mumps`.
 - **`ipopt.op2`** (alternative optfile) — solve.gms:33-50. Comment in code: uses "the adaptive `mu_strategy` which starts faster but is less reliable. Seems to behave better for values near zero." Settings include `mu_strategy adaptive`, `mu_oracle quality-function`, `nlp_scaling_method gradient-based`, `acceptable_*` tolerances, `max_iter 10000`, `linear_solver mumps`, `dependency_detector mumps`.
@@ -437,7 +437,7 @@ This finalization block is identical to `nlp_apr17`'s (solve.gms:97-109 in both 
 | `s80_secondsolve` | ✅ Declared | ✅ Declared | ❌ Not declared |
 | Solver fallback to other solver | ✅ (CONOPT3) | ✅ (CONOPT3) | ❌ None |
 | Land difference minimization | ✅ Yes | ❌ No | ❌ No |
-| Option file(s) | `conopt4.opt`, `conopt4.op2` (CPLEX `cplex.opt`) | `conopt4.opt`, `conopt4.op2` | `ipopt.opt`, `ipopt.op2` (written from GAMS via `put`) |
+| Option file(s) | `conopt4.opt`, `conopt4.op2` (CPLEX `cplex.opt`) | `conopt4.opt`, `conopt4.op2` | `ipopt.opt`, `ipopt.op2` (both via runtime `put`; cf. `conopt4.op2` via compile-time `$onecho`) |
 
 ---
 
