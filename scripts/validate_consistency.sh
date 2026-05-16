@@ -636,8 +636,7 @@ print_section "14/18" "Checking GAMS variable names in docs..."
 
 GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.sh"
 if [ -x "$GAMS_CHECK_SCRIPT" ]; then
-    GAMS_OUTPUT=$("$GAMS_CHECK_SCRIPT" --summary-only 2>&1)
-    GAMS_EXIT=$?
+    if GAMS_OUTPUT=$("$GAMS_CHECK_SCRIPT" --summary-only 2>&1); then GAMS_EXIT=0; else GAMS_EXIT=$?; fi
     if [ $GAMS_EXIT -eq 0 ]; then
         ACCURACY=$(echo "$GAMS_OUTPUT" | grep "Accuracy:" | head -1)
         check_pass "GAMS variable names verified: $ACCURACY"
@@ -658,8 +657,7 @@ print_section "15/18" "Checking GAMS equation names in docs..."
 
 EQ_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_equations.sh"
 if [ -x "$EQ_CHECK_SCRIPT" ]; then
-    EQ_OUTPUT=$("$EQ_CHECK_SCRIPT" 2>&1)
-    EQ_EXIT=$?
+    if EQ_OUTPUT=$("$EQ_CHECK_SCRIPT" 2>&1); then EQ_EXIT=0; else EQ_EXIT=$?; fi
     if [ $EQ_EXIT -eq 0 ]; then
         EQ_ACCURACY=$(echo "$EQ_OUTPUT" | grep "Accuracy:" | head -1)
         check_pass "GAMS equation names verified: $EQ_ACCURACY"
@@ -680,8 +678,7 @@ print_section "16/18" "Checking GAMS realization names in docs..."
 
 REAL_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_realizations.sh"
 if [ -x "$REAL_CHECK_SCRIPT" ]; then
-    REAL_OUTPUT=$("$REAL_CHECK_SCRIPT" 2>&1)
-    REAL_EXIT=$?
+    if REAL_OUTPUT=$("$REAL_CHECK_SCRIPT" 2>&1); then REAL_EXIT=0; else REAL_EXIT=$?; fi
     if [ $REAL_EXIT -eq 0 ]; then
         REAL_ACCURACY=$(echo "$REAL_OUTPUT" | grep "Accuracy:" | head -1)
         check_pass "GAMS realization names verified: $REAL_ACCURACY"
@@ -702,8 +699,7 @@ print_section "17/18" "Checking file:line citations in docs..."
 
 CIT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_citations.sh"
 if [ -x "$CIT_CHECK_SCRIPT" ]; then
-    CIT_OUTPUT=$("$CIT_CHECK_SCRIPT" 2>&1)
-    CIT_EXIT=$?
+    if CIT_OUTPUT=$("$CIT_CHECK_SCRIPT" 2>&1); then CIT_EXIT=0; else CIT_EXIT=$?; fi
     if [ $CIT_EXIT -eq 0 ]; then
         CIT_ACCURACY=$(echo "$CIT_OUTPUT" | grep "verified:" | head -1)
         check_pass "File:line citations verified: $CIT_ACCURACY"
@@ -724,8 +720,7 @@ print_section "18/18" "Checking default realization labels against config/defaul
 
 DEFAULT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_default_realizations.py"
 if [ -f "$DEFAULT_CHECK_SCRIPT" ]; then
-    DEFAULT_OUTPUT=$(python3 "$DEFAULT_CHECK_SCRIPT" 2>&1)
-    DEFAULT_EXIT=$?
+    if DEFAULT_OUTPUT=$(python3 "$DEFAULT_CHECK_SCRIPT" 2>&1); then DEFAULT_EXIT=0; else DEFAULT_EXIT=$?; fi
     if [ $DEFAULT_EXIT -eq 0 ]; then
         DEFAULT_SUMMARY=$(echo "$DEFAULT_OUTPUT" | head -1)
         check_pass "Default realizations: $DEFAULT_SUMMARY"

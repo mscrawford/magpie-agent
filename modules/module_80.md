@@ -1,14 +1,14 @@
 # Module 80: Optimization - MAgPIE Model Solver Module
 
 **Status**: Fully Verified
-**Realization**: nlp_apr17 (default), lp_nlp_apr17, nlp_par
+**Realization**: nlp_apr17 (default), lp_nlp_apr17, nlp_ipopt, nlp_par
 **Equations**: 0 (pure solver module, no model equations defined)
-**Last Updated**: 2025-10-12
+**Last Updated**: 2026-05-16
 
 ---
 
 > ⚙️ **Default Realization**: `nlp_apr17`
-> Confirmed in `config/default.cfg`: `cfg$gms$optimization <- "nlp_apr17"`. Alternatives: `lp_nlp_apr17` (LP presolve then NLP), `nlp_par` (parallel NLP).
+> Confirmed in `config/default.cfg`: `cfg$gms$optimization <- "nlp_apr17"`. Alternatives: `lp_nlp_apr17` (LP presolve then NLP), `nlp_ipopt` (direct NLP with the Ipopt interior-point solver), `nlp_par` (parallel NLP).
 
 
 ## Overview
@@ -295,6 +295,152 @@ Failure (modelstat > 2 and ≠ 7):
 
 ---
 
+## Realization: nlp_ipopt (Alternative - Direct NLP with the Ipopt Solver)
+
+**Strategy**: Solve the full nonlinear model directly using the **Ipopt** interior-point solver instead of CONOPT4, without LP warmstart (realization.gms:8-13).
+
+> ⚠️ **Non-default alternative**: The default `optimization` realization remains `nlp_apr17` (CONOPT4-based). `nlp_ipopt` is an **alternative** realization, added in MAgPIE `develop` (commit 9cba74ab7, PR #871, "Adding IPOPT as an alternative solver for MAgPIE"). To use it, set `cfg$gms$optimization <- "nlp_ipopt"`.
+
+**What is Ipopt in this context**: Ipopt (Interior Point OPTimizer) is an open-source NLP solver implementing a primal-dual interior-point (barrier) method. In MAgPIE it is selected via `option nlp = ipopt;` (solve.gms:13) and is the **only** solver `nlp_ipopt` uses — it does not fall back to CONOPT. This realization shares the direct-NLP structure of `nlp_apr17` (solve once, retry on infeasibility) but swaps the solver and the option-file mechanism.
+
+**Use Case**: Provides a non-CONOPT solver path. Useful for cross-checking solutions against the CONOPT-based realizations, or where the Ipopt interior-point method converges better than CONOPT4 on a given problem.
+
+### Solve Sequence (nlp_ipopt)
+
+**Step 1 - Solver Configuration** (solve.gms:9-55):
+
+```gams
+s80_counter = 0;
+p80_modelstat(t) = 14;
+
+option nlp = ipopt;
+option threads = 1;
+```
+(solve.gms:9-14)
+
+`magpie` solver attributes (solve.gms:52-55):
+```gams
+magpie.optfile   = s80_optfile;    // 1 = use the written ipopt.opt file
+magpie.scaleopt  = 1 ;             // enable scaling
+magpie.solprint  = 0 ;             // suppress detailed solve output
+magpie.holdfixed = 1 ;             // keep fixed variables out of basis
+```
+
+**Step 2 - Write Ipopt option files at runtime** (solve.gms:16-50):
+
+Unlike the CONOPT-based realizations (which write only a short `conopt4.opt` and use a static `$onecho` for `conopt4.op2`), `nlp_ipopt` writes **two** Ipopt option files from GAMS using `put`/`putclose`, into the `File` objects declared in `preloop.gms` (`ipopt.opt` and `ipopt.op2`):
+
+- **`ipopt.opt`** (default optfile, used when `s80_optfile = 1`) — solve.gms:18-29. Comment in code: "starting immediately with the monotone `mu_strategy` to make the behavior more consistent." Settings written: `tol` (= `s80_toloptimal`), `mu_strategy monotone`, `mu_init 1e-5`, `mu_linear_decrease_factor 0.85`, `mu_superlinear_decrease_power 1.02`, `nlp_scaling_method none`, `bound_relax_factor 1e-7`, `honor_original_bounds yes`, `constr_viol_tol 1e-6`, `dependency_detector mumps`.
+- **`ipopt.op2`** (alternative optfile) — solve.gms:33-50. Comment in code: uses "the adaptive `mu_strategy` which starts faster but is less reliable. Seems to behave better for values near zero." Settings include `mu_strategy adaptive`, `mu_oracle quality-function`, `nlp_scaling_method gradient-based`, `acceptable_*` tolerances, `max_iter 10000`, `linear_solver mumps`, `dependency_detector mumps`.
+
+⚠️ **Note**: `ipopt.op2` is written to disk but the solve loop never sets `magpie.optfile = 2` (the retry loop reuses the same `s80_optfile` setting — see Step 4). The `.op2` file is therefore prepared but not exercised by the current code path; switching to it would require a manual `magpie.optfile = 2` or code change. (Verified: `solve.gms` contains no assignment of `magpie.optfile` other than the `s80_optfile` assignment at line 52.)
+
+**Step 3 - Primary NLP Solve** (solve.gms:61-67):
+
+```gams
+solve magpie USING nlp MINIMIZING vm_cost_glo;
+```
+(solve.gms:62)
+
+There is **no `s80_secondsolve` second solve** in `nlp_ipopt` — that scalar is not declared for this realization (see Parameters below).
+
+**Step 4 - Retry Loop** (if modelstat > 2) (solve.gms:69-95):
+
+If the primary solve returns `modelstat > 2`, a `repeat` loop re-solves with **the same Ipopt optfile settings** (no solver/optfile cycling):
+
+```gams
+* set modelstat to 13 in case of NA for continuation
+magpie.modelStat$(magpie.modelStat=NA) = 13;
+
+if (magpie.modelstat > 2,
+  repeat(
+    s80_counter = s80_counter + 1 ;
+
+    solve magpie USING nlp MINIMIZING vm_cost_glo;
+
+    if ((s80_counter >= (s80_maxiter-1) and magpie.modelstat > 2),
+      magpie.solprint = 1
+    );
+
+    magpie.modelStat$(magpie.modelStat=NA) = 13;
+
+    until (magpie.modelstat <= 2 or s80_counter >= s80_maxiter)
+  );
+);
+```
+(solve.gms:69-95)
+
+Loop terminates when a solution is found (`modelstat <= 2`) or `s80_counter >= s80_maxiter` (default 30). On the penultimate iteration, `magpie.solprint` is set to 1 so the final (infeasible) solve writes detailed output to the LST file (solve.gms:83-85).
+
+**Key contrast with `nlp_apr17`**: `nlp_apr17`'s retry loop cycles through 4 strategies (CONOPT4 default → CONOPT4 optfile → CONOPT4 relaxed → CONOPT3) via `s80_resolve_option`. `nlp_ipopt` has **no `s80_resolve_option`** — every retry is an identical Ipopt re-solve. The only thing a retry can change is the solver's internal restart from the previous (failed) point.
+
+**Step 5 - Finalization** (solve.gms:97-109):
+
+```gams
+p80_modelstat(t) = magpie.modelstat;
+p80_num_nonopt(t) = magpie.numNOpt;
+```
+
+Success (`p80_modelstat(t) <= 2`):
+- Save GDX: `mv -f magpie_p.gdx magpie_YEAR.gdx` (solve.gms:100-102)
+
+Failure (`p80_modelstat(t) > 2` and `≠ 7`):
+- Zip debug files: `gmszip -r magpie_problem.zip "%gams.scrdir%"`, renamed `magpie_problem_YEAR.zip` (solve.gms:104-106)
+- Dump full data: `Execute_Unload "fulldata.gdx"`
+- ABORT: "no feasible solution found!" (solve.gms:107-108)
+
+This finalization block is identical to `nlp_apr17`'s (solve.gms:97-109 in both files).
+
+### Parameters (nlp_ipopt)
+
+**Declarations** (declarations.gms:8-15):
+
+| Parameter | Dimensions | Unit | Description | Reference |
+|-----------|------------|------|-------------|-----------|
+| `p80_modelstat(t)` | time | (1) | Modelstat indicator (1=optimal, 2=locally optimal, >2=infeasible/error) | declarations.gms:9 |
+| `p80_num_nonopt(t)` | time | (1) | Number of non-optimal variables (numNOpt) | declarations.gms:10 |
+| `s80_counter` | scalar | (1) | Iteration counter for the retry loop | declarations.gms:14 |
+
+**Note**: `nlp_ipopt`'s `declarations.gms` does **NOT** declare `s80_resolve_option` (it has no solver-cycling fallback). `nlp_apr17`'s `declarations.gms` does.
+
+**Inputs** (input.gms:8-12):
+
+| Scalar | Default | Unit | Description | Reference |
+|--------|---------|------|-------------|-----------|
+| `s80_maxiter` | 30 | (1) | Maximum solve iterations if modelstat > 2 | input.gms:9 |
+| `s80_optfile` | 1 | (1) | Switch to use specified solver settings (0=default, 1=use `ipopt.opt`) | input.gms:10 |
+| `s80_toloptimal` | 1e-08 | (1) | Ipopt solver tolerance (written as the `tol` option) | input.gms:11 |
+
+**Note**: `nlp_ipopt`'s `input.gms` does **NOT** declare `s80_secondsolve` (no second-solve mechanism). `s80_toloptimal` here feeds the Ipopt `tol` option (`nlp_apr17` uses the same scalar for the CONOPT4 `Tol_Optimality` option). The `c80_nlp_solver` switch is **not** used by `nlp_ipopt` — that switch applies only to `lp_nlp_apr17` (config comment, `config/default.cfg:2285`).
+
+**No `equations` defined** — like all Module 80 realizations, `nlp_ipopt` defines zero model equations; it is pure solver-control logic.
+
+### Files (nlp_ipopt)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `realization.gms` | 20 | Phase includes; description of the Ipopt direct-NLP strategy |
+| `declarations.gms` | 15 | `p80_modelstat(t)`, `p80_num_nonopt(t)`, `s80_counter` |
+| `input.gms` | 12 | `s80_maxiter`, `s80_optfile`, `s80_toloptimal` |
+| `preloop.gms` | 10 | Declares `File` objects `optfile /ipopt.opt/` and `optfile2 /ipopt.op2/` |
+| `solve.gms` | 111 | Writes Ipopt option files, primary solve, retry loop, finalization |
+
+### Key Differences from nlp_apr17 (default) and lp_nlp_apr17
+
+| Feature | lp_nlp_apr17 | nlp_apr17 (default) | nlp_ipopt |
+|---------|--------------|---------------------|-----------|
+| NLP solver | CONOPT4 (+ CPLEX for LP) | CONOPT4 | **Ipopt** (interior-point) |
+| LP warmstart | ✅ Yes | ❌ No | ❌ No |
+| Requires `nl_fix`/`nl_release` | ✅ Yes | ❌ No | ❌ No |
+| Retry strategy | Relax + retry LP, then NLP fallbacks | Cycle 4 strategies (CONOPT4 ×3 + CONOPT3) | Re-solve with **same** Ipopt settings |
+| `s80_resolve_option` | (LP-relax counter) | ✅ Declared (4-way cycle) | ❌ Not declared |
+| `s80_secondsolve` | ✅ Declared | ✅ Declared | ❌ Not declared |
+| Solver fallback to other solver | ✅ (CONOPT3) | ✅ (CONOPT3) | ❌ None |
+| Land difference minimization | ✅ Yes | ❌ No | ❌ No |
+| Option file(s) | `conopt4.opt`, `conopt4.op2` (CPLEX `cplex.opt`) | `conopt4.opt`, `conopt4.op2` | `ipopt.opt`, `ipopt.op2` (written from GAMS via `put`) |
+
+---
+
 ## Realization: nlp_par (Parallel NLP - Regional Decomposition)
 
 **Strategy**: Solve each MAgPIE region (superregion `h`) in parallel using asynchronous GAMS handles, enabling high-resolution spatial analysis (realization.gms:8-16).
@@ -451,25 +597,33 @@ if (smax(h,p80_modelstat(t,h)) > 2 and smax(h,p80_modelstat(t,h)) ne 7,
 - Settings: 1 thread, default options (empty cplex.opt file)
 - Purpose: Fast linear solver for convex problems
 
-### Nonlinear Solvers (all realizations)
+### Nonlinear Solvers
 
-**CONOPT4** (default) (solve.gms:27-39, nlp_apr17/solve.gms:14-27, nlp_par/solve.gms:14-30):
+**CONOPT4** (used by `lp_nlp_apr17`, `nlp_apr17`, `nlp_par`) (lp_nlp_apr17/solve.gms:27-39, nlp_apr17/solve.gms:14-27, nlp_par/solve.gms:14-30):
 - Modern NLP solver (successor to CONOPT3)
 - Default tolerance: `Tol_Optimality = 1e-08`
 - Optfile 1 (default): Custom tolerance
 - Optfile 2 (fallback): Relaxed variable limits (`Lim_Variable = 1.e25`)
 
-**CONOPT3** (fallback) (solve.gms:138-141, nlp_apr17/solve.gms:65-67):
+**CONOPT3** (fallback for `lp_nlp_apr17`, `nlp_apr17`, `nlp_par`) (lp_nlp_apr17/solve.gms:138-141, nlp_apr17/solve.gms:65-67):
 - Older, more robust NLP solver
 - Used as last resort when CONOPT4 fails
 - Often succeeds on difficult problems where CONOPT4 encounters evaluation errors
 
+**Ipopt** (used by `nlp_ipopt` only) (nlp_ipopt/solve.gms:13):
+- Open-source interior-point (primal-dual barrier) NLP solver
+- Selected via `option nlp = ipopt;`
+- `nlp_ipopt` uses Ipopt exclusively — there is **no fallback to CONOPT**
+- Two option files written from GAMS at runtime: `ipopt.opt` (monotone `mu_strategy`) and `ipopt.op2` (adaptive `mu_strategy`); see the `nlp_ipopt` realization section. `s80_toloptimal` feeds the Ipopt `tol` option.
+
 ### Solver Options
 
-**magpie.optfile** (input.gms:10):
+**magpie.optfile** (CONOPT realizations: lp_nlp_apr17/nlp_apr17/nlp_par input.gms:10):
 - 0: Use solver defaults
 - 1: Use custom options from `conopt4.opt` (default)
 - 2: Use alternate options from `conopt4.op2` (relaxed limits)
+
+For `nlp_ipopt` the same `s80_optfile` switch instead selects `ipopt.opt` (value 1, default); `ipopt.op2` would correspond to value 2 but is not activated by the current `nlp_ipopt` code (see the `nlp_ipopt` realization section).
 
 **magpie.scaleopt** = 1 (all realizations):
 - Enable automatic variable/equation scaling
@@ -502,11 +656,11 @@ GAMS modelstat values used throughout Module 80:
 | 1 | Optimal | ✅ Success: save results, continue to next timestep |
 | 2 | Locally optimal | ✅ Success (NLP may be locally optimal, not globally) |
 | 7 | Feasible solution | ⚠️ Accepted (not proven optimal, but feasible) |
-| 13 | Error during solve | ❌ Retry with fallback strategies (CONOPT3, relaxed CONOPT4) |
+| 13 | Error during solve | ❌ Retry (CONOPT realizations: CONOPT3/relaxed CONOPT4; `nlp_ipopt`: re-solve with Ipopt) |
 | >2 (except 7) | Infeasible/unbounded/error | ❌ Retry up to s80_maxiter times, then ABORT |
-| NA | Not available (evaluation error) | Set to 13, then retry (nlp_apr17/solve.gms:44, 87) |
+| NA | Not available (evaluation error) | Set to 13, then retry (nlp_apr17/solve.gms:44, 87; nlp_ipopt/solve.gms:70, 91) |
 
-**Note**: Modelstat values stored in `p80_modelstat(t)` (lp_nlp_apr17, nlp_apr17) or `p80_modelstat(t,h)` (nlp_par) for diagnostics.
+**Note**: Modelstat values stored in `p80_modelstat(t)` (lp_nlp_apr17, nlp_apr17, nlp_ipopt) or `p80_modelstat(t,h)` (nlp_par) for diagnostics. `nlp_ipopt`'s `solve.gms` initializes `p80_modelstat(t) = 14` before solving (solve.gms:10), the same sentinel used by `nlp_apr17`.
 
 ---
 
@@ -585,9 +739,9 @@ vm_cost_glo.up = Inf;
 
 **Purpose**: Select among multiple cost-equivalent solutions the one with least land use change.
 
-**What nlp_apr17 and nlp_par do**: NO land difference minimization step. They return the first optimal solution found.
+**What nlp_apr17, nlp_ipopt, and nlp_par do**: NO land difference minimization step. They return the first optimal solution found.
 
-**Implication**: nlp_apr17 and nlp_par may exhibit more land use volatility between timesteps compared to lp_nlp_apr17, even if costs are identical.
+**Implication**: nlp_apr17, nlp_ipopt, and nlp_par may exhibit more land use volatility between timesteps compared to lp_nlp_apr17, even if costs are identical.
 
 ---
 
@@ -631,6 +785,8 @@ vm_cost_glo.up = Inf;
 **Limitation**: No clear explanation WHY a second identical solve would improve results. Possibly historical artifact or numerical stability mechanism.
 
 **Implication**: Users may be uncertain whether to enable this flag. Doubling solve count increases runtime with unclear benefit.
+
+**Note**: `s80_secondsolve` exists only in `lp_nlp_apr17`, `nlp_apr17`, and `nlp_par`. The `nlp_ipopt` realization has **no** `s80_secondsolve` scalar and no second-solve step.
 
 ---
 
@@ -713,11 +869,16 @@ if ((p80_modelstat(t) > 2 and p80_modelstat(t) ne 7), abort
 - Compute time is not critical bottleneck
 - All modules provide `nl_fix`/`nl_release` files
 
-**Use nlp_apr17 when**:
+**Use nlp_apr17 when** (the default):
 - LP warmstart doesn't improve convergence (test by comparing runtimes)
 - Simpler code path preferred (fewer files to maintain)
 - Small model (few cells, few constraints)
 - Rapid prototyping (avoid `nl_fix` file creation)
+
+**Use nlp_ipopt when**:
+- A non-CONOPT solver is needed (e.g., to cross-check solutions, or where the CONOPT family struggles)
+- The Ipopt interior-point method is preferred or known to converge better on the problem
+- Note: this realization has no solver fallback — if Ipopt fails, every retry is another Ipopt solve with the same settings
 
 **Use nlp_par when**:
 - Very high spatial resolution required (>10,000 cells)
@@ -756,9 +917,10 @@ Module 80 behavior controlled by main configuration switches in `config/default.
 **cfg$gms$optimization** (module realization):
 - "nlp_apr17" (default)
 - "lp_nlp_apr17"
+- "nlp_ipopt" (Ipopt interior-point solver, alternative)
 - "nlp_par"
 
-**cfg$gms$c80_nlp_solver** (solver selection):
+**cfg$gms$c80_nlp_solver** (solver selection — applies to `lp_nlp_apr17` only; see `config/default.cfg:2285`):
 - "conopt4" (default)
 - "conopt4+cplex"
 - "conopt4+conopt3"
@@ -766,15 +928,20 @@ Module 80 behavior controlled by main configuration switches in `config/default.
 **cfg$gms$s80_maxiter** (override default 30):
 - Increase for difficult convergence (e.g., 50)
 - Decrease for faster failure detection (e.g., 10)
+- Used by all realizations, including `nlp_ipopt`
 
 **cfg$gms$s80_secondsolve** (enable double-solve):
 - 0 (default, disabled)
 - 1 (enabled, doubles solve count)
+- Not present in `nlp_ipopt` (that realization has no second-solve mechanism)
 
-**cfg$gms$s80_toloptimal** (CONOPT4 tolerance):
+**cfg$gms$s80_toloptimal** (solver optimality tolerance):
 - 1e-08 (default, tight)
 - 1e-06 (looser, faster but less accurate)
 - 1e-10 (tighter, slower but more accurate)
+- Feeds CONOPT4's `Tol_Optimality` in the CONOPT realizations, and Ipopt's `tol` option in `nlp_ipopt`
+
+⚠️ **Config-comment gap (as of 2026-05-16)**: `config/default.cfg` registers the `nlp_ipopt` realization in code, but the realization-comment block above the `cfg$gms$optimization` line (`config/default.cfg:2266-2278`) still lists only `nlp_apr17`, `lp_nlp_apr17`, and `nlp_par`. `nlp_ipopt` is selectable, just not yet described in that comment block.
 
 ---
 
@@ -782,17 +949,21 @@ Module 80 behavior controlled by main configuration switches in `config/default.
 
 | Realization | Key Files | Purpose |
 |-------------|-----------|---------|
-| lp_nlp_apr17 | `solve.gms:45-214` | LP warmstart + NLP solve loop |
-| lp_nlp_apr17 | `input.gms:9-12` | Configuration scalars |
-| lp_nlp_apr17 | `declarations.gms:9-15` | Parameters and scalars |
-| nlp_apr17 | `solve.gms:7-110` | Direct NLP solve with fallback loop |
-| nlp_apr17 | `input.gms:9-12` | Configuration scalars (same as lp_nlp_apr17) |
-| nlp_apr17 | `declarations.gms:9-16` | Parameters and scalars |
-| nlp_par | `solve.gms:7-147` | Parallel NLP with handle management |
-| nlp_par | `input.gms:9-12` | Configuration scalars (same as others) |
-| nlp_par | `declarations.gms:9-20` | Parameters for parallel tracking |
-| ALL | `module.gms:8-27` | Module interface and realization selection |
-| ALL | `preloop.gms:8` | Optfile declaration |
+| lp_nlp_apr17 | `modules/80_optimization/lp_nlp_apr17/solve.gms` | LP warmstart + NLP solve loop |
+| lp_nlp_apr17 | `modules/80_optimization/lp_nlp_apr17/input.gms:8-13` | Configuration scalars |
+| lp_nlp_apr17 | `modules/80_optimization/lp_nlp_apr17/declarations.gms` | Parameters and scalars |
+| nlp_apr17 | `modules/80_optimization/nlp_apr17/solve.gms:7-109` | Direct NLP solve with 4-strategy fallback loop |
+| nlp_apr17 | `modules/80_optimization/nlp_apr17/input.gms:8-13` | Configuration scalars (`s80_maxiter`, `s80_optfile`, `s80_secondsolve`, `s80_toloptimal`) |
+| nlp_apr17 | `modules/80_optimization/nlp_apr17/declarations.gms:8-16` | Parameters and scalars (incl. `s80_resolve_option`) |
+| nlp_ipopt | `modules/80_optimization/nlp_ipopt/solve.gms:7-111` | Direct NLP solve with Ipopt; writes `ipopt.opt`/`ipopt.op2`; same-settings retry loop |
+| nlp_ipopt | `modules/80_optimization/nlp_ipopt/input.gms:8-12` | Configuration scalars (`s80_maxiter`, `s80_optfile`, `s80_toloptimal` — no `s80_secondsolve`) |
+| nlp_ipopt | `modules/80_optimization/nlp_ipopt/declarations.gms:8-15` | Parameters and `s80_counter` (no `s80_resolve_option`) |
+| nlp_ipopt | `modules/80_optimization/nlp_ipopt/preloop.gms:9-10` | `File` objects `ipopt.opt` and `ipopt.op2` |
+| nlp_par | `modules/80_optimization/nlp_par/solve.gms` | Parallel NLP with handle management |
+| nlp_par | `modules/80_optimization/nlp_par/input.gms` | Configuration scalars (same as others) |
+| nlp_par | `modules/80_optimization/nlp_par/declarations.gms` | Parameters for parallel tracking |
+| ALL | `modules/80_optimization/module.gms:23-28` | Module interface and realization selection |
+| nlp_apr17 / nlp_par | `preloop.gms:8` | `conopt4.opt` optfile declaration |
 
 ---
 
@@ -801,24 +972,25 @@ Module 80 behavior controlled by main configuration switches in `config/default.
 **Total file:line citations**: 100+
 
 **Key references**:
-- Module overview: `module.gms:8-21`
-- lp_nlp_apr17 strategy: `realization.gms:8-19`
-- lp_nlp_apr17 solve loop: `solve.gms:45-214`
-- nlp_apr17 strategy: `realization.gms:8-12`
-- nlp_apr17 solve loop: `solve.gms:7-110`
-- nlp_par strategy: `realization.gms:8-16`
-- nlp_par parallel mechanism: `solve.gms:36-136`
-- Configuration scalars: `input.gms:9-12`
+- Module overview: `modules/80_optimization/module.gms:8-21`
+- Realization registration: `modules/80_optimization/module.gms:23-28`
+- lp_nlp_apr17 strategy: `modules/80_optimization/lp_nlp_apr17/realization.gms:8-19`
+- nlp_apr17 strategy: `modules/80_optimization/nlp_apr17/realization.gms:8-12`
+- nlp_apr17 solve loop: `modules/80_optimization/nlp_apr17/solve.gms:7-109`
+- nlp_ipopt strategy: `modules/80_optimization/nlp_ipopt/realization.gms:8-13`
+- nlp_ipopt solve loop: `modules/80_optimization/nlp_ipopt/solve.gms:7-111`
+- nlp_ipopt Ipopt option-file writing: `modules/80_optimization/nlp_ipopt/solve.gms:16-50`
+- nlp_par strategy: `modules/80_optimization/nlp_par/realization.gms:8-16`
 - Model declaration: `main.gms` (model magpie / all - m15_food_demand /)
 
 ---
 
 ## Quality Assurance
 
-**Verification Date**: 2025-10-12
+**Verification Date**: 2025-10-12 (initial, 3 realizations); 2026-05-16 sync update (added `nlp_ipopt`)
 
 **Verification Method**:
-- ✅ Read all source files for all 3 realizations (6 solve.gms files, 3 declarations.gms, 3 input.gms, 3 preloop.gms, module.gms)
+- ✅ Read all source files for the original 3 realizations (lp_nlp_apr17, nlp_apr17, nlp_par)
 - ✅ Verified equation count: 0 (Module 80 defines no model equations)
 - ✅ Verified interface variables: 2 (vm_cost_glo, vm_landdiff)
 - ✅ Traced solve sequences for all realizations
@@ -826,9 +998,16 @@ Module 80 behavior controlled by main configuration switches in `config/default.
 - ✅ Verified all parameter declarations against source
 - ✅ Confirmed all file:line citations by direct file reading
 
+**2026-05-16 sync update** (commit 9cba74ab7, PR #871):
+- ✅ Read all 5 new `nlp_ipopt/*.gms` files (realization, declarations, input, preloop, solve) and `module.gms`
+- ✅ Verified `nlp_ipopt` registration in `module.gms:26`
+- ✅ Verified `nlp_apr17` remains the default in `config/default.cfg:2280`
+- ✅ Verified `nlp_ipopt` scalars/parameters against `declarations.gms` and `input.gms`
+- ✅ Verified `nlp_ipopt`'s solve sequence and Ipopt option-file writing against `solve.gms`
+
 **Completeness**:
 - Equation count: 0/0 ✅
-- Realizations documented: 3/3 ✅
+- Realizations documented: 4/4 ✅
 - Parameters documented: 100% ✅
 - Solver configurations: 100% ✅
 - Limitations catalogued: 10 ✅
@@ -875,7 +1054,7 @@ None (terminal aggregator)
 
 ---
 
-**Last Verified**: 2025-10-13
-**Verified Against**: `../modules/80_*/nlp_par/*.gms`
-**Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Last Verified**: 2026-05-16
+**Verified Against**: `../modules/80_optimization/module.gms`, `../modules/80_optimization/nlp_ipopt/*.gms`, `../modules/80_optimization/nlp_apr17/*.gms`
+**Verification Method**: Realizations cross-referenced with source code; new `nlp_ipopt` realization read in full
+**Changes Since Last Verification**: Added `nlp_ipopt` realization (MAgPIE `develop` commit 9cba74ab7, PR #871 — Ipopt as an alternative solver). `nlp_apr17` remains the default.

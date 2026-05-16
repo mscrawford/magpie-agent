@@ -2,10 +2,10 @@
   "_comment": "Tracks synchronization between MAgPIE codebase and agent documentation",
   "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
   "sync_status": {
-    "last_sync_date": "2026-04-20",
-    "last_sync_commit": "451d1fbad",
-    "last_sync_commit_date": "2026-04-02",
-    "last_sync_commit_message": "Merge pull request #874 from mishkos/f_calibration",
+    "last_sync_date": "2026-05-16",
+    "last_sync_commit": "3836bbaa9",
+    "last_sync_commit_date": "2026-05-11",
+    "last_sync_commit_message": "Merge pull request #883 from pascal-sauer/develop",
     "synced_by": "AI agent (Claude, Opus 4.7)",
     "magpie_branch": "develop"
   },
@@ -14,6 +14,55 @@
     "commits": []
   },
   "recent_syncs": [
+    {
+      "date": "2026-05-16",
+      "commit_range": "451d1fbad..3836bbaa9",
+      "summary": "27-commit sync. Three GAMS-affecting feature PRs: #866 bilateral-trade overhaul, #871 IPOPT solver, #876 secondary-forest natural-origin carbon tracking. Updated module_11/14/21/35/52/80 docs; fixed stale vm_cost_trade and v21_cost_trade_reg references across cross_module/ and reference/ docs. Validator: 33/33 checks pass.",
+      "changes_reviewed": [
+        {
+          "commit": "1c2e7031c",
+          "date": "2026-04-30",
+          "description": "PR #866: Major update to bilateral trade implementation",
+          "modules_affected": ["21_trade", "11_costs"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "All three M21 realizations (exo, selfsuff_reduced, selfsuff_reduced_bilateral22) rewritten. Interface variable vm_cost_trade removed, split into vm_cost_trade_tariff / vm_cost_trade_margin / vm_cost_trade_feasibility — all three summed into M11 q11_cost_reg. Internal v21_cost_trade_reg removed; equations q21_cost_trade_reg + q21_cost_trade replaced by q21_cost_trade_tariff/margin/feasibility. New macro m21_baseline_production. bilateral22 q21_trade_bilat / f21_exp_shr replaced by an import-supply-ratio corridor. Config: s21_trade_tariff_fadeout removed; added s21_trade_tariff_factor, s21_stddev_lib_factor, s21_import_supply_scenario, s21_import_supply_scenario_targetyear, s21_trade_scenario_adjustments."
+        },
+        {
+          "commit": "9cba74ab7",
+          "date": "2026-05-05",
+          "description": "PR #871: Adding IPOPT as an alternative solver for MAgPIE",
+          "modules_affected": ["80_optimization"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "New non-default realization nlp_ipopt (declarations/input/preloop/realization/solve.gms). Default remains nlp_apr17. Interior-point Ipopt solver; writes ipopt.opt and ipopt.op2 option files at runtime."
+        },
+        {
+          "commit": "c7731e234",
+          "date": "2026-04-20",
+          "description": "PR #876: Natural-origin tracking for secondary forest carbon density (+ refactor 2fa7b8bea)",
+          "modules_affected": ["35_natveg", "52_carbon"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "M35 pot_forest_may24: new p35_secdforest_natural, pc35_secdforest_natural, p35_carbon_density_secdforest; q35_carbon_secdforest uses the blended density. M52 normal_dec17: bisection upper bound no longer hardcoded 0.3 — new scalars s52_k_high_secdf (0.1), s52_k_high_plant (0.15)."
+        },
+        {
+          "commit": "451d1fbad..3836bbaa9 (range)",
+          "date": "2026-05",
+          "description": "M14 yields preloop change; M15 food postsolve whitespace",
+          "modules_affected": ["14_yields"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "M14 managementcalib_aug19: p14_pyield_corr now applies the historical/LPJmL ratio for every year f14_pyld_hist is available (y1965-y2020) and freezes the last value forward, replacing the t_past-conditional. M15 anthro_iso_jun22 postsolve change was operator-placement whitespace only — no doc impact."
+        }
+      ],
+      "validation_results": {
+        "validator": "validate_consistency.sh: 33/33 checks pass (variables 828/828, equations 138/138, realizations 72/72, citations 2332/2332, default realizations 46/46)",
+        "tooling_fixes": "check_gams_equations.sh doc-extraction backtick-anchored so *italic* deprecated equation names are not flagged (consistent with check_gams_variables.sh; AGENT.md Rule 14 broadened to cover equations). validate_consistency.sh checks 14-18 wrapped in if-conditions so a non-zero sub-checker exit reports gracefully instead of aborting under set -e.",
+        "semantic_validation_recommended": true,
+        "semantic_validation_done": false
+      }
+    },
     {
       "date": "2026-04-20",
       "commit_range": "ce6e1a89a..451d1fbad",
@@ -289,6 +338,42 @@
     "_comment": "Track which modules may need updates based on code changes",
     "potentially_stale": [],
     "recently_updated": [
+      {
+        "module": "21_trade",
+        "update_date": "2026-05-16",
+        "reason": "PR #866: all three realizations rewritten. vm_cost_trade split into vm_cost_trade_tariff/margin/feasibility; v21_cost_trade_reg removed; new equations q21_cost_trade_tariff/margin/feasibility; bilateral22 import-supply-ratio corridor; new tariff-fade and import-supply scenario scalars.",
+        "commit": "1c2e7031c"
+      },
+      {
+        "module": "11_costs",
+        "update_date": "2026-05-16",
+        "reason": "PR #866: q11_cost_reg now sums vm_cost_trade_tariff + vm_cost_trade_margin + vm_cost_trade_feasibility in place of the former single vm_cost_trade (regional-cost term count 30 -> 32).",
+        "commit": "1c2e7031c"
+      },
+      {
+        "module": "80_optimization",
+        "update_date": "2026-05-16",
+        "reason": "PR #871: new non-default nlp_ipopt realization (interior-point Ipopt solver). Default remains nlp_apr17.",
+        "commit": "9cba74ab7"
+      },
+      {
+        "module": "35_natveg",
+        "update_date": "2026-05-16",
+        "reason": "PR #876: natural-origin tracking for secondary-forest carbon density — new p35_secdforest_natural / pc35_secdforest_natural / p35_carbon_density_secdforest; q35_carbon_secdforest uses the blended density.",
+        "commit": "c7731e234"
+      },
+      {
+        "module": "52_carbon",
+        "update_date": "2026-05-16",
+        "reason": "PR #876: growing-stock bisection upper bound no longer hardcoded 0.3 — new scalars s52_k_high_secdf (0.1) and s52_k_high_plant (0.15).",
+        "commit": "c7731e234"
+      },
+      {
+        "module": "14_yields",
+        "update_date": "2026-05-16",
+        "reason": "p14_pyield_corr pasture-yield correction now uses historical f14_pyld_hist for all available years (y1965-y2020) with last-value freeze, replacing the t_past-conditional.",
+        "commit": "451d1fbad..3836bbaa9 (range)"
+      },
       {
         "module": "14_yields",
         "update_date": "2026-04-20",

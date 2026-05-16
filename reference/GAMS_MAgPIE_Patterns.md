@@ -814,7 +814,8 @@ annual_cost = investment_cost / m_annuity_due(interest_rate, lifetime);
 q11_cost_reg(i2) ..
     v11_cost_reg(i2) =e=
     vm_cost_prod_crop(i2) + vm_cost_prod_past(i2) + vm_cost_prod_livst(i2)
-    + vm_cost_trade(i2) + vm_emission_costs(i2) + ... ;
+    + vm_cost_trade_tariff(i2) + vm_cost_trade_margin(i2) + vm_cost_trade_feasibility(i2)
+    + vm_emission_costs(i2) + ... ;
 ```
 
 **Global cost** (objective function):

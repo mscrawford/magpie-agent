@@ -280,7 +280,7 @@ vm_cost_glo
        ├── vm_cost_cropland(j2)       ← v29_fallow_missing, v29_treecover_missing
        ├── vm_cost_bv_loss(j2)        ← v44_bii_missing
        ├── vm_peatland_cost(j2)       ← v58_balance, v58_balance2
-       ├── v21_cost_trade_reg(h2,k)   ← v21_import_for_feasibility
+       ├── vm_cost_trade_feasibility(i2)  ← v21_import_for_feasibility
        └── vm_cost_timber(i2)         ← v73_prod_heaven_timber
 ```
 

@@ -947,7 +947,7 @@ Variable
 Positive Variables
   vm_cost_land_transition(j)          Land transition costs (mio. USD per yr)
   vm_cost_prod(i,kall)                Production costs (mio. USD per yr)
-  vm_cost_trade(i,kall)               Trade costs (mio. USD per yr)
+  vm_cost_trade_tariff(i)             Trade tariff costs (mio. USD per yr)
 ;
 ```
 
@@ -955,7 +955,7 @@ Positive Variables
 ```gams
 vm_cost_glo = sum(i, vm_cost_land_transition(i)
                    + vm_cost_prod(i)
-                   + vm_cost_trade(i)
+                   + vm_cost_trade_tariff(i)
                    + ...);
 ```
 

@@ -218,11 +218,15 @@ pm_carbon_density_other_ac(t_all,j,ac,"litc") =
 #### C. Growing-Stock Calibration (NEW 2026-04-20)
 
 **File**: `preloop.gms:1-118` (new file, runs AFTER start.gms and AFTER Module 28's `im_forest_ageclass` is populated)
-**Switch**: `s52_growingstock_calib` (default **= 1**, `input.gms:46`). When 0, preloop is a no-op.
+**Switch**: `s52_growingstock_calib` (default **= 1**, `input.gms:46`). When 0, preloop's calibration block is skipped (`im_vol_conv` is still computed). Two further scalars set the bisection upper bounds: `s52_k_high_secdf` (default 0.1, `input.gms:47`) and `s52_k_high_plant` (default 0.15, `input.gms:48`).
 
 **Why**: Chapman-Richards `k` values in `f52_growth_par(clcl, "k", forest_type)` come from LPJmL potential vegetation. Observed FAO FRA 2025 growing stocks in managed and secondary forests are typically lower than LPJmL asymptotes (due to degradation, species composition, measurement conventions). Calibration tunes `k` to match FRA regional targets **without** modifying the LPJmL asymptote `A` (the ecological carrying capacity).
 
-**Method**: Regional bisection over `k ∈ [0.001, 0.3]` (25 iterations, set `iter52 / iter1*iter25 /`). For each trial `k`, compute area-weighted growing stock and compare to FRA target. Shape parameter `m` is held fixed at region-average.
+**Method**: Regional bisection (25 iterations, set `iter52 / iter1*iter25 /`). For each trial `k`, compute area-weighted growing stock and compare to FRA target. Shape parameter `m` is held fixed at region-average. The bisection interval is `[0.001, k_high]`, where the upper bound `k_high` is **type-specific** (changed 2026-04-20, commit `c7731e234`):
+- Secdforest calibration: `i52_k_high(i) = s52_k_high_secdf` (default **0.1**, `input.gms:47`)
+- Plantation calibration: `i52_k_high(i) = s52_k_high_plant` (default **0.15**, `input.gms:48`)
+
+Previously both loops used a hardcoded `i52_k_high(i) = 0.3`. The lower bound `s52_k_high_secdf` reflects that FRA NRF growing stock is below the LPJmL potential in most regions; the plantation bound is slightly higher because plantations can exceed natural growth rates.
 
 **Step 1 — Regional wood density** (`preloop.gms:21`):
 ```gams
@@ -249,7 +253,7 @@ GS_trial(i) = Σ(cell,ac) im_forest_ageclass(j,ac)
 ```
 This is the **Chapman-Richards biomass** divided by the full conversion chain `tC → tDM → AGB → stem → m³`. The age distribution `im_forest_ageclass` is the GFAD dataset (including primforest `acx`), provided by Module 28.
 
-Bisection: if `GS_trial < f52_fra_nrf_gs(i)`, raise lower bound; else raise upper bound. With 25 iterations and initial interval width 0.299, final interval width ≈ 9×10⁻⁹ — convergence is purely iteration-count-based (no explicit tolerance check).
+Bisection: if `GS_trial < f52_fra_nrf_gs(i)`, raise lower bound; else raise upper bound. With 25 iterations and initial interval width ≈ 0.099 (`[0.001, 0.1]`), final interval width ≈ 3×10⁻⁹ — convergence is purely iteration-count-based (no explicit tolerance check).
 
 After convergence, **overwrite** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` with calibrated growth curve (`preloop.gms:71-73`).
 
@@ -651,6 +655,18 @@ $if "%c52_carbon_scenario%" == "nocc_hist"
 **Implementation**: See "Land Carbon Sink Adjustment Factors" section above (input.gms:58-66).
 
 **Usage**: Post-processing only, does NOT affect optimization.
+
+### 3. Growing-Stock Calibration Scalars
+
+Declared in the `scalars` block of `input.gms:45-49`:
+
+| Scalar | Default | Purpose |
+|--------|---------|---------|
+| `s52_growingstock_calib` | 1 | Master switch for growing-stock calibration of secdforest and plantation growth curves (1 = on, 0 = off) |
+| `s52_k_high_secdf` | 0.1 | Upper bound for the secdforest `k` bisection — kept low because FRA NRF growing stock is below LPJmL potential in most regions |
+| `s52_k_high_plant` | 0.15 | Upper bound for the plantation `k` bisection — slightly higher than secdforest because plantations can exceed natural growth rates |
+
+> `s52_k_high_secdf` and `s52_k_high_plant` were **added 2026-04-20 (commit `c7731e234`)**. They replace the previously hardcoded `i52_k_high = 0.3` used in both `preloop.gms` bisection loops. See Section 2.C for how they bound the bisection.
 
 ---
 
@@ -1104,6 +1120,8 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 **Configuration options**: Confirmed ✅
 - c52_carbon_scenario: cc/nocc/nocc_hist (input.gms:8)
 - c52_land_carbon_sink_rcp: RCP scenarios (input.gms:13)
+- s52_growingstock_calib: growing-stock calibration switch, default 1 (input.gms:46)
+- s52_k_high_secdf / s52_k_high_plant: bisection upper bounds, default 0.1 / 0.15 (input.gms:47-48)
 
 **Citations**: 100+ file:line references throughout documentation
 
@@ -1187,7 +1205,7 @@ Module 52 (Carbon) serves as **MAgPIE's carbon accounting hub**, providing carbo
 
 ---
 
-**Last Verified**: 2025-10-13
-**Verified Against**: `../modules/52_*/cc/*.gms`
+**Last Verified**: 2026-05-16 (sync — type-specific bisection bounds)
+**Verified Against**: `../modules/52_carbon/normal_dec17/*.gms`
 **Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Changes Since Last Verification**: 2026-05-16 sync to commit `c7731e234`: two new scalars `s52_k_high_secdf` (0.1) and `s52_k_high_plant` (0.15) added to `input.gms`; `preloop.gms` bisection upper bound is now type-specific (was hardcoded 0.3). Updated Section 2.C and added Configuration Options Section 3.

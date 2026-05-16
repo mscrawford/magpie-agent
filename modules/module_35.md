@@ -2,8 +2,11 @@
 
 **Status**: Being documented (COMPLEX - highest priority)
 **Location**: `modules/35_natveg/pot_forest_may24/`
-**Size**: 1,085 lines across 9 files
+**Size**: 1,165 lines across 9 files
 **Authors**: Florian Humpenöder, Abhijeet Mishra, Patrick v. Jeetze
+
+> **🔄 Update 2026-04-20 (commit `c7731e234`, refactor `2fa7b8bea`): Natural-origin tracking for secondary forest carbon density.**
+> Secondary forest is now split by *origin*: existing/managed secdforest uses the FRA-calibrated natveg growth curve (from Module 52), while natural-origin secdforest grown by succession on abandoned cropland uses the **uncalibrated** natveg curve (Braakhekke et al.). The natural-origin area is tracked per age class in the new parameters `p35_secdforest_natural`/`pc35_secdforest_natural`, and `q35_carbon_secdforest` now multiplies area by a blended density `p35_carbon_density_secdforest`. See Section 5.1.
 
 ### Quick Reference
 
@@ -37,15 +40,15 @@
 - `c35_ad_policy` = "none", "npi", "ndc" (avoided deforestation policy)
 
 **File Sizes**:
-- `presolve.gms` (262 lines) ⭐ CRITICAL - Age dynamics, disturbances, recovery, bounds
-- `equations.gms` (229 lines) - 32 equations for land, carbon, harvest, BII
-- `postsolve.gms` (203 lines) - State updates and output
-- `declarations.gms` (140 lines) - 32 equations, 88 variables/parameters
-- `preloop.gms` (99 lines) - Initialization
+- `presolve.gms` (294 lines) ⭐ CRITICAL - Age dynamics, disturbances, recovery, bounds
+- `equations.gms` (233 lines) - 32 equations for land, carbon, harvest, BII
+- `postsolve.gms` (210 lines) - State updates and output
+- `declarations.gms` (143 lines) - 32 equations, variables/parameters
+- `preloop.gms` (107 lines) - Initialization
 - `input.gms` (66 lines) - Configuration and data loading
-- `realization.gms` (48 lines) - Module description
+- `realization.gms` (47 lines) - Module description
 - `sets.gms` (30 lines) - Land types and policies
-- `scaling.gms` (8 lines) - Variable scaling
+- `scaling.gms` (35 lines) - Variable scaling
 
 ---
 
@@ -72,8 +75,8 @@
 - ❌ Does NOT model insect outbreaks, disease, or storms separately (generic only)
 - ❌ Does NOT track individual tree species or forest types
 - ❌ Does NOT model active forest management within natural forests
-- ❌ Harvested primary forest becomes secondary forest (one-way transition) (`realization.gms:37`)
-- ❌ Harvested secondary forest stays secondary (`realization.gms:36-37`)
+- ❌ Harvested primary forest becomes secondary forest (one-way transition) (`realization.gms:35-36`)
+- ❌ Harvested secondary forest stays secondary (`realization.gms:35-36`)
 
 ---
 
@@ -83,7 +86,7 @@
 
 **Primary Forest** (`vm_land(j,"primforest")`):
 - **Definition**: Undisturbed forest, highest carbon density
-- **Dynamics**: Can only decrease (one-way) (`presolve.gms:124-126`)
+- **Dynamics**: Can only decrease (one-way) (`presolve.gms:143-145`)
 - **Harvest**: Converts to secondary forest youngest age class (`equations.gms:208`)
 - **Age class**: Not tracked (assumed mature "acx")
 - **Conservation**: Highest protection level
@@ -92,31 +95,34 @@
 - **Definition**: Regenerating or previously disturbed forest
 - **Age tracking**: Full age-class structure (ac0, ac5, ..., acx)
 - **Sources**: Primary forest harvest, land abandonment, natural regrowth
-- **Harvest**: Stays secondary after harvest (`equations.gms:207`)
+- **Harvest**: Stays secondary after harvest (`equations.gms:208`)
 - **Carbon threshold**: Vegetation carbon > 20 tC/ha
+- **Origin tracking** (2026-04-20): Natural-origin area (from natural succession on abandoned cropland) is tracked separately in `p35_secdforest_natural(t,j,ac)` so its carbon density can be computed with the uncalibrated natveg growth curve (see Section 5.1)
 
 **Other Land** (`vm_land_other(j,othertype35,ac)`):
 - **Two subtypes** (`sets.gms:23-24`):
   - `"othernat"`: Natural grassland, savanna, shrubland
   - `"youngsecdf"`: Young secondary forest with carbon < 20 tC/ha (recovering toward forest)
-- **Transition**: youngsecdf → secdforest when carbon > 20 tC/ha (`presolve.gms:99-107`)
+- **Transition**: youngsecdf → secdforest when carbon > 20 tC/ha (`presolve.gms:116-122`)
 - **Harvest**: Woodfuel only, no industrial timber
 
 #### 2.2 Critical Threshold: 20 tC/ha
 
-**VERIFIED** (`presolve.gms:99-107`):
+**VERIFIED** (`modules/35_natveg/pot_forest_may24/presolve.gms:109-122`):
 ```gams
 *' If the vegetation carbon density in a simulation unit due to regrowth
 *' exceeds a threshold of 20 tC/ha the respective area is shifted from young secondary
 *' forest, which is still considered other land, to secondary forest land.
 p35_maturesecdf(t,j,ac)$(not sameas(ac,"acx")) =
-      p35_land_other(t,j,"youngsecdf",ac)$(pm_carbon_density_secdforest_ac(t,j,ac,"vegc") > 20);
+      p35_land_other(t,j,"youngsecdf",ac)$(pm_carbon_density_secdforest_ac_uncalib(t,j,ac,"vegc") > 20);
 ```
 
 **Meaning**:
 - Below 20 tC/ha: Land is "other land" (not counted as forest)
 - Above 20 tC/ha: Land graduates to "secondary forest" status
 - Threshold applies to vegetation carbon only (not soil carbon)
+
+> **🔄 Changed 2026-04-20 (commit `c7731e234`)**: The maturation test now uses `pm_carbon_density_secdforest_ac_uncalib` (the *uncalibrated* natveg curve), not the FRA-calibrated `pm_carbon_density_secdforest_ac`. Rationale (per `presolve.gms:113-115` comment): natural succession from abandoned cropland should mature at realistic rates, independent of the FRA 2025 calibration applied in Module 52. Freshly matured youngsecdf is recorded as natural-origin area (`p35_secdforest_natural`).
 
 ---
 
@@ -127,7 +133,7 @@ p35_maturesecdf(t,j,ac)$(not sameas(ac,"acx")) =
 - **Interval**: 5 years
 - **Used for**: Secondary forest and other land (both othertype35)
 
-**Age Progression** (`presolve.gms:79-92`):
+**Age Progression** (`presolve.gms:84-97`):
 
 ```gams
 * Regrowth of natural vegetation (natural succession) is modelled by shifting age-classes according to time step length.
@@ -144,7 +150,7 @@ s35_shift = m_timestep_length_forestry/5;
 - For 10-year timesteps: `s35_shift = 2` → ac5 becomes ac15, ac10 becomes ac20, etc.
 - Oldest classes accumulate in `acx` (mature forest)
 
-**Same logic applies** to other land (`presolve.gms:82-85`)
+**Same logic applies** to other land (`presolve.gms:87-90`). The natural-origin area `p35_secdforest_natural` ages in lockstep (`presolve.gms:99-102`) — see Section 5.1.
 
 ---
 
@@ -252,11 +258,11 @@ pcm_land(j,"primforest") = pcm_land(j,"primforest") - p35_disturbance_loss_primf
 
 ### 5. Forest Recovery After Abandonment
 
-**Recovery Sources** (`presolve.gms:43-73`):
+**Recovery Sources** (`presolve.gms:48-78`):
 1. Forestry abandonment (transition from managed plantations to natural land)
 2. Agricultural land abandonment (cropland or pasture to natural land)
 
-**VERIFIED Mechanism** (`presolve.gms:47-73`):
+**VERIFIED Mechanism** (`presolve.gms:53-78`):
 
 **Step 1**: Calculate maximum forest recovery potential
 ```gams
@@ -290,6 +296,65 @@ pc35_land_other(j,"othernat",ac_est) = pc35_land_other(j,"othernat",ac_est) - p3
 
 ---
 
+### 5.1 Natural-Origin Tracking for Secondary Forest Carbon Density (NEW 2026-04-20)
+
+**Introduced by commit `c7731e234`** ("Natural-origin tracking for secondary forest carbon density"), refactored by `2fa7b8bea`.
+
+**Problem addressed**: Module 52 calibrates the secondary-forest Chapman-Richards `k` to FRA 2025 growing-stock targets (`s52_growingstock_calib = 1` by default — see `modules/module_52.md`). That calibration represents *existing* managed/legacy secondary forest, whose realized growing stock is typically below the LPJmL potential. Applying that suppressed growth rate to forest grown by fresh natural succession on abandoned cropland would underestimate its carbon accumulation. The fix tracks the **natural origin** of secondary forest per age class and uses the *uncalibrated* natveg curve for that fraction.
+
+**The two carbon densities**:
+- `pm_carbon_density_secdforest_ac(t,j,ac,ag_pools)` — FRA-calibrated natveg curve (existing/managed secdforest); provided by Module 52
+- `pm_carbon_density_secdforest_ac_uncalib(t,j,ac,ag_pools)` — uncalibrated natveg curve (Braakhekke et al.); provided by Module 52, preserved before the preloop calibration overwrite
+
+**New parameters** (`declarations.gms:16-17,29`):
+- `p35_secdforest_natural(t,j,ac)` — secdforest area from natural succession, using the uncalibrated natveg growth curve (mio. ha)
+- `pc35_secdforest_natural(j,ac)` — current-timestep natural-origin secdforest area (mio. ha)
+- `p35_carbon_density_secdforest(t,j,ac,ag_pools)` — secdforest carbon density blending the FRA-calibrated and uncalibrated curves by natural-origin share (tC per ha)
+
+**Lifecycle of the natural-origin area**:
+
+1. **Initialization** (`preloop.gms:49-50`): `p35_secdforest_natural` and `pc35_secdforest_natural` set to 0 — all initial secdforest is treated as existing/managed (natural origin = 0). New natural-origin area only enters via `youngsecdf` maturation.
+
+2. **Disturbance** (`presolve.gms:42-45`): natural-origin area is reduced proportionally with disturbance losses, preserving the natural-vs-existing ratio of the damaged area:
+   ```gams
+   pc35_secdforest_natural(j,ac_sub)$(pc35_secdforest(j,ac_sub) > 1e-6) =
+     pc35_secdforest_natural(j,ac_sub) * (1 - p35_disturbance_loss_secdf(t,j,ac_sub) / (pc35_secdforest(j,ac_sub) + p35_disturbance_loss_secdf(t,j,ac_sub)));
+   ```
+   (The `1e-12` threshold in commit `c7731e234` was raised to `1e-6` by refactor `2fa7b8bea`.)
+
+3. **Age-class shift** (`presolve.gms:99-102`): natural-origin area ages in lockstep with the secdforest age classes, using the same `s35_shift` logic.
+
+4. **Maturation** (`presolve.gms:116-122`): area maturing from `youngsecdf` into secdforest (`p35_maturesecdf`, gated on the uncalibrated 20 tC/ha threshold — see Section 2.2) is added to `p35_secdforest_natural`. Freshly matured youngsecdf is natural-origin by definition.
+
+5. **Safety clamp** (`presolve.gms:127-128`, `postsolve.gms:14-16`): `pc35_secdforest_natural` is clamped so it never exceeds total `pc35_secdforest`.
+
+6. **Post-solve** (`postsolve.gms:11-16`): natural-origin area stays at its presolve value — the lower bound (step in `presolve.gms:177,179`) prevents the solver from reducing it, and any area *increases* during optimization (harvest cycling into `ac_est`, primforest reclassification, restoration) are NOT natural origin.
+
+**Protection of the natural-origin area** (`presolve.gms:175-180`): the lower bound on `v35_secdforest(j,ac_sub)` is raised to include `pc35_secdforest_natural(j,ac_sub)`, so natural-origin secondary forest cannot be harvested:
+```gams
+if (sum(sameas(t_past,t),1) = 1,
+v35_secdforest.lo(j,ac_sub) = max(pm_land_conservation(t,j,"secdforest","protect") * p35_protection_dist(j,ac_sub), pc35_secdforest_natural(j,ac_sub));
+else
+v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j,ac_sub), pm_land_conservation(t,j,"secdforest","protect") * p35_protection_dist(j,ac_sub), pc35_secdforest_natural(j,ac_sub));
+);
+```
+
+**The blended carbon density** (`presolve.gms:248-252`): `p35_carbon_density_secdforest` is the area-weighted average of the two curves, with the natural-origin share as the weight:
+```gams
+p35_carbon_density_secdforest(t,j,ac,ag_pools) = pm_carbon_density_secdforest_ac(t,j,ac,ag_pools);
+p35_carbon_density_secdforest(t,j,ac,ag_pools)$(pc35_secdforest(j,ac) > 1e-10) =
+  pm_carbon_density_secdforest_ac(t,j,ac,ag_pools)
+  - (pm_carbon_density_secdforest_ac(t,j,ac,ag_pools) - pm_carbon_density_secdforest_ac_uncalib(t,j,ac,ag_pools))
+    * pc35_secdforest_natural(j,ac) / pc35_secdforest(j,ac);
+```
+- Where natural-origin share = 0, the blend equals the FRA-calibrated curve.
+- Where natural-origin share = 1 (all area natural-origin), the blend equals the uncalibrated natveg curve.
+- This blended density feeds `q35_carbon_secdforest` (see Section 6.3).
+
+**Youngsecdf carbon density** (`presolve.gms:241-242`): `p35_carbon_density_other(t,j,"youngsecdf",ac,ag_pools)` is now also set from `pm_carbon_density_secdforest_ac_uncalib` (previously the calibrated curve). Young secondary forest is recovering-from-abandonment land, so the uncalibrated curve is consistent with the maturation logic.
+
+---
+
 ### 6. Key Equations (Complete — 32 Total)
 
 **Full list**: 32 equations in `equations.gms` (229 lines)
@@ -319,12 +384,12 @@ sum((ct,land_natveg), pm_land_conservation(ct,j2,land_natveg,"protect"));
 
 **Purpose**: Total natural land ≥ total protection target (from Module 22)
 
-**q35_min_forest** (`equations.gms:75-77`):
+**q35_min_forest** (`equations.gms:78-80`):
 ```gams
 sum(land_forest, vm_land(j2,land_forest)) =g= sum(ct, p35_min_forest(ct,j2));
 ```
 
-**q35_min_other** (`equations.gms:79`):
+**q35_min_other** (`equations.gms:82`):
 ```gams
 vm_land(j2,"other") =g= sum(ct, p35_min_other(ct,j2));
 ```
@@ -354,13 +419,15 @@ p35_land_restoration(j2,"other");
 
 #### 6.3 Carbon Stocks
 
-**q35_carbon_secdforest** (`equations.gms:46-48`):
+**q35_carbon_secdforest** (`equations.gms:49-51`):
 ```gams
 vm_carbon_stock(j2,"secdforest",ag_pools,stockType) =e=
-  m_carbon_stock_ac(v35_secdforest,pm_carbon_density_secdforest_ac,"ac","ac_sub");
+  m_carbon_stock_ac(v35_secdforest,p35_carbon_density_secdforest,"ac","ac_sub");
 ```
 
 **Purpose**: Carbon = area × age-class-specific carbon density (summed over age classes)
+
+> **🔄 Changed 2026-04-20 (commit `c7731e234`)**: The density argument changed from `pm_carbon_density_secdforest_ac` (Module 52's FRA-calibrated curve) to `p35_carbon_density_secdforest` — a **blended** density computed in `presolve.gms:248-252` that weights the FRA-calibrated curve (existing/managed secdforest) and the uncalibrated natveg curve (natural-origin secdforest) by the per-age-class natural-origin share. See Section 5.1 for the blend formula and the natural-origin tracking mechanism.
 
 **q35_carbon_primforest** (`equations.gms:42-44`):
 ```gams
@@ -371,7 +438,7 @@ vm_carbon_stock(j2,"primforest",ag_pools,stockType) =e=
 **Purpose**: Primary forest carbon stock = area × carbon density. Uses the `m_carbon_stock` macro with `fm_carbon_density` (global, no age-class dimension since primforest is always mature).
 **Key variables**: `vm_land(j,"primforest")` (area), `fm_carbon_density` (carbon density input from LPJmL)
 
-**q35_carbon_other** (`equations.gms:50-52`):
+**q35_carbon_other** (`equations.gms:53-55`):
 ```gams
 vm_carbon_stock(j2,"other",ag_pools,stockType) =e=
   m_carbon_stock_ac(vm_land_other,p35_carbon_density_other,"othertype35,ac","othertype35,ac_sub");
@@ -382,7 +449,7 @@ vm_carbon_stock(j2,"other",ag_pools,stockType) =e=
 
 #### 6.4 Biodiversity Value (BII)
 
-**q35_bv_secdforest** (`equations.gms:60-63`):
+**q35_bv_secdforest** (`equations.gms:63-66`):
 ```gams
 vm_bv(j2,"secdforest",potnatveg) =e=
   sum(bii_class_secd, sum(ac_to_bii_class_secd(ac,bii_class_secd), v35_secdforest(j2,ac)) *
@@ -393,7 +460,7 @@ vm_bv(j2,"secdforest",potnatveg) =e=
 
 **BII coefficients** increase with forest age (Module 44 provides coefficients)
 
-**q35_bv_primforest** (`equations.gms:56-58`):
+**q35_bv_primforest** (`equations.gms:59-61`):
 ```gams
 vm_bv(j2,"primforest",potnatveg) =e=
   vm_land(j2,"primforest") * fm_bii_coeff("primary",potnatveg) * fm_luh2_side_layers(j2,potnatveg);
@@ -402,7 +469,7 @@ vm_bv(j2,"primforest",potnatveg) =e=
 **Purpose**: Biodiversity value of primary forest = area × BII coefficient for "primary" class × LUH2 potential natural vegetation share. Primary forest always uses the highest BII class ("primary"), which has a coefficient of 1.0.
 **Key variables**: `vm_land(j,"primforest")` (area), `fm_bii_coeff("primary",potnatveg)` (BII coefficient), `fm_luh2_side_layers` (spatial mask for potential natural vegetation type)
 
-**q35_bv_other** (`equations.gms:65-68`):
+**q35_bv_other** (`equations.gms:68-71`):
 ```gams
 vm_bv(j2,"other",potnatveg) =e=
   sum(bii_class_secd, sum(ac_to_bii_class_secd(ac,bii_class_secd), sum(othertype35, vm_land_other(j2,othertype35,ac))) *
@@ -414,14 +481,14 @@ vm_bv(j2,"other",potnatveg) =e=
 
 #### 6.5 Harvest Constraints
 
-**q35_hvarea_secdforest** (`equations.gms:172-175`):
+**q35_hvarea_secdforest** (`equations.gms:176-179`):
 ```gams
 v35_hvarea_secdforest(j2,ac_sub) =l= v35_secdforest_reduction(j2,ac_sub);
 ```
 
 **Purpose**: Harvested area ≤ area reduction (not all reduction is harvest - some is conversion)
 
-**q35_hvarea_primforest** (`equations.gms:177-179`):
+**q35_hvarea_primforest** (`equations.gms:181-184`):
 ```gams
 v35_hvarea_primforest(j2) =l= v35_primforest_reduction(j2);
 ```
@@ -429,7 +496,7 @@ v35_hvarea_primforest(j2) =l= v35_primforest_reduction(j2);
 **Purpose**: Harvested area from primary forest ≤ total primary forest reduction. Not all primary forest loss is timber harvest — some may be land use conversion.
 **Key variables**: `v35_hvarea_primforest` (harvest area), `v35_primforest_reduction` (total area reduction)
 
-**q35_hvarea_other** (`equations.gms:182-185`):
+**q35_hvarea_other** (`equations.gms:186-189`):
 ```gams
 v35_hvarea_other(j2,othertype35,ac_sub) =l= v35_other_reduction(j2,othertype35,ac_sub);
 ```
@@ -441,7 +508,7 @@ v35_hvarea_other(j2,othertype35,ac_sub) =l= v35_other_reduction(j2,othertype35,a
 
 > **🔄 Updated 2026-04-20 (PR #869):** Formerly *pm_timber_yield* (tDM/ha/yr, flux) → `im_growing_stock` (tDM/ha, stock). Same formula structure; consumers still divide by `m_timestep_length_forestry` to recover an annual flux. `im_growing_stock` is now provided by **Module 14** (was already Module 14's responsibility; just renamed). Under the new default `s52_growingstock_calib = 1`, the underlying `pm_carbon_density_secdforest_ac(vegc)` is calibrated to FRA 2025 NRF growing stock before M14 computes `im_growing_stock`.
 
-**q35_prod_secdforest** (`equations.gms:141-144`):
+**q35_prod_secdforest** (`equations.gms:144-147`):
 ```gams
 sum(kforestry, vm_prod_natveg(j2,"secdforest",kforestry))
 =e=
@@ -450,7 +517,7 @@ sum(ac_sub, v35_hvarea_secdforest(j2,ac_sub) * sum(ct,im_growing_stock(ct,j2,ac_
 
 **Purpose**: Production = harvested area × growing stock / timestep length
 
-**q35_prod_primforest** (`equations.gms:150-153`):
+**q35_prod_primforest** (`equations.gms:153-156`):
 ```gams
 sum(kforestry, vm_prod_natveg(j2,"primforest",kforestry))
 =e=
@@ -460,7 +527,7 @@ v35_hvarea_primforest(j2) * sum(ct, im_growing_stock(ct,j2,"acx","primforest")) 
 **Purpose**: Woody biomass production from primary forest = harvested area × growing stock at mature age class ("acx") / timestep length. Primary forest always uses the "acx" value since it is assumed mature.
 **Key variables**: `v35_hvarea_primforest` (harvest area), `im_growing_stock(t,j,"acx","primforest")` (stem biomass at mature age class), `m_timestep_length_forestry` (timestep divisor)
 
-**q35_prod_other** (`equations.gms:159-165`):
+**q35_prod_other** (`equations.gms:162-168`):
 ```gams
 sum(kforestry, vm_prod_natveg(j2,"other",kforestry))
 =e=
@@ -474,7 +541,7 @@ sum(kforestry, vm_prod_natveg(j2,"other",kforestry))
 
 #### 6.7 Regeneration
 
-**q35_secdforest_regeneration** (`equations.gms:204-210`):
+**q35_secdforest_regeneration** (`equations.gms:208-214`):
 ```gams
 sum(ac_est, v35_secdforest(j2,ac_est))
 =e=
@@ -487,7 +554,7 @@ sum(ac_sub,v35_hvarea_secdforest(j2,ac_sub))
 
 **CRITICAL**: Harvested primary forest becomes secondary forest (one-way transition)
 
-**q35_other_regeneration** (`equations.gms:214-219`):
+**q35_other_regeneration** (`equations.gms:218-223`):
 ```gams
 sum(ac_est, vm_land_other(j2,"othernat",ac_est))
 =e=
@@ -498,7 +565,7 @@ sum((othertype35,ac_sub),v35_hvarea_other(j2,othertype35,ac_sub))
 **Purpose**: New other natural land in establishment age classes = harvested other land (from both subtypes) + land expansion into "other". Harvested other land regenerates as `othernat` regardless of its original subtype. Land expansion (from agricultural abandonment via Module 10) also enters as `othernat`.
 **Key variables**: `vm_land_other(j,"othernat",ac_est)` (new other land), `v35_hvarea_other` (harvested area), `vm_landexpansion(j,"other")` (land expansion from Module 10)
 
-**q35_secdforest_est** (`equations.gms:224-225`):
+**q35_secdforest_est** (`equations.gms:228-229`):
 ```gams
 v35_secdforest(j2,ac_est) =e= sum(ac_est2, v35_secdforest(j2,ac_est2)) / card(ac_est2);
 ```
@@ -506,7 +573,7 @@ v35_secdforest(j2,ac_est) =e= sum(ac_est2, v35_secdforest(j2,ac_est2)) / card(ac
 **Purpose**: Distributes new secondary forest additions equally across establishment age classes (`ac_est`). For a 10-year timestep, `ac_est` = {ac0, ac5}, so each gets half. This ensures uniform distribution of new area across the establishment period.
 **Key variables**: `v35_secdforest(j,ac_est)` (secdforest in establishment classes), `ac_est2` (alias for `ac_est`), `card(ac_est2)` (number of establishment classes)
 
-**q35_other_est** (`equations.gms:227-228`):
+**q35_other_est** (`equations.gms:231-232`):
 ```gams
 vm_land_other(j2,"othernat",ac_est) =e= sum(ac_est2, vm_land_other(j2,"othernat",ac_est2)) / card(ac_est2);
 ```
@@ -516,7 +583,7 @@ vm_land_other(j2,"othernat",ac_est) =e= sum(ac_est2, vm_land_other(j2,"othernat"
 
 #### 6.8 Maximum Forest Establishment
 
-**q35_max_forest_establishment** (`equations.gms:192-197`):
+**q35_max_forest_establishment** (`equations.gms:196-201`):
 ```gams
 sum(land_forest, vm_landexpansion(j2,land_forest))
 =l=
@@ -532,7 +599,7 @@ sum(ct,pm_max_forest_est(ct,j2))
 
 *' The following technical calculations are needed for reducing differences in land-use patterns between time steps.
 
-**q35_other_expansion** (`equations.gms:97-99`):
+**q35_other_expansion** (`equations.gms:100-102`):
 ```gams
 v35_other_expansion(j2,othertype35) =e= sum(ac_est, vm_land_other(j2,othertype35,ac_est));
 ```
@@ -540,7 +607,7 @@ v35_other_expansion(j2,othertype35) =e= sum(ac_est, vm_land_other(j2,othertype35
 **Purpose**: Other land expansion = area in establishment age classes. Expansion is defined as new area appearing in the youngest age classes relative to the previous timestep.
 **Key variables**: `v35_other_expansion` (gross expansion), `vm_land_other(j,othertype35,ac_est)` (area in establishment classes)
 
-**q35_other_reduction** (`equations.gms:101-103`):
+**q35_other_reduction** (`equations.gms:104-106`):
 ```gams
 v35_other_reduction(j2,othertype35,ac_sub) =e=
   pc35_land_other(j2,othertype35,ac_sub) - vm_land_other(j2,othertype35,ac_sub);
@@ -549,7 +616,7 @@ v35_other_reduction(j2,othertype35,ac_sub) =e=
 **Purpose**: Other land reduction per subtype and age class = previous area (`pc35_land_other`, fixed in presolve after aging) minus current optimized area. Positive values indicate land was converted away.
 **Key variables**: `pc35_land_other` (previous timestep area after aging), `vm_land_other` (current optimized area)
 
-**q35_secdforest_expansion** (`equations.gms:105-107`):
+**q35_secdforest_expansion** (`equations.gms:108-110`):
 ```gams
 v35_secdforest_expansion(j2) =e= sum(ac_est, v35_secdforest(j2,ac_est));
 ```
@@ -557,7 +624,7 @@ v35_secdforest_expansion(j2) =e= sum(ac_est, v35_secdforest(j2,ac_est));
 **Purpose**: Secondary forest expansion = area in establishment age classes. Analogous to other land expansion.
 **Key variables**: `v35_secdforest_expansion`, `v35_secdforest(j,ac_est)`
 
-**q35_secdforest_reduction** (`equations.gms:109-111`):
+**q35_secdforest_reduction** (`equations.gms:112-114`):
 ```gams
 v35_secdforest_reduction(j2,ac_sub) =e=
   pc35_secdforest(j2,ac_sub) - v35_secdforest(j2,ac_sub);
@@ -566,7 +633,7 @@ v35_secdforest_reduction(j2,ac_sub) =e=
 **Purpose**: Secondary forest reduction per age class = previous area minus current optimized area.
 **Key variables**: `pc35_secdforest` (previous timestep area after aging), `v35_secdforest` (current optimized area)
 
-**q35_primforest_reduction** (`equations.gms:113-115`):
+**q35_primforest_reduction** (`equations.gms:116-118`):
 ```gams
 v35_primforest_reduction(j2) =e=
   pcm_land(j2,"primforest") - vm_land(j2,"primforest");
@@ -575,7 +642,7 @@ v35_primforest_reduction(j2) =e=
 **Purpose**: Primary forest reduction = previous area minus current area. Since primary forest has no age classes, this is a simple scalar difference per cluster.
 **Key variables**: `pcm_land(j,"primforest")` (previous timestep area), `vm_land(j,"primforest")` (current area)
 
-**q35_natforest_reduction** (`equations.gms:81-82`):
+**q35_natforest_reduction** (`equations.gms:84-85`):
 ```gams
 vm_natforest_reduction(j2) =e=
   v35_primforest_reduction(j2) + sum(ac_sub, v35_secdforest_reduction(j2,ac_sub));
@@ -584,7 +651,7 @@ vm_natforest_reduction(j2) =e=
 **Purpose**: Total natural forest reduction = primary forest reduction + sum of secondary forest reduction across all age classes. This interface variable is provided to other modules (e.g. Module 73 timber).
 **Key variables**: `vm_natforest_reduction` (total natural forest loss), `v35_primforest_reduction`, `v35_secdforest_reduction`
 
-**q35_landdiff** (`equations.gms:89-95`):
+**q35_landdiff** (`equations.gms:92-98`):
 ```gams
 vm_landdiff_natveg =e=
   sum(j2,
@@ -600,7 +667,7 @@ vm_landdiff_natveg =e=
 
 #### 6.10 Harvest Costs
 
-**q35_cost_hvarea** (`equations.gms:128-134`):
+**q35_cost_hvarea** (`equations.gms:132-138`):
 ```gams
 vm_cost_hvarea_natveg(i2) =e=
   sum((ct,cell(i2,j2),ac_sub), v35_hvarea_secdforest(j2,ac_sub)) * s35_timber_harvest_cost_secdforest
@@ -622,7 +689,7 @@ vm_cost_hvarea_natveg(i2) =e=
 - **Other land**: `s35_timber_harvest_cost_other = 3075 USD17MER/ha`
 - **Secondary forest**: `s35_timber_harvest_cost_secdforest = 2460 USD17MER/ha`
 
-**Rationale** (`equations.gms:121-126`):
+**Rationale** (`equations.gms:124-129`):
 - Higher costs for primary forest mimic access difficulties
 - Costs paid every time natural vegetation is harvested
 - Older forest preferred (higher growing stock, lower per-unit costs)
@@ -642,7 +709,7 @@ vm_cost_hvarea_natveg(i2) =e=
 - Model optimizes harvest based on timber demand and costs
 - Subject to conservation constraints
 
-**VERIFIED** (`presolve.gms:242-250`):
+**VERIFIED** (`presolve.gms:274-282`):
 ```gams
 if(s35_hvarea = 0,
  v35_hvarea_secdforest.fx(j,ac_sub) = 0;
@@ -656,7 +723,7 @@ elseif s35_hvarea = 1,
 
 #### 7.3 Harvest Share Constraint
 
-**VERIFIED** (`presolve.gms:132-141` and `input.gms:25`):
+**VERIFIED** (`presolve.gms:155-160` and `input.gms:25`):
 ```gams
 ** Allowing selective logging only after historical period
 if (sum(sameas(t_past,t),1) = 1,
@@ -672,7 +739,7 @@ vm_land.lo(j,"primforest") = (1-s35_natveg_harvest_shr) * pcm_land(j,"primforest
 
 #### 7.4 Age-Class Harvest Restrictions
 
-**VERIFIED** (`presolve.gms:236-240`):
+**VERIFIED** (`presolve.gms:268-272`):
 ```gams
 ** Youngest age classes are not allowed to be harvested
 v35_hvarea_secdforest.fx(j,ac_est) = 0;
@@ -695,14 +762,14 @@ v35_other_reduction.fx(j,othertype35,ac_est) = 0;
 - `"protect"`: Protected areas (no conversion allowed)
 - `"restore"`: Restoration targets (minimum expansion)
 
-**Applied in presolve** (`presolve.gms:129-213`):
+**Applied in presolve** (`presolve.gms:140-234`):
 - Sets lower bounds on land areas
 - Distributes protection across age classes proportionally
 - Ensures restoration targets are met
 
 #### 8.2 NPI/NDC Policies (Country-Specific)
 
-**VERIFIED** (`input.gms:8-9`, `preloop.gms:62-63`):
+**VERIFIED** (`input.gms:8-9`, `preloop.gms:70-71`):
 ```gams
 $setglobal c35_ad_policy  npi
 ...
@@ -717,11 +784,11 @@ p35_min_other(t,j) = f35_min_land_stock(t,j,"%c35_ad_policy%","other");
 
 **Data**: `f35_min_land_stock` from country reports
 
-**Ramp-up**: Policies ramp up until 2030, constant thereafter (`realization.gms:17-21`)
+**Ramp-up**: Policies ramp up until 2030, constant thereafter (`realization.gms:17-23`)
 
-**NPI/NDC Reversal**: Optional switch to remove policies after a year (`presolve.gms:231-234`)
+**NPI/NDC Reversal**: Optional switch to remove policies after a year (`presolve.gms:262-266`)
 
-**CRITICAL** (`presolve.gms:225-228`):
+**CRITICAL** (`presolve.gms:258-260`):
 ```gams
 p35_min_forest(t,j)$(p35_min_forest(t,j) > pcm_land(j,"primforest") + pcm_land(j,"secdforest") + pcm_land(j,"forestry"))
   = pcm_land(j,"primforest") + pcm_land(j,"secdforest") + pcm_land(j,"forestry");
@@ -731,15 +798,19 @@ p35_min_forest(t,j)$(p35_min_forest(t,j) > pcm_land(j,"primforest") + pcm_land(j
 
 #### 8.3 Protection Distribution
 
-**VERIFIED** (`presolve.gms:153-160`):
+**VERIFIED** (`presolve.gms:172-180`):
 ```gams
 * Secondary forest conservation
 p35_protection_dist(j,ac_sub)$(sum(ac_sub2,pc35_secdforest(j,ac_sub2)) > 0) = pc35_secdforest(j,ac_sub) / sum(ac_sub2,pc35_secdforest(j,ac_sub2));
 ...
-v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j,ac_sub), pm_land_conservation(t,j,"secdforest","protect") * p35_protection_dist(j,ac_sub));
+if (sum(sameas(t_past,t),1) = 1,
+v35_secdforest.lo(j,ac_sub) = max(pm_land_conservation(t,j,"secdforest","protect") * p35_protection_dist(j,ac_sub), pc35_secdforest_natural(j,ac_sub));
+else
+v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j,ac_sub), pm_land_conservation(t,j,"secdforest","protect") * p35_protection_dist(j,ac_sub), pc35_secdforest_natural(j,ac_sub));
+);
 ```
 
-**Mechanism**: Protection distributed proportionally across age classes based on current area
+**Mechanism**: Protection distributed proportionally across age classes based on current area. As of 2026-04-20 (commit `c7731e234`), the lower bound also includes `pc35_secdforest_natural(j,ac_sub)` so natural-origin secondary forest is protected from harvest — see Section 5.1.
 
 ---
 
@@ -822,7 +893,8 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 - `pm_land_conservation(t,j,land_natveg,consv_type)` - Protection and restoration targets
 
 **From Module 52 (Carbon)**:
-- `pm_carbon_density_secdforest_ac(t,j,ac,ag_pools)` - Age-class carbon density
+- `pm_carbon_density_secdforest_ac(t,j,ac,ag_pools)` - Age-class carbon density, FRA-calibrated natveg curve (used for existing/managed secdforest)
+- `pm_carbon_density_secdforest_ac_uncalib(t,j,ac,ag_pools)` - Age-class carbon density, uncalibrated natveg curve (used for natural-origin secdforest, youngsecdf, and the 20 tC/ha maturation test) — new consumer 2026-04-20
 - `pm_carbon_density_other_ac(t,j,ac,ag_pools)` - Other land carbon density
 - `fm_carbon_density(t,j,land,ag_pools)` - Primary forest carbon density
 
@@ -988,28 +1060,28 @@ cfg$gms$s35_secdf_distribution <- 1   # Equal distribution
    - ❌ No climate-fire feedbacks (static scenarios only)
    - Reality: Fire risk depends on forest age, edge distance, climate
 
-2. **Forest maturation threshold** (`presolve.gms:99-107`):
+2. **Forest maturation threshold** (`presolve.gms:116-122`):
    - ❌ Hard 20 tC/ha cutoff for forest/other land classification
    - Reality: Gradual transition, regional variation
 
-3. **Primary to secondary transition** (`realization.gms:37`):
+3. **Primary to secondary transition** (`realization.gms:35-36`):
    - ❌ Harvested primary forest becomes secondary (one-way, irreversible)
    - Reality: Very old secondary forest can approach primary characteristics
 
-4. **Harvest impact** (`equations.gms:207-210`):
+4. **Harvest impact** (`equations.gms:208-214`):
    - ❌ Harvested secondary forest stays secondary (doesn't reset to young)
    - Reality: Clear-cutting resets succession; selective logging doesn't
 
-5. **Biodiversity** (`equations.gms:60-68`):
+5. **Biodiversity** (`equations.gms:59-71`):
    - ❌ BII coefficients globally uniform (no regional variation)
    - Reality: Biodiversity value varies by region, ecosystem type
 
-6. **Age-class initialization** (`realization.gms:31-35`):
+6. **Age-class initialization** (`realization.gms:30-34`):
    - ❌ MODIS data available but causes negative LUC emissions
    - ❌ Current default: Poulter distribution or equal/acx only
    - Reality: Actual age distribution more complex
 
-7. **Restoration** (`presolve.gms:166-178`):
+7. **Restoration** (`presolve.gms:191-198`):
    - ❌ Restoration targets may shift between forest and other land if potential area insufficient
    - Reality: Restoration location and type should be specified
 
@@ -1089,10 +1161,10 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 
 ---
 
-**Last Verified**: 2026-03-06 (21 equations added (32/32 fully documented))
-**Verified Against**: `../modules/35_*/pot_forest_may24/*.gms`
+**Last Verified**: 2026-05-16 (sync — natural-origin tracking for secdforest carbon density)
+**Verified Against**: `../modules/35_natveg/pot_forest_may24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Changes Since Last Verification**: 2026-05-16 sync to commit `c7731e234` (+ refactor `2fa7b8bea`): added Section 5.1 (natural-origin tracking for secondary forest carbon density); new parameters `p35_secdforest_natural`, `pc35_secdforest_natural`, `p35_carbon_density_secdforest`; `q35_carbon_secdforest` now uses blended density `p35_carbon_density_secdforest`; 20 tC/ha maturation test now uses `pm_carbon_density_secdforest_ac_uncalib`; updated file sizes.
 
 ## Interface Variables
 

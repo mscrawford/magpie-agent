@@ -94,7 +94,7 @@ These major modules have a single realization — use **switches** for behaviora
 - **`selfsuff_reduced`** (default): Two-pool trade at superregional level. Best balance of speed and trade representation.
 - **`exo`**: Fully exogenous trade, regions isolated. Use for debugging or fixed-trade scenarios.
 - **`selfsuff_reduced_bilateral22`**: Adds explicit bilateral flows, tariff fadeout. Use when analyzing specific trade corridors or bilateral tariff policy. Slowest option.
-- All three expose the same interface (`vm_cost_trade`) — fully interchangeable.
+- All three expose the same interface (`vm_cost_trade_tariff`, `vm_cost_trade_margin`, `vm_cost_trade_feasibility`) — fully interchangeable.
 
 ### Module 38 — Factor Costs: `sticky_feb18` vs `per_ton_fao_may22` vs `sticky_labor`
 - **`sticky_feb18`** (default): Capital investment with depreciation. Path-dependent costs create realistic inertia.

@@ -20,7 +20,7 @@ Module 11 is the **central cost aggregation hub** and **defines MAgPIE's optimiz
 ### 1.2 Key Features
 
 1. **Global Cost Aggregation** (`equations.gms:10`): Sums regional costs to produce global total
-2. **Regional Cost Aggregation** (`equations.gms:15-45`): Sums **30 cost components** (29 positive + 1 negative term) from production, land use, emissions, and policy modules
+2. **Regional Cost Aggregation** (`equations.gms:15-47`): Sums **32 cost components** (31 positive + 1 negative term) from production, land use, emissions, and policy modules
 3. **Objective Function Definition:** `vm_cost_glo` is the variable MAgPIE minimizes
 4. **Scaling for Numerical Stability** (`scaling.gms:8-10`): Applies scaling factors to improve solver performance
 5. **Zero Configuration:** Module has no input files, switches, or parameters of its own
@@ -78,7 +78,7 @@ This equation defines what MAgPIE minimizes. Every decision about land use, prod
 
 ### 2.2 Equation q11_cost_reg: Regional Cost Aggregation
 
-**File:** `equations.gms:15-45`
+**File:** `equations.gms:15-47`
 
 ```gams
 q11_cost_reg(i2) .. v11_cost_reg(i2) =e= sum(factors,vm_cost_prod_crop(i2,factors))
@@ -96,7 +96,9 @@ q11_cost_reg(i2) .. v11_cost_reg(i2) =e= sum(factors,vm_cost_prod_crop(i2,factor
                    - vm_reward_cdr_aff(i2)
                    + sum(factors,vm_maccs_costs(i2,factors))
                    + vm_cost_AEI(i2)
-                   + vm_cost_trade(i2)
+                   + vm_cost_trade_tariff(i2)
+                   + vm_cost_trade_margin(i2)
+                   + vm_cost_trade_feasibility(i2)
                    + vm_cost_fore(i2)
                    + vm_cost_timber(i2)
                    + vm_cost_hvarea_natveg(i2)
@@ -136,7 +138,9 @@ RegionalCost = CropProductionCosts
               - AfforestationCDRRewards
               + AbatementCosts
               + IrrigationExpansionCosts
-              + TradeCosts
+              + TradeTariffCosts
+              + TradeMarginCosts
+              + TradeFeasibilityCosts
               + ForestryCosts
               + TimberHarvestCosts
               + NaturalVegetationHarvestCosts
@@ -155,7 +159,7 @@ RegionalCost = CropProductionCosts
 
 **Note:** `vm_reward_cdr_aff` has a **negative sign** — afforestation CDR (Carbon Dioxide Removal) generates revenue, reducing net costs.
 
-**Citation:** `equations.gms:15-49`
+**Citation:** `equations.gms:15-47`
 
 ---
 
@@ -276,11 +280,13 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 
 #### Trade Costs
 
-**Variable:** `vm_cost_trade(i)`
+**Variables:** `vm_cost_trade_tariff(i)`, `vm_cost_trade_margin(i)`, `vm_cost_trade_feasibility(i)`
 **Source Module:** Module 21 (Trade)
-**Description:** Bilateral trade costs (tariffs, transport, handling) and trade margins
+**Description:** Regional trade costs, split into three interface variables — import-tariff costs, transport-margin (freight + insurance) costs, and a feasibility-import penalty. Each is summed separately into `q11_cost_reg`.
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:30`, documented in `equations.gms:60`
+**Citation:** `equations.gms:30-32`, documented in `equations.gms:62`
+
+> **PR #866 (2026-05)**: the former single trade-cost variable *vm_cost_trade* was removed and split into these three. Module 11's only change is that `q11_cost_reg` now adds three terms where it previously added one. `vm_cost_trade_feasibility` is fixed at 0 in the `exo` and `selfsuff_reduced_bilateral22` realizations of Module 21 (no feasibility-import mechanism there), so it contributes 0 to the sum in those cases — Module 11 still sums it unconditionally.
 
 ---
 
@@ -512,7 +518,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 
 **v11_cost_reg(i)** - Regional total production cost (mio. USD17MER/yr)
 **Purpose:** Intermediate aggregation for cleaner code structure
-**Calculated by:** Equation q11_cost_reg (sum of **30 terms**: 29 positive cost components + 1 negative reward term)
+**Calculated by:** Equation q11_cost_reg (sum of **32 terms**: 31 positive cost components + 1 negative reward term)
 **Used by:** Equation q11_cost_glo (aggregated to global total)
 **Citation:** `declarations.gms:10`
 
@@ -520,7 +526,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 
 ### 4.3 Inputs (Received from Other Modules)
 
-Module 11 receives **30 cost variables** (29 costs + 1 reward) from other modules. See Section 3 for complete mapping.
+Module 11 receives **32 cost variables** (31 costs + 1 reward) from other modules. See Section 3 for complete mapping.
 
 **Key Pattern:** All cost variables have naming convention `vm_cost_*` or `vm_*_cost*` and units of mio. USD17MER/yr.
 
@@ -729,7 +735,7 @@ grep "^[ ]*q11_" modules/11_costs/default/declarations.gms | wc -l
 
 **After running MAgPIE:**
 
-1. **Check that all 30 cost variables are non-negative** (except `vm_reward_cdr_aff`):
+1. **Check that all 32 cost variables are non-negative** (except `vm_reward_cdr_aff`):
    ```gams
    * Inspect solution values for all cost variables listed in Section 3
    * Flag any negative costs (would indicate source module error)
@@ -743,7 +749,7 @@ grep "^[ ]*q11_" modules/11_costs/default/declarations.gms | wc -l
 
 3. **Identify dominant cost components:**
    ```gams
-   * Rank all 30 cost variables by magnitude
+   * Rank all 32 cost variables by magnitude
    * Top 5-10 components should account for >90% of total
    * Typical dominants: vm_cost_prod_crop, vm_emission_costs, vm_tech_cost
    ```
@@ -944,7 +950,7 @@ Module 11 is at the **end of the dependency chain** — it aggregates costs but 
 ### 14.1 Current Realization (default)
 
 **Features:**
-- Simple summation of **30 cost components** (29 positive + 1 negative reward)
+- Simple summation of **32 cost components** (31 positive + 1 negative reward)
 - No dynamic weighting or prioritization
 - No cost uncertainty or risk aversion
 
@@ -1097,7 +1103,7 @@ Module 11 does **not directly participate** in any conservation laws:
 - Module 17 (production): ❌ No costs (aggregates production)
 - Module 18 (residues): v18_res_use_costs (residue management)
 - Module 20 (processing): v20_processing_costs (food processing)
-- Module 21 (trade): vm_cost_trade (transport and trade)
+- Module 21 (trade): vm_cost_trade_tariff, vm_cost_trade_margin, vm_cost_trade_feasibility (trade tariffs, transport margins, feasibility-import penalty)
 - Module 22 (land_conservation): v22_cost_conservation (protected area management)
 - Module 28 (age_class): v28_cost_age_class (age class tracking infrastructure)
 - Module 29 (cropland): vm_cost_cropland_expansion (cropland conversion)
@@ -1206,7 +1212,8 @@ Module 11 participates in **zero circular dependencies**:
    # Verify all expected cost components are present and non-negative
    factor_costs <- readGDX(gdx, "ov_cost_prod", field="l")
    emission_costs <- readGDX(gdx, "ov_emission_costs", field="l")
-   trade_costs <- readGDX(gdx, "ov_cost_trade", field="l")
+   # PR #866: trade costs are now three separate GDX symbols
+   trade_costs <- readGDX(gdx, "ov_cost_trade_tariff", field="l")
    stopifnot(all(factor_costs >= 0))
    stopifnot(all(emission_costs >= 0))
    stopifnot(all(trade_costs >= 0))
@@ -1262,14 +1269,14 @@ Module 11 participates in **zero circular dependencies**:
 
 ---
 
-**Documentation Status:** ✅ Fully Verified (2025-10-12)
-**Verification Method:** All source files read, 2 equations verified against declarations.gms, 147 lines analyzed, 30 cost components (29 positive + 1 negative) catalogued from equations.gms
+**Documentation Status:** ✅ Verified (2026-05-16 — PR #866 sync)
+**Verification Method:** All source files read, 2 equations verified against declarations.gms, 32 cost components (31 positive + 1 negative) catalogued from `equations.gms:15-47`
 **Citation Density:** 50+ file:line references
 **Next Module:** Module 17 (Production) — another core hub module
 
 ---
 
-**Last Verified**: 2025-10-13
-**Verified Against**: `../modules/11_*/default/*.gms`
-**Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Last Verified**: 2026-05-16
+**Verified Against**: `../modules/11_costs/default/equations.gms`, `../modules/11_costs/default/declarations.gms`
+**Verification Method**: Equations cross-referenced with current `develop` working-tree source code
+**Changes Since Last Verification**: PR #866 split the Module 21 trade-cost interface — *vm_cost_trade* removed, replaced by `vm_cost_trade_tariff` + `vm_cost_trade_margin` + `vm_cost_trade_feasibility` in `q11_cost_reg`. Regional-cost term count: 30 → 32.

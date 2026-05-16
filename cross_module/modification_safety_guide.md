@@ -219,7 +219,7 @@ vm_cost_landcon.up(j,"primforest") = 1e6;  * USD/ha
 | `vm_nr_inorg_fert_costs` | 50_nr_soil_budget | ~50-150 billion |
 | `vm_emission_costs` | 56_ghg_policy | 0-500 billion (policy-dependent) |
 | `vm_cost_landcon` | 39_landconversion | ~10-50 billion |
-| `vm_cost_trade` | 21_trade | ~5-20 billion |
+| `vm_cost_trade_tariff`, `vm_cost_trade_margin`, `vm_cost_trade_feasibility` | 21_trade | ~5-20 billion (combined) |
 
 **Source**: module_11.md (lines 84-115)
 

@@ -28,8 +28,11 @@ ALLOWLIST=(
 GAMS_EQUATIONS=$(rg -oN '\bq\d+_[a-zA-Z_]+[a-zA-Z]\b' --no-filename "$MAGPIE_ROOT/modules/" 2>/dev/null | sort -u)
 GAMS_COUNT=$(echo "$GAMS_EQUATIONS" | wc -l | tr -d ' ')
 
-# Extract equation references from AI docs
-DOC_REFS=$(rg -oN '\bq\d+_[a-zA-Z_]+[a-zA-Z]\b' "$AGENT_DIR/modules/" 2>/dev/null || true)
+# Extract equation references from AI docs.
+# Only backtick-wrapped names are checked, so *italic* deprecated names in
+# historical notes ("replaces the former *q21_cost_trade_reg*") are not flagged
+# (AGENT.md Rule 14) — matching check_gams_variables.sh behavior.
+DOC_REFS=$(rg -oN '`q\d+_[a-zA-Z_]+[a-zA-Z]\b' "$AGENT_DIR/modules/" 2>/dev/null | sed 's/`//' || true)
 
 TOTAL=0
 VERIFIED=0

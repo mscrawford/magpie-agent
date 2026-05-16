@@ -2,7 +2,7 @@
 
 **Realization:** `managementcalib_aug19`
 **Date:** August 2019
-**Total Lines of Code:** 557
+**Total Lines of Code:** 569
 **Equation Count:** 2
 **Status:** ✅ Fully Verified (2025-10-12)
 
@@ -146,7 +146,7 @@ i14_yields_calib(t,j,"betr",w) = f14_yields(t,j,"betr",w) * sum((supreg(h,i),cel
 
 ### 3.2 Stage 2: Pasture Management Correction
 
-**File:** `preloop.gms:14-20`
+**File:** `preloop.gms:14-27`
 
 **Problem Addressed:** LPJmL pasture yields don't reflect regional differences in grazing intensity and management practices.
 
@@ -156,20 +156,27 @@ i14_yields_calib(t,j,"betr",w) = f14_yields(t,j,"betr",w) * sum((supreg(h,i),cel
 p14_pyield_LPJ_reg(t,i) = (sum(cell(i,j),i14_yields_calib(t,j,"pasture","rainfed") * pm_land_start(j,"past")) /
                             sum(cell(i,j),pm_land_start(j,"past")) );
 
-p14_pyield_corr(t,i) = (f14_pyld_hist(t,i)/p14_pyield_LPJ_reg(t,i))$(sum(sameas(t_past,t),1) = 1)
-      + sum(t_past,(f14_pyld_hist(t_past,i)/(p14_pyield_LPJ_reg(t_past,i)+0.000001))$(ord(t_past)=card(t_past)))$(sum(sameas(t_past,t),1) <> 1);
+*' Pasture yield correction: use historical data for all years where available
+*' (f14_pyld_hist covers y1965–y2020), freeze at the last available value beyond.
+p14_pyield_corr(t,i)$(f14_pyld_hist(t,i) > 0) = f14_pyld_hist(t,i) / (p14_pyield_LPJ_reg(t,i) + 0.000001);
+loop(t,
+  p14_pyield_corr(t,i)$(p14_pyield_corr(t,i) = 0) = p14_pyield_corr(t-1,i);
+);
 
 i14_yields_calib(t,j,"pasture",w) = i14_yields_calib(t,j,"pasture",w) * sum(cell(i,j),p14_pyield_corr(t,i));
 ```
 
 **What This Does:**
-1. Calculate regional average LPJmL pasture yield weighted by initial pasture area
-2. Compute correction factor = historical modeled pasture yield / LPJmL regional yield
-3. Apply correction to all cells in the region
+1. Calculate regional average LPJmL pasture yield weighted by initial pasture area (`p14_pyield_LPJ_reg`)
+2. Compute the correction factor `p14_pyield_corr` = historical modeled pasture yield (`f14_pyld_hist`) / regional LPJmL yield, **for every year where `f14_pyld_hist` is available**
+3. For years with no historical data, carry forward the previous year's correction factor (the `loop(t, ...)` line freezes the last available value)
+4. Apply the correction to all cells in the region
 
 **Rationale:** Historical model runs incorporate pasture management patterns; this correction propagates that knowledge into LPJmL yields.
 
-**Citation:** `preloop.gms:14-21`
+> **🔄 Changed 2026-04-20 (commit `c7731e234`)**: The computation of `p14_pyield_corr` was rewritten. The old formula used a `t_past`-conditional: it applied the historical/LPJmL ratio for `t_past` years and, for years beyond `t_past`, froze at the *last `t_past` year* (y2015). The new version applies the historical ratio for **every** year where `f14_pyld_hist` is non-zero — and `f14_pyld_hist` covers y1965–y2020 — then carries the last available value forward via `loop(t, ...)`. This pushes the freeze point from y2015 to y2020, using observed data through y2020 and avoiding the discontinuity that previously appeared at the `t_past` boundary. **No new or renamed parameters** — only the computation logic changed. `f14_pyld_hist(t_all,i)` is declared in `input.gms:45` as "Modelled regional pasture yields in the past (tDM per ha per yr)".
+
+**Citation:** `preloop.gms:14-27`
 
 ---
 
@@ -830,7 +837,7 @@ Module 14 reads 9 input data files:
 ### 9.2 Intermediate Calibration Parameters
 
 **p14_pyield_corr(t,i)** - Pasture yield correction factor (dimensionless)
-**Computed in:** `preloop.gms:18-19`
+**Computed in:** `preloop.gms:22-25` (historical/LPJmL ratio for every year `f14_pyld_hist` is available, then last value carried forward)
 **Purpose:** Corrects LPJmL pasture yields to historical model patterns
 **Citation:** `declarations.gms:11`
 
@@ -1566,7 +1573,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 
 ---
 
-**Last Verified**: 2026-01-20
-**Verified Against**: `../modules/14_yields/managementcalib_aug19/*.gms` (origin/develop branch)
+**Last Verified**: 2026-05-16 (sync — pasture yield correction extrapolation)
+**Verified Against**: `../modules/14_yields/managementcalib_aug19/*.gms` (develop branch)
 **Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: f_btc2 update - vm_tau and pcm_tau now at cluster level (j) instead of super-region (h) in equations q14_yield_crop and q14_yield_past
+**Changes Since Last Verification**: 2026-05-16 sync to commit `c7731e234`: `p14_pyield_corr` computation rewritten (Section 3.2) — now applies the historical/LPJmL ratio for every year `f14_pyld_hist` is available (y1965–y2020) and freezes at the last available value, replacing the old `t_past`-conditional that froze at y2015. No new/renamed parameters. Prior: f_btc2 update — `vm_tau`/`pcm_tau` at cluster level (j) in `q14_yield_crop`/`q14_yield_past`.
