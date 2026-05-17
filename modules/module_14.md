@@ -107,7 +107,7 @@ PastureYield(j,w) = CalibratedPastureYield(j,w) × ManagementFactor × [1 + spil
 - **vm_yld(j,"pasture",w)**: Output pasture yield (tDM/ha/yr)
 - **i14_yields_calib(ct,j,"pasture",w)**: Calibrated pasture baseline from preloop
 - **pm_past_mngmnt_factor(ct,i)**: Exogenous pasture management factor from Module 70 (livestock demand-driven)
-- **s14_yld_past_switch**: Spillover parameter (default 0.25, range 0-1) (`input.gms:24`)
+- **s14_yld_past_switch**: Spillover parameter (default 0.25, range 0-1) (`input.gms:20`)
 - **pcm_tau(j2,"crop")**: Previous time step's crop τ factor at cluster level (not current time step!)
 - **Interpretation:** 25% of crop sector intensification benefits pasture yields
 
@@ -318,7 +318,7 @@ if ((s14_calib_ir2rf = 1),
 
 **Bugfix Note (2025-09-26):** The re-calibration step (lines 130-140) was corrected to use `i14_yields_calib` instead of `f14_yields` for total cropland weighting, ensuring consistency with the first-stage calibration. Additionally, the same division-by-zero protection (dual condition checks) from Step 3a is applied here to handle edge cases.
 
-**Control Switch:** `s14_calib_ir2rf = 1` enables this (default ON, `input.gms:15`)
+**Control Switch:** `s14_calib_ir2rf = 1` enables this (default ON, `input.gms:16`)
 
 **Citation:** `preloop.gms:116-143`
 
@@ -345,7 +345,7 @@ i14_yields_calib(t,j,"pasture",w) = i14_yields_calib(t,j,"pasture",w)
 
 **Use Case:** After running MAgPIE, if historical cropland areas don't match observations, compute adjustment factors that correct yields to match observed patterns, then use these factors in future runs.
 
-**Default:** OFF (`s14_use_yield_calib = 0`, `input.gms:19`)
+**Default:** OFF (`s14_use_yield_calib = 0`, `input.gms:18`)
 
 **Citation:** `preloop.gms:150-167`
 
@@ -372,7 +372,7 @@ if ((s14_degradation = 1),
 Yield_degraded = Yield × (1 - reduction) + Yield × reduction × intact_fraction
 
 Where:
-- reduction = 0.08 for soil loss (8% yield penalty, s14_yld_reduction_soil_loss, input.gms:25)
+- reduction = 0.08 for soil loss (8% yield penalty, s14_yld_reduction_soil_loss, input.gms:21)
 - reduction = pollinator_dependence for pollination (0-1 by crop, f14_kcr_pollinator_dependence)
 - intact_fraction = share of cell with intact NCP (0-1, from f14_yld_ncp_report.cs3)
 ```
@@ -391,7 +391,7 @@ Where:
 
 **NCP Tracking:** Module 14 expects another module to provide `f14_yld_ncp_report(t,j,ncp_type14)` with "soil_intact" and "poll_suff" shares (likely Module 29 or Module 35).
 
-**Citation:** `preloop.gms:171-188`, `input.gms:17,25`
+**Citation:** `preloop.gms:171-188`, `input.gms:17,21`
 
 ---
 
@@ -514,7 +514,7 @@ im_growing_stock(t,j,ac,land_natveg)$(im_growing_stock(t,j,ac,land_natveg) < s14
 
 ### 5.1 Climate Scenario
 
-**File:** `input.gms:8-12`
+**File:** `input.gms:8-11`
 
 ```gams
 $setglobal c14_yields_scenario  cc
@@ -529,13 +529,13 @@ $setglobal c14_yields_scenario  cc
 - **nocc:** Fix all yields to 1995 values (no climate impact on productivity)
 - **nocc_hist:** Use climate change up to year `sm_fix_cc`, then hold constant (counterfactual: "no climate change after 2020")
 
-**Implementation:** `input.gms:48-49` replaces future LPJmL yields with 1995 or fixed-year values
+**Implementation:** `input.gms:41-42` replaces future LPJmL yields with 1995 or fixed-year values
 
-**Citation:** `input.gms:8-49`
+**Citation:** `input.gms:8-43`
 
 ### 5.2 Limited Calibration Switch
 
-**File:** `input.gms:13`
+**File:** `input.gms:15`
 
 ```gams
 scalar s14_limit_calib   Relative managament calibration switch (1=limited 0=pure relative) / 1 /;
@@ -545,17 +545,17 @@ scalar s14_limit_calib   Relative managament calibration switch (1=limited 0=pur
 - **1 (default):** Enable limited calibration (lambda-based blending)
 - **0:** Pure relative calibration (λ always = 1)
 
-**Citation:** `input.gms:13`
+**Citation:** `input.gms:15`
 
 ### 5.3 Irrigated-Rainfed Calibration
 
-**File:** `input.gms:15`
+**File:** `input.gms:16`
 
 ```gams
 scalar s14_calib_ir2rf   Switch to calibrate rainfed to irrigated yield ratios (1=calib 0=not calib) / 1 /;
 ```
 
-**Citation:** `input.gms:15`
+**Citation:** `input.gms:16`
 
 ### 5.4 Degradation Effects
 
@@ -571,7 +571,7 @@ scalar s14_degradation   Switch to include yield impacts of land degradation(0=n
 
 ### 5.5 Pasture Spillover Magnitude
 
-**File:** `input.gms:24`
+**File:** `input.gms:20`
 
 ```gams
 s14_yld_past_switch  Spillover parameter for translating technological change in the crop sector into pasture yield increases  (1)     / 0.25 /
@@ -581,11 +581,11 @@ s14_yld_past_switch  Spillover parameter for translating technological change in
 
 **Valid Range:** 0 (no spillover) to 1 (full spillover)
 
-**Citation:** `input.gms:24`
+**Citation:** `input.gms:20`
 
 ### 5.6 Degradation Severity
 
-**File:** `input.gms:25`
+**File:** `input.gms:21`
 
 ```gams
 s14_yld_reduction_soil_loss  Decline of land productivity in areas with severe soil loss (1)     / 0.08 /
@@ -593,7 +593,7 @@ s14_yld_reduction_soil_loss  Decline of land productivity in areas with severe s
 
 **Default:** 0.08 (8% yield reduction on land with soil loss)
 
-**Citation:** `input.gms:25`
+**Citation:** `input.gms:21`
 
 ---
 
@@ -603,27 +603,27 @@ Module 14 reads 9 input data files:
 
 ### 6.1 LPJmL Yield Data
 
-**File:** `lpj_yields.cs3` (read at `input.gms:44`)
+**File:** `lpj_yields.cs3` (read at `input.gms:37`)
 **Contents:** Gridded potential yields for all crops, pasture, and bioenergy under rainfed and irrigated conditions (tDM/ha/yr), time-varying to incorporate climate change
 **Dimensions:** t_all × j × kve × w (time, cells, crops, water systems)
 
 ### 6.2 Historical Pasture Yields
 
-**File:** `f14_pasture_yields_hist.csv` (read at `input.gms:54`)
+**File:** `f14_pasture_yields_hist.csv` (read at `input.gms:47`)
 **Contents:** Regional pasture yields from historical model runs (tDM/ha/yr)
 **Purpose:** Used in Stage 2 calibration (`preloop.gms:18`) to correct LPJmL pasture patterns
 **Dimensions:** t_all × i (time, regions)
 
 ### 6.3 FAO Historical Yields
 
-**File:** `f14_region_yields.cs3` (read at `input.gms:60`)
+**File:** `f14_region_yields.cs3` (read at `input.gms:53`)
 **Contents:** FAO-reported regional yields for all crops (tDM/ha/yr)
 **Purpose:** Target for limited calibration in Stage 3
 **Dimensions:** t_all × i × kcr (time, regions, crops)
 
 ### 6.4 AQUASTAT Irrigated-Rainfed Ratios
 
-**File:** `f14_ir2rf_ratio.cs4` (read at `input.gms:68`)
+**File:** `f14_ir2rf_ratio.cs4` (read at `input.gms:61`)
 **Contents:** Country-level irrigated/rainfed yield ratios from AQUASTAT
 **Purpose:** Target for Stage 4 calibration
 **Citation:** `@fao_aquastat_2016` in `module.gms:21`
@@ -631,7 +631,7 @@ Module 14 reads 9 input data files:
 
 ### 6.5 IPCC Biomass Expansion Factor (BEF)
 
-**File:** `f14_ipcc_bef.cs3` (read at `input.gms:66`)
+**File:** `f14_ipcc_bef.cs3` (read at `input.gms:69`)
 **Parameter:** `fm_ipcc_bef(clcl)` — **interface parameter** (prefix `fm_`)
 **Contents:** Climate-zone-specific Biomass Expansion Factor (AGB/stem_biomass, always > 1)
 **Purpose:** Convert aboveground biomass to stem-only biomass in growing-stock calculation and in Module 52's growing-stock calibration
@@ -639,7 +639,7 @@ Module 14 reads 9 input data files:
 
 ### 6.6 Aboveground Fraction
 
-**File:** `f14_aboveground_fraction.csv` (read at `input.gms:74`)
+**File:** `f14_aboveground_fraction.csv` (read at `input.gms:77`)
 **Parameter:** `fm_aboveground_fraction(land_timber)` — **interface parameter** (prefix `fm_`)
 **Contents:** Fraction of total biomass that is aboveground (stems/branches vs. roots)
 **Purpose:** Growing-stock calculation (only aboveground biomass is harvestable) and Module 52's growing-stock calibration
@@ -647,14 +647,14 @@ Module 14 reads 9 input data files:
 
 ### 6.7 NCP Degradation Indicators
 
-**File:** `f14_yld_ncp_report.cs3` (read at `input.gms:90`, optional)
+**File:** `f14_yld_ncp_report.cs3` (read at `input.gms:85`, optional)
 **Contents:** Share of land with intact nature's contributions to people (NCP): soil integrity and pollination sufficiency (0-1)
 **Purpose:** Stage 6 degradation effects
 **Dimensions:** t_all × j × ncp_type14 (time, cells, "soil_intact"/"poll_suff")
 
 ### 6.8 Pollinator Dependence by Crop
 
-**File:** `f14_kcr_pollinator_dependence.csv` (read at `input.gms`)
+**File:** `f14_kcr_pollinator_dependence.csv` (read at `input.gms:93`)
 **Contents:** Share of yield dependent on biotic pollination for each crop (0-1)
 **Example:** Oilpalm ≈0.4, maize ≈0, rapeseed ≈0.3
 **Purpose:** Scale pollination deficiency impact by crop sensitivity
@@ -662,7 +662,7 @@ Module 14 reads 9 input data files:
 
 ### 6.9 Optional Yield Calibration Factors
 
-**File:** `f14_yld_calib.csv` (read at `input.gms:37`, optional)
+**File:** `f14_yld_calib.csv` (read at `input.gms:30`, optional)
 **Contents:** Regional adjustment factors for crops and pasture (1 = no adjustment)
 **Purpose:** Stage 5 post-calibration correction from previous model runs
 **Dimensions:** i × ltype14 (regions, "crop"/"past")
@@ -1231,9 +1231,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 4. Timber yield calculation — supports forestry and natural vegetation harvest
 5. Degradation effects (soil loss, pollination) — optional NCP accounting
 
-**Alternative Realizations:**
-- **biocorrect:** Simpler calibration without λ, uses current time step τ for pasture
-- **input:** No calibration, pure LPJmL yields (debugging only)
+**Realizations:** `managementcalib_aug19` is the **only** realization. `module.gms` contains a single `$Ifi "%yields%" == "managementcalib_aug19"` branch. An earlier `biocorrect` realization was removed in 2021 (commit `cc84ae5e1`, "Update to new revision and clean up old realizations"). There is no `input` realization; `modules/14_yields/input/` is the input-data directory, not a realization.
 
 ---
 
