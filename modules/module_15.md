@@ -750,7 +750,7 @@ $include "./modules/15_food/input/f15_supply2intake_ratio_FAO_iso.cs3"
      - `im_physical_inactivity(t,iso,sex,age)`: Inactivity fraction (1)
    - **Why critical**: ALL food demand calculations depend on these drivers
    - **Timing**: Module 09 runs in `preloop`, Module 15 in `presolve`
-   - **File**: `presolve.gms:10-340` uses these throughout
+   - **File**: `presolve.gms:10-339` uses these throughout
 
 **2. MAgPIE Optimization** (if elastic demand):
    - **Variables received**:

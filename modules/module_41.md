@@ -719,7 +719,7 @@ vm_cost_AEI.scale(i) = 10e4;
 - Faster but less flexible
 
 **Sources**:
-- endo_apr13/equations.gms:8-24
+- endo_apr13/equations.gms:8-23
 - static/equations.gms:8-17
 
 ### 11.2 Realism vs. Simplicity

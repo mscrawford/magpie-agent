@@ -27,9 +27,9 @@
 - `sets.gms` - Feed categories and emission sources (sets.gms:8-25)
 - `declarations.gms` - Equation declarations (declarations.gms:9-23)
 - `input.gms` - Emission factors and data loading (input.gms:8-27)
-- `equations.gms` - 4 emission calculation equations (equations.gms:8-73)
-- `preloop.gms` - Variable bounds initialization (preloop.gms:8-11)
-- `postsolve.gms` - Output reporting (postsolve.gms:8-29)
+- `equations.gms` - 4 emission calculation equations (equations.gms:8-72)
+- `preloop.gms` - Variable bounds initialization (preloop.gms:8-10)
+- `postsolve.gms` - Output reporting (postsolve.gms:8-28)
 
 **Equations**: 4 (enteric fermentation, AWMS, rice, residue burning)
 
@@ -388,7 +388,7 @@ Module 53 uses interface variables declared in other modules.
 ### Variables Read by Module 53
 
 **1. vm_feed_intake** (Module 70: Livestock)
-- **Declaration**: `vm_feed_intake(i,kli,kall)` (Module 70 declarations.gms)
+- **Declaration**: `vm_feed_intake(i,kap,kall)` (Module 70 `fbask_jan16/declarations.gms:18`) — the second set is `kap` (all animal products: livst_rum, livst_pig, livst_chick, livst_egg, livst_milk, fish), NOT `kli`. Module 53 only references the `kli` subset (excluding fish) in its equations, but the variable itself is dimensioned over the broader `kap` set.
 - **Description**: Feed intake by livestock type and feed type (tDM per year)
 - **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:21,25,27)
 - **Provider**: Module 70 (Livestock) calculates feed demand based on livestock productivity
@@ -546,7 +546,7 @@ Module 53 has **2 realizations**:
 
 Module 53 **reads from** these modules:
 
-**1. Module 70 (Livestock)**: `vm_feed_intake(i,kli,kall)`
+**1. Module 70 (Livestock)**: `vm_feed_intake(i,kap,kall)` (broader animal-product set; Module 53 uses only the `kli` subset)
 - Feed intake by livestock type and feed type
 - Used for enteric fermentation calculation
 
@@ -585,7 +585,7 @@ Module 53 **provides to** these modules:
 ### Execution Sequence
 
 1. **Preloop** (before optimization loop):
-   - Module 53: Initialize variable bounds (preloop.gms:8-11)
+   - Module 53: Initialize variable bounds (preloop.gms:8-10)
    - Module 57: Calculate MACC mitigation fractions (preloop, provides `im_maccs_mitigation`)
 
 2. **Each timestep**:
@@ -602,7 +602,7 @@ Module 53 **provides to** these modules:
      - Optimization balances CH4 mitigation costs against other objectives
 
    - **After optimization (Postsolve)**:
-     - Module 53: Report equation outputs (postsolve.gms:8-29)
+     - Module 53: Report equation outputs (postsolve.gms:8-28)
 
 ---
 
@@ -1152,6 +1152,6 @@ None
 ---
 
 **Last Verified**: 2026-03-06 (confirmed complete, equation count corrected)
-**Verified Against**: `../modules/53_*/ipcc2006_13/*.gms`
+**Verified Against**: `../modules/53_*/ipcc2006_aug22/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

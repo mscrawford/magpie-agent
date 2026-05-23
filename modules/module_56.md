@@ -517,7 +517,7 @@ For years ≤ `sm_fix_SSP2` (default: 2025), always use "reddnatveg_nosoil" rega
 
 ### 3.8 Stage 8: Age-Class-Specific C Price for Afforestation
 
-**File:** `preloop.gms:93-124`
+**File:** `preloop.gms:93-123`
 
 ```gams
 *initialize age-class dependent C price with same C price for all age-classes
@@ -553,7 +553,7 @@ If 2020 C price = $50/tC, 2030 = $100/tC, 2040 = $150/tC:
 
 Afforestation decisions depend on **expected future revenue**, not current prices. Perfect foresight up to 50 years represents forward-looking investors (governments, carbon projects).
 
-**Citation:** `preloop.gms:93-124`
+**Citation:** `preloop.gms:93-123`
 
 ---
 
@@ -673,13 +673,13 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 ### 6.1 Pricing Parameters
 
 **im_pollutant_prices(t,i,pollutants,emis_source)** - Configured GHG prices (USD17MER/Tg)
-**Constructed in:** `preloop.gms:35-124` through multi-stage configuration process
+**Constructed in:** `preloop.gms:35-123` through multi-stage configuration process
 **Citation:** `declarations.gms:9`
 
 ---
 
 **p56_c_price_aff(t,i,ac)** - Age-class-specific C price for afforestation decisions (USD17MER/tC)
-**Constructed in:** `preloop.gms:93-124` with price foresight logic
+**Constructed in:** `preloop.gms:93-123` with price foresight logic
 **Citation:** `declarations.gms:11`
 
 ---
@@ -1113,7 +1113,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 ### Methodological Limitations
 
-4. **CDR buffer not mechanically enforced**: Carbon Dioxide Removal (CDR) is constrained by `sm_cdr_target` (default = 0, unconstrained), but this only sets a policy floor. Under-delivery of CDR pledges is not penalized — the constraint is soft and voluntary.
+4. **No explicit CDR target or pledge enforcement**: Carbon Dioxide Removal (CDR) via afforestation is incentivized through the discounted price-driven reward `vm_reward_cdr_aff` (`price_aug22/declarations.gms:43`), with permanence risk handled by `s56_buffer_aff` (default 0.5 = 50% of CDR credited; see Limitation 8 row in the parameter table). The model has no explicit CDR target, pledge floor, or quota constraint — CDR happens only when discounted future carbon-price revenue exceeds afforestation costs over the foresight horizon (`s56_c_price_exp_aff`, default 50 years). Under-delivery of national or international CDR pledges is not penalized; the response is fully voluntary and price-driven.
 
 5. **50-year price foresight cap**: Maximum anticipation period is limited to 50 years. The CO2 price reduction factor `s56_cprice_red_factor` (default = 1, full price applied) scales the carbon price incentive — setting it to 0 eliminates price foresight entirely. Afforestation investments that sequester carbon over 100+ years see only the first 50 years of carbon revenue at best.
 
@@ -1154,6 +1154,6 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/56_*/emis_policy/*.gms`
+**Verified Against**: `../modules/56_*/price_aug22/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

@@ -761,6 +761,6 @@ Benjamin Leon Bodirsky, Florian Humpenöder, Edna Molina Bacca `realization.gms:
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/20_*/substitution_dec18/*.gms`
+**Verified Against**: `../modules/20_*/substitution_may21/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

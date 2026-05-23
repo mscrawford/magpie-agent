@@ -30,12 +30,17 @@ Type `/feedback` for detailed instructions.
 
 ```
 feedback/
-├── pending/        ← Feedback awaiting review
-├── integrated/     ← Archive of processed feedback
-├── global/         ← System-wide lessons (agent_lessons.md)
-├── templates/      ← Submission templates
-├── archive/        ← Archived infrastructure (scripts, guides)
-└── README.md       ← You are here
+├── pending/                       ← Feedback awaiting review
+├── integrated/                    ← Archive of processed feedback
+├── global/                        ← System-wide lessons (agent_lessons.md)
+├── templates/                     ← Submission templates
+├── archive/                       ← Archived infrastructure (scripts, guides)
+├── validation_rounds.json         ← Semantic-flywheel round log (21+ rounds; schema v1.1)
+├── pipeline_audit_rounds.json     ← Structural-audit round log (added 2026-05-23)
+├── pipeline_audit_round1.md       ← R1 detailed findings report
+├── flywheel_rubric.md             ← v1.0 scoring spec for /validate-semantic
+├── probe_dedup_ledger.json        ← Names off-limits for fresh probes (added 2026-05-23)
+└── README.md                      ← You are here
 ```
 
 ## Feedback Types
@@ -53,6 +58,10 @@ feedback/
 - `global/agent_lessons.md` — System-wide lessons the agent has learned
 - `pending/README.md` — Detailed guide for the pending feedback workflow
 - `templates/*.md` — Ready-to-fill feedback templates
+- `validation_rounds.json` — Persistent record of every /validate-semantic round (severity tiers + audit format in `flywheel_rubric.md`); each round MUST include at least one regression question from the top-level `regression_questions` array
+- `flywheel_rubric.md` — Canonical scoring spec (severity tiers, mechanical checks, bug classes, anchor examples); referenced by /validate-semantic and the Opus auditor
+- `pipeline_audit_rounds.json` + `pipeline_audit_roundN.md` — /pipeline-audit structural audits of the agent's own machinery
+- `probe_dedup_ledger.json` — Tracks names already in agent rule text / past rounds; new probes that hit these names risk testing recognition rather than capability (run `scripts/probe_dedup_check.py`)
 
 ## Integration
 

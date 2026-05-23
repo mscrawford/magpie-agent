@@ -15,7 +15,7 @@
 
 Module 13 implements endogenous technological change and land use intensification through the tau factor (τ) framework. The module calculates the cost of investments needed to increase agricultural yields via land use intensification, creating an endogenous feedback loop where the optimization balances intensification costs against land expansion costs.
 
-**Key Innovation**: The model shifts investment costs 15 years into the future using interest rates, representing the research lag between investment and yield improvement (realization.gms:8-36, Dietrich et al. 2014).
+**Key Innovation**: The model shifts investment costs 15 years into the future using interest rates, representing the research lag between investment and yield improvement (realization.gms:8-33, Dietrich et al. 2014).
 
 **Conservation Area Feature**: Since the f_btc2 update, the module distinguishes between regular cropland (`v13_tau_core`) and cropland within conservation priority areas (`v13_tau_consv`), allowing reduced intensification in conservation areas.
 
@@ -33,7 +33,7 @@ q13_cost_tc(i2, tautype) ..
                      i13_tc_factor(ct) * sum(supreg(h2,i2),v13_tau_core(h2,tautype))**
                      i13_tc_exponent(ct) * (1+pm_interest(ct,i2))**15);
 ```
-*Source*: `equations.gms:20-23`
+*Source*: `modules/13_tc/endo_jan22/equations.gms:20-23`
 
 **Formula Breakdown**:
 - `pc13_land(i2, tautype)`: Regional agricultural area (mio ha) from previous timestep
@@ -58,7 +58,7 @@ q13_tech_cost(i2, tautype) ..
  v13_tech_cost(i2, tautype) =e= sum(supreg(h2,i2), v13_tau_core(h2,tautype)/pc13_tau(h2,tautype)-1) * v13_cost_tc(i2,tautype)
                                * sum(ct,pm_interest(ct,i2)/(1+pm_interest(ct,i2)));
 ```
-*Source*: `equations.gms:40-42`
+*Source*: `modules/13_tc/endo_jan22/equations.gms:40-42`
 
 **Formula Breakdown**:
 - `v13_tau_core(h2,tautype)/pc13_tau(h2,tautype) - 1`: Intensification rate (τ_current / τ_previous - 1)
@@ -84,7 +84,7 @@ q13_tech_cost(i2, tautype) ..
 q13_tech_cost_sum(i2) ..
  vm_tech_cost(i2) =e= sum(tautype, v13_tech_cost(i2, tautype));
 ```
-*Source*: `equations.gms:44-45`
+*Source*: `modules/13_tc/endo_jan22/equations.gms:44-45`
 
 **Simple Aggregation**: Sums annualized costs across both tau types (crop, pasture) for inclusion in Module 11 (Costs) via interface variable `vm_tech_cost`.
 
@@ -100,7 +100,7 @@ q13_tau(j2,tautype)..
         (1-p13_cropland_consv_shr(ct,j2)) * v13_tau_core(h2,tautype) 
         + p13_cropland_consv_shr(ct,j2) * v13_tau_consv(h2,tautype));
 ```
-*Source*: `equations.gms:47-51`
+*Source*: `modules/13_tc/endo_jan22/equations.gms:52-58`
 
 **Formula Breakdown**:
 - `p13_cropland_consv_shr(ct,j2)`: Share of cropland in conservation priority areas at cluster j
@@ -120,7 +120,7 @@ q13_tau(j2,tautype)..
 q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year(ct)) < s13_croparea_consv_start)..
  v13_tau_consv(h2,tautype) =e= p13_croparea_consv_tau_factor(h2) * v13_tau_core(h2,tautype);
 ```
-*Source*: `equations.gms:56-57`
+*Source*: `modules/13_tc/endo_jan22/equations.gms:59-60`
 
 **Formula Breakdown**:
 - `p13_croparea_consv_tau_factor(h2)`: Regional factor (default 0.8) to reduce intensification in conservation areas
@@ -173,47 +173,47 @@ q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year
 
 ### Input Files
 
-1. **fm_tau1995.cs4** (`input.gms:14-19`): Initial τ values for year 1995 by region (Dietrich et al. 2012)
-2. **f13_tcguess.cs4** (`input.gms:21-26`): Initial guess for annual TC rates (used for solver warm start)
-3. **f13_tc_factor.cs3** (`input.gms:30-34`): Regression factor by time and scenario (USD17MER per ha)
-4. **f13_tc_exponent.cs3** (`input.gms:36-40`): Regression exponent by time and scenario (dimensionless)
-5. **f13_tau_historical.csv** (`input.gms:42-46`): Historical τ trajectory for crops
-6. **f13_pastr_tau_hist.csv** (`input.gms:48-52`): Historical τ trajectory for pasture
+1. **fm_tau1995.cs4** (`modules/13_tc/endo_jan22/input.gms:51-56`): Initial τ values for year 1995 by region (Dietrich et al. 2012)
+2. **f13_tcguess.cs4** (`modules/13_tc/endo_jan22/input.gms:58-63`): Initial guess for annual TC rates (used for solver warm start)
+3. **f13_tc_factor.cs3** (`modules/13_tc/endo_jan22/input.gms:67-71`): Regression factor by time and scenario (USD17MER per ha)
+4. **f13_tc_exponent.cs3** (`modules/13_tc/endo_jan22/input.gms:73-77`): Regression exponent by time and scenario (dimensionless)
+5. **f13_tau_historical.csv** (`modules/13_tc/endo_jan22/input.gms:79-83`): Historical τ trajectory for crops
+6. **f13_pastr_tau_hist.csv** (`modules/13_tc/endo_jan22/input.gms:85-89`): Historical τ trajectory for pasture
 
 ---
 
 ### Configuration Switches
 
-**s13_ignore_tau_historical** (`input.gms:10`):
+**s13_ignore_tau_historical** (`modules/13_tc/endo_jan22/input.gms:10`):
 - `1` (default): Ignore historical τ values (free optimization from start)
 - `0`: Use historical τ as lower bound in historical periods
 
-**s13_max_gdp_shr** (`input.gms:11`):
+**s13_max_gdp_shr** (`modules/13_tc/endo_jan22/input.gms:11`):
 - Default: `Inf` (no constraint)
 - Alternative: Share of regional GDP (e.g., 0.01 = 1% of GDP)
 - **Purpose**: Caps technology investments to avoid unrealistically high endogenous investments (`presolve.gms:30-42`)
 
-**c13_tccost** (`input.gms:28`):
+**c13_tccost** (`modules/13_tc/endo_jan22/input.gms:65`):
 - `low`, `medium` (default), `high`: Selects TC cost scenario from input tables
 - Applied after historical SSP2 period (`preloop.gms:8-16`)
 
-**c13_croparea_consv** (`input.gms:12`):
+**c13_croparea_consv** (`modules/13_tc/endo_jan22/input.gms:12`):
 - `0` (default): No croparea conservation differentiation
 - `1`: Enable conservation area tau differentiation
 
-**c13_croparea_consv_tau_increase** (`input.gms:13`):
+**c13_croparea_consv_tau_increase** (`modules/13_tc/endo_jan22/input.gms:13`):
 - `1` (default): Allow tau increases in conservation areas (via equation q13_tau_consv)
 - `0`: Freeze tau in conservation areas at initial level
 
-**s13_croparea_consv_tau_factor** (`input.gms:14`):
+**s13_croparea_consv_tau_factor** (`modules/13_tc/endo_jan22/input.gms:14`):
 - Default: `0.8` (20% lower intensification in conservation areas)
 - Applied via `p13_croparea_consv_tau_factor(h)` after country weighting
 
-**s13_croparea_consv_shr** (`input.gms:16`):
+**s13_croparea_consv_shr** (`modules/13_tc/endo_jan22/input.gms:16`):
 - Default: `0` (use conservation areas from Module 22)
 - Alternative: Direct share of cropland subject to conservation management
 
-**s13_croparea_consv_start / s13_croparea_consv_target** (`input.gms:18-19`):
+**s13_croparea_consv_start / s13_croparea_consv_target** (`modules/13_tc/endo_jan22/input.gms:18-19`):
 - Start year: `2025` (default)
 - Target year: `2030` (default)
 - Sigmoid interpolation between these years
@@ -257,7 +257,7 @@ q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year
 
 ---
 
-### Initial Values (`presolve.gms:74-82`)
+### Initial Values (`presolve.gms:74-78`)
 
 **First timestep** (ord(t) = 1):
 - `v13_tau_core.l = pc13_tau` (start at 1995 historical value)
@@ -326,7 +326,7 @@ vm_tech_cost.l(i) = vm_tech_cost.up(i)
 
 ## Key Limitations
 
-1. **Uniform Cost Function**: Uses single power function globally, only varying by scenario (low/medium/high) and time, not by biophysical region characteristics (input.gms:28-40, preloop.gms:8-16).
+1. **Uniform Cost Function**: Uses single power function globally, only varying by scenario (low/medium/high) and time, not by biophysical region characteristics (input.gms:65-40, preloop.gms:8-16).
 
 2. **Fixed 15-Year Lag**: Research lag is hard-coded as 15 years, not varied by technology type or region (equations.gms:23).
 
@@ -336,7 +336,7 @@ vm_tech_cost.l(i) = vm_tech_cost.up(i)
 
 5. **No Technology Spillover**: Intensification costs are independent for crop and pasture, no accounting for knowledge spillovers between systems (equations.gms:20-45).
 
-6. **Aggregated Regional Level**: Tau is defined at supreg (super-region) level `h`, not at cell level `j`, so intensification is spatially uniform within super-regions (declarations.gms:9).
+6. **Aggregated Regional Level**: The TC *decision variable* `v13_tau_core(h,tautype)` is at super-region level `h` (declarations.gms:9), so the underlying intensification investment is spatially uniform within super-regions. The *interface output* `vm_tau(j,tautype)` IS at cluster level `j` (declarations.gms:13), produced by `q13_tau` as a weighted average across conservation-area shares within each super-region. So `vm_tau` varies across clusters within an `h`, but only through the conservation-area mask — the underlying intensification investment itself is uniform within `h`.
 
 7. **No Diminishing Returns Over Time**: Power function parameters are time-varying (input files) but structure assumes same functional form throughout, no accounting for technology frontier effects (input.gms:30-40).
 

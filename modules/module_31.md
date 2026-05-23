@@ -717,6 +717,6 @@ Module 31 takes yields exogenously from Module 14, missing feedbacks:
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/31_*/static/*.gms`
+**Verified Against**: `../modules/31_*/endo_jun13/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

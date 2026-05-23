@@ -199,7 +199,8 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/bootstrap` | First-time setup | New users |
 | `/validate` | Check documentation consistency (syntactic) | Maintainers |
 | `/validate-module` | Validate specific module docs | Maintainers |
-| `/validate-semantic` | Run adversarial semantic accuracy flywheel | Maintainers |
+| `/validate-semantic` | Run adversarial semantic accuracy flywheel (scoring spec: `feedback/flywheel_rubric.md`) | Maintainers |
+| `/pipeline-audit` | Multi-lens structural audit of the agent's own machinery (6 parallel Opus agents) | Maintainers |
 
 **Note**: Agent auto-update and AGENT.md deployment happen automatically at session start (see session_startup.md Step 0). Use `/update` when you want to also sync docs with MAgPIE develop and run semantic freshness validation on affected modules.
 
@@ -323,46 +324,34 @@ Before answering code-specific questions, verify documentation is current:
 **Modules with multiple realizations** (check these before answering):
 13, 18, 21, 29, 30, 31, 34, 37, 38, 40, 41, 42, 44, 51, 53, 55, 58, 59, 60, 70
 
-### Step 1d: Anti-Confabulation Rules
+### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 
-**Semantic validation (3 rounds, 15 questions, 109 bugs found) revealed that ~56% of bugs are plausible confabulations — the agent invents correct-sounding but wrong details.** Scores improved from 6.7→8.2 after rules 1-6, but Round 3 showed 85% confabulation rate when probing less-familiar modules. These rules are critical:
+**16 MANDATEs** that prevent recurring confabulation patterns identified across 21 semantic-validation rounds (445 catalogued bugs, 297 fixed; see `feedback/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
 
-1. **Never construct formulas from memory.** If the docs don't contain the exact formula, say "The docs don't include this formula — let me check the source code" and read the actual `.gms` file.
+**Why hoisted**: ~150 lines of binding rules don't belong in always-loaded AGENT.md context; auto-loading on relevant triggers saves tokens, and a dedicated MANDATE doc with binding language separates "must enforce" from "FYI".
 
-2. **Never invent causal mechanisms.** When explaining cross-module interactions, cite specific variables and equations from docs or code. If you can't find the connecting mechanism, say so.
+**Short index** (so you know what's there):
 
-3. **Verify default parameter values against `../config/default.cfg`** before citing them. Default values change across MAgPIE versions — don't rely on memorized or doc-stated values for:
-   - Scenario switches (`c56_pollutant_prices`, `c70_feed_scen`, etc.)
-   - Scalar parameters (`s42_pumping`, `s14_calib_ir2rf`, etc.)
-   - Year thresholds (`sm_fix_SSP2`, etc.)
+| # | MANDATE | Trigger |
+|---|---------|---------|
+| 1 | Formula provenance | Math expressions |
+| 2 | Causal-mechanism provenance | Cross-module claims |
+| 3 | Default-parameter verification | `c<N>_*`, `s<N>_*`, `sm_*` defaults |
+| 4 | Capability vs default | Any mechanism description |
+| 5 | Pseudocode labeling | Code-like illustrations |
+| 6 | Module characterization lookup | "Module X handles Y" |
+| 7 | Variable-name lookup | `vm_*`, `pm_*`, `v<N>_*`, etc. |
+| 8 | Realization-name verification | Realization names |
+| 9 | Cost-variable attribution | `vm_cost_*` |
+| 10 | Set-sum non-expansion | `sum(set, ...)` |
+| 11 | Range non-truncation | Age classes, year ranges |
+| 12 | Exact set-member labels | Set element references |
+| 13 | Interface-parameter consumer grep | New `pm_*`/`vm_*`/`im_*` |
+| 14 | Deprecated-name italics | Renamed variables/equations |
+| 15 | Post-rename global grep | Any global rename |
+| 16 | Citation full-path + post-merge line numbers | `file:line` citations |
 
-4. **Distinguish "capability" from "default behavior."** Many features have scenario switches that are OFF by default (e.g., `s42_pumping = 0` disables water costs). Always state the default state: "This feature exists but is **disabled by default** (`s42_pumping = 0`)."
-
-5. **Never present pseudocode as real code.** If you're illustrating a concept, clearly label it: "Conceptually: ..." not "The code does: ..."
-
-6. **Never characterize a module you haven't just looked up.** Even for one-sentence descriptions (e.g., "Module 38 handles X"), check `modules/module_XX.md` first. Round 2 validation found that wrong module characterizations were the #1 remaining bug class.
-
-7. **Never construct variable or parameter names from patterns.** Round 3 validation (2026-03-07) found the agent invents plausible-sounding GAMS names by combining MAgPIE naming conventions (e.g., `vm_water_available`, `vm_water_demand`, `pcm_AEI`) — none of which exist. ALWAYS look up the actual variable name in `modules/module_XX.md` or `grep` the GAMS code. If you can't find it, say so.
-
-8. **Never guess realization names.** The agent tends to construct realization names from module keywords + date suffixes (e.g., `fbask_aug21`, `endo_jun13`, `agr_sector_aug13`). These often don't exist. ALWAYS verify: `grep "cfg\$gms\$<module>" ../config/default.cfg` for the default, or `ls ../modules/XX_name/` for all realizations.
-
-9. **Never attribute a cost variable to a module without checking.** Round 3 found 5 cost variables wrongly attributed to Module 38 (only `vm_cost_prod_crop` is Module 38; livestock/fish costs are Module 70, pasture is Module 31, residues are Module 18). When listing which module provides a variable, check `modules/module_XX.md` or `grep -rn "variable_name" ../modules/*/declarations.gms`.
-
-10. **Never expand set-based sums into explicit member lists.** If code uses `sum(land, vm_land(j,land))`, report it as-is — do NOT rewrite as `vm_land(j,"crop") + vm_land(j,"past") + ...`. Set-based sums are intentionally generic; expanding them risks omitting members or inventing non-existent ones. (R14 Q1-B1, R16 Q4-B1, Q4-B2)
-
-11. **Never truncate or abbreviate ranges.** If docs say a set spans "ac0, ac5, ..., ac300, acx" (62 elements), report the full range — do NOT shorten to "ac0, ..., ac140, acx". This led to a critical bug in R16 Q3 where the answerer truncated the age-class range, contradicting the documentation.
-
-12. **Never generalize GAMS set member labels.** Use exact set element names from code: `livst_rum` not "beef", `total_wood_products` not "all products", `begr` not "grassy bioenergy". Generalized labels sound natural but can't be traced back to code, and may conflate distinct set elements.
-
-13. **When documenting a new interface parameter, GREP ALL CONSUMERS across the codebase before writing.** R20 (2026-04-20) found that documenting only the one consumer mentioned in a commit message misses other consumers that already existed or were added in the same PR. Before writing: `grep -rn "<new_parameter_name>" ../modules/ ../core/ --include="*.gms"` and enumerate EVERY consumer. Example failure: when `pm_carbon_density_*_ac_uncalib` was introduced, the doc listed only M29 tree cover; M32 afforestation and NDC (at `presolve.gms:59,61,68`) were also consumers — producing a Major bug in validation.
-
-14. **For deprecated variable and equation names in historical context, use `*italics*` (NOT backticks).** The GAMS variable and equation checkers match backtick-wrapped names against current GAMS code. Sentences like "renamed from `old_name`" flag forever as missing. Convention: `*old_name*` for the deprecated name, `` `new_name` `` for the current one. Example: `formerly *pm_timber_yield*, now `im_growing_stock``.
-
-15. **After any global rename, grep EVERY affected doc for the old name.** R20 post-sync had 10 stale backtick references because the first-pass doc update only touched the "primary" sections. When renaming in AGENT docs: `grep -rn "<old_name>" modules/module_*.md` and update ALL occurrences before committing. Then run `scripts/check_gams_variables.sh` to confirm zero stale references.
-
-16. **For file:line citations, use FULL relative paths.** The citation checker resolves bare filenames by "first match within module number" — if a module has both `simple_apr24/preloop.gms` and `detail_apr24/preloop.gms`, the first is picked even if you meant the second. Always cite as `modules/XX_name/realization_dir/file.gms:NN`. Also: draft line numbers from the FINAL merged code (post `git pull`), not from diff output during triage — R20 had 13 line-drift bugs from this pattern.
-
-**Validation tracking**: See `feedback/validation_rounds.json` for the full audit history (scores, bugs, root causes). Future agents should append new rounds to this file.
+**Validation tracking**: See `feedback/validation_rounds.json` for the full audit history (scores, bugs, root causes). The rubric for scoring is `feedback/flywheel_rubric.md`. Future agents append new rounds to validation_rounds.json. Severity tiers and immutable anchor examples are in flywheel_rubric.md §1.
 
 ### Step 2: Cite Your Sources
 
@@ -439,6 +428,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 
 | User intent detected | Load this helper | Trigger keywords |
 |---------------------|-----------------|-----------------|
+| **Naming a specific GAMS interface variable, equation, realization, or default (NOT broad module-XX questions)** | `agent/helpers/verifiers.md` (16 anti-confabulation MANDATEs) | "vm_", "pm_", "v<N>_", "p<N>_", "s<N>_", "c<N>_", "q<N>_", "realization", "default value", "default realization", "modify code", "variable name", "equation name" |
 | Reading/writing/explaining GAMS code | `reference/GAMS_MAgPIE_Patterns.md` + other phases as needed | "GAMS", "gms file", "equation", "variable declaration", "write code", "modify code", "code means", "explain this code", "debug code", "what does this do", ".gms" |
 | Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort" |
 | Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget" |
@@ -492,7 +482,7 @@ When reporting documentation sync status, use these badges:
 
 ## 📚 COMPLETE DOCUMENTATION STRUCTURE
 
-MAgPIE has **comprehensive AI-readable documentation** (~290,000 words) organized into three categories:
+MAgPIE has **comprehensive AI-readable documentation** (~342,000 words across modules/, core_docs/, cross_module/, reference/, agent/) organized into three categories:
 
 ### Core Documentation (~65,000 words)
 **Location**: `core_docs/`, `reference/`, `cross_module/`
@@ -617,7 +607,7 @@ Other IAMs may use different approaches:
 
 ---
 
-## 🛡️ QUALITY GUARD: Lessons from 213 Verified Bug Fixes
+## 🛡️ QUALITY GUARD: Lessons from Hundreds of Verified Bug Fixes (current totals in `feedback/validation_rounds.json` cumulative_stats)
 
 > These rules come from systematic cross-verification of all documentation against
 > the GAMS codebase. **Every rule here prevented real bugs. Follow them.**
@@ -625,7 +615,7 @@ Other IAMs may use different approaches:
 ### The Three Rules
 
 1. **NEVER FABRICATE** — Copy variable names, equation names, realization names, and line numbers directly from code. Never construct them from context. (`ls ../modules/XX_name/` to verify realization directories)
-2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (17 checks, 32 sub-checks). It catches wrong names, stale citations, and convention violations automatically.
+2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (18 checks, 33 sub-checks). It catches wrong names, stale citations, and convention violations automatically.
 3. **VERIFY BEFORE CITING** — If you haven't read a file THIS session, don't cite its line numbers. Line numbers drift as code evolves.
 
 ### Bug Distribution (where errors actually occur)
@@ -660,46 +650,17 @@ macOS ships bash 3.x: no associative arrays (`declare -A`), no `grep -P`. Use Py
 
 ### For Future Audit Sessions
 
-Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See `core_docs/Bug_Taxonomy.md` for 13 documented patterns and the improvement flywheel methodology.
+Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See `core_docs/Bug_Taxonomy.md` for 14 documented patterns and the improvement flywheel methodology.
 
 ---
 
 ## ⚠️ CRITICAL WARNINGS
 
-**If you write any of these phrases, STOP and verify against code:**
+**Most binding rules now live in `agent/helpers/verifiers.md`** (auto-loaded when you discuss specific GAMS variables/equations/realizations/defaults). The two warnings here are MAgPIE-specific epistemological reminders that aren't covered by the MANDATEs:
 
-- "MAgPIE accounts for..." (does it really?)
-- "The model considers..." (verify in code)
-- **"MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA? Is this MECHANISTIC or PARAMETERIZED?
+- **"MAgPIE accounts for..." / "The model considers..." / "MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA? Is this MECHANISTIC or PARAMETERIZED? See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix; apply the three-check verification (equation structure, parameter source, dynamic feedback).
 
-**For parameterization vs. mechanistic modeling:**
-- See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix
-- Apply three-check verification (equation structure, parameter source, dynamic feedback)
-
-**For GAMS variable names — verify prefixes carefully:**
-- `vm_` (interface variable) vs `v{N}_` (local variable) vs `pm_` (interface parameter) vs `s{N}_` (scalar)
-- NEVER invent a variable name — always copy from `declarations.gms` or `input.gms`
-- Advisory/troubleshooting text is highest-risk for hallucinated variable names
-- See `core_docs/Bug_Taxonomy.md` for the full error pattern catalog
-
-**For file:line citations — the #1 source of documentation bugs:**
-- NEVER fabricate line numbers. If you haven't read the file THIS session, don't cite line numbers
-- Always verify the realization directory name exists: `ls ../modules/XX_name/`
-- "Verified Against" footer lines must reference ACTUAL directory names, not plausible-sounding ones
-- Metadata/footer sections receive less review — they are the HIGHEST risk for errors
-
-**For realization and equation names:**
-- NEVER construct a realization name from keywords + date (e.g., don't invent `croparea_nov24`)
-- Always verify with `ls ../modules/XX_name/` to see actual realization directories
-- Equation names must come from `declarations.gms` or `equations.gms`, not from inference
-
-**After writing or editing ANY module documentation:**
-- Run `bash scripts/validate_consistency.sh` to verify all checks pass (17 checks, 32 sub-checks)
-- The validator catches: wrong variable names, equation names, realization names, stale citations
-- Fix any failures before committing. See `core_docs/Bug_Taxonomy.md` for error pattern guidance
-
-**For complete warning signs, response checklist, and quality guidelines:**
-- See `core_docs/Response_Guidelines.md`
+**After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (18 checks, 33 sub-checks). See `core_docs/Response_Guidelines.md` for the full response checklist.
 
 ---
 

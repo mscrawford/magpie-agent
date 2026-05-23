@@ -397,7 +397,7 @@ Where:
 
 ## 4. Harvestable Growing Stock Calculation (Presolve Phase)
 
-**File:** `presolve.gms:10-66`
+**File:** `presolve.gms:10-65`
 
 > **🔄 Updated 2026-04-20 (sync from MAgPIE PR #869 "ipopt_part1", commit `75d7ee167`):**
 > The former *pm_timber_yield* (flux, tDM/ha/yr) was renamed to **`im_growing_stock`** (stock, tDM/ha) — a per-age-class stem biomass state variable. Consumers (M32, M35) accordingly divide by `m_timestep_length_forestry` in their production equations to derive a per-year flux.
@@ -719,7 +719,7 @@ Module 14 reads 9 input data files:
 
 **From Module 13 (Technological Change):**
 
-- **vm_tau(h,"crop")**: Current technological change factor (optimization variable)
+- **vm_tau(j,"crop")**: Current technological change factor (optimization variable)
 - **pcm_tau(h,"crop")**: Previous time step τ factor (for pasture spillover)
 - **fm_tau1995(h)**: Baseline τ in 1995 (fixed parameter)
 
@@ -1184,7 +1184,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 
 ### 16.2 Receives Intensification From
 
-- **Module 13 (Technological Change):** `vm_tau(h,"crop")` → scales crop yields
+- **Module 13 (Technological Change):** `vm_tau(j,"crop")` → scales crop yields
 - **Module 13 (Technological Change):** `pcm_tau(h,"crop")` → scales pasture yields (lagged)
 
 ### 16.3 Receives Carbon Density From

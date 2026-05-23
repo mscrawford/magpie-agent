@@ -21,7 +21,7 @@ This module provides the critical interface variable `vm_area(j,kcr,w)` that is 
 
 **Key Responsibilities**:
 - Calculate agricultural production from area × yield (`equations.gms:14-15`)
-- Enforce rotational constraints (rule-based or penalty-based) to prevent monoculture (`equations.gms:36-82`)
+- Enforce rotational constraints (rule-based or penalty-based) to prevent monoculture (`equations.gms:36-68`)
 - Track bioenergy tree land targets and penalties (`equations.gms:21-23`)
 - Calculate cropland carbon stocks (`equations.gms`)
 - Calculate biodiversity values for annual and perennial crops (`equations.gms`)
@@ -935,7 +935,7 @@ fm_croparea(t_past,j,w,kcr)$(fm_croparea(t_past,j,w,kcr)<0) = 0;
 **Description**: Fixes rounding errors in input data by setting negative areas to zero.
 
 ### 8. Country Weight Calculation
-**Location**: `preloop.gms:34-41`
+**Location**: `preloop.gms:34-34`
 
 **Logic**:
 ```gams

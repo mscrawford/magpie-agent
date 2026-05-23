@@ -13,11 +13,11 @@
 ## Module Structure
 
 **Files**:
-- `module.gms` - Module description and selection (module.gms:1-35)
-- `off/realization.gms` - Deactivation realization (realization.gms:1-18)
-- `off/declarations.gms` - Variable declaration (declarations.gms:1-18)
-- `off/preloop.gms` - Variable fixation (preloop.gms:1-13)
-- `off/postsolve.gms` - Output reporting (postsolve.gms:1-16)
+- `module.gms` - Module description and selection (module.gms:1-34)
+- `off/realization.gms` - Deactivation realization (realization.gms:1-17)
+- `off/declarations.gms` - Variable declaration (declarations.gms:1-17)
+- `off/preloop.gms` - Variable fixation (preloop.gms:1-12)
+- `off/postsolve.gms` - Output reporting (postsolve.gms:1-15)
 
 **Equations**: 0 (no active implementation)
 

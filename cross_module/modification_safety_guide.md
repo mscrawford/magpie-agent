@@ -69,7 +69,7 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 - CONOPT error: "Equation infeasible"
 
 **How to Avoid**:
-- NEVER modify `vm_land` dimensions without updating ALL 15 consumers
+- NEVER modify `vm_land` dimensions without updating ALL 10 direct consumers (22, 29, 30, 31, 32, 34, 35, 50, 58, 59) — confirmed by `grep -l "vm_land\b" ../modules/*/declarations.gms ../modules/*/equations.gms ../modules/*/presolve.gms` (2026-05-23 recount). The wider "15 modules touched by Module 10 interface variables" set additionally includes consumers of `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`.
 - NEVER add land types without updating `land` set across entire model
 - NEVER modify `pcm_land` calculation (in postsolve.gms:8-9)
 - ALWAYS ensure transition matrix sums remain equal
@@ -84,7 +84,7 @@ set land / crop, past, forestry, primforest, secdforest, urban, other, newtype /
 
 **✅ FIX**: Update land type across ALL modules and conservation law documentation
 1. Update `core/sets.gms` (global land set)
-2. Update ALL 15 consumer modules to handle new type
+2. Update ALL consumer modules to handle new type (10 direct vm_land consumers; 15 total when including consumers of other Module 10 interface variables — see line 72 note)
 3. Update land balance conservation constraint
 4. Update carbon pools (Module 52) if new type stores carbon
 5. Update cost accounting (Module 11) for new land costs
@@ -149,7 +149,7 @@ vm_land.fx(j,"forest") = 50;  * Lost 50 Mha forest
 
 3. **Downstream Module Test**:
    - Run model with modified Module 10
-   - Verify ALL 15 consumer modules execute without errors
+   - Verify ALL 15 modules touched by Module 10 interface variables (10 for `vm_land` + 5 for `vm_landexpansion`/`vm_landreduction`/`vm_lu_transitions`) execute without errors
    - Check no new infeasibilities or warnings
 
 4. **Conservation Law Test**:

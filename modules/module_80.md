@@ -145,7 +145,7 @@ if(s80_secondsolve = 1, solve magpie USING nlp MINIMIZING vm_cost_glo; );
 ```
 (solve.gms:130-131)
 
-**Step 8 - Fallback Strategies** (solve.gms:135-161):
+**Step 8 - Fallback Strategies** (solve.gms:135-146):
 
 **Fallback A - Additional CONOPT3 solve** (if `s80_add_conopt3 = 1`):
 ```gams
@@ -154,7 +154,7 @@ solve magpie USING nlp MINIMIZING vm_cost_glo;
 ```
 (solve.gms:138-140)
 
-**Fallback B - Modelstat 13 recovery** (solve.gms:145-152):
+**Fallback B - Modelstat 13 recovery** (solve.gms:145-146):
 - Modelstat 13: Error during solve (e.g., evaluation error)
 - Retry 1: CONOPT4 with increased variable limit (optfile = 2, Lim_Variable = 1.e25)
 - If still fails, proceed to Fallback C

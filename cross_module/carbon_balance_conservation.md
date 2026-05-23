@@ -98,7 +98,7 @@ MAgPIE tracks carbon in 3 pools for each land type:
 **Key Difference**:
 - **Module 52 provides** total soil carbon densities (topsoil + subsoil)
 - **Module 59 tracks** dynamic topsoil carbon pools separately
-- Interface: `vm_carbon_stock(j,land,c_pools)` includes both
+- Interface: `vm_carbon_stock(j,land,c_pools,stockType)` includes both — 4D, declared at `modules/56_ghg_policy/price_aug22/declarations.gms:34`; equations typically use the `"actual"` slice of `stockType`
 
 ---
 

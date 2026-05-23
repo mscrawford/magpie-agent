@@ -880,6 +880,6 @@ Indirect via Module 50 (nitrogen budget)
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/55_*/apr19/*.gms`
+**Verified Against**: `../modules/55_*/ipcc2006_aug16/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

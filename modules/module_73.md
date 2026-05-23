@@ -259,7 +259,7 @@ $endif
 - **nopaper**: Reduced paper demand (digital transition)
 - **construction**: Modified demand for construction scenarios
 
-**Modifier** (`input.gms:55-58`): Time-varying factor to adjust demand
+**Modifier** (`input.gms:55-57`): Time-varying factor to adjust demand
 
 ---
 
@@ -493,7 +493,7 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 
 ### 9. Data Sources & Input Files
 
-**Module 73 uses 5 input data files** (`input.gms:33-70`):
+**Module 73 uses 5 input data files** (`input.gms:33-57`):
 
 #### 9.1 f73_prod_specific_timber.csv
 

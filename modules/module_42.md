@@ -669,7 +669,7 @@ $if "%c42_watdem_scenario%" == "nocc_hist" f42_wat_req_kve(t_all,j,kve)$(m_year(
 1. Transfer input data to time-varying parameters
 2. Set up EFP trajectory (linear interpolation 2025-2040)
 
-**Presolve Phase** (presolve.gms:8-89):
+**Presolve Phase** (presolve.gms:8-88):
 1. Update agricultural water requirements for current timestep
 2. Calculate irrigation efficiency (GDP-based sigmoidal function)
 3. Set pumping costs (if enabled)

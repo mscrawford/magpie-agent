@@ -947,6 +947,6 @@ This section shows Module 50's role in system-level mechanisms.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/50_*/nr50_static/*.gms`
+**Verified Against**: `../modules/50_*/macceff_aug22/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

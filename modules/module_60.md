@@ -72,7 +72,9 @@ vm_dem_bioen(i2,kall) * fm_attributes("ge",kall) =g=
 
 ### 2. Global 2nd Generation Dedicated Bioenergy Demand (`q60_bioenergy_glo`)
 
-**Purpose**: Constrain global 2nd generation dedicated bioenergy demand (active when `c60_biodem_level = 0`)
+**Purpose**: Constrain global 2nd generation dedicated bioenergy demand (active when `c60_biodem_level = 0`).
+
+> ⚙️ **Default is regional, not global** (`c60_biodem_level = 1` per `input.gms:37`). This equation is inactive under the default config — the regional version `q60_bioenergy_reg` is the active constraint.
 
 **Formula** (`equations.gms:43-44`):
 ```
@@ -81,7 +83,7 @@ sum((kbe60,i2), v60_2ndgen_bioenergy_dem_dedicated(i2,kbe60)) =g=
 ```
 
 **Mechanism** (`equations.gms:33-41`):
-- `c60_biodem_level`: Switch (0 = global demand, 1 = regional demand) (`input.gms:37`)
+- `c60_biodem_level`: Switch (0 = global demand, 1 = regional demand). **Default: 1 (regional)** per `input.gms:37`.
 - **If `c60_biodem_level = 0` (global)**:
   - Right-hand side = `sum(i, i60_bioenergy_dem(ct,i))` (total global demand)
   - Constraint active: Global sum of dedicated 2nd gen bioenergy ≥ global target

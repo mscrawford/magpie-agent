@@ -134,7 +134,7 @@ Layer 6: Optimization
 
 **Pure Sinks (consume only):**
 - 80_optimization ← vm_cost_glo (from 11_costs) + vm_landdiff (from 10_land)
-- 11_costs ← 19 cost variables from various modules
+- 11_costs ← 32 distinct cost/penalty variables from 25 source modules (recomputed 2026-05-23 via `grep -oE 'v[mp]_[a-z_]+' modules/11_costs/default/equations.gms | sort -u`). The exact count drifts as cost terms are added or refactored; treat the canonical source as the grep, not this docstring.
 
 **Central Hubs (high bidirectional):**
 - 17_production: 13 out, 1 in
@@ -263,7 +263,7 @@ Only 2-3 connections per module, minimal integration with core system.
 
 | Module | Dependencies | Critical Interfaces |
 |--------|--------------|-------------------|
-| 11_costs | 27 inputs | All cost components |
+| 11_costs | 32 cost vars from 25 modules (2026-05-23 recount) | All cost components |
 | 32_forestry | 11 inputs | Land, yields, policy |
 | 21_trade | 10 inputs | Production, demand |
 | 16_demand | 9 inputs | Population, production |

@@ -917,6 +917,6 @@ Module 40 participates in **zero or minimal circular dependencies**.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/40_*/default/*.gms`
+**Verified Against**: `../modules/40_*/gtap_nov12/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

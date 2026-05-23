@@ -16,7 +16,7 @@ The semantic validation flywheel generates expert questions, answers them from d
 GENERATE → ANSWER (Sonnet) → AUDIT (Opus) → SYNTHESIZE → IMPROVE → EXPAND
 ```
 
-**Baseline**: See `feedback/validation_rounds.json` for full history. Score trend: 6.7 → 8.2 → 5.8 → 8.6 → 7.2 → 8.7 (6 rounds, 30 questions, 127 bugs total).
+**Baseline**: See `feedback/validation_rounds.json.cumulative_stats` for current totals (21 rounds, 79 docs validated, 445 bugs found, 297 fixed as of last update). Authoritative trend is the `mean_score_trend` field in that file — do not duplicate it here (would drift).
 
 ---
 
@@ -74,7 +74,11 @@ Session startup checks `validation_rounds.json` for last validation date:
 
 ### Step 1: Generate Questions
 
-Design 5 expert-level questions using this rotation of **6 archetypes**:
+**Before designing questions**: review `feedback/probe_dedup_ledger.json`. Names appearing there within their lock-out window are off-limits for fresh probes (would test recognition, not capability). Calibration anchors are exempt — they recur by design.
+
+**Each round MUST include at least 1 regression question** from `feedback/flywheel_rubric.md` §6 (initial set: G1 module-14 default realization, G2 vm_carbon_stock propagation) alongside new probes. See `feedback/validation_rounds.json` → `regression_questions` array.
+
+Design 5 new probes + 1-2 regression questions using this rotation of **6 archetypes**:
 
 | Archetype | Description | Example |
 |-----------|-------------|---------|
@@ -116,41 +120,11 @@ QUESTION: [question]
 Launch **5 parallel Opus 4.6 agents** (or highest-capability model), each with:
 - The question + the Sonnet answer
 - Instructions to verify **every claim** against raw GAMS source code
-- The structured audit report format (below)
+- A pointer to **`feedback/flywheel_rubric.md`** for severity tiers, mechanical checks, bug classes, and the audit report format.
 
 Use the `general-purpose` agent type with `model: claude-opus-4.6`.
 
-**Audit report format**:
-```markdown
-## Audit Report: QN (Topic)
-
-### Overall Verdict: [ACCURATE / MOSTLY ACCURATE / SIGNIFICANT ERRORS / FUNDAMENTALLY FLAWED]
-### Accuracy Score: X/10
-
-**Scoring rubric** (subjective 1-10 from auditor, based on claim verification):
-
-| Score | Verdict | Typical Profile | Usability |
-|-------|---------|-----------------|-----------|
-| 9-10 | Accurate | 0-1 Minor bugs, 95%+ claims confirmed | Trustworthy for implementation |
-| 8-8.5 | Mostly Accurate | 1-2 bugs (may include Major), structural simplifications | Reliable; double-check equations |
-| 6.5-7.5 | Mostly Accurate | 3-5 bugs, some Major; missing nuances | Good directional guidance, verify details |
-| 5-6 | Significant Errors | Heavy confabulation or untested modules; key vars/eqs wrong | Starting point only |
-| 3-4 | Fundamentally Flawed | Fabricated formulas, wrong realizations, invented variables | Could actively mislead |
-
-### Verified Claims (correct):
-- [claim]: [evidence from code]
-
-### Bugs Found:
-- **Bug ID**: QN-BX
-- **Severity**: [Critical / Major / Minor / Nitpick]
-- **Claim in answer**: "exact quote"
-- **Reality in code**: what the code actually does
-- **File evidence**: exact file path and relevant code snippet
-- **Bug type**: [Wrong variable name / Wrong equation / Wrong realization / Wrong causality / Missing mechanism / Wrong timing / Fabricated detail / Oversimplification / Wrong default value / Arithmetic error / Wrong units / Wrong module attribution]
-
-### Missing Nuances:
-### Summary:
-```
+**Scoring spec** (severity tiers, immutable anchor examples, per-question scoring formula, audit report format) is in `feedback/flywheel_rubric.md`. The auditor MUST read it before scoring. Do NOT inline-restate the rubric here — it drifts; the rubric file is the authority.
 
 ### Step 4: Synthesize
 
@@ -191,13 +165,16 @@ After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic 
 
 ### Step 5b: Record Results
 
-**MANDATORY**: Append results to `feedback/validation_rounds.json`. This is the persistent record for tracking quality over time. Include:
+**MANDATORY**: Append results to `feedback/validation_rounds.json` (schema v1.1 as of 2026-05-23). This is the persistent record for tracking quality over time. Include:
 - Round number, date, commit hashes (before/after)
 - Per-question: topic, modules tested, score, bug counts by severity
+- **Regression questions section**: score the round's regression questions (G1, G2 minimum per `regression_questions` top-level array) and set `drift_observed=true` if any answer drifted from the expected_answer_summary. Append round number to `used_in_rounds` for each.
 - Summary: mean score, total bugs, bug sources (doc_error vs answerer_confabulation), root causes, files fixed, safeguards added
 - Update `cumulative_stats` at the bottom
 
-This file allows future agents to compute trends: score over time, confabulation rate, which modules are reliable vs fragile.
+**Schema v1.1 changes** (2026-05-23): top-level `regression_questions` array added; each new round MUST include at least 1 regression question alongside new probes. Severity tiers and audit format are now in `feedback/flywheel_rubric.md` (hoisted from this command file).
+
+This file allows future agents to compute trends: score over time, confabulation rate, calibration-anchor drift, which modules are reliable vs fragile.
 
 ### Step 6: Expand Coverage
 
@@ -241,7 +218,7 @@ Track across rounds:
 
 **R13** (module re-test): Post-fix quality check on 5 previously-validated modules. 4/5 scored ≥9.0, confirming fixes hold. ~10 bugs found, mostly minor drift.
 
-**Key insight**: Every doc category had errors when first validated. The flywheel's value is systematic first-pass coverage — scores jump 2-3 points after fixes. 79 docs now validated, 291 total bugs found across 13 rounds.
+**Key insight**: Every doc category had errors when first validated. The flywheel's value is systematic first-pass coverage — scores jump 2-3 points after fixes. Authoritative cumulative counts live in `feedback/validation_rounds.json.cumulative_stats`; cite those rather than restating numbers here (the restated form drifts as rounds accumulate).
 
 ---
 

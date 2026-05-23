@@ -31,14 +31,14 @@ done
 # Step 1: Build GAMS variable index from codebase
 GAMS_VARS=$(mktemp)
 
-# Interface variables and parameters
-grep -rohE '\b(vm_|pm_|fm_|im_|pcm_|ic_|ov_|oq_)[a-zA-Z0-9_]+[a-zA-Z0-9]' \
+# Interface variables and parameters (incl. sm_/cm_ interface scalars/configs)
+grep -rohE '\b(vm_|pm_|fm_|im_|pcm_|ic_|ov_|oq_|sm_|cm_)[a-zA-Z0-9_]+[a-zA-Z0-9]' \
     "$MAGPIE_DIR/modules/" "$MAGPIE_DIR/core/" "$MAGPIE_DIR/main.gms" \
     "$MAGPIE_DIR/config/default.cfg" \
     2>/dev/null | sort -u > "$GAMS_VARS"
 
-# Local vars/params (v{N}_, p{N}_, f{N}_, i{N}_, s{N}_)
-grep -rohE '\b[vpfis][0-9]+_[a-zA-Z0-9_]+[a-zA-Z0-9]' \
+# Local vars/params (v{N}_, p{N}_, f{N}_, i{N}_, s{N}_, c{N}_ scenario switches)
+grep -rohE '\b[vpfisc][0-9]+_[a-zA-Z0-9_]+[a-zA-Z0-9]' \
     "$MAGPIE_DIR/modules/" 2>/dev/null | sort -u >> "$GAMS_VARS"
 
 # Core scalars (s_*)
@@ -66,7 +66,7 @@ for doc in "$AGENT_DIR"/modules/module_*.md; do
     # Extract backtick-quoted GAMS variables
     # Matches patterns like `vm_something`, `vm_something(dims)`, `vm_something.l`
     DOC_VARS=$(mktemp)
-    grep -oE '`(vm_|pm_|fm_|im_|pcm_|ic_|ov_|oq_|v[0-9]+_|p[0-9]+_|f[0-9]+_|i[0-9]+_|s[0-9]+_|s_)[a-zA-Z0-9_]+[a-zA-Z0-9]' \
+    grep -oE '`(vm_|pm_|fm_|im_|pcm_|ic_|ov_|oq_|sm_|cm_|v[0-9]+_|p[0-9]+_|f[0-9]+_|i[0-9]+_|s[0-9]+_|c[0-9]+_|s_)[a-zA-Z0-9_]+[a-zA-Z0-9]' \
         "$doc" 2>/dev/null | sed 's/`//' | sort -u > "$DOC_VARS"
 
     # Known conceptual pseudo-code variables (annotated in docs, not actual GAMS)

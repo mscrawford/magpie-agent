@@ -251,7 +251,7 @@ vm_bv(j2,"urban", potnatveg) =e= vm_land(j2,"urban") * fm_bii_coeff("urban",potn
 - Urban land FIXED (.fx) to prescribed value (no optimization)
 - Reason: Establishes initial conditions matching LUH3 baseline
 
-**t>1 (optimization timesteps)** (`presolve.gms:12-15`):
+**t>1 (optimization timesteps)** (`presolve.gms:12-14`):
 - vm_land.lo(j,"urban") = 0 (no lower bound)
 - vm_land.l(j,"urban") = i34_urban_area(t,j) (initialized to target)
 - vm_land.up(j,"urban") = Inf (no upper bound)
@@ -506,7 +506,7 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 
 ### Variable Bounds
 
-**exo_nov21** (`presolve.gms:10-15`):
+**exo_nov21** (`presolve.gms:10-14`):
 - **t=1**: vm_land.fx(j,"urban") = i34_urban_area(t,j) (fixed)
 - **t>1**: vm_land.lo/up(j,"urban") = 0/Inf (unbounded), .l = i34_urban_area(t,j) (initialized)
 
@@ -602,6 +602,6 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/34_*/static/*.gms`
+**Verified Against**: `../modules/34_*/exo_nov21/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

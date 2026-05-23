@@ -1,10 +1,49 @@
 {
   "metadata": {
     "description": "Persistent record of semantic validation rounds for MAgPIE-agent documentation quality tracking",
-    "schema_version": "1.0",
+    "schema_version": "1.1",
+    "schema_version_history": [
+      {"version": "1.0", "date": "2026-03-07", "change": "initial"},
+      {"version": "1.1", "date": "2026-05-23", "change": "added top-level regression_questions array for stability tracking across rounds; rubric hoisted to feedback/flywheel_rubric.md"}
+    ],
     "created": "2026-03-07",
-    "instructions": "Append new rounds to the 'rounds' array. Each round must include all fields. Bug sources: 'doc_error' = bug in the AI documentation, 'answerer_confabulation' = agent invented wrong info despite docs being correct, 'ambiguous' = unclear which caused the error."
+    "instructions": "Append new rounds to the 'rounds' array. Each round must include all fields. Bug sources: 'doc_error' = bug in the AI documentation, 'answerer_confabulation' = agent invented wrong info despite docs being correct, 'ambiguous' = unclear which caused the error. Each new round MUST include at least 1 regression question from the top-level 'regression_questions' array (added 2026-05-23); score against expected_answer_summary; if regression, set drift_observed=true and update used_in_rounds. Severity tiers + audit format: feedback/flywheel_rubric.md.",
+    "rubric_path": "feedback/flywheel_rubric.md",
+    "rubric_version": "1.0"
   },
+  "regression_questions": [
+    {
+      "id": "G1",
+      "scope": "calibration_anchor",
+      "exempt_from_dedup": true,
+      "question": "What is the default realization of module 14 (yields)? List the equations defined in its equations.gms.",
+      "expected_answer_summary": "Default realization: managementcalib_aug19 (verify via 'grep cfg$gms$yields ../config/default.cfg'). Equations include q14_yield_crop, q14_yield_past, q14_yieldcalib (verify count and exact names against modules/14_yields/managementcalib_aug19/equations.gms).",
+      "ground_truth_sources": [
+        "config/default.cfg (search 'cfg$gms$yields' for default)",
+        "modules/14_yields/managementcalib_aug19/equations.gms (equation list)"
+      ],
+      "calibration_intent": "tests whether the agent (a) consults default.cfg before describing the realization, (b) reads the actual equations file rather than reconstructing from memory, (c) reports the equation count correctly (Bug_Taxonomy.md Pattern 6 -- Hardcoded counts drift)",
+      "first_used_round": 22,
+      "used_in_rounds": [],
+      "drift_observed": false
+    },
+    {
+      "id": "G2",
+      "scope": "calibration_anchor",
+      "exempt_from_dedup": true,
+      "question": "Walk through how vm_carbon_stock is computed in Module 52 and where it enters the GHG-policy cost in Module 56. Cite the relevant equations and file:line locations.",
+      "expected_answer_summary": "Module 52 defines vm_carbon_stock via equations linking land-use to carbon density to stock. Module 56's GHG policy multiplies vm_carbon_stock deltas (or related stock-change expressions) by a carbon price into vm_emission_costs. Citations must point at actual lines in modules/52_carbon/*/equations.gms and modules/56_ghg_policy/*/equations.gms (full relative paths per MANDATE 16).",
+      "ground_truth_sources": [
+        "modules/52_carbon/*/equations.gms",
+        "modules/52_carbon/*/declarations.gms",
+        "modules/56_ghg_policy/*/equations.gms"
+      ],
+      "calibration_intent": "tests (a) cross-module dependency tracing, (b) precise file:line citations, (c) variable-name fidelity (no confabulation of related-sounding names like vm_carbon_stocks), (d) gate-tabulation behavior when the chain has multiple branches",
+      "first_used_round": 22,
+      "used_in_rounds": [],
+      "drift_observed": false
+    }
+  ],
   "rounds": [
     {
       "round": 1,

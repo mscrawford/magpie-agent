@@ -997,6 +997,6 @@ Production affects demand via prices (if endogenous demand) → **BACK TO START*
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/17_*/sector_may15/*.gms`
+**Verified Against**: `../modules/17_*/flexreg_apr16/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

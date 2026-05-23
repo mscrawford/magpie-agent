@@ -27,10 +27,10 @@ modules/45_climate/
 ├── module.gms                    ← Module header & description
 └── static/                       ← Single realization (no alternatives)
     ├── realization.gms           ← Realization description
-    ├── sets.gms                  ← Climate classification types (30 types)
+    ├── sets.gms                  ← Climate classification types (31 types)
     ├── input.gms                 ← Parameter loading
     └── input/
-        └── koeppen_geiger.cs3    ← Climate shares by cell (~200 cells × 30 types)
+        └── koeppen_geiger.cs3    ← Climate shares by cell (~200 cells × 31 types)
 ```
 
 **No files for**: declarations.gms, equations.gms, preloop.gms, presolve.gms, postsolve.gms, scaling.gms
@@ -103,7 +103,7 @@ Module 45 defines **31 climate types** in the set `clcl` (sets.gms:11-45):
 
 **Dimensions**:
 - `j` - Simulation cells (~200 cells at typical cluster resolution)
-- `clcl` - Köppen-Geiger climate types (30 types)
+- `clcl` - Köppen-Geiger climate types (31 types)
 
 **Unit**: Share (dimensionless, 0-1)
 
@@ -150,7 +150,7 @@ pm_climate_class("CAZ_1",other) = 0.20  → 20% other climate types
    Maps 31 climate types → 6 aggregated peatland climate zones
 
 4. **Module 59 (SOM)** - Soil organic matter climate parameters
-   `cellpool_jan23/preloop.gms:16-89`
+   `modules/59_som/cellpool_jan23/preloop.gms:16-89`
    Maps 31 climate types → 3 SOM climate categories
 
 **Usage patterns**: Modules 14 and 52 use climate-weighted averaging:
@@ -418,7 +418,7 @@ $offdelim;
 
 **Information loss**:
 - Peatland mapping: Loses distinction between similar temperate types (Cfa vs. Cfb)
-- SOM mapping: Loses most climate detail (30 types → 3 categories)
+- SOM mapping: Loses most climate detail (31 types → 3 categories)
 
 **Consequence**: Within-category climate heterogeneity ignored for peatland and SOM calculations (acceptable simplification given data/process uncertainty).
 
@@ -433,7 +433,7 @@ $offdelim;
 - **Complexity**: Minimal (simplest module in MAgPIE)
 
 ### Key Parameters
-- `pm_climate_class(j,clcl)` - Climate shares by cell (30 types, shares sum to 1)
+- `pm_climate_class(j,clcl)` - Climate shares by cell (31 types, shares sum to 1)
 
 ### Climate Types
 - **31 Köppen-Geiger types**: Af, Am, As, Aw (tropical), BS*/BW* (arid), C** (temperate), D** (continental), EF/ET (polar)
@@ -460,7 +460,7 @@ parameter_value(j) = sum(clcl, pm_climate_class(j,clcl) * f_climate_parameter(cl
 ```
 
 ### File Locations
-- Module: `modules/45_climate/module.gms:1-20`
+- Module: `modules/45_climate/module.gms:1-19`
 - Realization: `modules/45_climate/static/realization.gms:1-18`
 - Climate types: `modules/45_climate/static/sets.gms:11-45`
 - Data loading: `modules/45_climate/static/input.gms:10-13`
@@ -557,6 +557,6 @@ Module 45 participates in **zero or minimal circular dependencies**.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/45_*/ipcc2022/*.gms`
+**Verified Against**: `../modules/45_*/static/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

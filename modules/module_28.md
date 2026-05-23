@@ -786,13 +786,13 @@ ac_sub(ac) = yes$(ord(ac) > (m_yeardiff_forestry(t)/5))   ! Sub-rotation age-cla
 - **ac_sub**: Can be harvested, face disturbances, or fixed (NDC)
 
 ### File Locations
-- Module: `modules/28_ageclass/module.gms:1-19`
-- Realization: `modules/28_ageclass/oct24/realization.gms:1-23`
-- Sets: `modules/28_ageclass/oct24/sets.gms:8-39`
-- Declarations: `modules/28_ageclass/oct24/declarations.gms:8-11`
-- Input loading: `modules/28_ageclass/oct24/input.gms:8-13`
-- Data transformation: `modules/28_ageclass/oct24/preloop.gms:8-15`
-- Dynamic sets: `modules/28_ageclass/oct24/presolve.gms:8-14`
+- Module: `modules/28_ageclass/module.gms:1-18`
+- Realization: `modules/28_ageclass/oct24/realization.gms:1-22`
+- Sets: `modules/28_ageclass/oct24/sets.gms:8-38`
+- Declarations: `modules/28_ageclass/oct24/declarations.gms:8-10`
+- Input loading: `modules/28_ageclass/oct24/input.gms:8-12`
+- Data transformation: `modules/28_ageclass/oct24/preloop.gms:8-14`
+- Dynamic sets: `modules/28_ageclass/oct24/presolve.gms:8-13`
 - Input data: `modules/28_ageclass/input/forestageclasses.cs3` (206 lines)
 
 ---
@@ -864,6 +864,6 @@ ac_sub(ac) = yes$(ord(ac) > (m_yeardiff_forestry(t)/5))   ! Sub-rotation age-cla
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/28_*/feb15/*.gms`
+**Verified Against**: `../modules/28_*/oct24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

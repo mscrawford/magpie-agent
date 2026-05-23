@@ -431,7 +431,7 @@ p57_maccs_costs_integral(t,i,emis_source,"ch4") =
 
 ## Execution Phases
 
-### preloop (`preloop.gms:8-111`)
+### preloop (`preloop.gms:8-110`)
 
 **Critical Phase**: All MACC calculations performed here (not during optimization)
 
@@ -847,6 +847,6 @@ None
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/57_*/emis_policy/*.gms`
+**Verified Against**: `../modules/57_*/on_aug22/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

@@ -37,7 +37,7 @@ vm_manure_recycling(i2,"nr")
 ```
 
 **Components**:
-- `vm_manure_recycling(i2,"nr")`: Nitrogen from manure recycled to cropland (from Module 50) (`equations.gms:25`)
+- `vm_manure_recycling(i2,"nr")`: Nitrogen from manure recycled to cropland — **declared by Module 55 AWMS** (`modules/55_awms/ipcc2006_aug16/declarations.gms:21`), consumed here at `equations.gms:25`
 - `s51_snupe_base`: Base soil nitrogen uptake efficiency assumed in IPCC guidelines = 0.5 (`input.gms:8`)
 - `vm_nr_eff(i2)`: Actual regional nitrogen use efficiency (from Module 50) (`equations.gms:26`)
 - `i51_ef_n_soil(ct,i2,n_pollutants_direct,"man_crop")`: Emission factor for manure on cropland (`equations.gms:27`)
@@ -247,7 +247,7 @@ sum(pollutant_nh3no2_51,vm_emissions_reg(i2,emis_source_n51,pollutant_nh3no2_51)
 ### Outputs (to other modules)
 
 **To Module 56 (GHG Policy)**:
-- `vm_emissions_reg(i,emis_source,n_pollutants_direct)`: Regional emissions by source and pollutant type (Mt N) (`declarations.gms:9-16`)
+- `vm_emissions_reg(i,emis_source,pollutants)`: Regional emissions by source and pollutant — **declared by Module 56** (`modules/56_ghg_policy/price_aug22/declarations.gms:40`, dimensioned `(i, emis_source, pollutants)`, units Tg per yr). Module 51's `equations.gms:9-16` are equation declarations that produce values for this variable, not its declaration.
   - Pollutants: n2o_n_direct, nh3_n, no2_n, no3_n (Module 56 sets.gms)
   - Sources: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som (`sets.gms:15-16`)
   - Indirect: n2o_n_indirect (calculated in equation 8) (Module 56 sets.gms,196)
@@ -772,6 +772,6 @@ This section shows Module 51's role in system-level mechanisms.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/51_*/n51_ipcc2006/*.gms`
+**Verified Against**: `../modules/51_*/rescaled_jan21/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

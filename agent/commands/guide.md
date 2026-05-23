@@ -10,7 +10,7 @@
 
 ## 🚀 Quick Start
 
-**I'm your AI assistant for MAgPIE**, with ~230,000 words of curated documentation about all 46 modules. Here's what you need to know:
+**I'm your AI assistant for MAgPIE**, with extensive curated documentation about all 46 modules. Here's what you need to know:
 
 ### Just ask me anything
 ```
@@ -37,10 +37,15 @@ Type these to access specific features:
 |---------|-------------|
 | `/guide` | This guide |
 | `/explain` | Explain a GAMS equation, variable, or parameter |
+| `/trace` | Trace a variable's flow through the model |
+| `/update` | Full pipeline: pull agent + sync MAgPIE + semantic freshness |
 | `/sync` | Update docs after MAgPIE code changes |
 | `/feedback` | Submit feedback to improve the agent |
+| `/bootstrap` | First-time setup (new users) |
 | `/validate` | Check documentation consistency (maintainers) |
 | `/validate-module` | Validate specific module docs (maintainers) |
+| `/validate-semantic` | Run adversarial semantic accuracy flywheel (maintainers) |
+| `/pipeline-audit` | Multi-lens structural audit of agent machinery (maintainers) |
 
 ### Tips for best results
 1. **Be specific** — "How does Module 70 calculate feed demand?" beats "tell me about livestock"

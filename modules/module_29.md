@@ -191,7 +191,7 @@ q29_carbon(j2,ag_pools,stockType)..
 
 ### 5. SNV Land Constraint (`q29_land_snv`)
 
-**Formula** (`equations.gms:49-52`):
+**Formula** (`equations.gms:49-49`):
 ```gams
 q29_land_snv(j2)..
   sum(land_snv, vm_land(j2,land_snv)) =g=
@@ -220,7 +220,7 @@ p29_snv_shr(t,j) = i29_snv_scenario_fader(t) *
 - Weight = fraction of region's cropland in policy-affected countries
 - Calculated based on available cropland (`preloop.gms`)
 
-**Source**: `equations.gms:45-52`
+**Source**: `equations.gms:45-49`
 
 ---
 
@@ -608,7 +608,7 @@ p29_country_weight(i) =
 
 **Purpose**: Initialize tree cover from maps or start from zero
 
-**Implementation** (`preloop.gms:32-39`):
+**Implementation** (`preloop.gms:32-36`):
 
 **Option 1** (`s29_treecover_map = 1`):
 ```gams
@@ -627,7 +627,7 @@ pc29_treecover(j,ac) = 0;  ! Start with no tree cover
 
 **Data Source** (`input.gms`): `f29_treecover(j)` from CroplandTreecover.cs2
 
-**Source**: `preloop.gms:31-40`, `input.gms:35`
+**Source**: `preloop.gms:31-36`, `input.gms:35`
 
 ---
 
@@ -897,7 +897,7 @@ Module 29 does NOT directly participate in water balance (no water equations), b
 6. Plus potentially 1-2 other modules
 
 **Depends On** (7 modules):
-1. **Module 30 (Croparea)** - Harvested crop area (`vm_area(j,kcr)`)
+1. **Module 30 (Croparea)** - Harvested crop area (`vm_area(j,kcr,w)`)
 2. **Module 14 (Yields)** - Yield parameters for fallow/tree cover productivity
 3. **Module 16 (Demand)** - Demand signals affecting land use
 4. Plus 4 other modules providing policy constraints
@@ -922,12 +922,12 @@ Module 29 (Cropland) ──→ vm_land(j,"crop") ──→ Module 10 (Land)
        └─────────── Land availability ←───────────────┘
                            ↓
                   Module 30 (Croparea)
-                    vm_area(j,kcr)
+                    vm_area(j,kcr,w)
 ```
 
 **Resolution Mechanism**: **Type 2 - Simultaneous Equations**
 - All cropland variables optimized together in same SOLVE statement
-- Module 29 aggregates: `vm_land("crop") = sum(kcr, vm_area(j,kcr)) + vm_fallow + vm_treecover`
+- Module 29 aggregates: `vm_land("crop") = sum(kcr, vm_area(j,kcr,w)) + vm_fallow + vm_treecover`
 - Module 30 allocates crops within available cropland
 - Module 10 ensures total land balance: `sum(land, vm_land(j,land)) = pm_land_start(j)`
 

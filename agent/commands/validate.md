@@ -12,9 +12,9 @@
 ./scripts/validate_consistency.sh
 ```
 
-The script runs **26 automated checks** across 11 categories:
+The script runs **18 top-level checks (33 sub-checks total)** across these categories:
 
-1. **Dependency counts** — Same counts across files
+1. **Dependency counts** — Same counts across files (Modules 10, 11, 17)
 2. **Equation parameters** — Consistent descriptions
 3. **Cross-references** — All linked files exist
 4. **Duplicate equations** — Matching formulas
@@ -25,6 +25,13 @@ The script runs **26 automated checks** across 11 categories:
 9. **Trigger keywords** — Helper triggers match AGENT.md routing table
 10. **AGENT.md deployment** — Source and deployed copy in sync
 11. **Hardcoded values** — No hardcoded commit hashes in mechanism files
+12. **Stale path prefixes** — No magpie-agent/ prefixes in backtick-quoted paths (project-relative form only)
+13. **Unclosed code blocks** — All fences balanced
+14. **GAMS variable names** — Backtick-quoted vm_*/pm_*/v<N>_*/etc. resolve to declarations.gms
+15. **GAMS equation names** — Backtick-quoted q<N>_* resolve
+16. **GAMS realization names** — Month-format realization names resolve to existing directories
+17. **File:line citations** — Cited lines within file EOF
+18. **Default realization labels** — Doc claims match config/default.cfg
 
 ## What to Do with Results
 
@@ -45,5 +52,5 @@ The script generates a timestamped report file — delete it after reviewing.
 
 ## See Also
 
-- `scripts/validate_consistency.sh` — Script source (759 lines, 17 checks)
+- `scripts/validate_consistency.sh` — Script source (~780 lines, 18 checks)
 - `AGENT.md` — Document precedence hierarchy and link rules

@@ -1173,7 +1173,7 @@ other sectors), not unemployment.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/36_*/off/*.gms`
+**Verified Against**: `../modules/36_*/exo_may22/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
 

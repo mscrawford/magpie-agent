@@ -707,7 +707,7 @@ This creates dynamic adjustments:
 - **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:34`
 - **Dimensions**: [t, i, factors] where factors = {labor, capital}
 - **Units**: Dimensionless (share, 0-1)
-- **Calculated**: `preloop.gms:21-24` (from historical data + GDP regression)
+- **Calculated**: `preloop.gms:21-22` (from historical data + GDP regression)
 - **Typical Range**:
   - Low-income regions: Labor 70-80%, Capital 20-30%
   - High-income regions: Labor 20-30%, Capital 70-80%
@@ -736,7 +736,7 @@ This creates dynamic adjustments:
 - **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:35`
 - **Dimensions**: [t, j]
 - **Units**: Dimensionless (0-1)
-- **Calculated**: `presolve.gms:25-45` (ramp to target)
+- **Calculated**: `presolve.gms:25-41` (ramp to target)
 - **Default**: 0 (off)
 - **Active**: Only if s38_target_labor_share > 0
 
@@ -787,7 +787,7 @@ This creates dynamic adjustments:
 
 ## 13. Code Truth: DOES
 
-1. **Calculates crop-specific factor costs** separated into labor and capital components, based on production volumes, factor requirements, wages, and interest rates (`equations.gms:39-49`)
+1. **Calculates crop-specific factor costs** separated into labor and capital components, based on production volumes, factor requirements, wages, and interest rates (`equations.gms:39-45`)
 
 2. **Implements CES production function** with elasticity of substitution σ=0.3 to allow labor-capital substitution after 2025 (`equations.gms:19-23`, `input.gms:16-17`)
 
@@ -801,9 +801,9 @@ This creates dynamic adjustments:
 
 7. **Maintains historical factor requirements** fixed until 2025 (s38_startyear_labor_substitution), then allows endogenous adjustment (`presolve.gms`, `input.gms:17`)
 
-8. **Supports optional labor share target** to enforce minimum rural employment, with linear ramp from baseline to target between 2025-2050 (`equations.gms:28-34`, `presolve.gms:25-45`, `input.gms:18-20`)
+8. **Supports optional labor share target** to enforce minimum rural employment, with linear ramp from baseline to target between 2025-2050 (`equations.gms:28-34`, `presolve.gms:25-41`, `input.gms:18-20`)
 
-9. **Calibrates capital shares to GDP per capita** using regression on historical data, projecting mechanization trends with economic development (`preloop.gms:14-24`)
+9. **Calibrates capital shares to GDP per capita** using regression on historical data, projecting mechanization trends with economic development (`preloop.gms:14-22`)
 
 10. **Provides three realizations** with increasing sophistication: per_ton_fao_may22 (simple volume-based), sticky_feb18 (capital stocks), sticky_labor (full CES with climate/wages) (`module.gms:22-24`)
 
@@ -1389,7 +1389,7 @@ abline(h=0.4, col="red", lty=2)  # Target line
    - Investment only when required > existing stock
    - Creates path dependency in land use
 
-3. **Cost Calculation** (`equations.gms:39-49`):
+3. **Cost Calculation** (`equations.gms:39-45`):
    - Labor: Production × Hours/ton × Wage
    - Capital: Annuitized investment × (r+d)/(1+r)
    - Regional aggregation to Module 11

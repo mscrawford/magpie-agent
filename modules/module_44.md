@@ -684,6 +684,6 @@ Module 44 participates in **zero or minimal circular dependencies**.
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/44_*/bii_target_apr24/*.gms`
+**Verified Against**: `../modules/44_*/bii_target/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

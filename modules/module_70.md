@@ -1104,7 +1104,7 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 **1. Preloop** (once before optimization loop):
 - Select feed baskets based on scenario (`preloop.gms:13-23`)
 - Apply SCP substitution to feed baskets (`preloop.gms:58-78`)
-- Calculate factor cost regression coefficients (`preloop.gms:82-91`)
+- Calculate factor cost regression coefficients (`preloop.gms:82-90`)
 
 **2. Presolve** (before each solve):
 - Fix balance flows for non-pasture items (`presolve.gms:9`)

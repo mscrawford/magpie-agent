@@ -950,6 +950,6 @@ Module 09 participates in **zero circular dependencies**:
 ---
 
 **Last Verified**: 2025-10-13
-**Verified Against**: `../modules/09_*/aug19/*.gms`
+**Verified Against**: `../modules/09_*/aug17/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)
