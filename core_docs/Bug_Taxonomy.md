@@ -1,5 +1,7 @@
 # Documentation Quality: Bug Taxonomy & Prevention
 
+<!-- check-gams-vars: allow f22_conservation_fader, im_gdp_pc_ppp, p14_yields_calib, p15_waste_scen, pm_carbon_density_secdforest, s13_tau_response, s14_carbon_fraction, s14_yld_bioen_scaling, s30_rotation_scenario_speed, s42_pumping_cost, vm_demand, vm_export, vm_import, vm_nr_surplus -->
+
 **Purpose**: Catalog recurring documentation error patterns so that future sessions
 can avoid them and automated checks can catch them.
 

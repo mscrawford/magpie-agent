@@ -8,6 +8,9 @@
 
 ## 📖 COMPLETE EXAMPLE: Answering a MAgPIE Question
 
+> ⚠️ **For illustration only — variable names below are pedagogical**: The variables `vm_carbon_price`, `s32_carbon_price_factor`, and `pm_carbon_density_ac` used in this walkthrough are illustrative names chosen for narrative clarity; they do not exist in the actual MAgPIE codebase. The actual carbon-pricing flow uses different identifiers (see `modules/module_56.md` for the real names in `price_aug22`). The walkthrough teaches the *workflow* (route → read → cite → answer), not the specific variables. When answering a real carbon-pricing question, grep the current code for the actual names.
+<!-- check-gams-vars: allow vm_carbon_price, s32_carbon_price_factor, pm_carbon_density_ac -->
+
 **Let's walk through how to efficiently answer: "How does carbon pricing affect forest growth?"**
 
 ### Step 1: Route the Query (5 seconds)
@@ -281,7 +284,7 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 **If you can't check all boxes, your response needs more verification.**
 
 **After writing or editing module documentation:**
-- [ ] Run `bash scripts/validate_consistency.sh` — must show all <!--count:validator_main_checks-->20<!--/count--> checks passing
+- [ ] Run `bash scripts/validate_consistency.sh` — must show all <!--count:validator_main_checks-->21<!--/count--> checks passing
 - [ ] Validator catches: wrong variable names, equation names, realization names, stale file:line citations
 - [ ] See `core_docs/Bug_Taxonomy.md` for <!--count:bug_taxonomy_patterns-->14<!--/count--> known error patterns to avoid
 

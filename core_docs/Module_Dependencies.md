@@ -400,6 +400,7 @@ All analysis outputs are available in `/tmp/magpie_analysis/`:
 - `degradation_system.dot` - Degradation subsystem
 - `forestry_system.dot` - Forestry subsystem
 
+<!-- check-gams-vars: allow vm_declarations, pm_declarations, pm_timber_yield -->
 **Raw Data:**
 - `vm_declarations.csv` - All vm_ variable declarations
 - `pm_declarations.csv` - All pm_ variable declarations

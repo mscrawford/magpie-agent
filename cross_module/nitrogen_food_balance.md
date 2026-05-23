@@ -170,6 +170,7 @@ sum(i2, vm_prod_reg(i2,k_trade)) =g= sum(i2, vm_supply(i2,k_trade))
 ```
 Global production must meet or exceed global supply requirements. `vm_supply` (from M16) aggregates all demand streams (food, feed, processing, material, seed, waste).
 
+<!-- check-gams-vars: allow vm_export, vm_import -->
 **Regional Balance** (Module 21, `q21_trade_reg`):
 Regional self-sufficiency is managed through `vm_supply` and trade variables (`v21_excess_dem`, `v21_excess_prod`), NOT through `vm_import`/`vm_export` (these variables do not exist in MAgPIE).
 
