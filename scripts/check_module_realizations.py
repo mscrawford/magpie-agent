@@ -9,8 +9,14 @@ For each `modules/module_XX.md`:
    (a) the directory exists (`../modules/XX_name/<realization>/`)
    (b) the header-claimed realization matches the default (WARN otherwise)
    (c) the footer-cited realization matches the default AND exists (ERROR otherwise)
+4. NEW (R3 Phase B, 2026-05-23): walk body file:line citations and flag when
+   the DOMINANT cited realization differs from the header — this catches
+   M38/M30 class where the doc header correctly names the default but the
+   body content cites a non-default realization. Threshold: dominant > 50%
+   of self-module body cites.
 
-Closes R1 audit Cluster 1 (Module 18 wrong-realization CRITICAL + 13/46 footer fabrications).
+Closes R1 audit Cluster 1 (Module 18 wrong-realization CRITICAL + 13/46
+footer fabrications) and R3 Cluster 1 (multi-realization body drift).
 
 Exit code: 0 if all clean, 1 if any ERROR finding, 2 if only WARN findings.
 
@@ -56,6 +62,12 @@ VERIFIED_RE = re.compile(
 
 # Module-number → -doc-file
 MODULE_DOC_RE = re.compile(r'module_(\d+)\.md$')
+
+# Body citation regex: matches `modules/NN_name/<realization>/<file>.gms[:LL]`
+# Used by the body-realization-mismatch check (R3 Phase B).
+BODY_CITE_RE = re.compile(
+    r'modules/(?P<num>\d+)_(?P<name>[a-z_]+)/(?P<real>[a-zA-Z][\w]*)/[\w./]+\.gms'
+)
 
 
 def load_default_realizations():
@@ -163,6 +175,43 @@ def check_one_module(doc_path, defaults, module_map, verbose=False):
                 "ERROR",
                 f"{doc_path.name}: footer cites `{footer_real}` but default per config/default.cfg is `{expected_default}`. Footers should reference the default realization (the documented one)."
             ))
+
+    # R3 Phase B: body-realization-mismatch — count self-module body cites,
+    # flag when the dominant realization differs from the header. This catches
+    # M38/M30/M80 class where the header is correct but the body describes
+    # a non-default realization (citation paths reveal it).
+    #
+    # Suppression: if the header-claimed realization has zero q<NN>_ equations
+    # (e.g., M37 default `off`, M80 default `nlp_apr17` solver-orchestration),
+    # the body MUST describe an alternative — that's a structural requirement,
+    # not a bug.
+    if header_real is not None:
+        # Check whether the header-claimed realization has any equations
+        default_eqns = MODULES_CODE_DIR / dir_name / header_real / "equations.gms"
+        header_has_equations = False
+        if default_eqns.is_file():
+            for line in default_eqns.read_text().splitlines():
+                if re.match(rf'^\s*q{num}_', line):
+                    header_has_equations = True
+                    break
+
+        if header_has_equations:
+            body_real_counts = {}
+            for cm in BODY_CITE_RE.finditer(doc_text):
+                if cm.group("num") != num:
+                    continue  # cross-module citation, not this module's body
+                body_real_counts[cm.group("real")] = body_real_counts.get(cm.group("real"), 0) + 1
+            total_body_cites = sum(body_real_counts.values())
+            if total_body_cites >= 3:  # need a few cites before we can talk about dominance
+                dominant_real = max(body_real_counts, key=body_real_counts.get)
+                dominant_count = body_real_counts[dominant_real]
+                if dominant_real != header_real and dominant_count * 2 > total_body_cites:
+                    # Dominant realization in body != header claim, AND it's >50% of cites
+                    others = {r: c for r, c in body_real_counts.items() if r != dominant_real}
+                    findings.append((
+                        "WARN",
+                        f"{doc_path.name}: header claims `{header_real}` but body cites `{dominant_real}` in {dominant_count}/{total_body_cites} self-module file:line references (other: {others}). Body content may describe a non-default realization."
+                    ))
 
     if verbose and not findings:
         findings.append(("INFO", f"{doc_path.name}: OK (header=`{header_real}`, footer={[c[0] for c in footer_claims]}, default=`{expected_default}`)"))
