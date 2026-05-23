@@ -322,7 +322,7 @@ Before answering code-specific questions, verify documentation is current:
    Example: `s15_exo_diet = 1` completely changes food demand behavior. If a non-default switch is active, mention it.
 
 **Modules with multiple realizations** (check these before answering):
-13, 18, 21, 29, 30, 31, 34, 37, 38, 40, 41, 42, 44, 51, 53, 55, 58, 59, 60, 70
+13, 18, 21, 29, 30, 31, 34, 37, 38, 40, 41, 42, 44, 51, 53, 55, 58, 59, 60, 70, 71, 80
 
 ### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 
@@ -404,9 +404,9 @@ This supplements the "docs first" workflow — docs are still the starting point
 | Understand built-in functions, string ops | `reference/GAMS_Functions_Operations.md` |
 | Follow best practices, debugging, performance | `reference/GAMS_Best_Practices.md` |
 
-**Phase 5 is mandatory** for any GAMS work. Load additional phases as needed for the specific task.
+**The MAgPIE Patterns reference is mandatory** for any GAMS work. Load additional references as needed for the specific task.
 
-**See `Response_Guidelines.md` for complete workflow details, token efficiency, and quality checklist.**
+**See `core_docs/Response_Guidelines.md` for complete workflow details, token efficiency, and quality checklist.**
 
 ---
 
@@ -656,7 +656,7 @@ Syntactic audits (variable names, equation names, realization names, citations) 
 
 ## ⚠️ CRITICAL WARNINGS
 
-**Most binding rules now live in `agent/helpers/verifiers.md`** (auto-loaded when you discuss specific GAMS variables/equations/realizations/defaults). The two warnings here are MAgPIE-specific epistemological reminders that aren't covered by the MANDATEs:
+**Most binding rules now live in `agent/helpers/verifiers.md`** (auto-loaded when you discuss specific GAMS variables/equations/realizations/defaults). The one warning here is the MAgPIE-specific epistemological reminder not covered by the MANDATEs:
 
 - **"MAgPIE accounts for..." / "The model considers..." / "MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA? Is this MECHANISTIC or PARAMETERIZED? See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix; apply the three-check verification (equation structure, parameter source, dynamic feedback).
 

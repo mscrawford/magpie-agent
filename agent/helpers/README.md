@@ -18,18 +18,11 @@ Each helper is a **self-improving document**: its "Lessons Learned" section accu
 
 ### Auto-Load Rules
 
-Each helper defines its own trigger patterns. The master routing is in `AGENT.md` under the `## Auto-Loading Context Helpers` section.
+**Authoritative routing table**: `AGENT.md` under `## Auto-Loading Context Helpers`.
 
-| Trigger Pattern | Helper File | Description |
-|----------------|-------------|-------------|
-| **ALWAYS** (every session start) | `session_startup.md` | Checks MAgPIE version, git state, sync freshness, recent runs |
-| "infeasible", "won't solve", "modelstat", "error 4" | `debugging_infeasibility.md` | Diagnosing and fixing model infeasibilities |
-| "carbon price", "carbon tax", "GHG policy", "emission pricing" | `scenario_carbon_pricing.md` | Setting up carbon pricing scenarios |
-| "diet", "EAT-Lancet", "food demand change", "livestock reduction" | `scenario_diet_change.md` | Configuring diet change scenarios |
-| "modify", "change", "what breaks", "impact of changing" | `modification_impact_analysis.md` | Assessing modification safety and impacts |
-| "model output", "run results", "fulldata.gdx", "what does this mean" | `interpreting_outputs.md` | Understanding model outputs |
-| "which realization", "choose realization", "realization comparison", "default realization", "switch realization", "alternative realization" | `realization_selection.md` | Comparing and choosing realizations |
-| "add crop", "new crop type", "extend crops" | `adding_new_crop.md` | Cross-module walkthrough for adding crops |
+That table is the single source of truth for trigger keywords and helper files. This README intentionally does NOT duplicate it, because a duplicated routing table drifts (R3 audit found this README was 5+ helpers behind AGENT.md). When you add or modify a helper, update only the AGENT.md table.
+
+For a quick overview, helpers in this directory currently cover: session startup (always); anti-confabulation MANDATEs (`verifiers.md`); infeasibility debugging; carbon-pricing/diet/water-scarcity scenarios; modification impact analysis; output interpretation; realization selection; adding crops; adding scenarios; comparing model runs; documentation maintenance. See `AGENT.md` for exact triggers.
 
 ### When NOT to auto-load
 

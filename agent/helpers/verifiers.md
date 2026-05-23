@@ -106,7 +106,14 @@ These are NOT preferences. They are evidence-derived rules. Violating them silen
 
 **Verification**: `bash scripts/check_gams_variables.sh` after writing; it greps for every backtick-quoted variable name against the actual declarations.
 
-**Verified by**: `scripts/check_gams_variables.sh` — backtick-quoted vm_/pm_/v<N>_/p<N>_/s<N>_/f<N>_/i<N>_/pcm_ names only. **Gap**: unbacktiked prose names (82% of references) and `c<N>_`/`cm_`/`sm_` prefixes are NOT checked (R1 audit Cluster 4).
+**Verified by**: `scripts/check_gams_variables.py` (Python; bash wrapper preserved) — backtick-quoted vm_/pm_/v<N>_/p<N>_/s<N>_/f<N>_/i<N>_/pcm_/c<N>_/cm_/sm_ names only (R2 follow-up extended the prefix coverage). **Gap**: unbacktiked prose names (~82% of references) are NOT checked.
+
+**Per-doc allowlist marker**: legitimate placeholders that can't be resolved at validation time (e.g., MACC type-templated names like `f57_maccs_<type>`, or external references not yet committed) can be exempted with an HTML comment marker placed anywhere in the doc:
+```html
+<!-- check-gams-vars: allow vm_imagined_xyzzy -->
+<!-- check-gams-vars: allow im_gdp_pc_ppp -->
+```
+Use sparingly — every allowlist entry is a verification escape hatch. The marker is parsed strictly (`<!-- check-gams-vars: allow NAME -->`); typos like `<!--check_gams_vars: allow X-->` silently fail.
 
 ---
 
