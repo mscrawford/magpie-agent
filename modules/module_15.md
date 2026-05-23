@@ -17,7 +17,7 @@
 
 **Dependencies**: 2 inputs, 1 critical output
 - **Receives from**: Module 09 (Drivers) - population, GDP, demography
-- **Provides to**: Module 16 (Demand) - `vm_dem_food` (food use)
+- **Provides to**: Modules 16 (Demand), 20 (Processing), 62 (Material) - `vm_dem_food` (food use; consumers verified 2026-05-23 R3)
 
 **From Module Header** (`realization.gms:20-40`):
 ```gams

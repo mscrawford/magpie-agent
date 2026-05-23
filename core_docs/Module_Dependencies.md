@@ -47,15 +47,17 @@ MAgPIE modules communicate through three types of interface variables:
 
 | Variable | Consumers | Type | Description | Key Modules |
 |----------|-----------|------|-------------|-------------|
-| `vm_land` | 11 | vm_ | Land allocation by type | 10_land → multiple |
-| `im_pop_iso` | 11 | im_ | Population by country | 09_drivers → multiple |
-| `pm_interest` | 10 | pm_ | Interest rates | 12_interest_rate → multiple |
-| `vm_prod` | 9 | vm_ | Agricultural production | 17_production → multiple |
-| `vm_prod_reg` | 9 | vm_ | Regional production | 17_production → multiple |
-| `vm_area` | 9 | vm_ | Cropland area | 30_croparea → multiple |
-| `vm_carbon_stock` | 8 | vm_ | Carbon stocks | 56_ghg_policy → multiple |
-| `vm_bv` | 7 | vm_ | Biodiversity value | 44_biodiversity → multiple |
-| `vm_nr_inorg_fert_costs` | 2 | vm_ | Nitrogen fertilizer costs | 50_nr_soil_budget → 11_costs |
+| `vm_land` | 10 | vm_ | Land allocation by type | 10_land → multiple |
+| `im_pop_iso` | 10 | im_ | Population by country | 09_drivers → multiple |
+| `pm_interest` | 9 | pm_ | Interest rates | 12_interest_rate → multiple |
+| `vm_prod` | 8 | vm_ | Agricultural production | 17_production → multiple |
+| `vm_prod_reg` | 8 | vm_ | Regional production | 17_production → multiple |
+| `vm_area` | 8 | vm_ | Cropland area | 30_croparea → multiple |
+| `vm_carbon_stock` | 7 | vm_ | Carbon stocks | 56_ghg_policy → multiple |
+| `vm_bv` | 6 | vm_ | Biodiversity value | 44_biodiversity → multiple |
+| `vm_nr_inorg_fert_costs` | 1 | vm_ | Nitrogen fertilizer costs | 50_nr_soil_budget → 11_costs |
+
+> **Counts recomputed 2026-05-23 (R3)**: `find ../modules -name '*.gms' -exec grep -l '<var>' {} \; | awk -F/ '{print $3}' | sort -u | grep -v '<producer>' | wc -l`. Consumers count excludes the producer module.
 
 #### 2.2 Variable Categories by Function
 
@@ -129,12 +131,12 @@ Layer 6: Optimization
 
 **Pure Sources (provide only):**
 - 09_drivers → 14 modules
-- 28_ageclass → 1 module (35_natveg)
+- 28_ageclass → 2 modules (35_natveg, 52_carbon)
 - 45_climate → 4 modules (14_yields, 52_carbon, 58_peatland, 59_som)
 
 **Pure Sinks (consume only):**
 - 80_optimization ← vm_cost_glo (from 11_costs) + vm_landdiff (from 10_land)
-- 11_costs ← 32 distinct cost/penalty variables from 25 source modules (recomputed 2026-05-23 via `grep -oE 'v[mp]_[a-z_]+' modules/11_costs/default/equations.gms | sort -u`). The exact count drifts as cost terms are added or refactored; treat the canonical source as the grep, not this docstring.
+- 11_costs ← 31 distinct cost/penalty input variables from 27 source modules (recomputed 2026-05-23 R3; matches the per-module enumeration in `modules/module_11.md` §3). The exact count drifts as cost terms are added or refactored; treat the canonical source as the per-equation grep, not this docstring.
 
 **Central Hubs (high bidirectional):**
 - 17_production: 13 out, 1 in
@@ -227,7 +229,7 @@ Layer 6: Optimization
 - `vm_prod_forestry` (32 → 73): Plantation production
 - `vm_prod_natveg` (35 → 73): Natural forest harvest
 - `pm_demand_forestry` (73 → 32): Timber demand
-- `pm_timber_yield` (14 → 32, 35): Forest productivity
+- *(R3: removed fabricated `pm_timber_yield` claim — M32 and M35 don't consume any M14 yield variable; the diagram arrow is conceptual / climate-input shared, not a direct interface flow.)*
 
 #### 5.3 Water System
 
@@ -321,10 +323,10 @@ Only 2-3 connections per module, minimal integration with core system.
 - Water modules (41, 42, 43) - 2-6 dependencies
 
 **High Risk (Many dependencies or consumers):**
-- Land (10) - 15 consumers
-- Production (17) - 13 consumers
+- Land (10) - 18 consumers (union across `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`, `pcm_land`, etc.)
+- Production (17) - 13 consumers (union across `vm_prod`, `vm_prod_reg`)
 - GHG policy (56) - 13 consumers
-- Yields (14) - 5 consumers + circular deps
+- Yields (14) - 3 consumers (`vm_yld`, `pm_yields_semi_calib` consumed by 17, 30, 31) + circular deps
 
 ### 8. Recommendations
 

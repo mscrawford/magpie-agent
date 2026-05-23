@@ -762,7 +762,7 @@ if(all_countries_selected) {
 
 **Dependencies**:
 - **Receives from**: Module 09 (Drivers) - development state, population
-- **Provides to**: Module 13 (TC), Module 39 (Land Conversion), Module 41 (Irrigation)
+- **Provides to**: 9 consumer modules (verified 2026-05-23 R3): Module 13 (TC), 29 (cropland), 32 (forestry — Faustmann rotation discount), 38 (factor costs), 39 (Land Conversion), 41 (Irrigation), 56 (GHG policy — CDR-reward annuity), 58 (peatland), 70 (livestock). Earlier list missed 29, 32, 38, 56, 58, 70.
 - **Circular**: None (runs in preloop, purely exogenous)
 
 **Limitations**:

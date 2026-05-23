@@ -43,14 +43,19 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 
 | Variable | Consumers | Risk Level | Description |
 |----------|-----------|------------|-------------|
-| `vm_land(j,land)` | 11 modules | 🔴 EXTREME | Current land allocation by type |
-| `vm_lu_transitions(j,land_from,land_to)` | 8 modules | 🔴 EXTREME | Transition matrix (net changes only) |
-| `vm_landexpansion(j,land)` | 7 modules | 🟠 HIGH | Land gained from other types |
-| `vm_landreduction(j,land)` | 6 modules | 🟠 HIGH | Land lost to other types |
-| `pcm_land(j,land)` | 5 modules | 🟡 MEDIUM | Previous timestep land allocation |
+| `vm_land(j,land)` | 10 modules | 🔴 EXTREME | Current land allocation by type |
+| `vm_lu_transitions(j,land_from,land_to)` | 3 modules | 🟠 HIGH | Transition matrix (net changes only) |
+| `vm_landexpansion(j,land)` | 4 modules | 🟠 HIGH | Land gained from other types |
+| `vm_landreduction(j,land)` | 2 modules | 🟡 MEDIUM | Land lost to other types |
+| `pcm_land(j,land)` | 12 modules | 🔴 EXTREME | Previous timestep land allocation |
 
-**Downstream Modules** (ALL will break if vm_land breaks):
-- 11_costs, 17_production, 22_land_conservation, 29_cropland, 30_croparea, 31_past, 32_forestry, 34_urban, 35_natveg, 52_carbon, 58_peatland, 59_som, 60_bioenergy, 62_material, 71_disagg_lvst
+> **Counts recomputed 2026-05-23 (R3)** via `find ../modules -name '*.gms' -exec grep -l '<var>' {} \; | awk -F/ '{print $3}' | sort -u | grep -v '10_land'`. The `pcm_land` count was previously UNDERSTATED (5 → 12); all others were OVERSTATED. Consumers exclude the producer module (10_land).
+
+**Direct vm_land consumers** (the 10 modules that will break if `vm_land` is modified incompatibly):
+- 22_land_conservation, 29_cropland, 30_croparea, 31_past, 32_forestry, 34_urban, 35_natveg, 50_nr_soil_budget, 58_peatland, 59_som
+
+**Modules touched by any Module 10 interface variable** (broader 18-module union — these may be affected by changes to `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`, `pcm_land`, or `pm_land_hist/start` even if they don't consume `vm_land` directly):
+- 11_costs, 13_tc, 14_yields, 22_land_conservation, 29_cropland, 30_croparea, 31_past, 32_forestry, 34_urban, 35_natveg, 39_landconversion, 44_biodiversity, 50_nr_soil_budget, 56_ghg_policy, 58_peatland, 59_som, 71_disagg_lvst, 80_optimization
 
 ### 1.3 Conservation Law: LAND BALANCE (STRICT EQUALITY)
 
@@ -69,7 +74,7 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 - CONOPT error: "Equation infeasible"
 
 **How to Avoid**:
-- NEVER modify `vm_land` dimensions without updating ALL 10 direct consumers (22, 29, 30, 31, 32, 34, 35, 50, 58, 59) — confirmed by `grep -l "vm_land\b" ../modules/*/declarations.gms ../modules/*/equations.gms ../modules/*/presolve.gms` (2026-05-23 recount). The wider "15 modules touched by Module 10 interface variables" set additionally includes consumers of `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`.
+- NEVER modify `vm_land` dimensions without updating ALL 10 direct consumers (22, 29, 30, 31, 32, 34, 35, 50, 58, 59) — see §1.2 table for the broader 18-module set touched by any Module 10 interface variable.
 - NEVER add land types without updating `land` set across entire model
 - NEVER modify `pcm_land` calculation (in postsolve.gms:8-9)
 - ALWAYS ensure transition matrix sums remain equal
@@ -84,7 +89,7 @@ set land / crop, past, forestry, primforest, secdforest, urban, other, newtype /
 
 **✅ FIX**: Update land type across ALL modules and conservation law documentation
 1. Update `core/sets.gms` (global land set)
-2. Update ALL consumer modules to handle new type (10 direct vm_land consumers; 15 total when including consumers of other Module 10 interface variables — see line 72 note)
+2. Update ALL consumer modules to handle new type (10 direct vm_land consumers; 18 total when including consumers of other Module 10 interface variables — see §1.2)
 3. Update land balance conservation constraint
 4. Update carbon pools (Module 52) if new type stores carbon
 5. Update cost accounting (Module 11) for new land costs

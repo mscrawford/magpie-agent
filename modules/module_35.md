@@ -22,7 +22,7 @@
 - **Biodiversity**: BII (Biodiversity Intactness Index) by age class
 
 **Dependencies**: VERY HIGH (central hub) - **HIGH modification risk**
-- **Provides to**: Modules 10 (land), 11 (costs), 22 (conservation), 28 (age_class), 32 (forestry), 52 (carbon), 56 (ghg_policy), 73 (timber)
+- **Provides to**: Modules 10 (land), 11 (costs), 32 (forestry), 59 (SOM), 73 (timber) — direct consumers of M35 interface variables (`vm_land_other`, `vm_prod_natveg`, `vm_cost_hvarea_natveg`, `vm_natforest_reduction`, `vm_landdiff_natveg`, `v35_*`), verified 2026-05-23 R3 via `find ../modules -name '*.gms' -exec grep -l '<var>' {} \;`. Modules 22, 28, 52, 56 do NOT directly consume any M35 interface variable — earlier doc claim removed.
 - **Receives from**: Modules 10 (land), 22 (conservation), 28 (age_class), 32 (forestry), 44 (biodiversity)
 
 **Key Variables**:
