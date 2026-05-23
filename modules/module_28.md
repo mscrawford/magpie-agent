@@ -235,7 +235,7 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 
 **Used by**:
 1. **Module 32 (Forestry)** - Plantation dynamics
-   `dynamic_may24/presolve.gms:9-10`
+   `modules/32_forestry/dynamic_may24/presolve.gms:9-10`
 
    Key uses:
    - Fix harvesting to zero: `v32_hvarea_forestry.fx(j,ac_est) = 0`

@@ -353,9 +353,10 @@ print_section "7/20" "Checking naming conventions..."
 # Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
 STALE_CMD_COUNT=0
 while IFS= read -r file; do
-    # Skip archived/historical files and this script's own source
+    # Skip archived/historical files, top-level audit/plan artifacts, and this script's own source
     case "$file" in
         ./feedback/integrated/*|./feedback/archive/*|./reference/archive/*) continue ;;
+        ./feedback/pipeline_audit_round*.md|./feedback/r*_execution_plan.md|./feedback/next_session_plan.md|./feedback/flywheel_rubric.md|./feedback/README.md) continue ;;
         ./scripts/validate_consistency.sh) continue ;; # self-references are check logic, not stale format
     esac
     # Count "command: X" outside of "When user says" lines and "Unknown command:" patterns
@@ -396,6 +397,11 @@ CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/n
     | grep -v ".git" \
     | grep -v "feedback/integrated/" \
     | grep -v "feedback/archive/" \
+    | grep -v "feedback/pipeline_audit_round" \
+    | grep -v "feedback/r.*_execution_plan" \
+    | grep -v "feedback/next_session_plan" \
+    | grep -v "feedback/flywheel_rubric" \
+    | grep -v "feedback/README.md" \
     | grep -v "reference/archive/" \
     | grep -v "feedback/global/agent_lessons.md" \
     | grep -v "scripts/validate_consistency.sh" \

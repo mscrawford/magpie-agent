@@ -35,16 +35,23 @@ CONFIG_RE = re.compile(
 # Matches the module header line like:
 #   # Module 14: Yields (managementcalib_aug19)
 #   # Module 14_yields
-#   **Realization:** `managementcalib_aug19`
-#   **Realization**: managementcalib_aug19
+#   **Realization:** `managementcalib_aug19`     (colon INSIDE bold)
+#   **Realization**: managementcalib_aug19       (colon OUTSIDE bold)
+#   Realization: managementcalib_aug19           (no bold)
+# R3 fix (2026-05-23): accept all four colon-placement variants;
+# previously only matched "**Realization**:" exactly.
 HEADER_REAL_RE = re.compile(
-    r'\*\*Realization\*\*:?\s*`?(?P<real>[a-zA-Z_][\w]*)`?'
+    r'\*{0,2}Realization\*{0,2}\s*:\s*\*{0,2}\s*`?(?P<real>[a-zA-Z_][\w]*)`?'
 )
 # Matches "Verified Against:" footer paths like:
 #   ../modules/14_yields/managementcalib_aug19/*.gms
+#   modules/15_food/anthro_iso_jun22/                  (no leading ./ or ../)
 #   ../modules/17_*/sector_may15/*.gms  (glob form — name part is `*`)
+# R3 fix (2026-05-23): leading `./` or `../` is now optional; previously
+# footers without a dot prefix (used in M15, M22, M36, M37, M73) were
+# scanned but not validated.
 VERIFIED_RE = re.compile(
-    r'(?:Verified\s+Against|verified\s+against)[:\s\*]+`?\.{1,2}/modules/(?P<num>\d+)_(?P<name>[a-z_*]+)/(?P<real>[a-zA-Z][\w]*)/'
+    r'(?:Verified\s+Against|verified\s+against)[:\s\*]+`?(?:\.{1,2}/)?modules/(?P<num>\d+)_(?P<name>[a-z_*]+)/(?P<real>[a-zA-Z][\w]*)/'
 )
 
 # Module-number → -doc-file

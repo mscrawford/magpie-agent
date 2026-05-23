@@ -716,7 +716,7 @@ Module 52 **provides to** these modules:
 
 **2. Module 29 (Cropland) [NEW consumer as of 2026-04-20]**:
 - `pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib` — uncalibrated versions
-- Used by tree-cover carbon density logic (`detail_apr24/preloop.gms:46,48`)
+- Used by tree-cover carbon density logic (`modules/29_cropland/detail_apr24/preloop.gms:46,48`)
 
 **3. Module 32 (Forestry)**:
 - `pm_carbon_density_plantation_ac(t_all,j,ac,ag_pools)` — plantation age-class carbon densities

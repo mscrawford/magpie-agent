@@ -115,25 +115,48 @@ def main():
         basename = os.path.basename(gms_hint)
         doc_short = os.path.basename(doc_file)
 
-        # Full-path citation — best case
+        # Full-path citation — best case. If the doc cited a full path
+        # (modules/... or core/...) and that file doesn't exist, the path
+        # is wrong. Do NOT fall through to bare-basename rescue: that would
+        # silently launder a fabricated realization into a real file and
+        # defeat MANDATE 16. Report FILE missing immediately.
         if gms_hint.startswith('core/') or gms_hint.startswith('modules/'):
             full = os.path.join(magpie_root, gms_hint)
             if os.path.isfile(full):
                 actual = full
+            else:
+                file_missing += 1
+                details.append(
+                    f"  FILE: {gms_hint}:{start} (in {doc_short}) — full path does not exist; "
+                    f"realization or directory may be fabricated"
+                )
+                continue
 
-        # Bare-basename fallback: walk_index by basename within module number
+        # Bare-basename fallback: walk_index by basename within module number.
+        # Only reached when gms_hint is a bare basename (no modules/ or core/
+        # prefix). A bare-basename hint with a single internal slash is treated
+        # as `realization/file.gms` and narrowed by realization.
         if not actual:
             candidates = file_index.get(basename, [])
             mod_prefix = f'/{mod_num}_'
             mod_candidates = [c for c in candidates if mod_prefix in c]
 
-            # If hint has a directory component (e.g., "flexreg_apr16/equations.gms"),
-            # narrow further by the realization name to avoid walk-order ambiguity.
             if '/' in gms_hint:
+                # bare hint like "flexreg_apr16/equations.gms"
                 realization_hint = os.path.dirname(gms_hint)
                 narrowed = [c for c in mod_candidates if f'/{realization_hint}/' in c]
                 if narrowed:
                     mod_candidates = narrowed
+                else:
+                    # Realization hint present but doesn't match any candidate —
+                    # do NOT walk-order rescue; surface as FILE issue.
+                    file_missing += 1
+                    details.append(
+                        f"  FILE: {gms_hint}:{start} (in {doc_short}) — bare hint with "
+                        f"realization '{realization_hint}' but no matching file under "
+                        f"module {mod_num}_*"
+                    )
+                    continue
 
             if mod_candidates:
                 actual = mod_candidates[0]

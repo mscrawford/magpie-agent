@@ -799,6 +799,6 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 - `../modules/21_trade/selfsuff_reduced/{declarations,equations,preloop,presolve,postsolve,sets,input,scaling}.gms`
 - `../modules/21_trade/exo/{declarations,equations,presolve,postsolve,realization,sets,input}.gms`
 - `../modules/21_trade/selfsuff_reduced_bilateral22/{declarations,equations,preloop,presolve,postsolve,sets,input,realization}.gms`
-- `../core/macros.gms:115-119` (`m21_baseline_production`)
+- `core/macros.gms:115-119` (`m21_baseline_production`)
 - `../config/default.cfg:644-708`
 **Verification Method**: Equations and scalars cross-referenced with current `develop` working-tree source code

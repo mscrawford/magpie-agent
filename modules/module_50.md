@@ -253,9 +253,9 @@ q50_nr_cost_fert(i2) ..
 | To Module | Variable | Use | Specific Code Location |
 |-----------|----------|-----|------------------------|
 | **11_costs** | vm_nr_inorg_fert_costs | Fertilizer costs in objective function | Module 11 cost aggregation |
-| **51_nitrogen** | vm_nr_eff | Cropland SNUpE for emission calculations | `51_nitrogen/rescaled_jan21/equations.gms:26,34,46,59` |
-| **51_nitrogen** | vm_nr_eff_pasture | Pasture NUE for emission calculations | `51_nitrogen/rescaled_jan21/equations.gms:37,80` |
-| **51_nitrogen** | vm_nr_inorg_fert_reg | Inorganic fertilizer for emission calculations | `51_nitrogen/rescaled_jan21/equations.gms:33,36` |
+| **51_nitrogen** | vm_nr_eff | Cropland SNUpE for emission calculations | `modules/51_nitrogen/rescaled_jan21/equations.gms:26,34,46,59` |
+| **51_nitrogen** | vm_nr_eff_pasture | Pasture NUE for emission calculations | `modules/51_nitrogen/rescaled_jan21/equations.gms:37,80` |
+| **51_nitrogen** | vm_nr_inorg_fert_reg | Inorganic fertilizer for emission calculations | `modules/51_nitrogen/rescaled_jan21/equations.gms:33,36` |
 
 **Critical interface with Module 51**: Module 50 provides the efficiency parameters that Module 51 uses to back-calculate nitrogen losses and emissions. The formula in Module 51:
 ```
