@@ -615,7 +615,7 @@ Other IAMs may use different approaches:
 ### The Three Rules
 
 1. **NEVER FABRICATE** — Copy variable names, equation names, realization names, and line numbers directly from code. Never construct them from context. (`ls ../modules/XX_name/` to verify realization directories)
-2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (18 checks, 33 sub-checks). It catches wrong names, stale citations, and convention violations automatically.
+2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (<!--count:validator_main_checks-->20<!--/count--> checks, <!--count:validator_sub_checks-->35<!--/count--> sub-checks). It catches wrong names, stale citations, and convention violations automatically.
 3. **VERIFY BEFORE CITING** — If you haven't read a file THIS session, don't cite its line numbers. Line numbers drift as code evolves.
 
 ### Bug Distribution (where errors actually occur)
@@ -650,7 +650,7 @@ macOS ships bash 3.x: no associative arrays (`declare -A`), no `grep -P`. Use Py
 
 ### For Future Audit Sessions
 
-Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See `core_docs/Bug_Taxonomy.md` for 14 documented patterns and the improvement flywheel methodology.
+Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See `core_docs/Bug_Taxonomy.md` for <!--count:bug_taxonomy_patterns-->14<!--/count--> documented patterns and the improvement flywheel methodology.
 
 ---
 
@@ -660,7 +660,7 @@ Syntactic audits (variable names, equation names, realization names, citations) 
 
 - **"MAgPIE accounts for..." / "The model considers..." / "MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA? Is this MECHANISTIC or PARAMETERIZED? See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix; apply the three-check verification (equation structure, parameter source, dynamic feedback).
 
-**After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (18 checks, 33 sub-checks). See `core_docs/Response_Guidelines.md` for the full response checklist.
+**After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (<!--count:validator_main_checks-->20<!--/count--> checks, <!--count:validator_sub_checks-->35<!--/count--> sub-checks). See `core_docs/Response_Guidelines.md` for the full response checklist.
 
 ---
 

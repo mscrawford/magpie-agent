@@ -37,14 +37,19 @@ AGENT_DIR = SCRIPT_DIR.parent
 
 VALIDATION_JSON = AGENT_DIR / "feedback" / "validation_rounds.json"
 VALIDATE_SH = SCRIPT_DIR / "validate_consistency.sh"
+BUG_TAXONOMY_MD = AGENT_DIR / "core_docs" / "Bug_Taxonomy.md"
 
 # Files known to host aggregate-count markers. Add new files here as markers
 # spread; absence of markers in a listed file is harmless.
 TARGET_FILES = [
     AGENT_DIR / "AGENT.md",
     AGENT_DIR / "agent" / "commands" / "validate-semantic.md",
+    AGENT_DIR / "agent" / "commands" / "validate.md",
+    AGENT_DIR / "agent" / "commands" / "validate-module.md",
     AGENT_DIR / "agent" / "commands" / "pipeline-audit.md",
     AGENT_DIR / "agent" / "helpers" / "verifiers.md",
+    AGENT_DIR / "agent" / "helpers" / "maintenance_protocol.md",
+    AGENT_DIR / "core_docs" / "Response_Guidelines.md",
 ]
 
 MARKER_RE = re.compile(r"<!--count:([a-z_]+)-->(.*?)<!--/count-->", re.DOTALL)
@@ -83,8 +88,16 @@ def load_canonical_counts() -> dict[str, str]:
         text = VALIDATE_SH.read_text()
         n = len(re.findall(r'print_section\s+"\d+/\d+"', text))
         counts["validator_checks"] = str(n)
+        # Alias for clarity: distinguish main numbered checks from sub-checks
+        counts["validator_main_checks"] = str(n)
 
-    # 3. Live counts via the per-check scripts (run them in --summary-only where
+    # 3. bug_taxonomy_patterns: count "### Pattern" headings in Bug_Taxonomy.md
+    if BUG_TAXONOMY_MD.is_file():
+        text = BUG_TAXONOMY_MD.read_text()
+        n = len(re.findall(r'^### Pattern', text, re.MULTILINE))
+        counts["bug_taxonomy_patterns"] = str(n)
+
+    # 4. Live counts via the per-check scripts (run them in --summary-only where
     # supported; parse stdout). Wrapped in try/except so a broken script does
     # not corrupt the whole refresh run.
     counts.update(run_live_counts())

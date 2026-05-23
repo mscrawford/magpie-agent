@@ -268,7 +268,7 @@ When validating all modules:
 
 [Presents formatted report]
 
-"Module 10 is in excellent shape! All 24 checks passed. Last verified 13 days ago (fresh). The documentation is production-ready."
+"Module 10 is in excellent shape! All N checks passed. Last verified 13 days ago (fresh). The documentation is production-ready."
 
 ---
 
