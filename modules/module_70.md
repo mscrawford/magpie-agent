@@ -709,7 +709,7 @@ vm_feed_balanceflow(i,kap,kall)  // mio. tDM
 vm_cost_prod_livst(i,factors)  // mio. USD17MER per yr (factors = labor, capital)
 vm_cost_prod_fish(i)          // mio. USD17MER per yr
 ```
-- **To Module 11 (Costs)**: Aggregated into `vm_costs_additional_mon(i,"factor_costs","livst_egg")` and similar for all livestock products (`module.gms:21`)
+- **To Module 11 (Costs)**: `vm_cost_prod_livst` and `vm_cost_prod_fish` enter `q11_cost_reg` directly (see module_11.md §3). Separately, Module 71 declares its own `vm_costs_additional_mon(i)` (1D — region only; declared at `modules/71_disagg_lvst/foragebased_aug18/declarations.gms:11`) which is a penalty cost for additionally-transported monogastric `livst_egg`. The two `vm_cost_*` paths are independent — `vm_costs_additional_mon` is not an aggregator of M70 costs.
 
 **5. Pasture Management Factor** (`declarations.gms:41`):
 ```

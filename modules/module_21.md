@@ -374,7 +374,7 @@ v21_import_for_feasibility.lo(h,k_import21) = 0;           ! Lower bound 0
 v21_import_for_feasibility.up(h,k_import21) = Inf;         ! Upper bound infinite
 ```
 
-**Allowed Commodities** (`sets.gms:12-13`):
+**Allowed Commodities** (`input.gms:12-13` (k_import21 is declared in selfsuff_reduced/input.gms, not sets.gms)):
 ```gams
 k_import21(k_trade) = / wood, woodfuel /
 ```
@@ -754,7 +754,7 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 
 ### 6. Limited Feasibility Imports
 **What**: Emergency imports only allowed for wood and woodfuel
-**Where**: `k_import21` set (`sets.gms:12-13`)
+**Where**: `k_import21` set (`input.gms:12-13` (k_import21 is declared in selfsuff_reduced/input.gms, not sets.gms))
 **Impact**: Other commodities cannot use feasibility valve, may cause infeasibilities
 
 ### 7. No Trade Dynamics

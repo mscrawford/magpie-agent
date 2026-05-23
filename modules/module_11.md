@@ -239,7 +239,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Description:** Small smoothing costs to penalize rapid land-use changes
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:39`, documented in `equations.gms:65`
+**Citation:** `equations.gms:41`, documented in `equations.gms:65`
 
 ---
 
@@ -250,7 +250,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Description:** Costs specific to cropland management (likely maintenance or baseline costs)
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:41`
+**Citation:** `equations.gms:43`
 
 ---
 
@@ -261,7 +261,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Description:** Costs for urban land expansion
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:43`
+**Citation:** `equations.gms:45`
 
 ---
 
@@ -352,7 +352,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Source Module:** Module 42 (Water Demand) or Module 43 (Water Availability)
 **Description:** Costs for water extraction, treatment, and delivery
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:44`
+**Citation:** `equations.gms:46`
 
 ---
 
@@ -364,7 +364,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Source Module:** Module 32 (Forestry)
 **Description:** Costs for establishing and managing plantation forests (NPI, NDC, afforestation)
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:31`, documented in `equations.gms:61`
+**Citation:** `equations.gms:33`, documented in `equations.gms:61`
 
 ---
 
@@ -374,7 +374,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Source Module:** Module 32 (Forestry) or Module 73 (Timber)
 **Description:** Costs for harvesting timber from plantations
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:32`
+**Citation:** `equations.gms:34`
 
 ---
 
@@ -384,7 +384,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Source Module:** Module 35 (Natural Vegetation)
 **Description:** Costs for harvesting timber from natural forests
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:33`
+**Citation:** `equations.gms:35`
 
 ---
 
@@ -396,7 +396,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Source Module:** Module 20 (Processing)
 **Description:** Costs for processing raw commodities (milling, refining, manufacturing)
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:34`, documented in `equations.gms:63`
+**Citation:** `equations.gms:36`, documented in `equations.gms:63`
 
 ---
 
@@ -406,7 +406,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Source Module:** Module 20 (Processing)
 **Description:** Costs/benefits for substituting processed products
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:37`
+**Citation:** `equations.gms:39`
 
 ---
 
@@ -416,7 +416,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Source Module:** Module 60 (Bioenergy)
 **Description:** Utility/benefits from bioenergy production (may be positive or negative cost)
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:36`, documented in `equations.gms:62`
+**Citation:** `equations.gms:38`, documented in `equations.gms:62`
 
 ---
 
@@ -460,7 +460,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Description:** Costs/penalties for biodiversity loss (if biodiversity accounting enabled)
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:42`
+**Citation:** `equations.gms:44`
 
 ---
 
@@ -473,7 +473,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Description:** Costs for soil carbon management practices (cover crops, reduced tillage)
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:35`, documented in `equations.gms:64`
+**Citation:** `equations.gms:37`, documented in `equations.gms:64`
 
 ---
 
@@ -484,7 +484,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 **Description:** Costs for peatland restoration or drainage management
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:40`, documented in `equations.gms:66`
+**Citation:** `equations.gms:42`, documented in `equations.gms:66`
 
 ---
 
@@ -493,10 +493,10 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Additional Monitoring Costs
 
 **Variable:** `vm_costs_additional_mon(i)`
-**Source Module:** Unknown (possibly Module 22 or reporting module)
-**Description:** Costs for monitoring compliance, data collection, or reporting
+**Source Module:** Module 71 (Disaggregated Livestock) — declared at `modules/71_disagg_lvst/foragebased_aug18/declarations.gms:11` as `vm_costs_additional_mon(i)` (1D, region only). It is a penalty cost for additionally-transported monogastric `livst_egg`, NOT a monitoring cost. The name "additional_mon" is short for "additional monogastric".
+**Description:** Penalty cost for additionally-transported monogastric `livst_egg` from M71's regional-to-cell disaggregation.
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:38`
+**Citation:** `equations.gms:40`
 
 ---
 
@@ -1014,7 +1014,7 @@ Module 11 is at the **end of the dependency chain** — it aggregates costs but 
 
 1. **No discounting of future costs**: Module 11 does not apply discount rates to costs from future time steps. Each time step is optimized independently (recursive dynamic, not forward-looking). Long-term costly land transitions (e.g., reforestation) appear equally expensive regardless of when they occur (`equations.gms:10`).
 
-2. **Blind aggregation with no validation**: Module 11 unconditionally sums 30 cost variables from other modules without conditional logic or sign checks (`equations.gms:15-45`). Errors in source modules propagate directly to the objective function.
+2. **Blind aggregation with no validation**: Module 11 unconditionally sums 31 cost variables from other modules without conditional logic or sign checks (`equations.gms:15-47`). Errors in source modules propagate directly to the objective function.
 
 3. **Single currency, no real vs. nominal distinction**: All costs in USD17MER (2017 US dollars, Market Exchange Rates). No PPP adjustment or inflation mechanism exists between time periods.
 

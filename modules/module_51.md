@@ -451,10 +451,9 @@ Emissions = (N_input / (1 - 0.5)) × (1 - vm_nr_eff) × EF
 
 | Module | Variables | Purpose |
 |--------|-----------|---------|
-| **50** (NR Soil Budget) | `vm_nr_eff`, `vm_nr_eff_pasture` | NUE rescaling factors |
-| **50** (NR Soil Budget) | `vm_manure_recycling`, `vm_nr_inorg_fert_reg` | Nitrogen inputs to cropland/pasture |
+| **50** (NR Soil Budget) | `vm_nr_eff`, `vm_nr_eff_pasture`, `vm_nr_inorg_fert_reg` | NUE rescaling factors + inorganic-fertilizer nitrogen |
+| **55** (AWMS) | `vm_manure_recycling`, `vm_manure_confinement`, `vm_manure` | Recycled manure nitrogen + confinement manure + manure-in-management-system stocks |
 | **18** (Residues) | `vm_res_recycling`, `vm_res_ag_burn` | Residue nitrogen flows |
-| **55** (AWMS) | `vm_manure_confinement`, `vm_manure` | Manure nitrogen in management systems |
 | **59** (SOM) | `vm_nr_som` | Nitrogen from SOM mineralization |
 | **56** (GHG Policy) | `im_maccs_mitigation` | Mitigation effort for AWMS (input data, not variable) |
 

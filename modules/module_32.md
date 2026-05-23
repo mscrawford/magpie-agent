@@ -51,7 +51,7 @@
 - **Re-establishment**: Harvested areas automatically replanted
 - **Establishment decision**: Endogenous based on forward-looking timber demand
 - **Growth curve**: Fast-growing plantation species (e.g., pine, eucalyptus)
-- **Carbon density**: Uses `pm_carbon_density_plantation_ac` (`presolve.gms:59`)
+- **Carbon density**: Uses `pm_carbon_density_plantation_ac` (`presolve.gms:65`)
 
 **Expected growing stock at harvest** (`presolve.gms:180-181`):
 ```gams
@@ -78,7 +78,7 @@ i32_growing_stock_at_harvest(t,j) = sum(ac$(ac.off = p32_rotation_cellular_estb(
 - **Exogenous targets**: Based on country reports (NPI = National Policy Instruments, NDC = Nationally Determined Contributions)
 - **Growth curve**: Natural vegetation regrowth (slower than plantations)
 - **Protection**: Fixed once established (cannot be harvested or converted) (`presolve.gms:138`)
-- **Carbon density**: Uses `pm_carbon_density_secdforest_ac` (natural regrowth) (`presolve.gms:62`)
+- **Carbon density**: Uses `pm_carbon_density_secdforest_ac_uncalib` (uncalibrated natveg regrowth curve) (`presolve.gms:68`)
 
 **Policy constraint** (`equations.gms:74-75`):
 ```gams

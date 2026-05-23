@@ -401,7 +401,7 @@ Module 53 uses interface variables declared in other modules.
 - **Provider**: Core data files, potentially Module 09 (Drivers)
 
 **3. vm_manure** (Module 55: AWMS)
-- **Declaration**: `vm_manure(i,kli,awms_conf,npk)` (Module 55 declarations.gms)
+- **Declaration**: `vm_manure(i,kli,awms,npk)` (Module 55 declarations.gms:19) — the set is `awms` (animal waste management systems, 11 elements). The subset `awms_conf` exists separately and is used only as a domain restriction in some equations; M53 references only the `"confinement"` element of `awms`.
 - **Description**: Manure by livestock type, management system, and nutrient (tN or tP or tK per year)
 - **Usage**: Equation q53_emissionbal_ch4_awms (equations.gms:48)
 - **Provider**: Module 55 (AWMS) calculates manure from feed intake minus animal products

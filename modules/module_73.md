@@ -2,7 +2,7 @@
 
 **Status**: Fully documented
 **Location**: `modules/73_timber/default/`
-**Code Size**: 394 lines across 8 files
+**Code Size**: 415 lines across 8 .gms files (recount 2026-05-23 R3; post PR #869/#872)
 **Authors**: Abhijeet Mishra, Florian Humpenöder
 **Realization**: `default` (only realization)
 
@@ -30,7 +30,7 @@
 - ❌ Does NOT track timber products over time (no stock accumulation)
 - ❌ Does NOT model wood substitution effects (e.g., wood vs. concrete in construction)
 - ❌ Does NOT include demand for non-timber forest products
-- ❌ Residue recovery rate (50%) is fixed, not region-specific (`input.gms:24`)
+- ❌ Residue recovery rate (~52%, from Thiffault 2015) is fixed, not region-specific. The model uses a 15% residue-ratio scalar (`s73_residue_ratio = 0.15` at `input.gms:20`) which is the product of ~30% theoretical roundwood-residue potential × ~52% technical recovery rate.
 
 ---
 
@@ -57,15 +57,16 @@ q73_prod_wood(j2)..
 1. **Managed plantations** (`vm_prod_forestry` from Module 32):
    - Timber plantations with rotation management
    - Higher yields, predictable supply
-   - Cost: 148 USD17MER/tDM (`input.gms:19`)
+   - Cost: `s73_timber_prod_cost_wood = 89 USD17MER/m3` (`input.gms:15`); woodfuel: `s73_timber_prod_cost_woodfuel = 44 USD17MER/m3` (`input.gms:16`). Values updated post PR #869/#872.
 
 2. **Natural forests** (`vm_prod_natveg` from Module 35):
    - Primary and secondary forests
    - Sustainable harvest limits
    - Environmental constraints
+   - Cost premium: `s73_natveg_cost_premium = 0.15` (15% above plantation cost; `input.gms:23`)
 
 3. **Emergency slack** (`v73_prod_heaven_timber`):
-   - Cost: 1,000,000 USD17MER/tDM (`input.gms:21`)
+   - Cost: `s73_free_prod_cost = 1e+06 USD17MER/tDM` (`input.gms:17`)
    - Only activated when demand cannot be met from forests
    - Indicates supply shortage
 
@@ -89,9 +90,9 @@ q73_prod_woodfuel(j2)..
 **Additional Source for Woodfuel**:
 - **Harvest residues** (`v73_prod_residues`):
   - Logging residues from industrial roundwood harvest
-  - Up to 15% of wood production (`input.gms:24`)
-  - Cost: 2.5 USD17MER/tDM for removal (`input.gms:25`)
-  - Residue availability constraint (`equations.gms:63-67`):
+  - Up to 15% of combined plantation + natveg roundwood and woodfuel harvest (`s73_residue_ratio = 0.15` at `input.gms:20`)
+  - Cost: `s73_residue_removal_cost = 2.7 USD17MER/tDM` for removal (`input.gms:21`)
+  - Residue availability constraint:
 
 ```gams
 q73_prod_residues(j2)..
@@ -101,10 +102,10 @@ q73_prod_residues(j2)..
   ;
 ```
 
-**VERIFIED Residue Numbers** (`input.gms:29-31`):
+**VERIFIED Residue Numbers** (derivation cited in `equations.gms` comment block 63-73):
 - USDA reports ~30% of roundwood harvested are residues (Oswalt et al. 2019)
-- 50% residue removal assumed (Pokharel et al. 2017)
-- Result: 15% residue ratio used in model
+- ~52% residue recovery assumed (Thiffault et al. 2015)
+- Result: 15% residue ratio used in model (`s73_residue_ratio = 0.15` at `input.gms:20`)
 
 ---
 
@@ -149,7 +150,7 @@ p73_income_elasticity(t_all,iso,"wood_fuel") = f73_income_elasticity("wood_fuel"
 ```
 
 **KEY FEATURE**:
-- Income elasticity set to **ZERO** when GDP per capita exceeds **10,000 USD17PPP/cap/yr** (`input.gms:23`)
+- Income elasticity set to **ZERO** when GDP per capita exceeds **10,000 USD17PPP/cap/yr** (`s73_income_threshold` at `input.gms:19`)
 - Assumes demand saturation in wealthy countries
 - Woodfuel elasticity always active (negative elasticity - demand decreases with income)
 
@@ -190,7 +191,7 @@ pm_demand_forestry(t_all,i,kforestry) = round(p73_timber_demand_gdp_pop(t_all,i,
 - **Input**: mio. m³/yr
 - **Output**: mio. tDM/yr
 - **Factor**: `im_vol_conv(i)` — regional basic wood density (tDM/m³), provided by Module 52 (see `modules/module_52.md#5-basic-wood-density-by-climate-class-new-2026-04-20`)
-- **Stacking correction** (applied BEFORE conversion, `preloop.gms:41`): `p73_timber_demand_gdp_pop(t, i, "woodfuel") *= s73_woodfuel_stacking_factor` (0.65, converts FAO stacked-m3 to solid m3)
+- **Stacking correction** (applied BEFORE conversion, `preloop.gms:42`): `p73_timber_demand_gdp_pop(t, i, "woodfuel") *= s73_woodfuel_stacking_factor` (0.65, converts FAO stacked-m3 to solid m3)
 
 **Prior to 2026-04-20**: conversion used a per-kforestry file *f73_volumetric_conversion.csv* (now removed). See PR #869 for migration details.
 
@@ -305,7 +306,7 @@ q73_cost_timber(i2)..
    - When premium = 0, this term vanishes
 
 3. **Residue removal cost** (`v73_prod_residues × s73_residue_removal_cost`):
-   - Cost: 2.7 USD17MER/tDM (`input.gms:19`) — collecting branches, tops from harvest site
+   - Cost: 2.7 USD17MER/tDM (`s73_residue_removal_cost` at `input.gms:21`) — collecting branches, tops from harvest site
    - Note typo fix: formerly *s73_reisdue_removal_cost* (typo), now `s73_residue_removal_cost`
 
 4. **Emergency slack cost** (`v73_prod_heaven_timber × s73_free_prod_cost`):
@@ -657,7 +658,7 @@ Natural Forests
    - Applied to demand: `preloop.gms:43-45`
 
 9. ✅ **Production cost accounting**:
-   - Wood: 148 USD17MER/tDM: `input.gms:19`
+   - Wood: 89 USD17MER/m3 (`s73_timber_prod_cost_wood` at `input.gms:15`); woodfuel: 44 USD17MER/m3 (`input.gms:16`)
    - Woodfuel: 74 USD17MER/tDM: `input.gms:20`
    - Residues: 2.5 USD17MER/tDM: `input.gms:25`
 

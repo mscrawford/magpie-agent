@@ -100,14 +100,14 @@ if(m_year(t) <= sm_fix_SSP2,
 ```gams
 else
 * future options for land conservation are added to the WDPA baseline
-p22_conservation_area(t,j,land_natveg) =
+p22_conservation_area(t,j,land_consv) =
     sum(cell(i,j),
-      p22_wdpa_baseline(t,j,"%c22_base_protect%",land_natveg) * p22_country_weight(i)
-      + p22_wdpa_baseline(t,j,"%c22_base_protect_noselect%",land_natveg) * (1-p22_country_weight(i))
+      p22_wdpa_baseline(t,j,"%c22_base_protect%",land_consv) * p22_country_weight(i)
+      + p22_wdpa_baseline(t,j,"%c22_base_protect_noselect%",land_consv) * (1-p22_country_weight(i))
       )
     + sum(cell(i,j),
-      p22_add_consv(t,j,"%c22_protect_scenario%",land_natveg) * p22_country_weight(i)
-      + p22_add_consv(t,j,"%c22_protect_scenario_noselect%",land_natveg) * (1-p22_country_weight(i))
+      p22_add_consv(t,j,"%c22_protect_scenario%",land_consv) * p22_country_weight(i)
+      + p22_add_consv(t,j,"%c22_protect_scenario_noselect%",land_consv) * (1-p22_country_weight(i))
       );
 );
 ```
@@ -115,7 +115,7 @@ p22_conservation_area(t,j,land_natveg) =
 **Logic**:
 1. **Start with WDPA baseline** (2020 levels held constant)
 2. **Add additional priority areas** (`p22_add_consv`) based on scenario
-3. **Only applies to natural vegetation** (`land_natveg` = primforest, secdforest, other)
+3. **Only applies to the M22-local `land_consv` set** (= primforest, secdforest, other; defined at `input.gms:51`). Do NOT confuse with the global `land_natveg` set in Module 10 — that set is not used here.
 4. **Gradual phase-in**: `p22_conservation_fader(t)` provides sigmoid transition (2025→2050)
 
 **Priority Areas Available** (`sets.gms:21-24`):
@@ -395,7 +395,7 @@ if (m_year(t) >= s22_base_protect_reversal,
 
 ### 4. Data Sources
 
-#### **File 1: WDPA Baseline** (`input.gms:51-57`)
+#### **File 1: WDPA Baseline** (`input.gms:57-61` — table; line 51 defines the `land_consv` set)
 
 ```gams
 table f22_wdpa_baseline(t_all,j,wdpa_cat22,land) Initial protected area as derived from WDPA until 2020 (mio. ha)
@@ -428,7 +428,7 @@ m_fillmissingyears(f22_wdpa_baseline,"j,wdpa_cat22,land");
 
 ---
 
-#### **File 2: Conservation Priority Areas** (`input.gms:59-63`)
+#### **File 2: Conservation Priority Areas** (`input.gms:65-69`)
 
 ```gams
 table f22_consv_prio(j,consv_prio22,land) Conservation priority areas (mio. ha)
