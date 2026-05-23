@@ -326,7 +326,7 @@ Before answering code-specific questions, verify documentation is current:
 
 ### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 
-**16 MANDATEs** that prevent recurring confabulation patterns identified across 21 semantic-validation rounds (445 catalogued bugs, 297 fixed; see `feedback/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
+**16 MANDATEs** that prevent recurring confabulation patterns identified across <!--count:total_rounds-->21<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->445<!--/count--> catalogued bugs, <!--count:total_bugs_fixed-->297<!--/count--> fixed; see `feedback/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
 
 **Why hoisted**: ~150 lines of binding rules don't belong in always-loaded AGENT.md context; auto-loading on relevant triggers saves tokens, and a dedicated MANDATE doc with binding language separates "must enforce" from "FYI".
 

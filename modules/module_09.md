@@ -656,6 +656,7 @@ gdp_ppp["y2050", africa_countries, "SSP2"] <- gdp_ppp["y2050", africa_countries,
 
 **Current**: Continuous 0-1 scale
 **Alternative**: Step function at specific GDP thresholds
+<!-- check-gams-vars: allow im_gdp_pc_ppp -->
 ```gams
 * Hypothetical (not actual code) — im_gdp_pc_ppp_iso is at ISO level, would need aggregation to (i)
 im_development_state(t,i) = 0$(im_gdp_pc_ppp(t,i) < 4000);  * Low income
@@ -855,7 +856,7 @@ Module 09 does **not directly participate** in any conservation laws:
 - `im_pop_iso(t,iso)` → Used by 10 modules (highest usage)
 - `im_gdp_pc_ppp_iso(t,iso)` → Used by 4 modules
 - `im_pop(t,i)` → Used by 3 modules
-- `im_gdp_pc_ppp(t,i)` → Used by 4 modules
+- `im_gdp_pc_mer(t,i)` → Used by 1 module (Module 42, water demand)
 
 **Modules that depend on 09**:
 - Module 12 (interest_rate): Economic development drives interest rates

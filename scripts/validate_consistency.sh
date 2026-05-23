@@ -635,9 +635,9 @@ fi
 # ==========================================
 print_section "14/20" "Checking GAMS variable names in docs..."
 
-GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.sh"
-if [ -x "$GAMS_CHECK_SCRIPT" ]; then
-    if GAMS_OUTPUT=$("$GAMS_CHECK_SCRIPT" --summary-only 2>&1); then GAMS_EXIT=0; else GAMS_EXIT=$?; fi
+GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.py"
+if [ -f "$GAMS_CHECK_SCRIPT" ]; then
+    if GAMS_OUTPUT=$(python3 "$GAMS_CHECK_SCRIPT" --summary-only 2>&1); then GAMS_EXIT=0; else GAMS_EXIT=$?; fi
     if [ $GAMS_EXIT -eq 0 ]; then
         ACCURACY=$(echo "$GAMS_OUTPUT" | grep "Accuracy:" | head -1)
         check_pass "GAMS variable names verified: $ACCURACY"
