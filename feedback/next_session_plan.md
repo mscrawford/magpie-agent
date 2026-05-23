@@ -50,21 +50,21 @@ Per [[feedback_confabulation_relocates]] — R3 confirmed confabulation relocate
 
 ## Remaining work (Tier 4 — strategic / closes the loop)
 
-### 8. M30 / M38 / M80 full body rewrites (deferred from R3 Cluster 1)
+### 8. M30 / M80 body rewrites (M38 DONE in R3-followup; M30/M80 still pending)
 
-R3 added prominent header warnings to M38 (CRITICAL multi-realization mismatch), M30, and M80, but the full body restructures (rewrite sections that describe the non-default realization to lead with the actual default) are substantial doc work and deferred.
+R3 added prominent header warnings to M38, M30, and M80. R3-followup session (2026-05-23, after the great-work-thank-you-woolly-clock plan) completed the M38 full body rewrite — see commit `4a07b88`. M30 and M80 are still pending:
 
-- **M38**: default `sticky_feb18` has 4 equations; body describes `sticky_labor` (6 equations including CES + labor-share target). Need to restructure Sections 3, 5, 6, 7, 10, 11, 18 to lead with `sticky_feb18`.
-- **M30**: declarations.gms cites detail_apr24 line numbers but default is simple_apr24. Need realization-prefixed citations throughout.
-- **M80**: missing `Parameters (nlp_apr17)` table for the default realization.
+- ~~**M38**: DONE 2026-05-23. sticky_feb18 leads, sticky_labor demoted to alternative. 665 lines (down from 1666). Body-realization-mismatch flag cleared. Interim R3 warning header removed.~~
+- **M30**: declarations.gms cites detail_apr24 line numbers but default is simple_apr24. Need realization-prefixed citations throughout. Header warning remains.
+- **M80**: missing `Parameters (nlp_apr17)` table for the default realization. Header warning remains.
 
-### 9. check_doc_var_existence.py mechanization (R3 strongest mechanization candidate)
+### 9. ~~check_doc_var_existence.py mechanization~~ — DONE in R3-followup
 
-For each backticked `[vmps]\d*_[a-z_]+` token in module docs, verify it exists in `../modules/*/*.gms`. Would have blocked all 14 M11 §17.2 fabrications at commit time. ~80 LOC. Lens 2 + Lens 5 corroborated this as the single highest-leverage R3 mechanization (closes Cluster 2 entirely).
+✅ `scripts/check_doc_var_existence.py` landed as Check 21 in commit `2a92985`. Closes R3 Cluster 2 (fabricated identifiers in backticked prose) for cross_module/ and core_docs/ (modules/module_*.md was already covered by Check 14). Surfaced 22 cases; all triaged + allowlisted in the same commit.
 
-### 10. check_module_realizations.py body-citation extension (R3 Cluster 1 mechanization)
+### 10. ~~check_module_realizations.py body-citation extension~~ — DONE in R3-followup
 
-Extend the validator to scan the first ~5 file:line citations in the body. If a citation's line content matches realization Y but the header claims realization X, flag as `body-realization-mismatch`. Would catch the M38/M30/M80 class. ~30 LOC.
+✅ Body-citation drift check landed in commit `bf53c4d`. Catches dominant-realization-in-body ≠ header-claimed-realization (with zero-equation suppression for M37/M80-style no-equation defaults). Caught M38 as the one expected case; M38 was then fixed in commit `4a07b88` Phase C.
 
 ### 11. Python rewrites of check_gams_equations.sh and check_gams_realizations.sh (R3 Cluster 8)
 
