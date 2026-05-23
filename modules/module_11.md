@@ -1091,45 +1091,45 @@ Module 11 does **not directly participate** in any conservation laws:
 - **Hub Type**: **Pure Sink Hub** (receives from many, provides only to solver)
 - **Role**: **Global aggregator** - all costs flow through Module 11
 
-**Modules that provide costs to Module 11** (27 total):
-- Module 09 (drivers): ❌ No costs (data provider)
-- Module 10 (land): ❌ No costs (land allocation)
-- Module 11 (costs): ➡️ **Self** (aggregates its own regional costs to global)
-- Module 12 (interest_rate): v12_interest (discount rate cost adjustment)
-- Module 13 (tc): vm_tech_cost (investment in technological change)
-- Module 14 (yields): ❌ No costs (provides yields)
-- Module 15 (food): v15_demand_regr (demand regression costs)
-- Module 16 (demand): ❌ No costs (calculates demands)
-- Module 17 (production): ❌ No costs (aggregates production)
-- Module 18 (residues): v18_res_use_costs (residue management)
-- Module 20 (processing): v20_processing_costs (food processing)
-- Module 21 (trade): vm_cost_trade_tariff, vm_cost_trade_margin, vm_cost_trade_feasibility (trade tariffs, transport margins, feasibility-import penalty)
-- Module 22 (land_conservation): v22_cost_conservation (protected area management)
-- Module 28 (age_class): v28_cost_age_class (age class tracking infrastructure)
-- Module 29 (cropland): vm_cost_cropland_expansion (cropland conversion)
-- Module 30 (croparea): vm_cost_croparea (crop allocation costs)
-- Module 31 (pasture): vm_cost_pasture (pasture management)
-- Module 32 (forestry): vm_cost_fore (plantation forestry)
-- Module 34 (urban): vm_cost_urban (urban expansion)
-- Module 35 (natveg): vm_cost_natveg (natural vegetation protection/loss)
-- Module 36 (employment): v36_employment_costs (labor)
-- Module 38 (factor_costs): vm_cost_prod (labor, capital, land rental) — **LARGEST COMPONENT**
-- Module 39 (landconversion): vm_cost_landcon (land-use change)
-- Module 40 (transport): vm_cost_transp (transport infrastructure)
-- Module 41 (area_equipped_for_irrigation): vm_cost_AEI (irrigation infrastructure)
-- Module 42 (water_demand): vm_water_cost (water withdrawal and pumping)
-- Module 43 (water_availability): ❌ No costs (water supply constraint)
-- Module 44 (biodiversity): vm_cost_bv_loss (biodiversity loss penalty)
-- Module 56 (ghg_policy): vm_emission_costs, vm_reward_cdr_aff (GHG policy)
-- Module 57 (maccs): vm_maccs_costs (technical GHG mitigation)
-- Module 59 (som): vm_cost_som (soil carbon management)
-- Module 60 (bioenergy): vm_cost_bioen (bioenergy)
-- Module 62 (material): vm_cost_material (material demand)
-- Module 70 (livestock): vm_cost_livst (livestock production)
-- Module 73 (timber): vm_cost_timber (timber production)
-- Module 80 (optimization): ❌ No costs (solver interface)
+**Modules that provide cost/penalty/reward variables consumed by `q11_cost_reg`** (27 source modules, 31 input variables + 1 reward; canonical source is the equation body at `equations.gms:15-47`, re-derived 2026-05-23 R3):
 
-**Total: 27 modules provide costs** (out of 46 modules)
+| Module | Variable(s) entering q11_cost_reg | Sign | Notes |
+|--------|----------------------------------|------|-------|
+| **10** (land) | `vm_cost_land_transition(j)` | + | Smoothing penalty for rapid land-use change |
+| **13** (tc) | `vm_tech_cost(i)` | + | Investment in tau-factor intensification |
+| **18** (residues) | `vm_cost_prod_kres(i,kres)` | + | Crop-residue production cost |
+| **20** (processing) | `vm_cost_processing(i)`, `vm_processing_substitution_cost(i)` | + | Two separate terms |
+| **21** (trade) | `vm_cost_trade_tariff(i)`, `vm_cost_trade_margin(i)`, `vm_cost_trade_feasibility(i)` | + | Split from former `vm_cost_trade` by PR #866 |
+| **29** (cropland) | `vm_cost_cropland(j)` | + | Cell-summed |
+| **30** (croparea) | `vm_rotation_penalty(i)` | + | Crop-rotation violation penalty (declared in M30) |
+| **31** (pasture) | `vm_cost_prod_past(i)` | + | Pasture production cost |
+| **32** (forestry) | `vm_cost_fore(i)` | + | Plantation establishment/management |
+| **34** (urban) | `vm_cost_urban(j)` | + | Urban land expansion (declared in M34) |
+| **35** (natveg) | `vm_cost_hvarea_natveg(i)` | + | Natural-forest harvest cost |
+| **38** (factor_costs) | `vm_cost_prod_crop(i,factors)` | + | LARGEST — labor + capital factor costs for crops |
+| **39** (landconversion) | `vm_cost_landcon(j,land)` | + | Land-conversion costs |
+| **40** (transport) | `vm_cost_transp(j,k)` | + | Cell-to-region transport costs |
+| **41** (AEI) | `vm_cost_AEI(i)` | + | Irrigation infrastructure expansion |
+| **42** (water_demand) | `vm_water_cost(i)` | + | Water withdrawal cost |
+| **44** (biodiversity) | `vm_cost_bv_loss(j)` | + | Biodiversity-loss penalty |
+| **50** (NR soil budget) | `vm_nr_inorg_fert_costs(i)` | + | Synthetic-N fertilizer cost |
+| **54** (phosphorus) | `vm_p_fert_costs(i)` | + | Phosphorus fertilizer cost (declared in M54, not M50) |
+| **56** (GHG policy) | `vm_emission_costs(i)`, `vm_reward_cdr_aff(i)` | +, − | Emission cost + CDR reward (reward has negative sign in equation) |
+| **57** (MACCS) | `vm_maccs_costs(i,factors)` | + | Marginal abatement costs |
+| **58** (peatland) | `vm_peatland_cost(j)` | + | Peatland restoration/drainage |
+| **59** (SOM) | `vm_cost_scm(j)` | + | Soil-carbon management |
+| **60** (bioenergy) | `vm_bioenergy_utility(i)` | + | Bioenergy utility (can be positive cost or negative benefit depending on scenario) |
+| **70** (livestock) | `vm_cost_prod_livst(i,factors)`, `vm_cost_prod_fish(i)` | + | Livestock + fish factor costs |
+| **71** (disagg lvst) | `vm_costs_additional_mon(i)` | + | Penalty for additionally-transported monogastric `livst_egg` (NOT a monitoring cost) |
+| **73** (timber) | `vm_cost_timber(i)` | + | Timber-harvesting cost |
+
+**Total: 27 source modules contribute 31 input cost terms plus 1 reward term** (out of 46 modules total).
+
+**Modules that do NOT contribute to `q11_cost_reg`** (19 modules):
+- 09 (drivers), 12 (interest rate), 14 (yields), 15 (food), 16 (demand), 17 (production), 22 (land conservation), 28 (age class), 36 (employment), 37 (labor productivity), 43 (water availability), 45 (climate), 51 (nitrogen emissions), 52 (carbon), 53 (methane), 55 (AWMS), 62 (material), 80 (optimization)
+- These either provide non-cost outputs (yields, areas, biophysical accounting) or feed costs in indirectly (e.g., M12's `pm_interest` scales costs inside M13, M39, M41 rather than entering M11 as a separate term).
+
+> **R3 audit note (2026-05-23)**: this section previously fabricated 14 cost-variable names following a `v<modnum>_<topic>` / `vm_cost_<topic>` naming pattern (e.g., `v12_interest`, `vm_cost_natveg`, `v22_cost_conservation`, `v28_cost_age_class`, `vm_cost_cropland_expansion`, `vm_cost_pasture`, `v36_employment_costs`, `vm_cost_livst`, `vm_cost_material`, `vm_cost_bioen`, `vm_cost_som`, `vm_cost_croparea`, `v18_res_use_costs`, `v20_processing_costs`, plus `vm_cost_prod` attributed to M38). None of those names exist in any GAMS file. The actual variable names above are the ones q11_cost_reg consumes per `equations.gms:15-47`.
 
 **What Module 11 provides**:
 - `vm_cost_glo` → **GAMS Solver** (objective function to minimize)
@@ -1210,11 +1210,13 @@ Module 11 participates in **zero circular dependencies**:
 3. **Cost composition check** (Section 15.2):
    ```r
    # Verify all expected cost components are present and non-negative
-   factor_costs <- readGDX(gdx, "ov_cost_prod", field="l")
+   factor_costs_crop <- readGDX(gdx, "ov_cost_prod_crop", field="l")
+   factor_costs_livst <- readGDX(gdx, "ov_cost_prod_livst", field="l")
    emission_costs <- readGDX(gdx, "ov_emission_costs", field="l")
    # PR #866: trade costs are now three separate GDX symbols
    trade_costs <- readGDX(gdx, "ov_cost_trade_tariff", field="l")
-   stopifnot(all(factor_costs >= 0))
+   stopifnot(all(factor_costs_crop >= 0))
+   stopifnot(all(factor_costs_livst >= 0))
    stopifnot(all(emission_costs >= 0))
    stopifnot(all(trade_costs >= 0))
    ```
