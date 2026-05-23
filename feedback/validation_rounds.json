@@ -2626,12 +2626,12 @@
     "non_module_docs_validated": 33,
     "total_bugs_found": 445,
     "total_bugs_fixed": 297,
-    "validator_checks": 18,
-    "validator_sub_checks": 33,
-    "gams_variables_verified": 828,
-    "gams_equations_verified": 138,
-    "gams_realizations_verified": 72,
-    "file_line_citations_verified": 2332,
+    "validator_checks": 20,
+    "validator_sub_checks": 35,
+    "gams_variables_verified": 944,
+    "gams_equations_verified": 139,
+    "gams_realizations_verified": 73,
+    "file_line_citations_verified": 2600,
     "last_validation_date": "2026-05-16",
     "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0"
   }
