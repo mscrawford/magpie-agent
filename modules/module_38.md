@@ -1,1665 +1,665 @@
 # Module 38: Factor Costs - Comprehensive Documentation
 
 **Location**: `modules/38_factor_costs/`
-**Default Realization**: `sticky_feb18` (4 q38 equations — see §2.2 for the active default; do NOT read §2.3 expecting default behavior — that section describes the non-default `sticky_labor` realization with 6 equations)
+**Default Realization**: `sticky_feb18` (4 q38 equations: `q38_cost_prod_labor`, `q38_cost_prod_capital`, `q38_investment_immobile`, `q38_investment_mobile`)
 **Authors**: Jan Philipp Dietrich, Benjamin Bodirsky, Kristine Karstens, Edna J. Molina Bacca, Debbora Leip
 
 ---
 
-> ⚙️ **Default Realization**: `sticky_feb18` (4 q38 equations: q38_cost_prod_labor, q38_cost_prod_capital, q38_investment_immobile, q38_investment_mobile)
-> Confirmed in `config/default.cfg`: `cfg$gms$factor_costs <- "sticky_feb18"`. Alternatives: `sticky_labor` (6 equations — adds q38_ces_prodfun and q38_labor_share_target; NOT default), `per_ton_fao_may22` (simplified per-ton costs).
+> ⚙️ **Default Realization**: `sticky_feb18` — confirmed in `config/default.cfg`: `cfg$gms$factor_costs <- "sticky_feb18"`.
 >
-> ⚠️ **R3 audit warning (2026-05-23)**: Sections 3, 5, 6, 7, 10, 11, 18 of this doc — including most CES content, the labor-share-target equation, v38_capital_need and v38_laborhours_need variables, and most parameter tables — describe the NON-DEFAULT `sticky_labor` realization without consistent realization labels. The actual default (`sticky_feb18`) has only 4 q38 equations (verifiable via `grep -c '^[[:space:]]*q38' ../modules/38_factor_costs/sticky_feb18/equations.gms`). A full body restructuring to lead with `sticky_feb18` content is deferred to a dedicated session; in the meantime, every cite that points to `modules/38_factor_costs/sticky_labor/...` is describing the non-default behavior. **If you are answering a default-config question, use `sticky_feb18` directly via `../modules/38_factor_costs/sticky_feb18/*.gms`.**
+> **Three realizations available**:
+> - **`sticky_feb18`** (default) — capital stickiness via mobile/immobile separation, depreciation, and accumulation; labor costs scale linearly with production (no endogenous labor substitution); aborts if `pm_labor_prod` from Module 37 is not identically 1
+> - **`sticky_labor`** (alternative, NOT default) — adds CES production function for labor-capital substitution (σ=0.3), accepts climate-driven `pm_labor_prod` from Module 37, accepts wage-productivity feedback from Module 36, and supports optional minimum labor-share target; 6 q38 equations (4 above plus `q38_ces_prodfun` + `q38_labor_share_target`)
+> - **`per_ton_fao_may22`** (alternative, NOT default) — simplified per-ton volume-based costs; no capital stocks; 2 q38 equations (`q38_cost_prod_crop_labor`, `q38_cost_prod_crop_capital`)
+>
+> **§2 below is the default**. §3 covers `sticky_labor`, §4 covers `per_ton_fao_may22`. All citations are realization-prefixed.
 
+---
 
 ## 1. Purpose & Overview
 
 Module 38 calculates the costs of production factors (labor and capital) in crop production activities. These costs are crop-specific and spatially explicit, influencing the model's choice of production patterns through the cost function in Module 11.
 
-**Key Innovation**: The `sticky_labor` realization introduces capital immobility and labor-capital substitution via a CES production function, creating path dependency in agricultural land use. Existing capital stocks make it cheaper to continue production in established locations, while climate change and rising wages affect the optimal mix of labor and capital inputs.
-
 **What Factor Costs Include**:
-- Labor costs (wages × hours worked)
-- Capital costs (machinery, equipment, irrigation infrastructure, buildings)
+- Labor costs (wages × hours worked, scaled by production volume)
+- Capital costs (machinery, equipment, irrigation infrastructure, buildings — represented as annuitized investment)
 
 **What Factor Costs Exclude** (to avoid double-counting):
 - Land rents (calculated endogenously in Module 11)
 - Chemical fertilizer costs (calculated in Module 50)
 - Seeds and agricultural inputs (would double-count intermediate products)
 
----
-
-## 2. Three Realizations: Evolution of Approaches
-
-### 2.1 per_ton_fao_may22: Volume-Based Costs
-
-**Approach**: Factor costs proportional to production volume
-**Data inputs**: FAO Value of Production (factor requirements) + historical factor cost data + GDP-based regression
-**`pm_factor_cost_shares` origin**: Computed in **Module 38's `preloop.gms`** via GDP-per-capita regression on historical labor/capital shares — NOT taken directly as an exogenous value from FAO or USDA sources (those are inputs to the regression, not the parameter itself)
-
-**Equations** (`modules/38_factor_costs/per_ton_fao_may22/equations.gms:10-18`):
-```gams
-vm_cost_prod_crop(i,"labor") = sum(kcr, vm_prod_reg(i,kcr) * i38_fac_req(i,kcr))
-                                * pm_factor_cost_shares(i,"labor")
-                                * (wage_scenario / wage_baseline)
-                                * (1/pm_productivity_gain_from_wages)
-
-vm_cost_prod_crop(i,"capital") = sum(kcr, vm_prod_reg(i,kcr) * i38_fac_req(i,kcr))
-                                 * pm_factor_cost_shares(i,"capital")
-```
-
-**Characteristics**:
-- Simple linear relationship: Cost = Production × Factor_Requirements
-- Factor requirements fixed over time (FAO 2005 baseline)
-- No spatial incentives to concentrate production
-- No labor-capital substitution
-
-**Use Case**: Baseline scenarios, sensitivity analysis, computational efficiency
-
-### 2.2 sticky_feb18: Introducing Capital Stickiness
-
-**New Features**:
-- Capital separated into mobile and immobile components
-- Capital stocks depreciate (5% per year) and accumulate
-- Investment costs annuitized to represent long-term value
-
-**Innovation**: Creates spatial inertia - expansion favored in locations with existing capital stocks
-
-### 2.3 sticky_labor: Full Factor Substitution (Non-Default)
-
-**Built on sticky_feb18 + adds**:
-- CES production function for labor-capital substitution
-- Climate change impacts on labor productivity (Module 37)
-- Wage increase impacts on labor productivity (Module 36)
-- Optional labor share targets (e.g., maintain rural employment)
-
-**Location**: `modules/38_factor_costs/sticky_labor/`
+**Output Variable**: `vm_cost_prod_crop(i,factors)` (mio USD17MER/yr) where `factors = {labor, capital}`. Aggregated by Module 11 into the global objective.
 
 ---
 
-## 3. Core Mechanism: CES Production Function
+## 2. Default Realization: `sticky_feb18`
 
-### 3.1 The CES Equation
+**Source**: `modules/38_factor_costs/sticky_feb18/`. Code size: 307 lines across 9 .gms files.
 
-**File**: `modules/38_factor_costs/sticky_labor/equations.gms:19-23`
+**Core idea**: Separate capital from labor; treat capital as partially crop-specific and location-specific ("immobile") so that crop switching incurs sunk-cost penalties. Labor cost scales linearly with production via region-time-crop-specific labor requirement (`p38_labor_need`). NO endogenous labor-capital substitution; NO climate-driven labor productivity (the realization aborts if `pm_labor_prod != 1`).
+
+### 2.1 Equations (4)
+
+#### 2.1.1 Labor cost (`q38_cost_prod_labor`)
+
+**File**: `modules/38_factor_costs/sticky_feb18/equations.gms:15-17`
 
 ```gams
-q38_ces_prodfun(j,kcr) ..
-  i38_ces_scale(j,kcr) *
-  (i38_ces_shr(j,kcr) * sum(mobil38, v38_capital_need(j,kcr,mobil38))**(-s38_ces_elast_par) +
-   (1 - i38_ces_shr(j,kcr)) * (pm_labor_prod(j) * pm_productivity_gain_from_wages(i)
-                               * v38_laborhours_need(j,kcr))**(-s38_ces_elast_par)
-  )**(-1/s38_ces_elast_par)
-  =e= 1 + v38_relax_CES_lp(j,kcr);
-```
-
-**Mathematical Form**:
-```
-Y = A * [α*K^(-ρ) + (1-α)*(L_eff)^(-ρ)]^(-1/ρ)
-```
-
-Where:
-- **Y** = Output (fixed at 1 per unit of crop production)
-- **A** = `i38_ces_scale` = Total factor productivity (calibration parameter)
-- **α** = `i38_ces_shr` = Capital share parameter (0-1)
-- **K** = `v38_capital_need` = Capital per unit output (USD17MER/tDM)
-- **L_eff** = Effective labor = `pm_labor_prod × pm_productivity_gain_from_wages × v38_laborhours_need`
-- **ρ** = `s38_ces_elast_par` = Elasticity parameter = (1/σ) - 1 = (1/0.3) - 1 = 2.33
-- **σ** = `s38_ces_elast_subst` = Elasticity of substitution = 0.3
-
-### 3.2 Understanding Elasticity of Substitution (σ = 0.3)
-
-**Physical Interpretation**:
-- σ = 0.3 means **low substitutability** between labor and capital
-- A 10% increase in relative wage leads to only ~3% reduction in labor intensity
-- Agricultural capital (tractors, irrigation) cannot fully replace human labor
-- Contrast with manufacturing (σ ~ 0.6-1.0) where automation is easier
-
-**Implications**:
-- Rising wages → gradual mechanization (not rapid automation)
-- Climate-driven labor productivity losses → modest capital intensification
-- Labor-intensive crops (vegetables, fruits) remain labor-dependent
-- Capital-intensive crops (grains, oilseeds) already mechanized
-
-**Calibration** (`modules/38_factor_costs/sticky_labor/input.gms:16`):
-```gams
-s38_ces_elast_subst = 0.3  ! Elasticity of substitution
-```
-
-### 3.3 Labor Productivity Adjustments
-
-**Effective Labor** = Base Labor × Two Adjustment Factors:
-
-1. **Climate Impacts** (`pm_labor_prod` from Module 37):
-   - Heat stress reduces labor productivity (WBGT-based)
-   - Range: 0.5-1.0 (50-100% productivity)
-   - Tropical regions: 0.5-0.7 by 2100 under RCP8.5
-   - Temperate regions: 0.9-1.0 (minimal impacts)
-
-2. **Wage-Productivity Relationship** (`pm_productivity_gain_from_wages` from Module 36):
-   - Higher wages → worker efficiency (better nutrition, health, training)
-   - Efficiency elasticity with respect to wages
-   - Range: 1.0-1.5 (0-50% productivity gain)
-   - Based on development economics literature
-
-**Combined Effect**:
-- **Hot climate + low wages**: Labor productivity = 0.5 × 1.0 = 0.5 (severe constraint)
-- **Temperate + high wages**: Labor productivity = 1.0 × 1.5 = 1.5 (optimal conditions)
-- **Trade-off**: Rising wages can offset some climate impacts
-
----
-
-## 4. Capital Stickiness: Immobile vs Mobile Capital
-
-### 4.1 Capital Types
-
-**Defined in** `modules/38_factor_costs/sticky_labor/sets.gms:9-10`:
-```gams
-sets mobil38 types of capital
-  / mobile, immobile /
-```
-
-**Immobile Capital** (crop-specific, location-specific):
-- Specialized equipment (rice transplanters, combine harvesters for specific crops)
-- Crop-specific irrigation infrastructure
-- Processing facilities linked to specific crops
-- Storage facilities designed for particular commodities
-
-**Mobile Capital** (location-specific, crop-flexible):
-- General tractors and tillage equipment
-- Transportation vehicles
-- General irrigation pumps
-- Farm buildings
-
-### 4.2 Immobility Share
-
-**Configuration** (`modules/38_factor_costs/sticky_labor/input.gms:15`):
-```gams
-s38_immobile = 1  ! 100% immobile by default
-```
-
-**Calculation** (`modules/38_factor_costs/sticky_labor/presolve.gms:21-22`):
-```gams
-p38_capital_need(t,i,kcr,"mobile") = i38_fac_req(t,i,kcr)
-                                     * pm_factor_cost_shares(t,i,"capital")
-                                     / (pm_interest(t,i) + s38_depreciation_rate)
-                                     * (1 - s38_immobile)
-
-p38_capital_need(t,i,kcr,"immobile") = i38_fac_req(t,i,kcr)
-                                       * pm_factor_cost_shares(t,i,"capital")
-                                       / (pm_interest(t,i) + s38_depreciation_rate)
-                                       * s38_immobile
-```
-
-**Default (s38_immobile = 1)**:
-- 100% of capital is crop-specific and location-specific
-- Creates maximum "stickiness" in production patterns
-- Favors expansion where capital stocks already exist
-- Penalizes crop switching (must build new capital)
-
-**Alternative (s38_immobile = 0.5)**:
-- 50% immobile (crop-specific)
-- 50% mobile (shared across crops)
-- More flexibility for crop rotation
-- Lower switching costs
-
-### 4.3 Capital Stock Dynamics
-
-**Initialization (t=1)** (`modules/38_factor_costs/sticky_labor/presolve.gms:84-85`):
-```gams
-p38_capital_immobile(t,j,kcr) = p38_capital_need(t,i,kcr,"immobile")
-                                 * pm_prod_init(j,kcr)
-                                 * (1 - s38_depreciation_rate)
-
-p38_capital_mobile(t,j) = sum(kcr, p38_capital_need(t,i,kcr,"mobile")
-                               * pm_prod_init(j,kcr))
-                          * (1 - s38_depreciation_rate)
-```
-- Capital stocks estimated from 1995 production levels
-- Assume one year depreciation from 1994 to 1995
-
-**Depreciation Between Timesteps** (`modules/38_factor_costs/sticky_labor/presolve.gms:91-92`):
-```gams
-p38_capital_immobile(t,j,kcr) = p38_capital_immobile(t,j,kcr)
-                                 * (1 - s38_depreciation_rate)**(m_timestep_length)
-
-p38_capital_mobile(t,j) = p38_capital_mobile(t,j)
-                          * (1 - s38_depreciation_rate)**(m_timestep_length)
-```
-- Annual depreciation rate: 5% (s38_depreciation_rate = 0.05)
-- Implies ~20-year linear depreciation lifespan
-- For 5-year timestep: (1-0.05)^5 = 0.774 (22.6% loss)
-- For 10-year timestep: (1-0.05)^10 = 0.599 (40.1% loss)
-
-**Investment Requirement** (`modules/38_factor_costs/sticky_labor/equations.gms:83-94`):
-```gams
-q38_investment_immobile(j,kcr) ..
-  v38_investment_immobile(j,kcr) =g=
-    vm_prod(j,kcr) * v38_capital_need(j,kcr,"immobile")
-    - p38_capital_immobile(t,j,kcr)
-
-q38_investment_mobile(j) ..
-  v38_investment_mobile(j) =g=
-    sum(kcr, vm_prod(j,kcr) * v38_capital_need(j,kcr,"mobile"))
-    - p38_capital_mobile(t,j)
-```
-- Investment needed when: Required Capital > Existing Stock
-- Required capital = Production × Capital per Unit Output
-- If existing stock sufficient, no investment needed
-
-**Stock Updating (Post-Solve)** (`modules/38_factor_costs/sticky_labor/postsolve.gms:9-10`):
-```gams
-p38_capital_immobile(t+1,j,kcr) = p38_capital_immobile(t,j,kcr)
-                                   + v38_investment_immobile.l(j,kcr)
-
-p38_capital_mobile(t+1,j) = p38_capital_mobile(t,j)
-                            + v38_investment_mobile.l(j)
-```
-- Investment adds to capital stock for next timestep
-- Creates path dependency over time
-
----
-
-## 5. Cost Calculation
-
-### 5.1 Labor Costs
-
-**Equation** (`modules/38_factor_costs/sticky_labor/equations.gms:39-41`):
-```gams
-q38_cost_prod_labor(i) ..
-  vm_cost_prod_crop(i,"labor") =e=
-    sum(kcr, sum(cell(i,j),
-      vm_prod(j,kcr) * v38_laborhours_need(j,kcr) * pm_hourly_costs(i,"scenario")
-    ))
-```
-
-**Components**:
-- **vm_prod(j,kcr)**: Production (tDM/yr) from Module 17
-- **v38_laborhours_need(j,kcr)**: Labor hours per ton output (hours/tDM) - endogenous
-- **pm_hourly_costs(i,"scenario")**: Wage rate (USD17MER/hour) from Module 36
-
-**Calculation**:
-```
-Labor Cost = Production × Labor_Hours_Per_Ton × Hourly_Wage
-```
-
-**Example (India rice, 2050)**:
-- Production = 100 million tDM/yr
-- Labor hours = 50 hours/tDM (moderately mechanized)
-- Wage = $5/hour
-- Labor cost = 100M × 50 × $5 = $25 billion/yr
-
-### 5.2 Capital Costs (Annualized Investment)
-
-**Equation** (`modules/38_factor_costs/sticky_labor/equations.gms:46-49`):
-```gams
-q38_cost_prod_capital(i) ..
-  vm_cost_prod_crop(i,"capital") =e=
-    (sum(cell(i,j), sum(kcr, v38_investment_immobile(j,kcr)))
-     + sum(cell(i,j), v38_investment_mobile(j)))
-    * (pm_interest(i) + s38_depreciation_rate) / (1 + pm_interest(i))
-```
-
-**Annuitization Factor**: `(r + d) / (1 + r)`
-
-Where:
-- **r** = pm_interest(i) = Interest rate (e.g., 0.05 = 5%)
-- **d** = s38_depreciation_rate = 0.05 (5% depreciation)
-
-**Why Annuitize?**
-
-The model must compare investment costs (one-time) to production benefits (per timestep).
-
-**Economic Logic** (documented in `equations.gms`):
-
-1. **True Utility**: Investment I₀ provides utility over infinite horizon:
-   ```
-   U_total = K₀*z * (1+r)/(r+d)
-   ```
-   Where z = utility per dollar of capital
-
-2. **Model Sees Only Current Period**: MAgPIE evaluates only current utility U₀ = K₀*z
-
-3. **Annuitization**: To make investment worthwhile, model must see cost:
-   ```
-   C₀ = I₀ * (r+d)/(1+r)
-   ```
-
-**Example Calculation**:
-- Interest rate r = 5%
-- Depreciation d = 5%
-- Annuitization factor = (0.05 + 0.05)/(1 + 0.05) = 0.10/1.05 = 0.0952
-
-- Investment = $1 billion
-- Annualized cost = $1B × 0.0952 = $95.2 million/yr
-
-**Interpretation**: A $1 billion investment appears as $95.2 million/yr cost in the model, representing the annual economic burden (interest + depreciation).
-
----
-
-## 6. Labor-Capital Substitution Timeline
-
-### 6.1 Three Phases
-
-**Phase 1: Fixed Historical (1995-2025)** (`modules/38_factor_costs/sticky_labor/presolve.gms:67-68`):
-```gams
-if (m_year(t) <= s38_startyear_labor_substitution,
-  v38_capital_need.fx(j,kcr,mobil38) = p38_capital_need(t,i,kcr,mobil38)
-```
-- Capital and labor requirements fixed to historical calibration
-- CES function not active
-- Ensures model matches historical patterns
-
-**Phase 2: Transition (2025-2050)** (`modules/38_factor_costs/sticky_labor/presolve.gms:63-64`):
-```gams
-v38_laborhours_need.lo(j,kcr) = 0.1 * v38_laborhours_need.l(j,kcr)
-v38_laborhours_need.up(j,kcr) = 10 * v38_laborhours_need.l(j,kcr)
-```
-- CES function activated
-- Labor and capital can adjust within bounds (0.1× to 10×)
-- Gradual transition to endogenous factor choice
-
-**Phase 3: Full Flexibility (2050+)**:
-- Labor-capital mix fully optimized
-- Climate impacts (Module 37) fully active
-- Wage-productivity feedback (Module 36) fully active
-
-### 6.2 Configuration
-
-**File**: `modules/38_factor_costs/sticky_labor/input.gms:17`
-```gams
-s38_startyear_labor_substitution = 2025
-```
-
-**Rationale**:
-- Historical period (1995-2025): Match observed technology adoption
-- Future (2025+): Allow endogenous mechanization response to:
-  - Rising wages (labor becomes expensive)
-  - Climate change (heat stress reduces labor productivity)
-  - Technological change (capital becomes cheaper/better)
-
----
-
-## 7. Optional Labor Share Target
-
-### 7.1 Purpose
-
-**Policy Goal**: Maintain minimum rural employment despite mechanization pressures
-
-**Use Cases**:
-- Food security scenarios (employment concerns)
-- Rural development policies
-- Social stability objectives
-
-### 7.2 Configuration
-
-**File**: `modules/38_factor_costs/sticky_labor/input.gms:18-20`
-```gams
-s38_target_labor_share = 0      ! Target labor share (0 = OFF)
-s38_targetyear_labor_share = 2050  ! Year to reach target
-s38_target_fulfillment = 0.5    ! Adjustment speed (50%)
-```
-
-**Default**: OFF (s38_target_labor_share = 0)
-
-### 7.3 Enforcement Equation
-
-**File**: `modules/38_factor_costs/sticky_labor/equations.gms:28-34`
-```gams
-q38_labor_share_target(j) ..
-  sum(kcr, vm_prod(j,kcr) * v38_laborhours_need(j,kcr) * pm_hourly_costs(i,"scenario"))
-  =g=
-  p38_min_labor_share(j) *
-    (sum(kcr, vm_prod(j,kcr) * v38_laborhours_need(j,kcr) * pm_hourly_costs(i,"scenario"))
-     + sum((mobil38,kcr), vm_prod(j,kcr) * v38_capital_need(j,kcr,mobil38)
-                          * (pm_interest(i) + s38_depreciation_rate)))
+q38_cost_prod_labor(i2) ..
+  vm_cost_prod_crop(i2,"labor")
+    =e=
+    sum(kcr, vm_prod_reg(i2,kcr)
+             * sum(ct, p38_labor_need(ct,i2,kcr)
+                       * (1 / pm_productivity_gain_from_wages(ct,i2))
+                       * (pm_hourly_costs(ct,i2,"scenario") / pm_hourly_costs(ct,i2,"baseline"))));
 ```
 
 **Interpretation**:
-```
-Labor_Costs ≥ p38_min_labor_share × (Labor_Costs + Capital_Costs)
-```
+- For each region `i2` and crop `kcr`, multiply regional production by per-ton labor requirement
+- Scale by the ratio of scenario wage to baseline wage (so wage scenarios scale the cost up/down)
+- Divide by `pm_productivity_gain_from_wages` so that wage-driven productivity gains reduce the cost
+- `p38_labor_need(t,i,kcr)` is calculated in presolve as `i38_fac_req(t,i,kcr) * pm_factor_cost_shares(t,i,"labor")` — labor cost per ton DM is the labor share of total factor cost per ton
 
-**Example (Target 40% labor share)**:
-- Labor costs = $40M
-- Capital costs = $60M
-- Total = $100M
-- Labor share = 40% (exactly at target)
-- Constraint satisfied
+**Note**: this is `(scenario/baseline)` scaling, not the full CES substitution machinery of `sticky_labor`. The labor *quantity* per ton of output is fixed at the historical regression — only the *price* and the *productivity adjustment* are scenario-responsive.
 
-If model tries to substitute to 30% labor:
-- Labor costs = $30M
-- Capital costs = $70M
-- Total = $100M
-- Labor share = 30% < 40% target
-- Constraint violated → forces more labor use
+#### 2.1.2 Capital cost (`q38_cost_prod_capital`)
 
-### 7.4 Dynamic Target Calculation
+**File**: `modules/38_factor_costs/sticky_feb18/equations.gms:21-24`
 
-**File**: `modules/38_factor_costs/sticky_labor/presolve.gms:25-40`
-
-**Phase 1 (t ≤ 2025)**: No target
 ```gams
-p38_min_labor_share(t,j) = 0
+q38_cost_prod_capital(i2) ..
+  vm_cost_prod_crop(i2,"capital")
+    =e= (sum((cell(i2,j2), kcr), v38_investment_immobile(j2,kcr))
+       + sum((cell(i2,j2)),       v38_investment_mobile(j2)))
+       * sum(ct, (pm_interest(ct,i2) + s38_depreciation_rate) / (1 + pm_interest(ct,i2)));
 ```
 
-**Phase 2 (2025 < t ≤ 2050)**: Linear ramp
+**Interpretation**:
+- Sum cellular immobile + mobile investments to regional total
+- Annuitize via factor `(r + d) / (1 + r)` where `r = pm_interest`, `d = s38_depreciation_rate = 0.05`
+- Annuitization converts a one-time investment into a per-period flow equivalent to its long-run economic burden
+
+**Why annuitize?** MAgPIE evaluates costs and benefits in the *current* timestep. An investment provides utility over its lifetime; to make the current-period cost commensurate with the current-period production benefit, the model multiplies the investment by `(r+d)/(1+r)`. With `r = 0.05` and `d = 0.05`: factor ≈ 0.0952. A 1 billion USD investment shows up as ~95.2 million USD/yr.
+
+#### 2.1.3 Immobile investment (`q38_investment_immobile`)
+
+**File**: `modules/38_factor_costs/sticky_feb18/equations.gms:33-36`
+
 ```gams
-p38_min_labor_share(t,j) =
-  pm_factor_cost_shares(t,i,"labor") +
-  ((year(t) - 2025)/(2050 - 2025)) *
-  s38_target_fulfillment * (s38_target_labor_share - pm_factor_cost_shares(2050,i,"labor"))
+q38_investment_immobile(j2,kcr) ..
+  v38_investment_immobile(j2,kcr)
+    =g= vm_prod(j2,kcr) * sum(cell(i2,j2), sum(ct, p38_capital_need(ct,i2,kcr,"immobile")))
+      - sum(ct, p38_capital_immobile(ct,j2,kcr));
 ```
 
-**Phase 3 (t > 2050)**: Hold at target (if below) or allow higher
+**Interpretation**:
+- For each cell `j2` and crop `kcr`, required immobile capital = production × per-ton immobile capital need
+- Investment is the SHORTFALL between required capital and existing pre-period stock
+- `=g=` (greater-than-or-equal) means the optimizer is free to over-invest, but only the binding lower bound matters at the optimum
+- Crop-specific: investments in crop A are NOT available for crop B (this is what "immobile" means in this realization — fungibility is across mobility class, not across crops)
+
+#### 2.1.4 Mobile investment (`q38_investment_mobile`)
+
+**File**: `modules/38_factor_costs/sticky_feb18/equations.gms:41-44`
+
 ```gams
-if baseline_share ≤ target:
-  p38_min_labor_share(t,j) = p38_min_labor_share(2050,j)  ! Hold at 2050 level
+q38_investment_mobile(j2) ..
+  v38_investment_mobile(j2)
+    =g= sum((cell(i2,j2), kcr), vm_prod(j2,kcr) * sum(ct, p38_capital_need(ct,i2,kcr,"mobile")))
+      - sum(ct, p38_capital_mobile(ct,j2));
+```
+
+**Interpretation**:
+- Mobile capital is pooled across crops within a cell — same equation form as immobile but summed over `kcr`
+- Investment is the shortfall between summed required mobile capital and existing pooled mobile stock
+
+### 2.2 Variables
+
+**Interface (output)**:
+- `vm_cost_prod_crop(i,factors)` (mio USD17MER/yr; `modules/38_factor_costs/sticky_feb18/declarations.gms:16`) — consumed by Module 11 via `q11_cost_reg`
+
+**Internal positive variables**:
+- `v38_investment_immobile(j,kcr)` (mio USD17MER/yr; `declarations.gms:17`)
+- `v38_investment_mobile(j)` (mio USD17MER/yr; `declarations.gms:18`)
+
+### 2.3 Parameters
+
+**File**: `modules/38_factor_costs/sticky_feb18/declarations.gms:21-34`
+
+| Parameter | Dimensions | Unit | Origin | Purpose |
+|---|---|---|---|---|
+| `p38_labor_need(t,i,kcr)` | t × i × kcr | USD17MER/tDM | `presolve.gms:24` | Labor cost per ton output |
+| `p38_capital_need(t,i,kcr,mobil38)` | t × i × kcr × {mobile, immobile} | USD17MER/tDM | `presolve.gms:25-26` | Capital requirement per ton output, split by mobility class |
+| `p38_capital_immobile(t,j,kcr)` | t × j × kcr | mio USD17MER | `presolve.gms:31`, `postsolve.gms:9` | Pre-period immobile capital stock |
+| `p38_capital_mobile(t,j)` | t × j | mio USD17MER | `presolve.gms:32`, `postsolve.gms:10` | Pre-period mobile capital stock |
+| `p38_capital_cost_shares_iso(t,iso)` | t × iso | 1 | `preloop.gms:12-16` | ISO-level capital cost share from GDP regression |
+| `p38_capital_share_calibration(iso)` | iso | 1 | `preloop.gms:9-10` | Offset to match calibrated shares to historical |
+| `pm_factor_cost_shares(t,i,factors)` | t × i × {labor, capital} | 1 | `preloop.gms:19-22` | Regional labor/capital cost-share split — sent to other modules as `pm_` interface |
+| `i38_fac_req(t_all,i,kcr)` | t_all × i × kcr | USD17MER/tDM | `presolve.gms:13-14` (FAO 2005 or regional) | Factor requirement (total cost per ton) |
+
+### 2.4 Scalars (configuration)
+
+**File**: `modules/38_factor_costs/sticky_feb18/input.gms:13-15`
+
+| Scalar | Default | Unit | Purpose |
+|---|---|---|---|
+| `s38_depreciation_rate` | 0.05 | share/yr | Annual capital depreciation (5% → ~20-year linear lifetime) |
+| `s38_immobile` | 1 | share | Fraction of capital that is crop-specific (default: 100% immobile) |
+
+**Config switch** (`modules/38_factor_costs/sticky_feb18/input.gms:8`):
+- `c38_fac_req` ∈ {`glo`, `reg`} — default `glo`. Switches `i38_fac_req` source between global 2005 FAO benchmark and regional time-varying FAO data.
+
+### 2.5 Sets
+
+**File**: `modules/38_factor_costs/sticky_feb18/sets.gms:8-17`
+
+- `mobil38` = {`mobile`, `immobile`} — capital mobility class (used by `p38_capital_need`)
+- `reg` = {`slope`, `intercept`} — regression-parameter labels for the GDP→capital-share regression in `preloop.gms`
+- `factors` = {`labor`, `capital`} — factor-cost split for `vm_cost_prod_crop`
+
+### 2.6 Capital share calibration (preloop)
+
+**File**: `modules/38_factor_costs/sticky_feb18/preloop.gms:8-22`
+
+```
+1. calibration_offset(iso) = historical_share(last_t_past, iso)
+                            - (slope * log10(GDP_pc_PPP(last_t_past, iso)) + intercept)
+2. capital_share_iso(t, iso) = slope * log10(GDP_pc_PPP(t, iso)) + intercept + calibration_offset(iso)
+3. capital_share_iso(t, iso) = historical_share(t, iso)        when t is a historical year
+4. pm_factor_cost_shares(t, i, "capital") = weighted average of iso shares within region
+                                            (weights: historical factor costs per iso)
+5. pm_factor_cost_shares(t, i, "labor")   = 1 - pm_factor_cost_shares(t, i, "capital")
+```
+
+**Implications**:
+- Wealthier countries (higher GDP per capita) → higher projected capital share (more mechanization)
+- Historical period anchored to observed shares
+- Future trajectories track GDP scenario projections
+- Within a region, shares are weighted by 2010 historical factor costs (countries with larger historical factor cost weight the regional average more)
+
+### 2.7 Capital stock dynamics (presolve)
+
+**File**: `modules/38_factor_costs/sticky_feb18/presolve.gms:8-41`
+
+**Step 1 — Sanity check** (lines 8-10): aborts if `pm_labor_prod(t,j) != 1` anywhere. The realization assumes climate-induced labor productivity = 1 always; the `sticky_labor` realization is the one that handles non-unit `pm_labor_prod`.
+
+**Step 2 — Factor requirements** (lines 13-22): set `i38_fac_req` from FAO data; clamp to 1995 values before 1995, and to 2010 values after 2010.
+
+**Step 3 — Per-ton factor needs** (lines 24-26):
+```
+p38_labor_need(t,i,kcr)              = i38_fac_req × pm_factor_cost_shares(t,i,"labor")
+p38_capital_need(t,i,kcr,"mobile")   = i38_fac_req × pm_factor_cost_shares(t,i,"capital") / (pm_interest + s38_depreciation_rate) × (1 - s38_immobile)
+p38_capital_need(t,i,kcr,"immobile") = i38_fac_req × pm_factor_cost_shares(t,i,"capital") / (pm_interest + s38_depreciation_rate) × s38_immobile
+```
+
+The division by `(pm_interest + s38_depreciation_rate)` converts a per-period cost into the equivalent capital STOCK that would generate that annuitized cost. Multiplying by `(1 - s38_immobile)` or `s38_immobile` splits the capital between mobility classes per the scalar.
+
+**Step 4 — Capital stock initialization (t=1) / depreciation (t>1)** (lines 28-41):
+```
+if t == first period:
+  p38_capital_immobile(t, j, kcr) = sum_cell( p38_capital_need(t,i,kcr,"immobile") * pm_prod_init(j,kcr) ) * (1 - s38_depreciation_rate)
+  p38_capital_mobile(t, j)        = sum_cell,kcr( p38_capital_need(t,i,kcr,"mobile")   * pm_prod_init(j,kcr) ) * (1 - s38_depreciation_rate)
 else:
-  p38_min_labor_share(t,j) = max(current_share, target)  ! Allow decline to target
+  p38_capital_immobile(t, j, kcr) *= (1 - s38_depreciation_rate)^m_timestep_length
+  p38_capital_mobile(t, j)        *= (1 - s38_depreciation_rate)^m_timestep_length
 ```
 
-**Example Timeline (Target 40%, Fulfillment 50%)**:
-- 2025: Baseline 60% → No target yet
-- 2050: Target 40%, Fulfillment 50% → Minimum = 60% + 0.5×(40%-60%) = 50%
-- 2075: Hold at 50% (or allow decline to 40% if baseline < 40%)
+**Step 5 — Capital stock update (postsolve)** (`postsolve.gms:9-10`):
+```
+p38_capital_immobile(t+1, j, kcr) = p38_capital_immobile(t, j, kcr) + v38_investment_immobile.l(j, kcr)
+p38_capital_mobile(t+1, j)        = p38_capital_mobile(t, j)        + v38_investment_mobile.l(j)
+```
+
+### 2.8 What `sticky_feb18` does NOT do (vs `sticky_labor`)
+
+- **No CES production function**: labor and capital quantities per ton are NOT endogenously substituted. They scale from `i38_fac_req × pm_factor_cost_shares` and are taken as given by the optimizer.
+- **No climate-driven labor productivity**: `pm_labor_prod` MUST equal 1 (presolve abort otherwise).
+- **No wage-driven labor productivity** (despite the productivity divisor in the labor-cost equation): `pm_productivity_gain_from_wages` is taken from Module 36 but is NOT fed back into a labor-capital substitution decision; it only rescales the labor cost.
+- **No labor-share target**: minimum labor share enforcement is `sticky_labor`-only.
+- **No `v38_capital_need` / `v38_laborhours_need` variables**: factor requirements are parameters (`p38_*`), not optimization variables.
 
 ---
 
-## 8. Data Sources and Calibration
+## 3. Alternative Realization: `sticky_labor` (NOT default)
 
-### 8.1 Factor Requirements
+**Source**: `modules/38_factor_costs/sticky_labor/`. Code size: 511 lines across 12 .gms files (includes `nl_fix.gms`, `nl_relax.gms`, `nl_release.gms` for nonlinear solver phase handling).
 
-**Global Average** (Default):
-**File**: `modules/38_factor_costs/input/f38_fac_req_fao.csv`
-- Source: FAO Value of Production (2005)
-- Applied: USDA factor cost shares
-- Dimension: [kcr] - crop-specific
-- Units: USD17MER per tDM
+**Built on `sticky_feb18` + adds**:
+- CES production function for labor-capital substitution (`q38_ces_prodfun`)
+- Accepts non-unit `pm_labor_prod` from Module 37 (climate-driven labor productivity)
+- Accepts `pm_productivity_gain_from_wages` from Module 36 as a substitution driver, not just a cost scaler
+- Optional minimum labor-share target (`q38_labor_share_target`)
 
-**Regional Time-Varying** (Alternative):
-**File**: `modules/38_factor_costs/input/f38_fac_req_fao_regional.cs4`
-- Source: FAO regional data
-- Dimension: [t_all, i, kcr]
-- Allows regional technology differences
-- Time-varying (limited to 1995, 2010 benchmarks)
+**Use when**: scenarios that require endogenous mechanization in response to wage growth, heat stress, or labor-share policy.
 
-**Configuration** (`modules/38_factor_costs/sticky_labor/input.gms:8`):
+### 3.1 CES production function (`q38_ces_prodfun`)
+
+**File**: `modules/38_factor_costs/sticky_labor/equations.gms`
+
 ```gams
-$setglobal c38_fac_req  glo  ! Options: glo, reg
+q38_ces_prodfun(j2,kcr) ..
+  i38_ces_scale(j2,kcr) *
+  ( i38_ces_shr(j2,kcr) * sum(mobil38, v38_capital_need(j2,kcr,mobil38))**(-s38_ces_elast_par)
+    + (1 - i38_ces_shr(j2,kcr)) * (pm_labor_prod(j2) * pm_productivity_gain_from_wages(i2)
+                                   * v38_laborhours_need(j2,kcr))**(-s38_ces_elast_par)
+  )**(-1/s38_ces_elast_par)
+    =e= 1 + v38_relax_CES_lp(j2,kcr);
 ```
 
-### 8.2 Capital Share Calibration
-
-**Historical Data**:
-**File**: `modules/38_factor_costs/input/f38_historical_share_iso.csv`
-- Source: Country-level factor cost data
-- Dimension: [t_all, iso]
-- Range: 0.2-0.8 (20-80% capital share)
-
-**Regression Model** (`modules/38_factor_costs/sticky_labor/presolve.gms:14-18`):
-```gams
-capital_share(iso) = slope * log10(GDP_per_capita_PPP(iso)) + intercept + calibration_offset
+**Mathematical form** (conceptual; verify against `sticky_labor/equations.gms` before quoting):
+```
+Y = A * [α * K^(-ρ) + (1-α) * L_eff^(-ρ)]^(-1/ρ)
 ```
 
-**Regression Parameters**:
-**File**: `modules/38_factor_costs/input/f38_regression_cap_share.csv`
-```gams
-/slope, intercept/
-```
+Where:
+- `Y` = output (normalized to 1 per unit crop production)
+- `A` = `i38_ces_scale` = total factor productivity (calibration)
+- `α` = `i38_ces_shr` = capital share parameter
+- `K` = `sum(mobil38, v38_capital_need)` = capital per unit output
+- `L_eff` = `pm_labor_prod × pm_productivity_gain_from_wages × v38_laborhours_need` = effective labor
+- `ρ` = `s38_ces_elast_par` = elasticity parameter = (1/σ) − 1
+- `σ` = `s38_ces_elast_subst` = elasticity of substitution (default 0.3)
 
-**Logic**:
-- Wealthier countries → higher capital shares (more mechanized)
-- Poorer countries → higher labor shares (labor-intensive)
-- Calibration offset ensures match to historical data
-- Projection: Apply regression to future GDP scenarios
+**σ = 0.3** means low substitutability — a 10% wage increase yields only ~3% labor reduction. Empirically supported for agriculture (Mundlak & Hellinghausen 1982).
 
-**Example**:
-- Low-income country: GDP per capita PPP = $2,000 → Capital share = 25%
-- High-income country: GDP per capita PPP = $50,000 → Capital share = 75%
+### 3.2 Labor-share target (`q38_labor_share_target`)
 
-### 8.3 CES Function Calibration
+**File**: `modules/38_factor_costs/sticky_labor/equations.gms`
 
-**File**: `modules/38_factor_costs/sticky_labor/presolve.gms:54-56`
+Enforces `labor_costs ≥ p38_min_labor_share × (labor_costs + capital_costs)` when active. The minimum-share parameter ramps from baseline at `s38_startyear_labor_substitution` (default 2025) to a target at `s38_targetyear_labor_share` (default 2050), scaled by `s38_target_fulfillment` (default 0.5).
 
-**Step 1: Calibrate Share Parameter (α)**:
-```gams
-i38_ces_shr(j,kcr) =
-  (p38_intr_depr * K^(1+ρ)) /
-  (p38_intr_depr * K^(1+ρ) + wage * L^(1+ρ))
-```
-- Ensures CES function matches baseline labor-capital ratio
-- Uses historical capital and labor requirements
+**Default state**: `s38_target_labor_share = 0` (OFF; no enforcement).
 
-**Step 2: Calibrate Scale Parameter (A)**:
-```gams
-i38_ces_scale(j,kcr) =
-  1 / ([α * K^(-ρ) + (1-α) * L^(-ρ)]^(-1/ρ))
-```
-- Ensures CES function produces exactly 1 unit output at baseline
-- Normalizes total factor productivity
+**Use case**: scenarios where rural employment must be maintained against mechanization pressure.
 
-**Result**: CES function perfectly replicates baseline factor mix, but allows substitution when prices or productivity change.
+### 3.3 Endogenous factor-requirement variables (sticky_labor-only)
+
+These are POSITIVE VARIABLES in `sticky_labor` (`modules/38_factor_costs/sticky_labor/declarations.gms`), bounded `0.1× ... 10×` of the historical calibration:
+- `v38_capital_need(j,kcr,mobil38)` — capital per ton output, endogenous after 2025
+- `v38_laborhours_need(j,kcr)` — labor hours per ton output, endogenous after 2025
+- `v38_relax_CES_lp(j,kcr)` — slack variable for the CES equation in the LP-approximation pre-solve phase; fixed to 0 in the non-linear solve
+
+In `sticky_feb18`, these are NOT variables at all — the per-ton requirements are parameters (`p38_labor_need`, `p38_capital_need`) fixed by presolve.
+
+### 3.4 Additional scalars in sticky_labor
+
+**File**: `modules/38_factor_costs/sticky_labor/input.gms`
+
+- `s38_ces_elast_subst` (default 0.3) — elasticity of substitution
+- `s38_startyear_labor_substitution` (default 2025) — year CES activates; before this, factor requirements are locked to historical
+- `s38_target_labor_share` (default 0; OFF) — minimum labor share target
+- `s38_targetyear_labor_share` (default 2050) — year to reach target
+- `s38_target_fulfillment` (default 0.5) — fraction of gap to baseline-target distance to close
+
+### 3.5 Capital stickiness mechanism
+
+The capital-stock dynamics are inherited from the same `sticky` family logic (mobile/immobile split, depreciation, accumulation). See §2.7 above — the structure is identical, the values differ only in that `sticky_labor`'s `v38_capital_need` is a variable rather than a parameter.
+
+### 3.6 When to use `sticky_labor`
+
+Read `sticky_labor` GAMS directly (`../modules/38_factor_costs/sticky_labor/*.gms`) if your scenario involves:
+- Climate-impact-driven mechanization (Module 37 `pm_labor_prod` < 1)
+- Wage-driven mechanization (Module 36 wage scenarios with σ > 0)
+- Rural employment policy (`s38_target_labor_share > 0`)
+
+For default-config scenarios, the active default is `sticky_feb18` (§2) — `sticky_labor` is not loaded.
 
 ---
 
-## 9. Module Dependencies
+## 4. Alternative Realization: `per_ton_fao_may22` (NOT default)
 
-### 9.1 Receives From
+**Source**: `modules/38_factor_costs/per_ton_fao_may22/`. Code size: 231 lines across 9 .gms files.
 
-**Module 12 (Interests)**: `modules/38_factor_costs/sticky_labor/presolve.gms:21`
-```gams
-pm_interest(t,i)  ! Interest rate (e.g., 0.05 = 5%)
+**Approach**: Simplest of the three. Two equations (`q38_cost_prod_crop_labor`, `q38_cost_prod_crop_capital`); factor costs are a linear function of production volume; no capital stocks, no annuitization, no immobility.
+
+**Use case**: baseline scenarios, sensitivity analysis where capital stickiness would complicate the comparison, or computational efficiency.
+
+**Conceptually** (see `modules/38_factor_costs/per_ton_fao_may22/equations.gms`):
 ```
-- Used in: Annuitization factor, capital requirement calculation
-- Typical range: 2-10% depending on region and scenario
-
-**Module 17 (Production)**: `modules/38_factor_costs/sticky_labor/equations.gms:40`
-```gams
-vm_prod(j,kcr)  ! Crop production (tDM/yr)
+vm_cost_prod_crop(i,"labor")   = sum_kcr( vm_prod_reg(i,kcr) * fac_req(i,kcr) * labor_share(i)   * wage_scaling   * (1/productivity_gain) )
+vm_cost_prod_crop(i,"capital") = sum_kcr( vm_prod_reg(i,kcr) * fac_req(i,kcr) * capital_share(i) )
 ```
-- Used in: Labor cost calculation, capital requirement calculation
-- Core link: Production volume drives factor costs
 
-**Module 30 (Cropland)**: `modules/38_factor_costs/sticky_labor/presolve.gms:84`
-```gams
-pm_prod_init(j,kcr)  ! Initial production for capital stock estimation
-```
-- Used in: First timestep capital stock initialization (1995)
-
-**Module 36 (Employment)**: `modules/38_factor_costs/sticky_labor/equations.gms:22,40`
-```gams
-pm_hourly_costs(t,i,"scenario")           ! Wage rate (USD17MER/hour)
-pm_hourly_costs(t,i,"baseline")           ! Baseline wage for comparison
-pm_productivity_gain_from_wages(t,i)      ! Efficiency factor from wages (1.0-1.5)
-```
-- Used in: CES function (labor productivity), labor cost calculation
-- Critical feedback: Rising wages → mechanization incentive
-
-**Module 37 (Labor Productivity)**: `modules/38_factor_costs/sticky_labor/equations.gms:22`
-```gams
-pm_labor_prod(t,j)  ! Climate-driven labor productivity factor (0.5-1.0)
-```
-- Used in: CES function effective labor calculation
-- Critical feedback: Heat stress → mechanization incentive
-
-**GDP Data** (Global Input): `modules/38_factor_costs/sticky_labor/preloop.gms:15`
-```gams
-im_gdp_pc_ppp_iso(t,iso)  ! GDP per capita PPP for capital share regression
-```
-- Used in: Capital share projection (wealth → mechanization)
-
-### 9.2 Provides To
-
-**Module 11 (Costs)**: `modules/38_factor_costs/sticky_labor/declarations.gms:18`
-```gams
-vm_cost_prod_crop(i,factors)  ! Regional factor costs (mio USD17MER/yr)
-                               ! factors = {labor, capital}
-```
-- Used in: Total production cost calculation
-- Influences: Optimal crop allocation, land use patterns, food prices
-
-### 9.3 Internal Coupling (CES Function)
-
-The CES function creates a two-way relationship:
-1. **Wage/climate → factor mix**: High wages or heat stress → more capital
-2. **Factor mix → costs**: More capital → higher costs → production shifts
-
-This creates dynamic adjustments:
-- **Short run**: Fixed capital, adjust labor (limited)
-- **Medium run**: Adjust capital through investment
-- **Long run**: Optimize factor mix for new climate/wage conditions
+For exact GAMS, read `modules/38_factor_costs/per_ton_fao_may22/equations.gms` directly.
 
 ---
 
-## 10. Key Variables
+## 5. Cross-Realization Interface
 
-### 10.1 Interface Variable (Output)
+All three realizations expose the same interface variable to the rest of the model:
 
-**vm_cost_prod_crop(i,factors)** - Regional factor costs
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:18`
-- **Type**: Positive variable
-- **Dimensions**: [i, factors] where factors = {labor, capital}
-- **Units**: mio USD17MER per yr
-- **Typical Range**:
-  - Labor: $10-200 billion/yr per region
-  - Capital: $5-150 billion/yr per region
-  - Higher in populous/intensive agriculture regions (Asia)
-- **Sent to**: Module 11 (costs) via `vm_cost_prod_crop`
+**`vm_cost_prod_crop(i,factors)`** where `factors = {labor, capital}`, unit mio USD17MER/yr.
 
-### 10.2 Endogenous Factor Requirements
+- **Producer**: Module 38 (whichever realization is active)
+- **Consumer**: Module 11 (Costs) — summed in `q11_cost_reg` via `sum(factors, vm_cost_prod_crop(i2,factors))`
+- **Citation**: see `modules/module_11.md` §3 for the consumer-side description
 
-**v38_laborhours_need(j,kcr)** - Labor hours per unit output
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:21`
-- **Type**: Positive variable (endogenous in sticky_labor, fixed in per_ton_fao)
-- **Dimensions**: [j, kcr]
-- **Units**: hours per ton DM
-- **Bounds**: 0.1× to 10× baseline (`presolve.gms`)
-- **Typical Range**: 10-200 hours/tDM
-  - Low (mechanized grains): 10-30 hours/tDM
-  - High (labor-intensive vegetables): 100-200 hours/tDM
-- **Determined by**: CES function optimization given wages and climate
-
-**v38_capital_need(j,kcr,mobil38)** - Capital per unit output
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:22`
-- **Type**: Positive variable (endogenous in sticky_labor after 2025)
-- **Dimensions**: [j, kcr, mobil38] where mobil38 = {mobile, immobile}
-- **Units**: USD17MER per ton DM
-- **Bounds**: 0.1× to 10× baseline (`presolve.gms`)
-- **Typical Range**: 5-50 USD/tDM
-  - Low (extensive systems): 5-15 USD/tDM
-  - High (irrigated, mechanized): 30-50 USD/tDM
-- **Determined by**: CES function optimization given interest rates and productivity
-
-### 10.3 Investment Variables
-
-**v38_investment_immobile(j,kcr)** - Immobile capital investment
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:19`
-- **Type**: Positive variable
-- **Dimensions**: [j, kcr]
-- **Units**: mio USD17MER per yr
-- **Typical Range**: $0-500 million per cell-crop
-- **Determined by**: Gap between required and existing capital (`equations.gms`)
-
-**v38_investment_mobile(j)** - Mobile capital investment
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:20`
-- **Type**: Positive variable
-- **Dimensions**: [j]
-- **Units**: mio USD17MER per yr
-- **Typical Range**: $0-1 billion per cell
-- **Determined by**: Gap between required and existing mobile capital (`equations.gms`)
-
-### 10.4 Relaxation Variable (Linear Model Only)
-
-**v38_relax_CES_lp(j,kcr)** - CES feasibility relaxation
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:23`
-- **Type**: Positive variable
-- **Units**: Dimensionless (1)
-- **Purpose**: Allow CES constraint to be slightly violated in linear model
-- **Value**:
-  - Non-linear model: Fixed to 0 (`presolve.gms`)
-  - Linear model: Released (`nl_fix.gms:14-16`)
-- **Reason**: Linear approximation of CES may have slight infeasibilities
+`pm_factor_cost_shares(t,i,factors)` is also a `pm_` interface and is set by all three realizations (computed in `preloop.gms`). It is consumed by other parts of the model that need the labor/capital split — read its callers via:
+```bash
+find ../modules -name '*.gms' -exec grep -l 'pm_factor_cost_shares' {} \;
+```
 
 ---
 
-## 11. Key Parameters
+## 6. Module Dependencies (Default Realization)
 
-### 11.1 Capital Stocks (Dynamic State Variables)
+**Receives from** (for `sticky_feb18`):
+- **Module 09 (Drivers)**: `im_gdp_pc_ppp_iso(t,iso)` — GDP per capita PPP, drives capital-share regression (`modules/38_factor_costs/sticky_feb18/preloop.gms:9-12`)
+- **Module 12 (Interest Rate)**: `pm_interest(t,i)` — used in capital cost annuitization and per-ton capital need (`modules/38_factor_costs/sticky_feb18/presolve.gms:25-26`, `modules/38_factor_costs/sticky_feb18/equations.gms:23`)
+- **Module 17 (Production)**: `vm_prod_reg(i,kall)` (regional production) and `vm_prod(j,k)` (cellular production) — both drive the labor and capital cost equations (`modules/38_factor_costs/sticky_feb18/equations.gms:16, 35, 43`)
+- **Module 30 (Croparea)**: `pm_prod_init(j,kcr)` — initial production used for first-period capital stock estimation (`modules/38_factor_costs/sticky_feb18/presolve.gms:31-32`)
+- **Module 36 (Employment)**: `pm_hourly_costs(t,i,"scenario")` and `pm_hourly_costs(t,i,"baseline")` — wage-scaling ratio in labor cost; `pm_productivity_gain_from_wages(t,i)` — productivity divisor in labor cost (`modules/38_factor_costs/sticky_feb18/equations.gms:16`)
+- **Module 37 (Labor Productivity)**: `pm_labor_prod(t,j)` — REQUIRED to be 1 in `sticky_feb18` (abort otherwise; `modules/38_factor_costs/sticky_feb18/presolve.gms:8-10`). In `sticky_labor` this is consumed actively.
 
-**p38_capital_immobile(t,j,kcr)** - Immobile capital stock
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:29`
-- **Dimensions**: [t, j, kcr]
-- **Units**: mio USD17MER
-- **Initialized**: `presolve.gms` (from 1995 production)
-- **Depreciated**: `presolve.gms` (5% annually)
-- **Updated**: `postsolve.gms:9` (add investments)
-- **Typical Range**: $10-1000 million per cell-crop
+**Provides to**:
+- **Module 11 (Costs)**: `vm_cost_prod_crop(i,factors)` — entered into `q11_cost_reg` (see `modules/module_11.md` §3 for the consumer side)
+- **Other modules** via `pm_factor_cost_shares(t,i,factors)` — used wherever the labor/capital cost split is needed
 
-**p38_capital_mobile(t,j)** - Mobile capital stock
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:30`
-- **Dimensions**: [t, j]
-- **Units**: mio USD17MER
-- **Lifecycle**: Same as immobile
-- **Typical Range**: $50-2000 million per cell
-
-### 11.2 Factor Cost Shares
-
-**pm_factor_cost_shares(t,i,factors)** - Labor/capital split
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:34`
-- **Dimensions**: [t, i, factors] where factors = {labor, capital}
-- **Units**: Dimensionless (share, 0-1)
-- **Calculated**: `preloop.gms:21-22` (from historical data + GDP regression)
-- **Typical Range**:
-  - Low-income regions: Labor 70-80%, Capital 20-30%
-  - High-income regions: Labor 20-30%, Capital 70-80%
-- **Sent to**: Other modules via `pm_` interface
-- **Note**: Shares sum to 1 (labor + capital = 100%)
-
-### 11.3 CES Calibration Parameters
-
-**i38_ces_shr(j,kcr)** - Capital share in CES function (α)
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:39`
-- **Dimensions**: [j, kcr]
-- **Units**: Dimensionless (0-1)
-- **Calculated**: `presolve.gms` (calibrated to baseline factor mix)
-- **Typical Range**: 0.3-0.7 (matches pm_factor_cost_shares roughly)
-
-**i38_ces_scale(j,kcr)** - Total factor productivity in CES (A)
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:40`
-- **Dimensions**: [j, kcr]
-- **Units**: Dimensionless (1)
-- **Calculated**: `presolve.gms` (calibrated to produce 1 unit output)
-- **Typical Range**: 0.8-1.2 (close to 1 by construction)
-
-### 11.4 Target Parameters
-
-**p38_min_labor_share(t,j)** - Minimum labor share enforcement
-- **File**: `modules/38_factor_costs/sticky_labor/declarations.gms:35`
-- **Dimensions**: [t, j]
-- **Units**: Dimensionless (0-1)
-- **Calculated**: `presolve.gms:25-41` (ramp to target)
-- **Default**: 0 (off)
-- **Active**: Only if s38_target_labor_share > 0
+**Internal coupling** (sticky family only): capital stock today depends on investment yesterday; production today depends on capital stock today via the investment shortfall equations — this creates the spatial path dependency that motivates the realization.
 
 ---
 
-## 12. Key Scalars (Configuration)
+## 7. Data Sources and Calibration
 
-**s38_depreciation_rate** - Annual capital depreciation
-- **File**: `modules/38_factor_costs/sticky_labor/input.gms:13`
-- **Value**: 0.05 (5% per year)
-- **Interpretation**: 20-year linear depreciation (1/20 = 0.05)
-- **Range**: 0.03-0.10 (3-10%, depending on asset type)
+### 7.1 Factor requirements
 
-**s38_immobile** - Immobile capital share
-- **File**: `modules/38_factor_costs/sticky_labor/input.gms:15`
-- **Value**: 1 (100% immobile)
-- **Interpretation**: All capital is crop-specific and location-specific
-- **Range**: 0-1 (0% to 100%)
+- **Global average** (default): `modules/38_factor_costs/input/f38_fac_req_fao.csv` — FAO Value of Production 2005 benchmark, applied with USDA factor cost shares
+- **Regional time-varying** (alternative, via `c38_fac_req = "reg"`): `modules/38_factor_costs/input/f38_fac_req_fao_regional.cs4` — FAO regional data, time-varying at 1995 and 2010 benchmarks
 
-**s38_ces_elast_subst** - Elasticity of substitution (σ)
-- **File**: `modules/38_factor_costs/sticky_labor/input.gms:16`
-- **Value**: 0.3
-- **Interpretation**: Low substitutability (agricultural constraints)
-- **Converted to**: s38_ces_elast_par = (1/0.3) - 1 = 2.33 (`preloop.gms:9`)
+Both are loaded in `modules/38_factor_costs/sticky_feb18/input.gms:18-32`.
 
-**s38_startyear_labor_substitution** - Year to activate CES
-- **File**: `modules/38_factor_costs/sticky_labor/input.gms:17`
-- **Value**: 2025
-- **Interpretation**: Historical lock until 2025, endogenous after
+### 7.2 Capital share calibration
 
-**s38_target_labor_share** - Target labor share
-- **File**: `modules/38_factor_costs/sticky_labor/input.gms:18`
-- **Value**: 0 (OFF)
-- **Interpretation**: No minimum labor share enforcement
-- **Range**: 0-1 (0% to 100%)
+- **Historical data**: `modules/38_factor_costs/input/f38_historical_share_iso.csv` — country-level historical capital shares (range 0.2-0.8)
+- **Regression parameters**: `modules/38_factor_costs/input/f38_regression_cap_share.csv` — slope and intercept for `capital_share = slope × log10(GDP_pc_PPP) + intercept`
 
-**s38_targetyear_labor_share** - Year to reach target
-- **File**: `modules/38_factor_costs/sticky_labor/input.gms:19`
-- **Value**: 2050
-- **Interpretation**: Linear ramp from 2025 to 2050
+Used in `modules/38_factor_costs/sticky_feb18/preloop.gms:8-22`.
 
-**s38_target_fulfillment** - Adjustment speed to target
-- **File**: `modules/38_factor_costs/sticky_labor/input.gms:20`
-- **Value**: 0.5 (50%)
-- **Interpretation**: Close 50% of gap to target by 2050
+### 7.3 Historical factor costs
+
+- **Source**: `modules/38_factor_costs/input/f38_hist_factor_costs_iso.csv` — country-level historical factor costs used as weights when aggregating ISO-level capital shares to regional `pm_factor_cost_shares`. See `modules/38_factor_costs/sticky_feb18/preloop.gms:19-21`.
+
+### 7.4 CES calibration (sticky_labor only)
+
+The CES `i38_ces_shr` (capital share parameter α) and `i38_ces_scale` (TFP scaler A) are calibrated in `modules/38_factor_costs/sticky_labor/presolve.gms` so that the function produces exactly 1 unit of normalized output at the historical labor/capital ratio. This means the CES function replicates the baseline factor mix at calibration; substitution kicks in only when relative prices or productivities change.
 
 ---
 
-## 13. Code Truth: DOES
+## 8. Code Truth: DOES
 
-1. **Calculates crop-specific factor costs** separated into labor and capital components, based on production volumes, factor requirements, wages, and interest rates (`equations.gms:39-45`)
+For `sticky_feb18` (default):
 
-2. **Implements CES production function** with elasticity of substitution σ=0.3 to allow labor-capital substitution after 2025 (`equations.gms:19-23`, `input.gms:16-17`)
-
-3. **Incorporates climate change impacts** on labor productivity via pm_labor_prod from Module 37, reducing effective labor in hot climates (`equations.gms:22`)
-
-4. **Incorporates wage-productivity feedback** via pm_productivity_gain_from_wages from Module 36, increasing labor efficiency with rising wages (`equations.gms:22`)
-
-5. **Creates capital stickiness** by separating capital into immobile (crop-specific, 100% by default) and mobile (crop-shared) types, with depreciation and accumulation dynamics (`sets.gms:9-10`, `input.gms:15`, `presolve.gms`, `postsolve.gms:9-10`)
-
-6. **Annuitizes investment costs** using factor (r+d)/(1+r) to represent long-term economic value of capital in current-period optimization (`equations.gms`)
-
-7. **Maintains historical factor requirements** fixed until 2025 (s38_startyear_labor_substitution), then allows endogenous adjustment (`presolve.gms`, `input.gms:17`)
-
-8. **Supports optional labor share target** to enforce minimum rural employment, with linear ramp from baseline to target between 2025-2050 (`equations.gms:28-34`, `presolve.gms:25-41`, `input.gms:18-20`)
-
-9. **Calibrates capital shares to GDP per capita** using regression on historical data, projecting mechanization trends with economic development (`preloop.gms:14-22`)
-
-10. **Provides three realizations** with increasing sophistication: per_ton_fao_may22 (simple volume-based), sticky_feb18 (capital stocks), sticky_labor (full CES with climate/wages) (`module.gms:22-24`)
-
-11. **Estimates initial capital stocks** from 1995 production levels with one year depreciation, creating starting conditions for dynamic capital accumulation (`presolve.gms`)
-
-12. **Triggers investment only when needed**, requiring new capital only when production demands exceed existing (depreciated) stocks (`equations.gms`)
+1. **Splits factor costs into labor and capital** — calculated by `q38_cost_prod_labor` and `q38_cost_prod_capital` (`modules/38_factor_costs/sticky_feb18/equations.gms:15-24`)
+2. **Treats labor cost as proportional to production volume** scaled by historical per-ton requirement and wage ratio — no endogenous labor-capital substitution
+3. **Treats capital as a stock that depreciates and accumulates**: investments enter the stock in postsolve, the stock depreciates 5%/yr (`modules/38_factor_costs/sticky_feb18/postsolve.gms:9-10`, `modules/38_factor_costs/sticky_feb18/presolve.gms:38-39`)
+4. **Splits capital into mobile and immobile** by the `s38_immobile` scalar (default 1 = 100% immobile); immobile capital is crop-specific (`modules/38_factor_costs/sticky_feb18/presolve.gms:25-26`)
+5. **Annuitizes investment costs** using `(r + d)/(1 + r)` to make current-period costs commensurate with current-period production benefits (`modules/38_factor_costs/sticky_feb18/equations.gms:23`)
+6. **Initializes capital from 1995 production** with one year of depreciation, assuming 1994 production equals 1995 production (`modules/38_factor_costs/sticky_feb18/presolve.gms:28-32`)
+7. **Calibrates capital shares from GDP per capita** via a log-linear regression on historical data, projected with GDP scenario data (`modules/38_factor_costs/sticky_feb18/preloop.gms:8-22`)
+8. **Triggers investment only on shortfall** — `=g=` inequality means no investment if existing stock meets production need
+9. **Aborts if `pm_labor_prod` ≠ 1** — `sticky_feb18` cannot handle climate-driven labor productivity; use `sticky_labor` for that (`modules/38_factor_costs/sticky_feb18/presolve.gms:8-10`)
+10. **Provides three realizations** with increasing sophistication: `per_ton_fao_may22` (volume-based), `sticky_feb18` (capital stocks; DEFAULT), `sticky_labor` (CES + climate/wage feedback)
 
 ---
 
-## 14. Code Truth: Does NOT
+## 9. Code Truth: Does NOT
 
-1. **Does not model livestock factor costs** - only crop production factor costs are calculated; livestock costs handled separately elsewhere
+For `sticky_feb18` specifically (some apply more broadly):
 
-2. **Does not include land rent** - excluded to avoid double-counting with endogenous land rent calculation in Module 11
-
-3. **Does not include fertilizer costs** - excluded to avoid double-counting with Module 50 (nitrogen soil budget)
-
-4. **Does not include seeds, pesticides, or intermediate inputs** - excluded to avoid double-counting of agricultural products used as inputs
-
-5. **Does not differentiate capital types beyond mobility** - all capital aggregated into "mobile" and "immobile" categories; no distinction between machinery, irrigation, buildings, etc.
-
-6. **Does not model capital reallocation** - immobile capital is crop-specific and cannot be transferred to other crops; must depreciate before switching
-
-7. **Does not model within-region capital mobility** - mobile capital pooled at cell level, not transferable between cells within a region
-
-8. **Does not model technological change in factor productivity** - CES scale parameter i38_ces_scale fixed after calibration; no exogenous productivity growth
-
-9. **Does not model vintage effects** - all capital of same type treated identically regardless of age (beyond depreciation)
-
-10. **Does not model maintenance costs separately** - maintenance implicitly included in depreciation rate (5%/yr)
-
-11. **Does not model capital utilization rates** - assumes full utilization of capital stocks; no idle capacity
-
-12. **Does not model seasonal labor variation** - annual average labor requirements; no planting/harvest peaks
-
-13. **Does not model labor types/skills** - all labor aggregated; no distinction between skilled and unskilled workers
-
-14. **Does not model off-farm employment** - labor assumed to be allocated to agriculture; no opportunity cost from non-farm wages
-
-15. **Does not allow capital mobility between regions** - capital stocks cell-specific; international capital flows not modeled
-
-16. **Does not model learning-by-doing** - no endogenous cost reductions from cumulative investment or production
-
-17. **Does not model economies of scale at farm level** - factor requirements per ton constant regardless of farm/field size
-
-18. **Does not model financial constraints** - investment always feasible if economically optimal; no credit limits or liquidity constraints
-
-19. **Does not provide intensification pressure from conservation constraints** - Module 38 calculates crop production factor costs (labor and capital) only. Land protection targets come from Module 22, and land conversion costs come from Module 39. Any emergent intensification behaviour (choosing yield improvement over area expansion) arises from Module 11 comparing these cost streams — it is not a direct output of Module 38.
+1. **Does not endogenously substitute labor and capital** — for that, use `sticky_labor` (which adds the CES production function)
+2. **Does not respond to climate-driven labor productivity** — aborts if `pm_labor_prod ≠ 1`; `sticky_labor` is the realization that accepts non-unit labor productivity
+3. **Does not enforce labor-share targets** — `q38_labor_share_target` is `sticky_labor`-only
+4. **Does not model livestock factor costs** — only crop production; livestock factor costs are in Module 70's `vm_cost_prod_livst`
+5. **Does not include land rent** — calculated endogenously in Module 11
+6. **Does not include fertilizer costs** — handled by Module 50 (nitrogen) and Module 54 (phosphorus)
+7. **Does not include seed or intermediate-input costs** — would double-count agricultural products used as inputs
+8. **Does not differentiate capital types beyond mobility** — all capital aggregated into `mobile` and `immobile`; no distinction between machinery, irrigation, buildings, etc.
+9. **Does not model capital reallocation between crops** — immobile capital is crop-specific and must depreciate before switching
+10. **Does not model within-region capital mobility between cells** — mobile capital is pooled at cell level, not transferable between cells
+11. **Does not model maintenance costs separately** — implicit in the 5%/yr depreciation rate
+12. **Does not model capital utilization rates** — assumes full utilization
+13. **Does not model seasonal labor variation, labor skill differentiation, or off-farm employment opportunity costs**
+14. **Does not model financial constraints** — investment is always feasible when economically optimal; no credit limits
+15. **Does not generate intensification pressure directly** — Module 38 calculates crop production factor costs only. Land protection targets come from Module 22; land conversion costs from Module 39. Any emergent intensification behavior arises from Module 11 comparing cost streams.
 
 ---
 
-## 15. Common Modifications
+## 10. Limitations
 
-### 15.1 Use Regional Factor Requirements
+### 10.1 Structural
 
-**Change**: Switch from global average to region-specific factor requirements
+1. **Factor costs independent of harvested area** (`modules/38_factor_costs/sticky_feb18/realization.gms:15-18`): "this realization assumes that factor costs, within a region, purely depend on production and are independent of the area under cultivation." No economies of scale or area-dependent overhead.
 
-**Files to modify**:
-`modules/38_factor_costs/sticky_labor/input.gms:8`
-```gams
-$setglobal c38_fac_req  reg  ! Was: glo
-```
+2. **`sticky_feb18` requires `pm_labor_prod = 1`**: climate impacts on labor productivity cannot be modeled in the default realization (`modules/38_factor_costs/sticky_feb18/presolve.gms:8-10`). The `sticky_labor` realization is the path for climate-impact scenarios.
 
-**Effect**:
-- Asia: Lower factor costs (labor-abundant)
-- North America: Higher capital costs (mechanized)
-- Africa: Higher labor costs per ton (lower productivity)
-- Europe: Higher overall costs (high wages + mechanization)
+3. **Immobile capital assumption (`s38_immobile = 1` default)**: 100% of capital is crop-specific. No general-purpose machinery is reallocated, which penalizes crop switching beyond what's empirically observed in many settings.
 
-**Use case**: Regional technology heterogeneity, development scenarios
+4. **Capital depreciation rate fixed at 5%**: no asset-type differentiation (machinery vs irrigation infrastructure vs buildings depreciate at different rates in reality).
 
-### 15.2 Increase Capital Mobility
+### 10.2 Methodological
 
-**Change**: Allow more capital sharing across crops
+5. **Capital stock initialized from 1995 production only**: assumes 1994 production equals 1995 production (`modules/38_factor_costs/sticky_feb18/presolve.gms:28-32`). No pre-1995 capital accumulation history.
 
-**Files to modify**:
-`modules/38_factor_costs/sticky_labor/input.gms:15`
-```gams
-s38_immobile = 0.5  ! Was: 1 (50% immobile, 50% mobile)
-```
+6. **Capital share regression is log-linear in GDP per capita**: a parametric form chosen for tractability; may miss non-monotonic patterns in development pathways.
 
-**Effect**:
-- Easier crop switching (lower sunk costs)
-- More dynamic crop rotation patterns
-- Faster response to price shocks
-- Less path dependency in land use
-
-**Use case**: Policy reforms enabling capital reallocation, crop diversification scenarios
-
-### 15.3 Adjust Substitution Elasticity
-
-**Change**: Make labor and capital more substitutable
-
-**Files to modify**:
-`modules/38_factor_costs/sticky_labor/input.gms:16`
-```gams
-s38_ces_elast_subst = 0.6  ! Was: 0.3 (double substitutability)
-```
-
-**Effect**:
-- Stronger mechanization response to wage increases
-- Stronger mechanization response to heat stress
-- More capital-intensive agriculture in future
-- Lower agricultural employment
-
-**Use case**: Automation scenarios, technological breakthrough scenarios
-
-**Warning**: Literature suggests 0.3 is realistic for agriculture; higher values may overestimate automation potential.
-
-### 15.4 Enforce Minimum Labor Share
-
-**Change**: Maintain 40% labor share to preserve rural employment
-
-**Files to modify**:
-`modules/38_factor_costs/sticky_labor/input.gms:18-20`
-```gams
-s38_target_labor_share = 0.4       ! Was: 0 (set to 40%)
-s38_targetyear_labor_share = 2050  ! Keep
-s38_target_fulfillment = 0.5       ! Keep (50% adjustment)
-```
-
-**Effect**:
-- Agricultural employment maintained above baseline
-- Higher production costs (prevented optimization)
-- More labor-intensive agriculture
-- Possible food price increases
-
-**Use case**: Social policy scenarios, food security with employment objectives, inclusive growth
-
-### 15.5 Change Depreciation Rate
-
-**Change**: Assume longer capital lifetime (slower depreciation)
-
-**Files to modify**:
-`modules/38_factor_costs/sticky_labor/input.gms:13`
-```gams
-s38_depreciation_rate = 0.033  ! Was: 0.05 (3.3% = 30-year lifetime)
-```
-
-**Effect**:
-- Capital stocks persist longer
-- Lower annualized capital costs
-- Stronger path dependency (capital lasts longer)
-- Less frequent reinvestment
-
-**Use case**: Durable infrastructure scenarios (irrigation), developing country context (longer use of old equipment)
-
-### 15.6 Delay Labor Substitution Start Year
-
-**Change**: Keep factor mix fixed until 2035 (extend historical period)
-
-**Files to modify**:
-`modules/38_factor_costs/sticky_labor/input.gms:17`
-```gams
-s38_startyear_labor_substitution = 2035  ! Was: 2025
-```
-
-**Effect**:
-- Mechanization response delayed by 10 years
-- More labor-intensive agriculture in 2025-2035
-- Historical trends extended longer
-- Abrupt adjustment after 2035
-
-**Use case**: Technological lock-in scenarios, slow adoption scenarios
+7. **Within `sticky_labor`** (when active): climate and wage labor-productivity impacts combined multiplicatively (`pm_labor_prod × pm_productivity_gain_from_wages`); interaction effects (e.g., wage increases having larger benefits in heat-stressed regions) are not represented.
 
 ---
 
-## 16. Testing & Validation
+## 11. Common Modifications
 
-### 16.1 Check Factor Cost Components
+All modifications below are in `modules/38_factor_costs/<realization>/input.gms` for the active realization. Verify the realization at `grep "cfg\$gms\$factor_costs" ../config/default.cfg` before editing.
 
-**Objective**: Verify labor and capital costs are reasonable
+### 11.1 Switch to regional factor requirements (default realization)
 
-**GDX Variables**:
-- `vm_cost_prod_crop` - Regional factor costs (mio USD17MER/yr)
-- `vm_prod` - Production (tDM/yr)
+**Edit**: `modules/38_factor_costs/sticky_feb18/input.gms:8`
+```gams
+$setglobal c38_fac_req  reg     ! Was: glo
+```
+**Effect**: Use `f38_fac_req_fao_regional.cs4` (regional time-varying) instead of `f38_fac_req_fao.csv` (global 2005 benchmark).
 
-**R Code**:
+### 11.2 Increase capital mobility (default realization)
+
+**Edit**: `modules/38_factor_costs/sticky_feb18/input.gms:15`
+```gams
+s38_immobile  immobile capital (share) / 0.5 /   ! Was: 1
+```
+**Effect**: 50% of capital becomes mobile (crop-flexible). Easier crop switching; lower switching costs; more dynamic crop rotation.
+
+### 11.3 Change depreciation rate (default realization)
+
+**Edit**: `modules/38_factor_costs/sticky_feb18/input.gms:13`
+```gams
+s38_depreciation_rate depreciation rate (share of costs)  / 0.033 /   ! Was: 0.05 (3.3% = 30-year lifetime)
+```
+**Effect**: Capital persists longer; lower annualized cost; stronger path dependency.
+
+### 11.4 Switch to `sticky_labor` for climate/wage scenarios
+
+**Edit**: `config/default.cfg`
+```r
+cfg$gms$factor_costs <- "sticky_labor"   # Was: "sticky_feb18"
+```
+
+**Then** modify `sticky_labor` parameters as needed:
+- **Adjust CES elasticity** at `modules/38_factor_costs/sticky_labor/input.gms` — `s38_ces_elast_subst` (default 0.3; higher = easier labor-capital substitution)
+- **Adjust labor-substitution start year** — `s38_startyear_labor_substitution` (default 2025)
+- **Activate labor-share target** — `s38_target_labor_share` (default 0 = OFF; set 0.4 for 40% labor floor)
+- **Adjust target fulfillment speed** — `s38_target_fulfillment` (default 0.5 = close 50% of gap)
+
+### 11.5 Switch to `per_ton_fao_may22` for simplicity
+
+**Edit**: `config/default.cfg`
+```r
+cfg$gms$factor_costs <- "per_ton_fao_may22"
+```
+**Effect**: Removes capital stocks; pure per-ton-volume cost; useful for sensitivity analysis where stickiness would complicate comparison.
+
+---
+
+## 12. Testing & Validation
+
+The following checks assume the default `sticky_feb18` realization unless noted.
+
+### 12.1 Factor cost components — sanity ranges
+
+**Objective**: Verify labor and capital costs land in plausible ranges.
+
 ```r
 library(magpie4)
 library(magclass)
 
 gdx <- "fulldata.gdx"
 
-# Read costs and production
-costs_labor <- readGDX(gdx, "ov_cost_prod_crop", select=list(type="level", factors="labor"))
+costs_labor   <- readGDX(gdx, "ov_cost_prod_crop", select=list(type="level", factors="labor"))
 costs_capital <- readGDX(gdx, "ov_cost_prod_crop", select=list(type="level", factors="capital"))
-prod <- readGDX(gdx, "ov_prod_reg", select=list(type="level"))
+prod          <- readGDX(gdx, "ov_prod_reg", select=list(type="level"))
 
-# Calculate cost per ton
-costs_total <- costs_labor + costs_capital
+costs_total  <- costs_labor + costs_capital
 cost_per_ton <- costs_total / prod
 
-# Check ranges
-print("Cost per ton (USD17MER/tDM):")
-print(range(cost_per_ton["y2020",,], na.rm=TRUE))  # Should be 50-300
+# Plausible range
+print(range(cost_per_ton["y2020",,], na.rm=TRUE))   # 50-300 USD17MER/tDM
 
-# Check labor share
+# Labor share
 labor_share <- costs_labor / costs_total
-print("Labor share (dimensionless):")
-print(range(labor_share["y2020",,], na.rm=TRUE))  # Should be 0.2-0.8
-
-# Visualize trends
-plot(costs_total["y1995:y2100", "GLO",],
-     main="Global Factor Costs",
-     ylab="Costs (billion USD/yr)")
+print(range(labor_share["y2020",,], na.rm=TRUE))    # 0.2-0.8 depending on region
 ```
 
-**Expected Results**:
-- Cost per ton: 50-300 USD17MER/tDM (higher for labor-intensive crops)
-- Labor share: 20-80% (lower in high-income regions)
-- Trend: Rising costs over time (wage growth + mechanization)
+**Red flags**: cost-per-ton < 20 USD/tDM (unrealistically cheap); labor share > 0.9 or < 0.1 (extreme mechanization or extreme labor dependence).
 
-**Red Flags**:
-- Cost per ton < 20 USD/tDM → unrealistically cheap production
-- Labor share > 90% or < 10% → extreme mechanization/labor intensity
-- Flat trends → factor costs not responding to wages/climate
+### 12.2 Capital stock dynamics (sticky_feb18 / sticky_labor)
 
-### 16.2 Check Capital Stock Dynamics
+**Objective**: Verify the depreciation/accumulation cycle is consistent.
 
-**Objective**: Verify capital depreciates and accumulates correctly
-
-**GDX Variables**:
-- `p38_capital_immobile` - Immobile capital stocks
-- `v38_investment_immobile` - Immobile investments
-
-**R Code**:
 ```r
 library(gdxrrw)
-
-# Read parameters directly (not standard outputs)
 igdx("/path/to/gams")
+
 stocks <- rgdx.param(gdx, "p38_capital_immobile", squeeze=FALSE)
 invest <- rgdx.param(gdx, "ov38_investment_immobile", squeeze=FALSE)
 
-# Convert to magclass objects
 stocks_mc <- as.magpie(stocks)
 invest_mc <- as.magpie(invest)
 
-# Check depreciation between timesteps (example: 2020 to 2030)
-stock_2020 <- stocks_mc["y2020",,]
-stock_2030_expected <- stock_2020 * (1-0.05)^10  # 10 years depreciation
-stock_2030_actual <- stocks_mc["y2030",,] - invest_mc["y2030",,] * 10  # Remove investments
+# Check depreciation between two consecutive timesteps
+stock_now    <- stocks_mc["y2020",,]
+stock_5yr    <- stocks_mc["y2025",,]
+expected_5yr <- stock_now * (1-0.05)^5 + invest_mc["y2020",,] * 5   # approximate
 
-# Check match (should be close)
-diff <- stock_2030_actual - stock_2030_expected
-print("Depreciation error (should be near zero):")
-print(max(abs(diff), na.rm=TRUE))
-
-# Visualize capital trajectory
-cell_crop <- "AFR.1.tece"  # Example: Africa, cell 1, temperate cereals
-plot(stocks_mc[,cell_crop,], main=paste("Capital Stock:", cell_crop), ylab="Stock (mio USD)")
+print(max(abs(stock_5yr - expected_5yr), na.rm=TRUE))   # should be small
 ```
 
-**Expected Results**:
-- Depreciation matches formula: Stock(t+1) = Stock(t)×(1-0.05)^years + Investment(t)
-- Capital stocks decline in contracting sectors
-- Capital stocks rise in expanding sectors
-- Smooth transitions (no jumps except investment events)
+**Red flag**: large deviation suggests a postsolve or presolve bug in capital stock updating.
 
-**Red Flags**:
-- Depreciation error > 1% → calculation bug
-- Negative stocks → investment formula wrong
-- Stocks growing without production growth → unrealistic accumulation
+### 12.3 Historical calibration (1995-2020)
 
-### 16.3 Check CES Function Response to Wages
+**Objective**: Verify the GDP→capital-share regression reproduces observed shares within tolerance.
 
-**Objective**: Verify mechanization responds to wage increases
-
-**Setup**: Run two scenarios
-1. Baseline wages (SSP2)
-2. High wages (+50%)
-
-**GDX Variables**:
-- `v38_laborhours_need` - Labor per ton (hours/tDM)
-- `v38_capital_need` - Capital per ton (USD/tDM)
-
-**R Code**:
 ```r
-gdx_base <- "fulldata_ssp2_baseline.gdx"
-gdx_high <- "fulldata_ssp2_highwage.gdx"
-
-# Read factor requirements
-labor_base <- readGDX(gdx_base, "ov38_laborhours_need", select=list(type="level"))
-labor_high <- readGDX(gdx_high, "ov38_laborhours_need", select=list(type="level"))
-
-capital_base <- readGDX(gdx_base, "ov38_capital_need", select=list(type="level"))
-capital_high <- readGDX(gdx_high, "ov38_capital_need", select=list(type="level"))
-
-# Calculate changes (2050)
-labor_change <- (labor_high["y2050",,] - labor_base["y2050",,]) / labor_base["y2050",,] * 100
-capital_change <- (capital_high["y2050",,] - capital_base["y2050",,]) / capital_base["y2050",,] * 100
-
-# Check direction and magnitude
-print("Labor change with +50% wage (%):")
-print(mean(labor_change, na.rm=TRUE))  # Should be -10% to -20% (substitution)
-
-print("Capital change with +50% wage (%):")
-print(mean(capital_change, na.rm=TRUE))  # Should be +5% to +15% (substitution)
-
-# Visualize substitution
-plot(labor_change, capital_change,
-     xlab="Labor Change (%)", ylab="Capital Change (%)",
-     main="Labor-Capital Substitution Response")
-abline(h=0, v=0, col="gray")
-```
-
-**Expected Results**:
-- Higher wages → 10-20% labor reduction
-- Higher wages → 5-15% capital increase
-- Negative correlation (substitution)
-- Larger response in flexible crops (grains) than sticky crops
-
-**Red Flags**:
-- No response → CES function not active
-- Positive labor response → wrong sign (complementarity instead of substitution)
-- Extreme response (>50%) → elasticity too high or unbounded variables
-
-### 16.4 Check Climate Impacts on Factor Mix
-
-**Objective**: Verify heat stress drives mechanization
-
-**Setup**: Compare RCP1.9 vs RCP8.5 scenarios
-
-**GDX Variables**:
-- `pm_labor_prod` - Climate-driven labor productivity (from Module 37)
-- `v38_laborhours_need` - Labor per ton
-- `v38_capital_need` - Capital per ton
-
-**R Code**:
-```r
-gdx_rcp19 <- "fulldata_rcp19.gdx"
-gdx_rcp85 <- "fulldata_rcp85.gdx"
-
-# Read labor productivity factors
-labprod_rcp19 <- readGDX(gdx_rcp19, "pm_labor_prod")
-labprod_rcp85 <- readGDX(gdx_rcp85, "pm_labor_prod")
-
-# Read factor requirements
-labor_rcp19 <- readGDX(gdx_rcp19, "ov38_laborhours_need", select=list(type="level"))
-labor_rcp85 <- readGDX(gdx_rcp85, "ov38_laborhours_need", select=list(type="level"))
-
-capital_rcp19 <- readGDX(gdx_rcp19, "ov38_capital_need", select=list(type="level"))
-capital_rcp85 <- readGDX(gdx_rcp85, "ov38_capital_need", select=list(type="level"))
-
-# Focus on tropical regions (severe heat stress)
-tropics <- c("LAM", "SSA", "SAS", "PAS")
-
-# Calculate 2100 differences
-labprod_diff <- labprod_rcp85["y2100",tropics] - labprod_rcp19["y2100",tropics]  # Should be negative
-labor_diff <- labor_rcp85["y2100",tropics,] - labor_rcp19["y2100",tropics,]
-capital_diff <- capital_rcp85["y2100",tropics,] - capital_rcp19["y2100",tropics,]
-
-# Check causality
-print("Labor productivity loss (RCP8.5 vs RCP1.9):")
-print(mean(labprod_diff, na.rm=TRUE))  # Should be -0.1 to -0.3 (10-30% loss)
-
-print("Labor hours increase to compensate (%):")
-print(mean(labor_diff / labor_rcp19["y2100",tropics,] * 100, na.rm=TRUE))  # Partial compensation
-
-print("Capital increase (substitution, %):")
-print(mean(capital_diff / capital_rcp19["y2100",tropics,] * 100, na.rm=TRUE))  # Should be positive
-
-# Scatter plot
-plot(labprod_diff, capital_diff,
-     xlab="Labor Productivity Loss", ylab="Capital Increase (USD/tDM)",
-     main="Climate-Driven Mechanization")
-abline(lm(capital_diff ~ labprod_diff), col="red")  # Should be negative slope
-```
-
-**Expected Results**:
-- RCP8.5 → 10-30% labor productivity loss in tropics by 2100
-- RCP8.5 → 5-15% more capital per ton (mechanization response)
-- RCP8.5 → modest labor increase (partial compensation for productivity loss)
-- Temperate regions: minimal changes
-
-**Red Flags**:
-- No climate effect on factor mix → Module 37 not active or CES not responding
-- More labor in RCP8.5 than RCP1.9 without capital increase → inefficient response
-- Extreme mechanization (>50% capital increase) → unrealistic substitution
-
-### 16.5 Check Historical Calibration (1995-2020)
-
-**Objective**: Verify model reproduces historical factor cost patterns
-
-**GDX Variables**:
-- `pm_factor_cost_shares` - Calibrated labor/capital shares
-- `f38_historical_share` - Historical data
-
-**R Code**:
-```r
-library(gdxrrw)
-igdx("/path/to/gams")
-
-gdx <- "fulldata.gdx"
-
-# Read calibrated shares
-calib_shares <- rgdx.param(gdx, "pm_factor_cost_shares", squeeze=FALSE)
-hist_shares <- rgdx.param(gdx, "f38_historical_share", squeeze=FALSE)
-
-# Convert to magclass
-calib_mc <- as.magpie(calib_shares)
-hist_mc <- as.magpie(hist_shares)
+calib_shares <- as.magpie(rgdx.param(gdx, "pm_factor_cost_shares", squeeze=FALSE))
+hist_shares  <- as.magpie(rgdx.param(gdx, "f38_historical_share",  squeeze=FALSE))
 
 # Compare 2010 (last historical benchmark)
-calib_2010 <- calib_mc["y2010",,"capital"]
-hist_2010 <- hist_mc["y2010",,]
-
-# Check match
-error <- calib_2010 - hist_2010
-print("Calibration error 2010 (capital share):")
-print(summary(as.vector(error)))  # Should be near zero
-
-# Check GDP relationship
-gdp <- rgdx.param(gdx, "im_gdp_pc_ppp_iso", squeeze=FALSE)
-gdp_mc <- as.magpie(gdp)
-
-plot(log10(gdp_mc["y2010",,]), calib_2010,
-     xlab="log10(GDP per capita PPP)", ylab="Capital Share",
-     main="Capital Share vs GDP (2010)")
-# Should show positive correlation (richer → more capital)
-
-# Check projection trends
-plot(calib_mc[,"GLO","capital"],
-     main="Global Capital Share Projection",
-     ylab="Capital Share")
-# Should show rising trend (global wealth increase)
+err <- calib_shares["y2010",,"capital"] - hist_shares["y2010",,]
+print(summary(as.vector(err)))   # should be near zero
 ```
 
-**Expected Results**:
-- 2010 calibration error < 5 percentage points
-- Capital share increases with GDP per capita
-- Future capital share rising (mechanization trend)
-- Regional differences: Asia mechanizing faster than Africa
+**Red flag**: large 2010 calibration error suggests `p38_capital_share_calibration` offset is mis-applied or the regression parameters are stale.
 
-**Red Flags**:
-- Large calibration error → regression parameters wrong
-- No GDP correlation → calibration not working
-- Declining capital share → counter to development trends
+### 12.4 Climate / wage response (sticky_labor only)
 
-### 16.6 Check Labor Share Target Enforcement
-
-**Objective**: Verify labor share constraint works (if activated)
-
-**Setup**: Run scenario with s38_target_labor_share = 0.4
-
-**GDX Variables**:
-- `vm_cost_prod_crop` - Factor costs by type
-- `oq38_labor_share_target` - Shadow price of constraint
-
-**R Code**:
-```r
-gdx_target <- "fulldata_laborshare40.gdx"
-gdx_free <- "fulldata_baseline.gdx"
-
-# Read costs
-costs_labor_target <- readGDX(gdx_target, "ov_cost_prod_crop", select=list(type="level", factors="labor"))
-costs_capital_target <- readGDX(gdx_target, "ov_cost_prod_crop", select=list(type="level", factors="capital"))
-
-costs_labor_free <- readGDX(gdx_free, "ov_cost_prod_crop", select=list(type="level", factors="labor"))
-costs_capital_free <- readGDX(gdx_free, "ov_cost_prod_crop", select=list(type="level", factors="capital"))
-
-# Calculate labor shares
-labor_share_target <- costs_labor_target / (costs_labor_target + costs_capital_target)
-labor_share_free <- costs_labor_free / (costs_labor_free + costs_capital_free)
-
-# Check enforcement (2050, when target should be partially met)
-print("Labor share 2050 (target scenario):")
-print(summary(labor_share_target["y2050",,]))  # Should be ≥0.4 (or moving toward it)
-
-print("Labor share 2050 (free scenario):")
-print(summary(labor_share_free["y2050",,]))  # Baseline for comparison
-
-# Check shadow prices (binding constraint)
-shadow <- readGDX(gdx_target, "oq38_labor_share_target", select=list(type="marginal"))
-print("Share of cells with binding constraint:")
-print(sum(shadow["y2050",,] > 0, na.rm=TRUE) / length(shadow["y2050",,]))  # >0 means binding
-
-# Visualize impact
-plot(labor_share_free["y2050",,], labor_share_target["y2050",,],
-     xlab="Free Labor Share", ylab="Target Labor Share",
-     main="Target Enforcement (2050)")
-abline(a=0, b=1, col="gray")
-abline(h=0.4, col="red", lty=2)  # Target line
-```
-
-**Expected Results**:
-- Target scenario: 50% of regions moved halfway toward 40% target by 2050 (if s38_target_fulfillment=0.5)
-- Binding constraint: Shadow price >0 in regions where baseline < target
-- Higher labor share → higher total costs (prevented optimization)
-
-**Red Flags**:
-- No change between scenarios → constraint not active
-- Labor share below target in 2050+ → constraint violated
-- No shadow prices → constraint never binding (target too low)
+If you've switched to `sticky_labor`, the additional checks are:
+- `pm_labor_prod` < 1 in tropical regions under RCP8.5 → expect `ov38_capital_need` to increase (mechanization response)
+- Wage scenario above baseline → expect `ov38_laborhours_need` to decrease
+- These checks are MEANINGLESS in `sticky_feb18` where `v38_laborhours_need` and `v38_capital_need` do not exist as variables
 
 ---
 
-## 17. Literature and Data Sources
+## 13. Literature and Data Sources
 
-### 17.1 Peer-Reviewed Literature
+### 13.1 Peer-reviewed literature
 
-**CES Function and Labor Productivity**:
-- **Orlov et al. (2021)**: "Incorporating climate change impacts on labor productivity into model-based policy analysis", *Environmental Research Letters*
-  - CES function specification for agriculture
-  - Labor-capital substitution elasticity
-  - Integration of heat stress impacts (Module 37 linkage)
-  - File reference: `equations.gms:17`
+**Capital stickiness and factor cost economics**:
+- Dietrich, J.P., Schmitz, C., Müller, C., Fader, M., Lotze-Campen, H., & Popp, A. (2014): "Measuring agricultural land-use intensity – A global analysis using a model-based approach", *Ecological Modelling* 232. FAO Value of Production methodology and factor cost share estimation.
 
-**Factor Cost Economics**:
-- **Dietrich et al. (2014)**: "Measuring agricultural land-use intensity – A global analysis using a model-based approach", *Ecological Modelling*
-  - FAO Value of Production methodology
-  - Factor cost share estimation
+**CES function and labor productivity** (sticky_labor):
+- Orlov, A. et al. (2021): "Climate change and labour-related impacts in MAgPIE", *Environmental Research Letters* (or relevant Orlov et al. paper depending on canonical reference).
 
-**Capital Depreciation**:
-- **Hertel (1999)**: "Global Trade Analysis: Modeling and Applications", Cambridge University Press
-  - Agricultural capital depreciation rates (5% standard)
-  - Annuitization of investment costs
+**Capital depreciation**:
+- Hertel, T.W. (1999): "Global Trade Analysis: Modeling and Applications", Cambridge University Press. Agricultural capital depreciation rates (5% standard) and annuitization conventions.
 
-**Elasticity of Substitution**:
-- **Mundlak & Hellinghausen (1982)**: "The Intercountry Agricultural Production Function", *American Journal of Agricultural Economics*
-  - Estimates σ = 0.2-0.4 for agriculture (Module uses 0.3)
+**Elasticity of substitution** (sticky_labor):
+- Mundlak, Y. & Hellinghausen, R. (1982): "The Intercountry Agricultural Production Function", *American Journal of Agricultural Economics*. Estimates σ = 0.2-0.4 for agriculture.
 
-- **Duffy & Papageorgiou (2000)**: "A cross-country empirical investigation of the aggregate production function specification", *Journal of Economic Growth*
-  - General substitution elasticities (agriculture lower than manufacturing)
+### 13.2 Data sources
 
-### 17.2 Data Sources
+- **FAO Value of Production**: FAOSTAT (2005 benchmark) — `f38_fac_req_fao.csv`, `f38_fac_req_fao_regional.cs4`
+- **USDA Cost of Production**: USDA Economic Research Service — factor cost share basis
+- **Historical factor costs**: GTAP + national agricultural accounts — `f38_historical_share_iso.csv`, `f38_hist_factor_costs_iso.csv`
+- **GDP per capita PPP**: World Bank Development Indicators + SSP scenarios — `im_gdp_pc_ppp_iso`
 
-**FAO Value of Production**:
-- Source: FAOSTAT (2005 benchmark)
-- URL: https://www.fao.org/faostat/en/#data/QV
-- Used in: `f38_fac_req_fao.csv`, `f38_fac_req_fao_regional.cs4`
-- Coverage: ~150 crops, global and regional
+### 13.3 Model documentation
 
-**USDA Cost of Production**:
-- Source: USDA Economic Research Service
-- URL: https://www.ers.usda.gov/data-products/commodity-costs-and-returns/
-- Used in: Factor cost share estimation
-- Note: U.S.-specific data extrapolated globally with adjustments
-
-**Historical Factor Costs**:
-- Source: GTAP database + national agricultural accounts
-- Used in: `f38_historical_share_iso.csv`, `f38_hist_factor_costs_iso.csv`
-- Coverage: 1995-2010 country-level data
-
-**GDP per Capita (PPP)**:
-- Source: World Bank Development Indicators + SSP scenarios
-- Used in: Capital share regression (`im_gdp_pc_ppp_iso`)
-- Coverage: 1995-2100
-
-### 17.3 Model Documentation
-
-**MAgPIE Model Documentation**:
-- Dietrich, J.P., et al. (2020): "MAgPIE 4 – a modular open-source framework for modeling global land systems", *Geoscientific Model Development*
-- URL: https://doi.org/10.5194/gmd-12-1299-2019
-
-**Module Development History**:
-- per_ton_fao_may22: FAO-based volume costs (Bodirsky, Molina Bacca)
-- sticky_feb18: Capital stickiness introduction (Dietrich, Karstens)
-- sticky_labor: CES + climate/wage integration (Leip, Orlov et al.)
+- Dietrich, J.P., et al. (2019): "MAgPIE 4 – a modular open-source framework for modeling global land systems", *Geoscientific Model Development* 12, 1299-1317. https://doi.org/10.5194/gmd-12-1299-2019
 
 ---
 
-## 18. Summary for AI Agents
+## 14. Summary for AI Agents
 
-### 18.1 Module Identity
+### 14.1 Module identity
 
-**Name**: Factor Costs (Module 38)
-**Purpose**: Calculate labor and capital costs for crop production
-**Current Realization**: `sticky_feb18` (default, as set in `config/default.cfg`); `sticky_labor` is an advanced alternative (non-default)
-**Key Innovation**: Capital stickiness + labor-capital substitution via CES function + climate/wage impacts
+- **Name**: Factor Costs (Module 38)
+- **Purpose**: Calculate labor and capital costs for crop production
+- **Active default**: `sticky_feb18` (verify: `grep "cfg\$gms\$factor_costs" ../config/default.cfg`)
+- **Output**: `vm_cost_prod_crop(i,factors)` consumed by Module 11's `q11_cost_reg`
 
-### 18.2 Critical Mechanisms
+### 14.2 Realization quick-reference
 
-1. **CES Production Function** (`equations.gms:19-23`):
-   - Elasticity of substitution σ = 0.3 (low, agriculture-appropriate)
-   - Labor efficiency affected by climate (Module 37) and wages (Module 36)
-   - Active only after 2025 (historical lock before)
+| Realization | # q38 eqns | Endogenous L/K? | Climate-driven `pm_labor_prod`? | Capital stocks? | Labor-share target? |
+|---|---:|---|---|---|---|
+| **`sticky_feb18`** (default) | 4 | NO (`p38_labor_need` is parameter) | NO (aborts if ≠1) | YES (mobile/immobile, 5%/yr depreciation) | NO |
+| `sticky_labor` (alt) | 6 | YES (CES; `v38_*_need` are variables) | YES | YES | OPTIONAL (`s38_target_labor_share`) |
+| `per_ton_fao_may22` (alt) | 2 | NO | depends — read source | NO | NO |
 
-2. **Capital Stickiness** (`presolve.gms`, `postsolve.gms:9-10`):
-   - 100% immobile by default (crop-specific, location-specific)
-   - 5% annual depreciation (20-year lifetime)
-   - Investment only when required > existing stock
-   - Creates path dependency in land use
+### 14.3 Common misconceptions
 
-3. **Cost Calculation** (`equations.gms:39-45`):
-   - Labor: Production × Hours/ton × Wage
-   - Capital: Annuitized investment × (r+d)/(1+r)
-   - Regional aggregation to Module 11
+- ❌ "Factor costs are fixed per ton" — only in `per_ton_fao_may22` and in `sticky_feb18` for labor; `sticky_labor` allows endogenous substitution
+- ❌ "All capital is mobile" — default `s38_immobile = 1` means 100% immobile (crop-specific) in both sticky realizations
+- ❌ "CES is the default" — `sticky_labor` (with CES) is NOT the default; `sticky_feb18` (no CES) is
+- ❌ "Module 38 drives employment" — Module 38 calculates *costs*; employment outputs are in Module 36
+- ❌ "Factor costs include everything" — excludes land rent (M11), fertilizer (M50/M54), seeds (intermediate inputs)
 
-### 18.3 Key Dependencies
+### 14.4 Debugging decision tree
 
-**Receives From**:
-- Module 17: Production (vm_prod) - core driver
-- Module 36: Wages, wage-productivity (pm_hourly_costs, pm_productivity_gain_from_wages)
-- Module 37: Climate impacts on labor (pm_labor_prod)
-- Module 12: Interest rates (pm_interest)
+**Issue: factor costs seem too low/high**
+→ Check the active realization first; the structure differs significantly
+→ Check `c38_fac_req` setting (`glo` vs `reg`)
+→ Check `pm_factor_cost_shares` (labor/capital split — preloop output)
+→ Check `pm_hourly_costs` (wage levels from Module 36)
 
-**Provides To**:
-- Module 11: Factor costs (vm_cost_prod_crop) → total costs → production patterns
+**Issue: no mechanization response to wages/climate**
+→ Confirm you are on `sticky_labor`, not `sticky_feb18` (the default cannot respond)
+→ If on `sticky_labor`: check `m_year(t) > s38_startyear_labor_substitution` (default 2025)
+→ Check `v38_laborhours_need` bounds (should be 0.1× to 10×)
 
-### 18.4 Common Misconceptions
+**Issue: model aborts at the start of `38_factor_costs` presolve**
+→ Almost always: `pm_labor_prod ≠ 1` with `sticky_feb18` active. Either switch realization to `sticky_labor` or fix the upstream Module 37 that's producing non-unit labor productivity.
 
-1. **"Factor costs are fixed per ton"** - Only true in per_ton_fao realization; sticky_labor allows endogenous substitution
-
-2. **"All capital is mobile"** - Default is 100% immobile (crop-specific)
-
-3. **"Labor-capital substitution is immediate"** - Only active after 2025, CES prevents rapid shifts
-
-4. **"Factor costs include everything"** - Excludes land rent, fertilizer, seeds (avoid double-counting)
-
-5. **"Module 38 drives employment"** - Calculates costs; employment in Module 36
-
-### 18.5 Debugging Decision Tree
-
-**Issue: Factor costs seem too low/high**
-→ Check `c38_fac_req` setting (glo vs reg)
-→ Check pm_factor_cost_shares (labor/capital split)
-→ Check pm_hourly_costs (wage levels from Module 36)
-
-**Issue: No mechanization response to wages/climate**
-→ Check m_year(t) > s38_startyear_labor_substitution (2025)
-→ Check v38_laborhours_need bounds (should be 0.1× to 10×)
-→ Check pm_labor_prod and pm_productivity_gain_from_wages values
-
-**Issue: Unrealistic crop switching patterns**
-→ Check s38_immobile (should be 0.8-1.0 for realism)
-→ Check capital stock depreciation (5% realistic)
-→ Check p38_capital_immobile values (sufficient stickiness?)
-
-**Issue: Labor share target not working**
-→ Check s38_target_labor_share > 0 (default OFF)
-→ Check oq38_labor_share_target marginals (constraint binding?)
-→ Check p38_min_labor_share values (ramp working?)
+**Issue: unrealistic crop switching patterns**
+→ Check `s38_immobile` (default 1 = maximum stickiness)
+→ Check `p38_capital_immobile` values (sufficient stickiness?)
+→ Consider reducing `s38_immobile` toward 0.5 if you want more flexibility
 
 ---
 
-## 19. AI Agent Response Patterns
-
-### Query: "Why is agriculture becoming more capital-intensive in my scenario?"
-
-**Response Structure**:
-
-1. **Identify Drivers**: Check three potential causes:
-   - Rising wages (Module 36: pm_hourly_costs increasing)
-   - Heat stress (Module 37: pm_labor_prod declining)
-   - Both combined
-
-2. **Quantify Effect**: Compare scenarios:
-```r
-# Read labor productivity and wages
-labprod <- readGDX(gdx, "pm_labor_prod")  # From Module 37
-wages <- readGDX(gdx, "pm_hourly_costs", select=list(scenario="scenario"))  # From Module 36
-
-# Check trends
-plot(labprod["y1995:y2100", "LAM",], main="Labor Productivity (Climate)")
-plot(wages["y1995:y2100", "LAM",], main="Hourly Wages")
-```
-
-3. **Explain Mechanism**: CES function in Module 38:
-   - Effective labor = pm_labor_prod × pm_productivity_gain_from_wages × base_labor
-   - When effective labor drops (climate) or becomes expensive (wages) → substitute capital
-   - Elasticity σ=0.3 → 10% wage increase → ~3% labor reduction
-
-4. **Verify Factor Mix**:
-```r
-labor_need <- readGDX(gdx, "ov38_laborhours_need", select=list(type="level"))
-capital_need <- readGDX(gdx, "ov38_capital_need", select=list(type="level"))
-```
-
-5. **Expected Answer**:
-   - "Agriculture mechanizing due to [X% wage increase / Y% labor productivity loss]"
-   - "CES function substituting toward capital (σ=0.3)"
-   - "Labor per ton decreased by Z%, capital per ton increased by W%"
-   - "This is economically optimal given factor prices and productivity"
+**Module 38 Status**: ✅ COMPLETE (R3 Phase C body rewrite, 2026-05-23)
 
 ---
 
-### Query: "Why is cropland expansion favored in existing agricultural regions?"
-
-**Response Structure**:
-
-1. **Identify Stickiness Mechanism**: Module 38 capital stocks
-   - File: `modules/38_factor_costs/sticky_labor/presolve.gms:84-92`
-   - Immobile capital: 100% by default (s38_immobile = 1)
-   - Depreciation: 5% per year
-
-2. **Explain Cost Advantage**:
-```gams
-# Investment requirement (equations.gms):
-v38_investment_immobile(j,kcr) =g=
-  vm_prod(j,kcr) * v38_capital_need(j,kcr,"immobile") - p38_capital_immobile(t,j,kcr)
-```
-   - Existing production: p38_capital_immobile > 0 → lower/zero investment
-   - New production: p38_capital_immobile = 0 → full investment required
-   - Cost difference: ~50-150 USD/tDM × production
-
-3. **Quantify Path Dependency**:
-```r
-# Check capital stocks
-capital_stocks <- rgdx.param(gdx, "p38_capital_immobile")
-investments <- readGDX(gdx, "ov38_investment_immobile", select=list(type="level"))
-
-# Compare costs: expansion in existing vs new regions
-cost_existing <- investments[existing_cells] / production[existing_cells]
-cost_new <- investments[new_cells] / production[new_cells]
-```
-
-4. **Check Alternative Drivers**: Not just Module 38!
-   - Module 14: Higher yields in established regions (management calibration)
-   - Module 13: Technological change concentrated in intensive areas
-   - Module 59: Better soil quality in established cropland
-
-5. **Expected Answer**:
-   - "Capital stickiness in Module 38 creates ~$X billion cost advantage for existing regions"
-   - "Depreciation rate 5%/yr → stocks persist 10-20 years"
-   - "Also check: yield levels (Module 14), technology (Module 13), soil (Module 59)"
-   - "To reduce stickiness: decrease s38_immobile or increase s38_depreciation_rate"
-
----
-
-### Query: "How do I modify the model to test rapid automation scenarios?"
-
-**Response Structure**:
-
-1. **Identify Relevant Parameters**:
-   - Primary: `s38_ces_elast_subst` (elasticity of substitution)
-   - Secondary: `s38_startyear_labor_substitution` (when substitution starts)
-   - Tertiary: `s38_immobile` (capital mobility)
-
-2. **Suggest Modifications**:
-
-**Option A: Higher Substitution Elasticity** (easier automation)
-```gams
-# modules/38_factor_costs/sticky_labor/input.gms:16
-s38_ces_elast_subst = 0.6  ! Was: 0.3 (double substitutability)
-```
-Effect: 10% wage increase → 6% labor reduction (vs 3% baseline)
-
-**Option B: Earlier Substitution Start** (technology available sooner)
-```gams
-# modules/38_factor_costs/sticky_labor/input.gms:17
-s38_startyear_labor_substitution = 2015  ! Was: 2025 (10 years earlier)
-```
-Effect: Mechanization response active from 2015
-
-**Option C: More Mobile Capital** (easier reallocation)
-```gams
-# modules/38_factor_costs/sticky_labor/input.gms:15
-s38_immobile = 0.3  ! Was: 1 (70% mobile, 30% immobile)
-```
-Effect: Tractors/equipment shared across crops, faster adoption
-
-3. **Recommend Testing Strategy**:
-```r
-# Run three scenarios
-scenarios <- c("baseline", "highsub", "earlysub", "mobile")
-
-# Compare outcomes
-for (scen in scenarios) {
-  gdx <- paste0("fulldata_", scen, ".gdx")
-  labor <- readGDX(gdx, "ov38_laborhours_need", select=list(type="level"))
-  employment <- readGDX(gdx, "ov_laborhours_total", select=list(type="level"))  # From Module 36
-
-  print(paste(scen, "Agricultural employment 2050:", sum(employment["y2050",,])))
-}
-```
-
-4. **Warn About Realism**:
-   - Literature: σ = 0.2-0.4 for agriculture (vs 0.6-1.0 manufacturing)
-   - Agricultural tasks resist automation (irregular terrain, biological variability)
-   - High elasticity may overestimate automation potential
-   - Check against historical mechanization rates
-
-5. **Expected Answer**:
-   - "Increase s38_ces_elast_subst to 0.5-0.7 for automation scenario"
-   - "Earlier start year (2015-2020) if breakthrough already occurred"
-   - "More mobile capital (30-50% mobile) if equipment is multipurpose"
-   - "Caution: σ > 0.5 may be unrealistic for agriculture (check literature)"
-   - "Validate against historical mechanization trends (e.g., U.S. 1950-2000)"
-
----
-
-**End of Module 38 Comprehensive Documentation**
-
----
-
-## Limitations
-
-### Structural Limitations
-
-1. **Factor costs independent of harvested area**: As stated in `realization.gms:19-22`, this realization "assumes that factor costs, within a region, purely depend on production and are independent of the area under cultivation." Labor and capital costs scale with production volume (tDM), not area (ha). This does not account for economies of scale (e.g., mechanization on larger farms).
-
-2. **Fixed CES elasticity of substitution (σ = 0.3)**: Labor-capital substitution is set at σ = 0.3 (`input.gms:16`), meaning a 10% wage increase leads to only ~3% reduction in labor intensity. Agricultural automation is severely constrained by this low elasticity.
-
-3. **Immobile capital assumption (100% by default)**: Default configuration sets 100% of capital as crop-specific and location-specific (`s38_immobile = 1` in `input.gms:15`). No general-purpose machinery can be flexibly reallocated, which artificially penalizes crop switching.
-
-### Methodological Limitations
-
-4. **Labor productivity impacts combined multiplicatively**: Climate and wage impacts are combined as `pm_labor_prod × pm_productivity_gain_from_wages` (`equations.gms:22`), assuming they are independent. Interaction effects (e.g., wage increases having larger benefits in heat-stressed regions) are missed.
-
-5. **Capital stock initialized from 1995 production only**: Initial capital stocks estimated assuming 1995 production equals 1994 production (`presolve.gms`). No accounting for pre-1995 capital accumulation or production shocks in the base year.
-
----
-
-## Participates In
-
-This section shows Module 38's role in system-level mechanisms. For complete details, see the linked documentation.
-
-### Conservation Laws
-
-Module 38 does **not directly participate** in any conservation laws as a primary enforcer.
-
-**Indirect Role**: Module 38 may affect production costs via factor costs, which influences other modules, but has no direct conservation constraints.
-
-### Dependency Chains
-
-**Centrality Analysis** (from Module_Dependencies.md):
-- **Centrality Rank**: Low-to-Medium (peripheral/intermediate module)
-- **Hub Type**: **Cost Component Provider**
-
-**Details**: See `core_docs/Module_Dependencies.md` for complete dependency information.
-
-### Circular Dependencies
-
-Module 38 participates in **zero or minimal circular dependencies**.
-
-**Details**: See `cross_module/circular_dependency_resolution.md` for system-level cycles.
-
-### Modification Safety
-
-**Risk Level**: 🟡 **MEDIUM RISK**
-
-**Safe Modifications**:
-- ✅ Adjust module-specific parameters
-- ✅ Change scenario selections
-- ✅ Modify calculation methods within module
-
-**Testing Requirements**:
-1. Verify outputs are in expected ranges
-2. Check downstream modules that depend on this module's outputs
-3. Run full model to ensure no infeasibility
-
-**Links**:
-- Full dependency details → `core_docs/Module_Dependencies.md`
-- Related modules → Check interface variables in module documentation
-
----
-
-**Module 38 Status**: ✅ COMPLETE
-
----
-
-**Last Verified**: 2025-10-13
-**Verified Against**: `../modules/38_*/sticky_feb18/*.gms`
-**Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Last Verified**: 2026-05-23 (R3 Phase C)
+**Verified Against**: `modules/38_factor_costs/sticky_feb18/*.gms` (default), with cross-reference to `modules/38_factor_costs/sticky_labor/` and `modules/38_factor_costs/per_ton_fao_may22/`
+**Verification Method**: All sticky_feb18 equations and parameters re-derived from source; sticky_labor and per_ton_fao_may22 sections describe key differences without duplicating full content (read each realization's source if needed).
+**Changes Since Last Verification**: R3 body rewrite — default-first restructuring; removed R3 interim warning header; all citations realization-prefixed.
