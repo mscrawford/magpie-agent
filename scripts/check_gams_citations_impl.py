@@ -74,14 +74,21 @@ def main():
             continue
         doc_file, mod_num, _doc_line, context = m.group(1), m.group(2), m.group(3), m.group(4)
 
-        for cit_match in CITATION_RE.finditer(context):
+        # Find all citations on this line so we can scope each nearby_ids window
+        # only to the text between this cite and the previous one (avoids picking
+        # up identifiers that belong to a sibling citation in the same prose).
+        cite_matches = list(CITATION_RE.finditer(context))
+        for idx, cit_match in enumerate(cite_matches):
             gms_hint = cit_match.group(1)
             start = int(cit_match.group(2))
             end = int(cit_match.group(3)) if cit_match.group(3) else None
 
-            # Capture nearby backticked GAMS identifiers within ~80 chars
-            window_start = max(0, cit_match.start() - 80)
-            window_end = min(len(context), cit_match.end() + 80)
+            # Capture nearby backticked GAMS identifiers in a tighter window:
+            # back to the previous cite (or 40 chars, whichever is closer) and
+            # forward only 10 chars (citations typically follow their subject).
+            prev_end = cite_matches[idx - 1].end() if idx > 0 else 0
+            window_start = max(prev_end, cit_match.start() - 40)
+            window_end = min(len(context), cit_match.end() + 10)
             window = context[window_start:window_end]
             nearby_ids = set(GAMS_ID_RE.findall(window))
 
@@ -119,9 +126,18 @@ def main():
             candidates = file_index.get(basename, [])
             mod_prefix = f'/{mod_num}_'
             mod_candidates = [c for c in candidates if mod_prefix in c]
+
+            # If hint has a directory component (e.g., "flexreg_apr16/equations.gms"),
+            # narrow further by the realization name to avoid walk-order ambiguity.
+            if '/' in gms_hint:
+                realization_hint = os.path.dirname(gms_hint)
+                narrowed = [c for c in mod_candidates if f'/{realization_hint}/' in c]
+                if narrowed:
+                    mod_candidates = narrowed
+
             if mod_candidates:
                 actual = mod_candidates[0]
-                # WARN if multiple mod_candidates exist — bare-basename ambiguity
+                # WARN only if still ambiguous after narrowing
                 if len(mod_candidates) > 1:
                     ambig += 1
                     relatives = [os.path.relpath(c, magpie_root) for c in mod_candidates]

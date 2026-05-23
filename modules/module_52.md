@@ -289,7 +289,7 @@ Writes a per-region table of `(FRA target NRF, achieved NRF, FRA target plantati
 
 Module 52 calculates **actual CO2 emissions from land-use change** based on carbon stock changes.
 
-**Equation**: `q52_emis_co2_actual` (declarations.gms:17, equations.gms:16-19)
+**Equation**: `q52_emis_co2_actual` (declarations.gms:30, equations.gms:16-19)
 
 **Formula**:
 ```

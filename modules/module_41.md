@@ -720,7 +720,7 @@ vm_cost_AEI.scale(i) = 10e4;
 
 **Sources**:
 - endo_apr13/equations.gms:8-23
-- static/equations.gms:8-17
+- static/equations.gms:8-16
 
 ### 11.2 Realism vs. Simplicity
 

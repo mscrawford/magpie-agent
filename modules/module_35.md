@@ -191,7 +191,7 @@ if(s35_forest_damage=2,
 **Default settings**:
 - `s35_forest_damage = 2` (default)
 - `s35_forest_damage_end = 2050` (fade-out complete by 2050)
-- Fader: `p35_damage_fader(t)` = sigmoid from 0 to 1 between `sm_fix_SSP2` and 2050 (`preloop.gms:80`)
+- Fader: `p35_damage_fader(t)` = sigmoid from 0 to 1 between `sm_fix_SSP2` and 2050 (`preloop.gms:88`)
 
 **Meaning**: Shifting agriculture damage gradually reduces to zero by 2050
 

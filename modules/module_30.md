@@ -128,7 +128,7 @@ MAgPIE implements rotational constraints to prevent over-specialization (monocul
 
 **Mode Selection**:
 - Historic period (≤ SSP2 fix year): Always rule-based (`presolve.gms:19`)
-- Future period: User-configurable via `s30_implementation` scalar (`input.gms:24`)
+- Future period: User-configurable via `s30_implementation` scalar (`detail_apr24/input.gms:24`)
 
 #### q30_rotation_max - Maximum Rotational Share (Rule-Based)
 **Location**: `equations.gms:36-38`
@@ -271,7 +271,7 @@ q30_rotation_max2(j2,rotamax_red30)$(i30_implementation = 0) ..
 
 **Conditional**: Only active when `i30_implementation = 0` (penalty-based mode)
 
-**Positive Variable**: `v30_penalty` is declared as positive (`declarations.gms:25`), so if the area is below the maximum, penalty = 0
+**Positive Variable**: `v30_penalty` is declared as positive (`detail_apr24/declarations.gms:25`), so if the area is below the maximum, penalty = 0
 
 **Dynamic Set**: `rotamax_red30` contains only constraints with non-zero penalties (`presolve.gms:31`)
 ```gams
