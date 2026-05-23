@@ -1,13 +1,15 @@
 # Module 38: Factor Costs - Comprehensive Documentation
 
 **Location**: `modules/38_factor_costs/`
-**Current Realization**: `sticky_feb18` (default, as set in `config/default.cfg`); `sticky_labor` is an advanced alternative (non-default)
+**Default Realization**: `sticky_feb18` (4 q38 equations — see §2.2 for the active default; do NOT read §2.3 expecting default behavior — that section describes the non-default `sticky_labor` realization with 6 equations)
 **Authors**: Jan Philipp Dietrich, Benjamin Bodirsky, Kristine Karstens, Edna J. Molina Bacca, Debbora Leip
 
 ---
 
-> ⚙️ **Default Realization**: `sticky_feb18`
-> Confirmed in `config/default.cfg`: `cfg$gms$factor_costs <- "sticky_feb18"`. Alternatives: `sticky_labor` (adds capital immobility and CES labor-capital substitution), `per_ton_fao_may22` (simplified per-ton costs).
+> ⚙️ **Default Realization**: `sticky_feb18` (4 q38 equations: q38_cost_prod_labor, q38_cost_prod_capital, q38_investment_immobile, q38_investment_mobile)
+> Confirmed in `config/default.cfg`: `cfg$gms$factor_costs <- "sticky_feb18"`. Alternatives: `sticky_labor` (6 equations — adds q38_ces_prodfun and q38_labor_share_target; NOT default), `per_ton_fao_may22` (simplified per-ton costs).
+>
+> ⚠️ **R3 audit warning (2026-05-23)**: Sections 3, 5, 6, 7, 10, 11, 18 of this doc — including most CES content, the labor-share-target equation, v38_capital_need and v38_laborhours_need variables, and most parameter tables — describe the NON-DEFAULT `sticky_labor` realization without consistent realization labels. The actual default (`sticky_feb18`) has only 4 q38 equations (verifiable via `grep -c '^[[:space:]]*q38' ../modules/38_factor_costs/sticky_feb18/equations.gms`). A full body restructuring to lead with `sticky_feb18` content is deferred to a dedicated session; in the meantime, every cite that points to `modules/38_factor_costs/sticky_labor/...` is describing the non-default behavior. **If you are answering a default-config question, use `sticky_feb18` directly via `../modules/38_factor_costs/sticky_feb18/*.gms`.**
 
 
 ## 1. Purpose & Overview

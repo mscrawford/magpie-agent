@@ -10,6 +10,8 @@
 
 > ⚙️ **Default Realization**: `simple_apr24`
 > Confirmed in `config/default.cfg`: `cfg$gms$croparea <- "simple_apr24"`. The bulk of the detailed equation documentation below comes from `detail_apr24`. Where behaviour differs between realizations, this is noted. See the [simple_apr24 Realization](#simple_apr24-realization--equations-unique-or-different-from-detail_apr24) section for simple_apr24-specific equations.
+>
+> ⚠️ **R3 audit warning (2026-05-23)**: declarations.gms file:line citations throughout this doc point at `detail_apr24` line numbers, NOT `simple_apr24` (the actual default). In `simple_apr24`, `vm_area` is at declarations.gms:18 (doc cites :21), `vm_rotation_penalty` at :19 (doc cites :22), `vm_carbon_stock_croparea` at :20 (doc cites :23). The cited line numbers were verified to match `detail_apr24` exactly. Variables like `v30_penalty` and `v30_penalty_max_irrig` do NOT exist in `simple_apr24` — they are `detail_apr24`-only. For default-config questions, read `../modules/30_croparea/simple_apr24/*.gms` directly. A full re-derivation of citations is deferred to a future session.
 
 ---
 

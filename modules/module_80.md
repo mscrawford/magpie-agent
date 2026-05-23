@@ -9,6 +9,8 @@
 
 > ⚙️ **Default Realization**: `nlp_apr17`
 > Confirmed in `config/default.cfg`: `cfg$gms$optimization <- "nlp_apr17"`. Alternatives: `lp_nlp_apr17` (LP presolve then NLP), `nlp_ipopt` (direct NLP with the Ipopt interior-point solver), `nlp_par` (parallel NLP).
+>
+> ⚠️ **R3 audit warning (2026-05-23)**: this doc has dedicated Parameters tables for `lp_nlp_apr17`, `nlp_ipopt`, and `nlp_par`, but NOT for the default `nlp_apr17`. The default realization has distinct parameters: it includes `s80_resolve_option` (which `lp_nlp_apr17` lacks) and lacks `s80_obj_linear` (which `lp_nlp_apr17` has). For default-config questions about Module 80 parameters, read `../modules/80_optimization/nlp_apr17/declarations.gms` and `../modules/80_optimization/nlp_apr17/input.gms` directly. A dedicated `Parameters (nlp_apr17)` section is deferred to a future session.
 
 
 ## Overview
