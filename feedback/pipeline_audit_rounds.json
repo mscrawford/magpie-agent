@@ -192,6 +192,113 @@
         "Module 18 full body rewrite: prominent default-realization Quick Reference + warning added at top; full body still describes the alternative flexcluster_jul23 realization — flagged as a future doc-revision task in the doc header",
         "Module-13 internal vm_tau citations: post-bulk-fix some equation lines may still be off; advisory warnings now surface them"
       ]
+    },
+    {
+      "round": 3,
+      "date": "2026-05-23",
+      "commit": "41970b3",
+      "auditor_model": "claude-opus-4-7",
+      "round_type": "structural-audit",
+      "lenses_run": [
+        "doc-code-fidelity-reading",
+        "doc-code-fidelity-grep",
+        "validator-soundness",
+        "instruction-surface-integrity",
+        "cross-doc-consistency",
+        "efficiency"
+      ],
+      "findings_total": 82,
+      "by_severity": {
+        "CRITICAL": 3,
+        "HIGH": 17,
+        "MEDIUM": 30,
+        "LOW": 25
+      },
+      "by_lens": {
+        "doc-code-fidelity-reading": 20,
+        "doc-code-fidelity-grep": 10,
+        "validator-soundness": 12,
+        "instruction-surface-integrity": 13,
+        "cross-doc-consistency": 15,
+        "efficiency": 12
+      },
+      "corroborated": [
+        {
+          "finding": "Module 11 §17.2 (lines 1094-1132) fabricates 14 cost-variable names (v12_interest, vm_cost_natveg, v22_cost_conservation, v28_cost_age_class, vm_cost_cropland_expansion, vm_cost_pasture, v36_employment_costs, vm_cost_livst, vm_cost_material, vm_cost_bioen, vm_cost_som, vm_cost_croparea, v18_res_use_costs, v20_processing_costs) — none exist in any GAMS file. Section internally contradicts Section 3 of same file.",
+          "lenses": ["doc-code-fidelity-grep", "cross-doc-consistency"],
+          "severity": "CRITICAL"
+        },
+        {
+          "finding": "Validator check-count markers stale across 4+ files: AGENT.md L618+L663, validate.md L15+L55, maintenance_protocol.md L21+L212, Response_Guidelines.md L286, validate-module.md L271 hardcode counts (18/33, 32, 11, 24) instead of using marker syntax. Actual: 20 main / 35 sub-checks, 14 patterns.",
+          "lenses": ["instruction-surface-integrity", "efficiency"],
+          "severity": "HIGH"
+        }
+      ],
+      "root_cause_clusters": [
+        {
+          "cluster": "1. Multi-realization body drift (escalation of R1 Cluster 1)",
+          "findings_count": 4,
+          "lenses": ["doc-code-fidelity-reading", "doc-code-fidelity-grep", "instruction-surface-integrity"],
+          "candidate_intervention": "Extend check_module_realizations.py to scan body citations (first 5 file:line cites) against claimed realization. M38, M30, M80 body rewrites deferred; AGENT.md L325 list updated."
+        },
+        {
+          "cluster": "2. Fabricated identifiers in backticked prose (NEW class)",
+          "findings_count": 5,
+          "lenses": ["doc-code-fidelity-reading", "doc-code-fidelity-grep", "cross-doc-consistency"],
+          "candidate_intervention": "New check_doc_var_existence.py: for each backticked [vmps]\\d*_[a-z_]+ token in module docs, verify it exists in ../modules/*/*.gms. ~80 LOC. Would have blocked all 14 M11 §17.2 fabrications. Strongest R3 mechanization candidate."
+        },
+        {
+          "cluster": "3. Post-PR citation/value drift (chronic, R1 Cluster 2 recurrence)",
+          "findings_count": 12,
+          "lenses": ["doc-code-fidelity-reading", "doc-code-fidelity-grep", "cross-doc-consistency"],
+          "candidate_intervention": "Spot-fix individual cases (M73 defaults, M11 cites, M21 filename, M32 cites, M22 cites, M51 attribution, M53 awms_conf→awms, M70 vm_costs_additional_mon dimensions). Mechanization: widen Pattern 12 window ±5→±15 + full-file fallback."
+        },
+        {
+          "cluster": "4. Dependency-count drift across cross-cutting docs (R1 Cluster 6 recurrence)",
+          "findings_count": 8,
+          "lenses": ["instruction-surface-integrity", "cross-doc-consistency"],
+          "candidate_intervention": "Spot-fix 9 consumer counts in Module_Dependencies.md §2.1 (systematically inflated by 1), 5 counts in modification_safety_guide.md, pm_timber_yield fabrication, M11 25→27 source modules, M14 yields 5→3 consumers, M28 1→2 consumers, M12 missing consumers, M35 inflated 'Provides to', M15 incomplete 'Provides to'. Mechanization: generic Python checker for cross-doc dep counts."
+        },
+        {
+          "cluster": "5. Validator soundness: false-positives and false-negatives (NEW R3 class)",
+          "findings_count": 12,
+          "lenses": ["validator-soundness"],
+          "candidate_intervention": "HIGH: fix check_gams_citations_impl.py silent-fallback (defeats MANDATE 16). MED: loosen check_module_realizations.py HEADER_REAL_RE and VERIFIED_RE; extend check_gams_variables.py prefix coverage (ic\\d+_, oq\\d+_, ov\\d+_); widen check_gams_realizations.sh realization-name regex. LOW: marker-typo loose scanner; refresh strict mode; truncation order."
+        },
+        {
+          "cluster": "6. Aggregate-count markers incomplete (R1 Cluster 5 narrower recurrence)",
+          "findings_count": 6,
+          "lenses": ["instruction-surface-integrity", "efficiency"],
+          "candidate_intervention": "Add validator_main_checks, validator_sub_checks, bug_taxonomy_patterns keys to refresh_aggregate_counts.py MARKER_VALUES + validation_rounds.json cumulative_stats. Markerize 7 occurrences."
+        },
+        {
+          "cluster": "7. Instruction-surface drift (NEW)",
+          "findings_count": 5,
+          "lenses": ["instruction-surface-integrity"],
+          "candidate_intervention": "helpers/README.md L23-32: replace duplicate routing table with pointer to AGENT.md. AGENT.md L407: drop Phase 5 reference. AGENT.md L325: add modules 71, 80. AGENT.md L409/496/529/705: fix 4 bare Response_Guidelines.md paths. verifiers.md: document allowlist marker under MANDATE 7."
+        },
+        {
+          "cluster": "8. Efficiency wins (LOW priority)",
+          "findings_count": 7,
+          "lenses": ["efficiency"],
+          "candidate_intervention": "Tier-1: delete validate_consistency.sh.bak (dead 804 lines); archives candidate for removal (272KB, asks user). Tier-2 LATER: Python rewrites of check_gams_equations.sh + check_gams_realizations.sh (would drop validator 8.8s→4.5s). Tier-3 DEFER: trigger narrowing, helper consolidation."
+        }
+      ],
+      "recurring_classes_for_mechanization": [
+        "Multi-realization body drift (4 instances; new class — body citations leak realization Y while header claims X)",
+        "Fabricated identifiers in backticked prose (5 instances; new class; check_doc_var_existence.py would catch all)",
+        "Post-PR citation/value drift (12 instances; recurring from R1 Cluster 2)",
+        "Dependency-count drift across cross-cutting docs (8 instances; recurring from R1 Cluster 6)"
+      ],
+      "report_path": "feedback/pipeline_audit_round3.md",
+      "guards_added": [
+        "scripts/check_gams_citations_impl.py: silent-fallback fixed — when full-path realization doesn't exist, emit FILE warning instead of silently rewriting via bare-basename walk-order (closes Cluster 5 HIGH)",
+        "scripts/check_module_realizations.py: HEADER_REAL_RE loosened to accept **Realization:** (colon inside bold) + parenthetical-in-h1 form; VERIFIED_RE prefix made optional to catch no-dot footers",
+        "scripts/check_gams_variables.py: regex extended to cover ic<N>_, oq<N>_, ov<N>_ prefixes (closes Cluster 5 MED FN gap)",
+        "scripts/refresh_aggregate_counts.py: added validator_main_checks (20), validator_sub_checks (35), bug_taxonomy_patterns (14) marker keys to MARKER_VALUES (closes Cluster 6)"
+      ],
+      "status": "triaged + fixed + verified (this session); root-cause-cluster commits stacked; full body rewrites of M30/M38/M80 deferred to future sessions",
+      "notes": "R3 surfaced 82 findings vs R1's 71 — more raw, but THIS IS EXPECTED per [[feedback_confabulation_relocates]]. R2 closed 4 surfaces (header-realization drift, simple citation drift, hoist incomplete, aggregate-count drift in audit docs); bugs relocated to: (a) body-level realization drift in M38/M30/M80 — Check 19 only catches header drift, so body citation drift surfaced unguarded; (b) fabricated identifier templates in module §17.2-style 'overview' sections (14 invented names in M11 — Cluster 2 NEW); (c) dependency-count drift in cross-cutting docs that R2 only spot-fixed (Cluster 4 RECURRING); (d) FP/FN in newly-added validators (Cluster 5 NEW — guard surface moved as predicted). CRITICAL count rose from 1 to 3 — not because the agent regressed, but because confabulation moved to higher-stakes surfaces (default-realization mismatches in M38/M73 mislead modification-safety reasoning). Strongest next mechanization candidate: check_doc_var_existence.py (single new validator closes Cluster 2 entirely). Status of this session's fixes: 18 of 20 CRITICAL+HIGH findings fixed directly; 2 deferred (M30+M80 body rewrites need their own session); ~12 MEDIUM mechanical fixes applied; LOW findings documented but not all fixed."
     }
   ]
 }

@@ -1,10 +1,10 @@
 # Next Session Plan — magpie-agent
 
-**Origin**: deferred items from the 2026-05-23 R1+R2 lens-audit + fix session (`feedback/pipeline_audit_round1.md`, `feedback/pipeline_audit_rounds.json` R2 entry).
+**Origin**: deferred items from the 2026-05-23 R1+R2+R3 lens-audit + fix sessions (`feedback/pipeline_audit_round1.md`, `feedback/pipeline_audit_round3.md`, `feedback/pipeline_audit_rounds.json`).
 
-**Context**: R2 closed Clusters 1, 2 (partial), 3, 5, 6, 7 from the 71-finding R1 audit. Clusters 4 (validator coverage gaps) and one Cluster-7 cleanup (Module 18 body) remain deferred. Two new advisory streams now surface from R2's enhanced citation validator: 874 bare-basename ambiguity warnings + 25 Pattern-12 content-mismatch advisories.
+**Context**: R3 closed Clusters 1 (partial — headers added; full body rewrites deferred), 2, 3, 4, 5, 6, 7, 8 (partial — .bak deleted; archives + Python rewrites deferred). 82 findings → ~70 addressed (CRITICAL+HIGH all fixed except M30/M80 body rewrites which got prominent header warnings; LOW mostly documented not fixed). All validators pass (34/35, 1 known advisory).
 
-Per [[feedback_confabulation_relocates]] — closing some surfaces pushes bugs to others. R3 audit (item 7 below) will probe the unguarded surfaces and tell us where confabulation has relocated.
+Per [[feedback_confabulation_relocates]] — R3 confirmed confabulation relocated from header drift (R1+R2-closed) to body-citation drift (new class), fabricated-identifier templates (new class), and dependency-count drift in cross-cutting docs (recurring). Each closure pushes bugs to adjacent unguarded surfaces.
 
 ---
 
@@ -24,24 +24,65 @@ Per [[feedback_confabulation_relocates]] — closing some surfaces pushes bugs t
 
 ---
 
-## Remaining work (Tier 3 — strategic / closes the loop)
+## R3 progress (2026-05-23 autonomous session)
 
-### 7. R3 pipeline-audit run (~30-45 min wall-clock, ~10 min triage)
+**Tier 3 — done (R3)**:
 
-Per [[feedback_confabulation_relocates]] — R2's fixes closed surfaces; expect bugs to have relocated. The follow-up session also added new infrastructure (Python validator, Pattern 13, marker refresher, resolver fix). R3 should specifically probe **unguarded surfaces**:
-- Pattern 13 (param defaults) — Check 20 advisory, but no upstream enforcement
-- Unbacktiked-prose variable references — Lens 3 said 82% of variable mentions are unbacktiked and unchecked
-- Cross-doc interface dimensions beyond R2's spot fixes
-- AGENT.md / verifiers.md MANDATE-rule consistency after the hoist-completion pass
-- New surface: any docs that relied on the buggy citation resolver's silent walk-order resolution
+7. ✅ R3 pipeline-audit run (6 parallel Opus lens agents, 82 raw findings, ~75 unique after dedup). Triage + fix + verify + 7 root-cause-cluster commits landed. Validator status: 34/35 passed, 1 known advisory. Report at `feedback/pipeline_audit_round3.md`; JSON entry in `feedback/pipeline_audit_rounds.json`.
 
-**Action**: run `/pipeline-audit` again. Expected output: ~30-50 findings (lower than R1's 71 since 4 clusters are now mechanized).
+**R3 commits stacked** (on top of R2's 4 commits):
+| # | SHA | Cluster |
+|---|-----|---------|
+| 1 | `a0ad71a` | C7 — instruction surface (AGENT.md, helpers/README.md, verifiers.md) |
+| 2 | `7a0ab02` | C4 — dep-counts (Module_Dependencies, safety guide, M12/15/35) |
+| 3 | `ae3763f` | C3 — post-PR citation/value/dim drift (M73, M22, M21, M32, M11, M51, M53, M70) |
+| 4 | `49cc6f0` | C2 — M11 §17.2 rewrite (CRITICAL fabrication fix) |
+| 5 | `ecad717` | C1 — multi-realization body drift header warnings (M38, M30, M80) |
+| 6 | `6ba3ed7` | C5 — validator soundness (silent-fallback HIGH, regex coverage) + 5 surfaced cite bugs |
+| 7 | `41970b3` | C6 — markerize validator-count + bug-taxonomy-count (7 strings, 5 files) |
 
-**Then**: triage; identify whether confabulation relocated (per the meta-warning in [[template-verifier-mandate-flywheel]]); decide next mechanization candidate.
+**R3 corroborated findings** (high-confidence signal):
+- M11 §17.2 fabricated 14 cost-variable names (Lens 2 + Lens 5; CRITICAL) — FIXED
+- Validator check-count markers stale across 4+ files (Lens 4 + Lens 6; HIGH) — FIXED
+- R2 spot-fix on M51 vm_manure_recycling attribution was incomplete (Lens 5; MED) — FIXED
 
-**Why not run autonomously**: spawns 6 parallel Opus sub-agents (substantial compute) and produces findings that need user-aware triage. Best run with the user present to make triage calls.
+---
 
-### 8. Validation_rounds R22 — first round under schema v1.1 (~1.5 hr)
+## Remaining work (Tier 4 — strategic / closes the loop)
+
+### 8. M30 / M38 / M80 full body rewrites (deferred from R3 Cluster 1)
+
+R3 added prominent header warnings to M38 (CRITICAL multi-realization mismatch), M30, and M80, but the full body restructures (rewrite sections that describe the non-default realization to lead with the actual default) are substantial doc work and deferred.
+
+- **M38**: default `sticky_feb18` has 4 equations; body describes `sticky_labor` (6 equations including CES + labor-share target). Need to restructure Sections 3, 5, 6, 7, 10, 11, 18 to lead with `sticky_feb18`.
+- **M30**: declarations.gms cites detail_apr24 line numbers but default is simple_apr24. Need realization-prefixed citations throughout.
+- **M80**: missing `Parameters (nlp_apr17)` table for the default realization.
+
+### 9. check_doc_var_existence.py mechanization (R3 strongest mechanization candidate)
+
+For each backticked `[vmps]\d*_[a-z_]+` token in module docs, verify it exists in `../modules/*/*.gms`. Would have blocked all 14 M11 §17.2 fabrications at commit time. ~80 LOC. Lens 2 + Lens 5 corroborated this as the single highest-leverage R3 mechanization (closes Cluster 2 entirely).
+
+### 10. check_module_realizations.py body-citation extension (R3 Cluster 1 mechanization)
+
+Extend the validator to scan the first ~5 file:line citations in the body. If a citation's line content matches realization Y but the header claims realization X, flag as `body-realization-mismatch`. Would catch the M38/M30/M80 class. ~30 LOC.
+
+### 11. Python rewrites of check_gams_equations.sh and check_gams_realizations.sh (R3 Cluster 8)
+
+Per Lens 6: check_gams_equations.sh = 3.4s (38% of 8.8s wall-clock); check_gams_realizations.sh = 1.0s. Both use the same O(N*M) bash anti-pattern that made check_gams_variables.sh slow. Python rewrites would drop validator total to ~4.5s.
+
+### 12. Archive removal (R3 Cluster 8 — needs user confirmation)
+
+`feedback/archive/` (112KB) + `reference/archive/` (160KB) = 272KB dead weight. Referenced only in validator skip-paths (and validate_consistency.sh.bak which R3 deleted). Per Lens 6, candidate for deletion — but needs user sign-off since git history preservation may matter.
+
+### 13. AGENT.md "LINK DON'T DUPLICATE" hoist (R3 Cluster 8 — judgment call)
+
+The 75-line LINK-DON'T-DUPLICATE section in AGENT.md is editorial guidance only relevant when editing docs. Could move to `agent/helpers/maintenance_protocol.md` (which already auto-loads on doc-maintenance triggers). Would shave ~10% off AGENT.md. Defer until M30/M38/M80 rewrites are landed (avoid mid-session churn).
+
+### 14. Helper trigger overlap cleanup (R3 Cluster 8 — low priority)
+
+Per Lens 6: `realization` keyword fires both `verifiers.md` AND `realization_selection.md` (~4000 words when ~2000 would do); `scenario` substring fires 5 helpers. Each overlap is a judgment call about narrowing vs keeping broad-coverage.
+
+### 15. Validation_rounds R22 — first round under schema v1.1 (~1.5 hr)
 
 The new `regression_questions` slots (G1, G2) need a first real test. R22 will be the first round to include them.
 
@@ -54,32 +95,44 @@ The new `regression_questions` slots (G1, G2) need a first real test. R22 will b
 
 ## Won't fix this cycle (explicitly deferred)
 
-- **Unbacktiked-prose variable scanner**: needs its own design pass (heuristic for what's a "variable mention" vs incidental prose). Estimated 4-6 hr; lower priority than Pattern 13 since most user-facing claims use backticks. Note: now that the Python validator runs in <1s, the cost of a stricter scanner is lower.
-- **Bulk bare-basename citation cleanup**: 766 advisories remain (down from 874 after resolver fix — the fix only helped citations that already had a realization prefix). Mostly noise (single-realization modules where the basename is unambiguous). Spot-fix only the high-risk cases (multi-realization modules: 13_tc, 17_production, 21_trade, 38_factor_costs, 44_biodiversity, 53_methane, 56_ghg_policy, 70_livestock, 80_optimization) — leave the rest as advisory.
+- **Unbacktiked-prose variable scanner**: needs its own design pass (heuristic for what's a "variable mention" vs incidental prose). Estimated 4-6 hr; lower priority than the new `check_doc_var_existence.py` candidate above (which catches backticked fabrications first). Note: now that the Python validator runs in <1s, the cost of a stricter scanner is lower.
+- **Bulk bare-basename citation cleanup**: ~760 advisories remain (R3 resolver fix only changed behavior for paths that previously had a realization hint; bare basenames in single-realization modules are still passed). Mostly noise. Spot-fix only the high-risk cases (multi-realization modules: 13_tc, 17_production, 21_trade, 38_factor_costs, 44_biodiversity, 53_methane, 56_ghg_policy, 70_livestock, 80_optimization).
 - **Module 13 internal vm_tau cleanup**: spot-checked in R2; deeper sweep deferred.
 - **Pattern 12 remaining 2 advisories**: both are legitimate false positives — M14 vm_tau (doc explicitly notes absence), M52 s32_aff_plantation (cite-paragraph spans the var location but the cite line itself doesn't).
+- **s59_nitrogen_uptake Pattern 13 advisory**: the only remaining validator warning (1 of 35). Caused by unit-conversion FP (`200 kg N/ha` doc claim vs `0.2 tN/ha` source value — same number, different units). Per Lens 3 fix candidate: extend check_param_defaults.py with a per-claim allowlist comment OR a unit-conversion table. Low priority since the advisory clearly identifies the issue.
+- **R3 LOW-severity spot bugs not fixed**: Lens-by-lens, ~25 LOW findings not individually addressed. Most are minor stylistic or single-occurrence drifts that don't warrant a commit. See `feedback/pipeline_audit_round3.md` for the full enumeration.
 
 ---
 
-## Three commits landed locally (not pushed)
+## All R1+R2+R3 commits
+
+R1+R2 commits are pushed to origin/main as of plan-commit `5708b6f`. R3 commits below are pushed as part of this session:
 
 | # | SHA | Title |
 |---|-----|-------|
-| 1 | `8932040` | audit+fix: R1+R2 pipeline audit + Tier 1 follow-ups (M18, Pattern 13, GAMS regex) |
-| 2 | `88eee98` | perf+infra: Python check_gams_variables (~50x faster) + aggregate-count refresher |
-| 3 | `41d92b2` | cit-fix: Pattern 12 cleanup (25 → 2 advisories) + tighter heuristic + resolver fix |
-
-All three are stacked on `9b58fa8` (docs(module_14)). NOT pushed pending user review.
+| R1+R2 (1) | `8932040` | audit+fix: R1+R2 pipeline audit + Tier 1 follow-ups |
+| R1+R2 (2) | `88eee98` | perf+infra: Python check_gams_variables + aggregate-count refresher |
+| R1+R2 (3) | `41d92b2` | cit-fix: Pattern 12 cleanup + tighter heuristic + resolver fix |
+| R1+R2 (4) | `66f2833` | session-wrap: progress log + cumulative_stats sync |
+| R3 plan | `5708b6f` | plan: R3 lens audit execution plan (autonomous mode) |
+| R3 (1) | `a0ad71a` | C7 instruction-surface fixes |
+| R3 (2) | `7a0ab02` | C4 dependency-counts |
+| R3 (3) | `ae3763f` | C3 post-PR citation/value/dimension fixes (8 modules) |
+| R3 (4) | `49cc6f0` | C2 M11 §17.2 fabrication rewrite (CRITICAL) |
+| R3 (5) | `ecad717` | C1 multi-realization body drift header warnings (M30/M38/M80) |
+| R3 (6) | `6ba3ed7` | C5 validator soundness (silent-fallback HIGH + regex coverage) + 5 cite cleanups |
+| R3 (7) | `41970b3` | C6 markerize validator-count + bug-taxonomy-count |
 
 ---
 
-## Verification at session end
+## Verification at R3 session end (2026-05-23)
 
 ```bash
-bash scripts/validate_consistency.sh   # 34 passed, 1 advisory warning (s59_nitrogen_uptake unit-conversion)
-python3 scripts/check_module_realizations.py   # 0 errors
-python3 scripts/check_gams_variables.py        # 944/944 verified
-git log --oneline origin/main..HEAD            # 3 unpushed commits
+bash scripts/validate_consistency.sh   # 34/35 passed, 1 known advisory (s59_nitrogen_uptake unit conversion FP)
+python3 scripts/check_module_realizations.py   # 0 errors, 0 warnings, 64 docs checked
+python3 scripts/check_gams_variables.py        # 100% (953/953 verified; up from 944 thanks to R3 regex extension)
+python3 scripts/refresh_aggregate_counts.py    # all markers up to date
+git log --oneline 5708b6f..HEAD                # 7 R3 commits stacked on plan commit
 ```
 
-If R3 runs (item 7), log to `feedback/pipeline_audit_rounds.json` as round 3 with the same schema as R1/R2.
+R3 logged to `feedback/pipeline_audit_round3.md` (full report) and `feedback/pipeline_audit_rounds.json` round 3 entry (R1 schema mirrored).
