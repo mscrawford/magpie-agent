@@ -299,6 +299,134 @@
       ],
       "status": "triaged + fixed + verified (this session); root-cause-cluster commits stacked; full body rewrites of M30/M38/M80 deferred to future sessions",
       "notes": "R3 surfaced 82 findings vs R1's 71 — more raw, but THIS IS EXPECTED per [[feedback_confabulation_relocates]]. R2 closed 4 surfaces (header-realization drift, simple citation drift, hoist incomplete, aggregate-count drift in audit docs); bugs relocated to: (a) body-level realization drift in M38/M30/M80 — Check 19 only catches header drift, so body citation drift surfaced unguarded; (b) fabricated identifier templates in module §17.2-style 'overview' sections (14 invented names in M11 — Cluster 2 NEW); (c) dependency-count drift in cross-cutting docs that R2 only spot-fixed (Cluster 4 RECURRING); (d) FP/FN in newly-added validators (Cluster 5 NEW — guard surface moved as predicted). CRITICAL count rose from 1 to 3 — not because the agent regressed, but because confabulation moved to higher-stakes surfaces (default-realization mismatches in M38/M73 mislead modification-safety reasoning). Strongest next mechanization candidate: check_doc_var_existence.py (single new validator closes Cluster 2 entirely). Status of this session's fixes: 18 of 20 CRITICAL+HIGH findings fixed directly; 2 deferred (M30+M80 body rewrites need their own session); ~12 MEDIUM mechanical fixes applied; LOW findings documented but not all fixed."
+    },
+    {
+      "round": 4,
+      "date": "2026-05-24",
+      "commit": "d0870ae",
+      "auditor_model": "claude-opus-4-7",
+      "round_type": "structural-audit",
+      "lenses_run": [
+        "doc-code-fidelity-reading",
+        "doc-code-fidelity-grep",
+        "validator-soundness",
+        "instruction-surface-integrity",
+        "cross-doc-consistency",
+        "efficiency"
+      ],
+      "findings_total": 55,
+      "by_severity": {
+        "CRITICAL": 0,
+        "HIGH": 12,
+        "MEDIUM": 17,
+        "LOW": 26
+      },
+      "by_lens": {
+        "doc-code-fidelity-reading": 8,
+        "doc-code-fidelity-grep": 16,
+        "validator-soundness": 8,
+        "instruction-surface-integrity": 8,
+        "cross-doc-consistency": 8,
+        "efficiency": 7
+      },
+      "corroborated": [
+        {
+          "finding": "Shadow-table sync gap — Module_Dependencies.md L268 says '25 modules' for M11 but L139 (R3 recount) says 27; modification_safety_guide.md Appendix B (L1075-1080) has 6 consumer counts inflated by +1 (R3 fixed §1.2 only).",
+          "lenses": ["instruction-surface-integrity", "cross-doc-consistency"],
+          "severity": "HIGH"
+        },
+        {
+          "finding": "Trigger overlap (R3 finding persists) — 'default realization' and 'modify code' each appear as trigger keywords in TWO helpers, causing redundant ~2000-token loads on common queries; 'scenario' substring fires 5 helpers.",
+          "lenses": ["instruction-surface-integrity", "efficiency"],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "M11 attribution drift across multiple sections — R3 fixed §17.2 (CRITICAL fabrication cluster) but §3 retained 6 'Module X or Module Y' rows; worst case vm_p_fert_costs attributed to M50/M51 but actual is M54.",
+          "lenses": ["doc-code-fidelity-reading", "cross-doc-consistency"],
+          "severity": "HIGH"
+        }
+      ],
+      "root_cause_clusters": [
+        {
+          "cluster": "1. Validator fix — Check 18 Pattern C regex was dormant",
+          "findings_count": 1,
+          "lenses": ["validator-soundness"],
+          "candidate_intervention": "FIXED. Relaxed regex to accept canonical **Default Realization**: form."
+        },
+        {
+          "cluster": "2. Validator coverage extension — helpers/commands now scanned",
+          "findings_count": 1,
+          "lenses": ["validator-soundness"],
+          "candidate_intervention": "FIXED. Check 21 SCAN_DIRS extended; 1 real bug surfaced and fixed (s22→c22 in debugging_infeasibility.md)."
+        },
+        {
+          "cluster": "3. Shadow-table sync gap (corroborated)",
+          "findings_count": 2,
+          "lenses": ["instruction-surface-integrity", "cross-doc-consistency"],
+          "candidate_intervention": "FIXED. Both shadow tables updated. Mechanization candidate: generic cross-doc dep-count checker for ALL tables, not just primary."
+        },
+        {
+          "cluster": "4. M09 consumer table (9 wrong attributions)",
+          "findings_count": 9,
+          "lenses": ["doc-code-fidelity-grep"],
+          "candidate_intervention": "FIXED. Recomputed all 14 module attributions via grep. Mechanization candidate: generic consumer-attribution checker."
+        },
+        {
+          "cluster": "5. M11 §3 attribution drift (6 rows + 6× '30+ modules')",
+          "findings_count": 13,
+          "lenses": ["doc-code-fidelity-reading", "cross-doc-consistency"],
+          "candidate_intervention": "FIXED. All 6 rows + 6 'XX+ modules' references corrected."
+        },
+        {
+          "cluster": "6. M14 cross-section consistency (pcm_tau dimension)",
+          "findings_count": 2,
+          "lenses": ["doc-code-fidelity-reading"],
+          "candidate_intervention": "FIXED. Mechanization candidate: 'multi-section consistency' check when identifier mentioned >1x in single doc."
+        },
+        {
+          "cluster": "7. M29 vm_fallow/vm_treecover consumer attribution",
+          "findings_count": 2,
+          "lenses": ["doc-code-fidelity-grep"],
+          "candidate_intervention": "FIXED."
+        },
+        {
+          "cluster": "8. M34 scaling values 10× off",
+          "findings_count": 3,
+          "lenses": ["doc-code-fidelity-grep"],
+          "candidate_intervention": "FIXED."
+        },
+        {
+          "cluster": "9. M53 overview + citation drifts",
+          "findings_count": 4,
+          "lenses": ["doc-code-fidelity-grep"],
+          "candidate_intervention": "FIXED."
+        },
+        {
+          "cluster": "10. M52 Other land + M39 fabrication",
+          "findings_count": 5,
+          "lenses": ["doc-code-fidelity-reading"],
+          "candidate_intervention": "FIXED."
+        },
+        {
+          "cluster": "11. AGENT.md cleanups",
+          "findings_count": 4,
+          "lenses": ["instruction-surface-integrity"],
+          "candidate_intervention": "FIXED."
+        }
+      ],
+      "recurring_classes_for_mechanization": [
+        "Shadow-table sync gap (R3 → R4): when primary tables are recomputed, secondary tables in other files remain stale. Candidate: generic dep-count checker scanning ALL tables.",
+        "Wrong consumer attribution tables (R1 → R3 → R4): chronic. M09 + M11 + M29 + Module_Dependencies + safety_guide all manifest the same pattern. Candidate: for every backticked vm_*/pm_*/im_*, verify producer/consumer claim against grep.",
+        "Validator coverage gaps in new scopes (R3 → R4): Check 18 dormant; helpers/commands unscanned. Candidate: periodic regex-coverage audit with format-variant test cases.",
+        "Multi-section consistency within one doc (NEW in R4): M14 pcm_tau. Candidate: cross-section identifier-consistency check."
+      ],
+      "report_path": "feedback/pipeline_audit_round4.md",
+      "guards_added": [
+        "scripts/check_default_realizations.py: relaxed Pattern C regex to accept the canonical **Default Realization**: form (was dormant for all 46 module docs)",
+        "scripts/check_doc_var_existence.py: SCAN_DIRS extended to include agent/helpers/ and agent/commands/ (closes coverage gap that hid the s22→c22 bug)"
+      ],
+      "status": "triaged + most CRITICAL/HIGH fixed in single commit (d0870ae); ~14 LOW findings deferred to feedback/next_session_plan.md",
+      "notes": "R4 produced 55 findings vs R3's 82 — a 33% reduction. CRITICAL count dropped from 3 to 0 — the R3-followup mechanizations (check_doc_var_existence + body-citation extension) closed the M11-§17.2-fabrication and M38-body-drift classes entirely. NO new CRITICAL emerged. This REVERSES the R1→R3 confabulation-relocation pattern — instead of bugs moving to new surfaces, the surfaces themselves narrowed and total found bugs dropped. Where R4 bugs concentrate: (a) cross-cutting doc consumer/attribution tables (M09 §5.2, M11 §3, Module_Dependencies shadow tables) — 'hand-maintained denormalizations' of grep-derivable facts that don't sync when primary tables are recomputed; (b) validator coverage gaps that R3-followup didn't close (Check 18 was effectively dormant for the canonical doc format!); (c) numerical and citation drift in less-trafficked sections. Strongest R5 candidate: generic consumer-attribution checker that recomputes counts from grep and flags mismatches across ALL tables (primary + shadow). This single mechanization would close Clusters 3 + 4 + 5 entirely. Validator state after fixes: 35/36 passed, 1 known advisory (s59 unit-conv FP); validator wall-clock dropped 8.78s → 6.34s (-28%). Validator coverage now spans modules/ (Check 14) + cross_module/ + core_docs/ + agent/helpers/ + agent/commands/ (Check 21). Check 18 actually operational for the first time on canonical doc format."
     }
   ]
 }
