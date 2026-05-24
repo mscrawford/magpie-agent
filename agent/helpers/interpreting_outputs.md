@@ -103,6 +103,8 @@ readGDX(gdx, "p80_modelstat")                  # Read modelstat parameter
 
 ## Common Output Variables
 
+> For function-level magpie4 questions (which `report*` function produces which IAMC variable, what arguments it takes, where the source lives), see `agent/helpers/magpie4_reference.md`. That helper is auto-loaded for those questions and uses the SHA-pinned `.cache/sources/magpie4/` clone — NOT the (drift-prone) workspace clone.
+
 | Variable in GDX | magpie4 function | Unit | Source Module |
 |-----------------|-----------------|------|---------------|
 | `ov_land(t,j,land,type)` | `land()` | mio. ha | 10_land |
