@@ -59,9 +59,23 @@ def main():
                 file_lines_cache[path] = []
         return file_lines_cache[path]
 
-    # Extract citations + nearby context from AI docs
+    # Extract citations + nearby context from AI docs.
+    # R5 (2026-05-24): scope extended from modules/-only to all doc directories
+    # to close the Pattern 10 FN gap (151 historical bugs were file:line drift,
+    # 80% in non-module docs that were previously unchecked).
+    scan_paths = [
+        os.path.join(agent_dir, 'modules/'),
+        os.path.join(agent_dir, 'cross_module/'),
+        os.path.join(agent_dir, 'core_docs/'),
+        os.path.join(agent_dir, 'agent/helpers/'),
+        os.path.join(agent_dir, 'agent/commands/'),
+        os.path.join(agent_dir, 'reference/'),
+        os.path.join(agent_dir, 'AGENT.md'),
+        os.path.join(agent_dir, 'README.md'),
+    ]
+    scan_paths = [p for p in scan_paths if os.path.exists(p)]
     result = subprocess.run(
-        ['rg', '-n', r'\w+\.gms:\d+', os.path.join(agent_dir, 'modules/')],
+        ['rg', '-n', r'\w+\.gms:\d+'] + scan_paths,
         capture_output=True, text=True
     )
 
@@ -69,10 +83,16 @@ def main():
     for line in result.stdout.strip().split('\n'):
         if not line:
             continue
-        m = re.match(r'^(.+/module_(\d+)\w*\.md):(\d+):(.+)', line)
+        # Match any .md file. If filename is `module_NN.md` (with optional
+        # _notes.md / _other.md suffix), capture NN as mod_num for bare-
+        # basename rescue. Otherwise mod_num is None: bare-basename
+        # citations in non-module docs must use full paths per MANDATE 16.
+        m = re.match(r'^(.+\.md):(\d+):(.+)', line)
         if not m:
             continue
-        doc_file, mod_num, _doc_line, context = m.group(1), m.group(2), m.group(3), m.group(4)
+        doc_file, _doc_line, context = m.group(1), m.group(2), m.group(3)
+        mod_match = re.search(r'/module_(\d+)\w*\.md$', doc_file)
+        mod_num = mod_match.group(1) if mod_match else None
 
         # Find all citations on this line so we can scope each nearby_ids window
         # only to the text between this cite and the previous one (avoids picking
@@ -120,23 +140,50 @@ def main():
         # is wrong. Do NOT fall through to bare-basename rescue: that would
         # silently launder a fabricated realization into a real file and
         # defeat MANDATE 16. Report FILE missing immediately.
+        # Note: in non-module docs (mod_num=None), surface as advisory —
+        # these docs often contain pedagogical format examples (e.g.,
+        # README.md's "Mandatory Citation Format" section, AGENT.md's
+        # epistemic-hierarchy templates with NN_xxx placeholders).
         if gms_hint.startswith('core/') or gms_hint.startswith('modules/'):
             full = os.path.join(magpie_root, gms_hint)
             if os.path.isfile(full):
                 actual = full
             else:
-                file_missing += 1
-                details.append(
-                    f"  FILE: {gms_hint}:{start} (in {doc_short}) — full path does not exist; "
-                    f"realization or directory may be fabricated"
+                if mod_num is None:
+                    ambig += 1
+                    warnings.append(
+                        f"  FILE-NM: {gms_hint}:{start} (in {doc_short}) — full path "
+                        f"does not exist; if this is a real citation (not a format "
+                        f"example with NN_xxx-style placeholders or a stale citation), "
+                        f"fix or remove"
+                    )
+                else:
+                    file_missing += 1
+                    details.append(
+                        f"  FILE: {gms_hint}:{start} (in {doc_short}) — full path does not exist; "
+                        f"realization or directory may be fabricated"
+                    )
+                continue
+
+        # Bare-basename fallback.
+        # In module_NN.md docs (mod_num set): narrow to candidates under module NN.
+        # In non-module docs (mod_num is None — cross_module/, core_docs/, etc.):
+        # bare-basename citations cannot be safely resolved (no module scope).
+        # Surface as ADVISORY warning, not error — many non-module docs contain
+        # pedagogical examples (Bug_Taxonomy, Verification_Protocol, Infeasibility_
+        # Debugging_Guide, adding_new_crop helper) showing the citation FORMAT;
+        # those should not break the validator. Real bare-basename drift still
+        # surfaces in the warnings stream so it gets seen.
+        if not actual:
+            if mod_num is None:
+                ambig += 1  # count in ambig bucket (same as other advisory warns)
+                warnings.append(
+                    f"  BARE: {gms_hint}:{start} (in {doc_short}) — bare-basename "
+                    f"citation in non-module doc; if this is a real reference "
+                    f"(not a pedagogical example), use full path per MANDATE 16"
                 )
                 continue
 
-        # Bare-basename fallback: walk_index by basename within module number.
-        # Only reached when gms_hint is a bare basename (no modules/ or core/
-        # prefix). A bare-basename hint with a single internal slash is treated
-        # as `realization/file.gms` and narrowed by realization.
-        if not actual:
             candidates = file_index.get(basename, [])
             mod_prefix = f'/{mod_num}_'
             mod_candidates = [c for c in candidates if mod_prefix in c]
@@ -180,14 +227,22 @@ def main():
         lines = get_lines(actual)
         total_lines = len(lines)
 
-        # Check both start and end of range
+        # Check both start and end of range. In non-module docs (mod_num=None),
+        # surface as advisory — pedagogical format examples (e.g.,
+        # `presolve.gms:123` in README citation-format sections) are common.
         for line_num, label in [(start, 'start')] + ([(end, 'end')] if end else []):
             if line_num > total_lines:
-                line_over += 1
                 delta = line_num - total_lines
-                details.append(
-                    f"  LINE: {gms_hint}:{line_num} (file has {total_lines} lines, +{delta}, range-{label}) in {doc_short}"
-                )
+                if mod_num is None:
+                    ambig += 1
+                    warnings.append(
+                        f"  LINE-NM: {gms_hint}:{line_num} (file has {total_lines} lines, +{delta}, range-{label}) in {doc_short} — likely pedagogical example, but verify"
+                    )
+                else:
+                    line_over += 1
+                    details.append(
+                        f"  LINE: {gms_hint}:{line_num} (file has {total_lines} lines, +{delta}, range-{label}) in {doc_short}"
+                    )
 
         # Content-match check (Pattern 12)
         if start <= total_lines and nearby_ids:

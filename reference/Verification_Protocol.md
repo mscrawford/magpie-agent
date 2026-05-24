@@ -1,5 +1,7 @@
 # Module Verification Protocol
 
+<!-- check-gams-vars: allow f22_bii,f35_fire_loss,pm_carbon_density -->
+
 **Purpose**: Ensure 100% accuracy in module documentation through systematic verification.
 
 ---

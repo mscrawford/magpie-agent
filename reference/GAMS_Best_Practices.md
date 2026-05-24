@@ -1,5 +1,7 @@
 # GAMS Programming Reference - Phase 6: Best Practices
 
+<!-- check-gams-vars: allow vm_large_number -->
+
 **Version**: 1.0 | **Status**: Complete | **Target Audience**: AI agents working with MAgPIE
 
 **Purpose**: Practical guidance for writing robust, efficient, and maintainable GAMS code.

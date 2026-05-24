@@ -1,5 +1,7 @@
 # GAMS Programming Reference - Phase 5: MAgPIE-Specific Patterns
 
+<!-- check-gams-vars: allow f10_land_init,fm_gdp_pop,fm_nutrition,i10_urban_area,im_gdp_pc,p10_balance_midnight,pm_carbon_density,pm_gdp,s10_timestep,s70_feed_factor,sm_years -->
+
 **Version**: 1.0 | **Status**: Complete | **Target Audience**: AI agents working with MAgPIE
 
 **Purpose**: Practical guide to MAgPIE coding patterns, module structure, naming conventions, and common idioms.

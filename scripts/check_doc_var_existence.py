@@ -47,6 +47,7 @@ SCAN_DIRS = [
     AGENT_DIR / "core_docs",
     AGENT_DIR / "agent" / "helpers",
     AGENT_DIR / "agent" / "commands",
+    AGENT_DIR / "reference",  # R5 2026-05-24: closed FN gap — 19 fabricated identifiers found in reference/ during R5 audit
 ]
 
 

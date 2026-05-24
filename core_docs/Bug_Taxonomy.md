@@ -264,7 +264,7 @@ are reordered during refactoring.
 
 **Discovery stats**: 26 bugs across 9 module docs (292 claims checked, 91% → 99.3%)
 
-**Prevention**: Manual audit needed — too dependent on context parsing for reliable automation
+**Prevention**: ⚠️ Partial — Check 17 (`check_gams_citations_impl.py`) emits advisory `CONTENT:` warnings when a backticked identifier appears near a citation but is not found within ±5 lines of the cited block. Advisory only (false positives possible when an identifier is named in prose but not in the equation). Manual review still recommended for high-stakes citations.
 
 ### Pattern 13: Wrong Parameter Default Value
 
@@ -274,7 +274,7 @@ are reordered during refactoring.
 **Examples**:
 - `s56_cprice_red_factor` documented as default=0, actual default=1
 
-**Prevention**: Manual audit. Most "default" claims in docs are correct (42/43 verified).
+**Prevention**: ✅ Automated — Check 20 (`scripts/check_param_defaults.py`). Scans 64 default-value claims across module docs; allowlist via `audit/advisory_allowlist.json` for unit-conversion cases (e.g., `s59_nitrogen_uptake`). Last R5 sweep: 0 mismatches.
 
 ## Audit Angles Registry
 
@@ -290,9 +290,9 @@ Track which audit angles have been attempted, their yield, and when to repeat.
 | Equation names | 2026-03-07 | 4 | ✅ Check 15 | After module doc updates |
 | Set names | 2026-03-07 | 0 | N/A | Sets too distinctive to hallucinate |
 | Realization names | 2026-03-07 | 12 | ✅ Check 16 | After code merges |
-| File:line citations | 2026-03-07 | 151 | ✅ Check 17 | After code merges |
-| Content-level citations | 2026-03-07 | 26 | Manual | After code merges |
-| Parameter defaults | 2026-03-07 | 1 | Manual | After config changes |
+| File:line citations | 2026-03-07 | 151 | ✅ Check 17 (R5: scope extended to all doc dirs) | After code merges |
+| Content-level citations | 2026-03-07 | 26 | ⚠️ Check 17 advisory CONTENT | After code merges |
+| Parameter defaults | 2026-03-07 | 1 | ✅ Check 20 | After config changes |
 | Data file existence | 2026-03-07 | 1 | Manual | After file renames |
 | Equation formulas | 2026-03-07 | 0 | N/A | Formulas are reliable |
 | Cross-module dependencies | 2026-03-07 | 0* | Manual | Style issue, not bugs |

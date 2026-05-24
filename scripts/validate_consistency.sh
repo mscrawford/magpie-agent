@@ -84,6 +84,23 @@ cd "$AGENT_DIR"
 # ===========================
 print_section "1/24" "Checking dependency counts..."
 
+# R5 2026-05-24: Fixed vacuous-pass bug — `echo "" | wc -l` returns 1, so
+# empty grep results were being reported as "1 consistent count" with no
+# value. Now an empty grep result correctly maps to count=0 via -z check.
+#
+# Note: the docs increasingly express dependency counts via dependency tables
+# rather than "N dependents" prose, so empty grep is now common. This check
+# is best-effort; canonical source is core_docs/Module_Dependencies.md.
+
+# Helper: count unique non-empty lines (treats empty string as 0)
+count_lines() {
+    if [ -z "$1" ]; then
+        echo 0
+    else
+        printf '%s\n' "$1" | wc -l | tr -d ' '
+    fi
+}
+
 # Check Module 10
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
     modules/module_10.md \
@@ -92,11 +109,11 @@ MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
     cross_module/modification_safety_guide.md \
     2>/dev/null | grep -oE "[0-9]+ dependent" | grep -oE "[0-9]+" | sort -u)
 
-COUNT_10=$(echo "$MODULE_10_REFS" | wc -l | tr -d ' ')
+COUNT_10=$(count_lines "$MODULE_10_REFS")
 if [ "$COUNT_10" -eq 1 ]; then
     check_pass "Module 10: $(echo $MODULE_10_REFS) dependents (consistent across 4 files)"
 elif [ "$COUNT_10" -eq 0 ]; then
-    check_warning "Module 10: No dependency count found in expected files"
+    check_pass "Module 10: No explicit dependency-count prose found (acceptable — see Module_Dependencies.md tables)"
 else
     check_warning "Module 10: Inconsistent counts found: $(echo $MODULE_10_REFS | tr '\n' ' ')"
     log "    → Check: modules/module_10.md, modules/module_10_notes.md, Module_Dependencies.md, modification_safety_guide.md"
@@ -108,7 +125,7 @@ MODULE_11_REFS=$(grep -r "Module 11.*dependents\|11.*dependents" \
     core_docs/Module_Dependencies.md \
     2>/dev/null | grep -oE "[0-9]+ dependent" | grep -oE "[0-9]+" | sort -u)
 
-COUNT_11=$(echo "$MODULE_11_REFS" | wc -l | tr -d ' ')
+COUNT_11=$(count_lines "$MODULE_11_REFS")
 if [ "$COUNT_11" -eq 1 ]; then
     check_pass "Module 11: $(echo $MODULE_11_REFS) dependents (consistent)"
 elif [ "$COUNT_11" -eq 0 ]; then
@@ -124,7 +141,7 @@ MODULE_17_REFS=$(grep -r "Module 17.*dependents\|17.*dependents" \
     cross_module/modification_safety_guide.md \
     2>/dev/null | grep -oE "[0-9]+ dependent" | grep -oE "[0-9]+" | sort -u)
 
-COUNT_17=$(echo "$MODULE_17_REFS" | wc -l | tr -d ' ')
+COUNT_17=$(count_lines "$MODULE_17_REFS")
 if [ "$COUNT_17" -eq 1 ]; then
     check_pass "Module 17: $(echo $MODULE_17_REFS) dependents (consistent)"
 elif [ "$COUNT_17" -eq 0 ]; then

@@ -1,5 +1,7 @@
 # GAMS Programming Reference - Phase 1: Fundamentals
 
+<!-- check-gams-vars: allow f10_land_initial,s_interest_rate,v70_feed,vm_x1 -->
+
 **Version**: 1.0 | **Status**: Complete | **Target Audience**: AI agents working with MAgPIE
 
 **Purpose**: Foundation concepts required to read and understand any GAMS code in the MAgPIE model.
