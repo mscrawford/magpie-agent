@@ -193,7 +193,7 @@ q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year
 **s13_max_gdp_shr** (`modules/13_tc/endo_jan22/input.gms:11`):
 - Default: `Inf` (no constraint)
 - Alternative: Share of regional GDP (e.g., 0.01 = 1% of GDP)
-- **Purpose**: Caps technology investments to avoid unrealistically high endogenous investments (`presolve.gms:30-42`)
+- **Purpose**: Caps technology investments to avoid unrealistically high endogenous investments (`modules/13_tc/endo_jan22/presolve.gms:21-33`)
 
 **c13_tccost** (`modules/13_tc/endo_jan22/input.gms:65`):
 - `low`, `medium` (default), `high`: Selects TC cost scenario from input tables
@@ -259,10 +259,10 @@ q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year
 
 ---
 
-### Initial Values (`presolve.gms:74-78`)
+### Initial Values (`modules/13_tc/endo_jan22/presolve.gms:73-77`)
 
 **First timestep** (ord(t) = 1):
-- `v13_tau_core.l = pc13_tau` (start at 1995 historical value)
+- `v13_tau_core.l = pc13_tau` (start at 1995 historical value — `pc13_tau` itself is loaded from `fm_tau1995` in `modules/13_tc/endo_jan22/preloop.gms:18`)
 - `v13_tau_consv.l = pc13_tau_consv`
 - `vm_tau.l = weighted average based on conservation shares`
 
@@ -273,7 +273,7 @@ q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year
 
 ---
 
-### GDP Constraint (`presolve.gms:30-42`)
+### GDP Constraint (`modules/13_tc/endo_jan22/presolve.gms:21-33`)
 
 **Applied when**:
 - `m_year(t) > sm_fix_SSP2` (after SSP2 fixing period)
@@ -342,7 +342,7 @@ vm_tech_cost.l(i) = vm_tech_cost.up(i)
 
 7. **No Diminishing Returns Over Time**: Power function parameters are time-varying (input files) but structure assumes same functional form throughout, no accounting for technology frontier effects (input.gms:30-40).
 
-8. **GDP Constraint is Optional**: Without `s13_max_gdp_shr`, model may choose unrealistically high investments if land expansion is severely constrained (input.gms:11, presolve.gms:21-42).
+8. **GDP Constraint is Optional**: Without `s13_max_gdp_shr`, model may choose unrealistically high investments if land expansion is severely constrained (`modules/13_tc/endo_jan22/input.gms:11`, `modules/13_tc/endo_jan22/presolve.gms:21-33`).
 
 9. **No Direct Link to R&D**: Costs represent implementation investments, not research and development explicitly - the 15-year lag is an aggregate proxy (equations.gms:26-32).
 

@@ -149,13 +149,13 @@ AnnualEmissionCost = Σ[Emissions_pollutant × Price_pollutant]  for pollutants 
 
 - **v56_emission_cost(i,emis_annual)**: Emission costs for annual sources (mio. USD17MER/yr)
 - **v56_emis_pricing(i,emis_annual,pollutants)**: Annual emissions (Tg/yr)
-- **im_pollutant_prices(ct,i,pollutants,emis_annual)**: GHG prices (USD17MER/Tg)
+- **im_pollutant_prices(ct,i,pollutants,emis_annual)**: GHG prices (USD17MER/Mg) — per `modules/56_ghg_policy/price_aug22/declarations.gms:9`
 - **ct**: Current time step indicator
 
 **Units:**
 
 - Emissions: Tg = million tons (Tg N for N2O, Tg CH4 for methane, Tg C for CO2)
-- Prices: USD17MER per Tg (2017 US dollars at market exchange rates per million tons)
+- Prices: USD17MER per Mg (= USD17MER per tonne). Multiplying emissions (Tg) × price (USD/Mg) yields cost in mio. USD because 1 Tg = 10⁶ Mg.
 - Costs: mio. USD17MER/yr (millions of USD per year)
 
 **Citation:** `equations.gms:26-33`
@@ -624,7 +624,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 **From External Data:**
 
-- **f56_pollutant_prices(t,i,pollutants,ghgscen56)**: GHG price scenarios (USD17MER/Tg)
+- **f56_pollutant_prices(t,i,pollutants,ghgscen56)**: GHG price scenarios (USD17MER/Mg) — i.e., USD per tonne, NOT per million tons
 - **f56_emis_policy(scen56,pollutants,emis_source)**: Emission policy matrix (0/1)
 
 **Citation:** Used in `preloop.gms:35-91`
@@ -672,7 +672,7 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 
 ### 6.1 Pricing Parameters
 
-**im_pollutant_prices(t,i,pollutants,emis_source)** - Configured GHG prices (USD17MER/Tg)
+**im_pollutant_prices(t,i,pollutants,emis_source)** - Configured GHG prices (USD17MER/Mg)
 **Constructed in:** `preloop.gms:35-123` through multi-stage configuration process
 **Citation:** `declarations.gms:9`
 

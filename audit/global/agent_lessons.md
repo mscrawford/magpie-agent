@@ -1,6 +1,6 @@
 # AI Agent Lessons - System-Wide Learnings
 
-**Last Updated**: 2025-11-27
+**Last Updated**: 2026-05-24
 **Purpose**: Accumulated lessons about agent behavior, patterns, and improvements
 
 ---
@@ -56,3 +56,20 @@ The AGENT.md file (formerly CLAUDE.md) serves as the agent's primary instruction
 | 2026-03-06 | 20251024_215608_global_calculated_vs_mechanistic | Calculated ≠ mechanistic |
 | 2026-03-06 | 20251024_220843_global_bash_directory_navigation | Absolute paths in bash |
 | 2026-03-06 | 20251104_205109_correction_gams_sum_performance | Unverified GAMS performance claim |
+| 2026-05-24 | R24_auditor_false_positive | Opus auditors can confabulate: cross-check before applying critical-tier doc fixes |
+
+### R24-A1: Opus auditor false-positive on uncommon scalar (`s30_implementation`)
+
+**Discovered**: 2026-05-24 (R24 semantic-validation flywheel)
+
+**What happened**: The Opus 4.7 auditor for Q4 (M30 croparea infeasibility) flagged Sonnet's mention of `s30_implementation = 0` as a CRITICAL "fabricated variable name" bug. Synthesis-time verification (`grep -r s30_implementation modules/`) showed the variable **does exist** in `modules/30_croparea/detail_apr24/input.gms:24` with default `/ 1 /`. Sonnet's description was correct.
+
+**Why this matters**:
+- Q4's score swung from a corrected 6/10 (3 Majors only) toward 4/10 because of the spurious Critical
+- If the round synthesizer had trusted the Critical flag and "fixed" the doc by removing `s30_implementation`, real maintainer-facing information would have been lost.
+
+**Lesson**: Auditor-flagged Critical bugs in the "fabricated variable / equation / realization name" class MUST be cross-verified with `grep -r <name> modules/` before any doc surgery. The verification is cheap (~1 sec) and the cost of a wrong fix is high.
+
+**Mitigation hook**: When synthesizing a round, treat any Critical-tier fabricated-name claim as `tier_uncertainty: true` until grep-verified. This is now a binding rule for the synthesis phase, not a suggestion.
+
+*Source: R24 Q4-B2 (downgraded from Critical to nothing); see `audit/round24_synthesis.md` and `audit/round24_audits/Q4_audit.md` for the original audit and `audit/validation_rounds.json` R24 entry for the corrected score.*

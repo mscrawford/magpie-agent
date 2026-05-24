@@ -1,6 +1,6 @@
 # Verifiers — MANDATEs for anti-confabulation
 
-**Purpose**: 16 binding rules that prevent the recurring confabulation patterns identified across <!--count:total_rounds-->23<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->457<!--/count--> bugs catalogued, <!--count:total_bugs_fixed-->301<!--/count--> fixed as of last update — see `audit/validation_rounds.json.cumulative_stats`). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
+**Purpose**: 16 binding rules that prevent the recurring confabulation patterns identified across <!--count:total_rounds-->24<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->474<!--/count--> bugs catalogued, <!--count:total_bugs_fixed-->314<!--/count--> fixed as of last update — see `audit/validation_rounds.json.cumulative_stats`). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
 
 **Auto-load**: this file is loaded automatically when the user asks about specific GAMS modules, variables, equations, realizations, or default values. See `AGENT.md` Auto-Loading Context Helpers table.
 
@@ -14,7 +14,7 @@
 
 ## Origin (read once)
 
-Semantic validation across <!--count:total_rounds-->23<!--/count--> rounds (R1 2026-03-07 through R<!--count:latest_round_id-->23<!--/count--> <!--count:last_validation_date-->2026-05-24<!--/count-->) revealed that **~56% of bugs are plausible confabulations** — the agent invents correct-sounding but wrong details. Scores improved from 6.7→8.2 after rules 1-6 were drafted, but R3 showed an 85% confabulation rate when probing less-familiar modules. R16 added rules 10-12 (set-sum expansion, range truncation, label generalization) after critical confabulations recurred. R20 added rules 13-16 (interface-parameter consumer grep, deprecated-name italics, post-rename grep, citation full-path) after 13 line-drift bugs and a Major consumer-omission bug in a single sync.
+Semantic validation across <!--count:total_rounds-->24<!--/count--> rounds (R1 2026-03-07 through R<!--count:latest_round_id-->24<!--/count--> <!--count:last_validation_date-->2026-05-24<!--/count-->) revealed that **~56% of bugs are plausible confabulations** — the agent invents correct-sounding but wrong details. Scores improved from 6.7→8.2 after rules 1-6 were drafted, but R3 showed an 85% confabulation rate when probing less-familiar modules. R16 added rules 10-12 (set-sum expansion, range truncation, label generalization) after critical confabulations recurred. R20 added rules 13-16 (interface-parameter consumer grep, deprecated-name italics, post-rename grep, citation full-path) after 13 line-drift bugs and a Major consumer-omission bug in a single sync.
 
 These are NOT preferences. They are evidence-derived rules. Violating them silently was the failure mode the rules close.
 

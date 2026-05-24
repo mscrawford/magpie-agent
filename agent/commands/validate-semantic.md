@@ -16,7 +16,7 @@ The semantic validation flywheel generates expert questions, answers them from d
 GENERATE → ANSWER (Sonnet) → AUDIT (Opus) → SYNTHESIZE → IMPROVE → EXPAND
 ```
 
-**Baseline**: See `audit/validation_rounds.json.cumulative_stats` for current totals (<!--count:total_rounds-->23<!--/count--> rounds, <!--count:total_docs_validated-->79<!--/count--> docs validated, <!--count:total_bugs_found-->457<!--/count--> bugs found, <!--count:total_bugs_fixed-->301<!--/count--> fixed as of last update). Authoritative trend is the `mean_score_trend` field in that file — do not duplicate it here (would drift).
+**Baseline**: See `audit/validation_rounds.json.cumulative_stats` for current totals (<!--count:total_rounds-->24<!--/count--> rounds, <!--count:total_docs_validated-->85<!--/count--> docs validated, <!--count:total_bugs_found-->474<!--/count--> bugs found, <!--count:total_bugs_fixed-->314<!--/count--> fixed as of last update). Authoritative trend is the `mean_score_trend` field in that file — do not duplicate it here (would drift).
 
 ---
 

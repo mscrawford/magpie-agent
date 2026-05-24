@@ -19,7 +19,7 @@
 
 Module 30 (Croparea) is a **core production module** that calculates crop-specific agricultural area allocation, combines area with yields to determine production, enforces rotational constraints to prevent over-specialization, and computes associated carbon stocks and biodiversity values for cropland.
 
-This module provides the critical interface variable `vm_area(j,kcr,w)` that is used by many downstream modules including residues (18), factor costs (38), irrigation (41), water demand (42), nitrogen (50), methane (53), and soil organic matter (59).
+This module provides the critical interface variable `vm_area(j,kcr,w)` that is consumed by 7 downstream modules: cropland (29), residues (18), irrigation (41), water demand (42), nitrogen (50), methane (53), and soil organic matter (59). (R24 audit correction — earlier wording listed factor costs (38), but M38 has zero references to `vm_area` across all its realizations, and omitted M29 which reads `vm_area` in `q29_cropland`.)
 
 **Key Responsibilities**:
 - Calculate agricultural production from area × yield (`equations.gms:14-15`)
@@ -357,7 +357,7 @@ q30_carbon(j2,ag_pools) ..
 
 **Above-Ground Only**: Only calculates carbon in above-ground pools. Below-ground soil carbon is handled by Module 59 (SOM - Soil Organic Matter).
 
-**Usage**: `vm_carbon_stock_croparea` is used by Module 52 (Carbon) for emissions accounting and Module 56 (GHG Policy) for carbon pricing.
+**Usage**: `vm_carbon_stock_croparea` is consumed directly only by **Module 29 (Cropland)** (`modules/29_cropland/detail_apr24/equations.gms:40` and `modules/29_cropland/simple_apr24/equations.gms:31`), which aggregates it into the cluster-level `vm_carbon_stock(j,"crop",ag_pools)` via `q29_carbon`. From there, the aggregated `vm_carbon_stock` is read by Module 52 (Carbon) for CO₂-emission accounting and feeds the chain into Module 56 (GHG Policy) for carbon pricing. So the data DOES reach M52/M56, but **only through M29's aggregation**, not as a direct read of `vm_carbon_stock_croparea`. (R24 audit correction — earlier wording implied a direct M52/M56 read.)
 
 **Description**: This is a simple area-weighted carbon stock calculation. The model does NOT dynamically track carbon accumulation over time within cropland - it applies a static carbon density per hectare based on cell-level parameters.
 
@@ -1710,7 +1710,7 @@ vm_area.fx(j,kbe30,w) = 0;  * In presolve
 
 **Purpose**: Allocate crop area, calculate production, enforce diversity constraints
 **Equations**: 12 (1 production, 1 BETR, 6 rotation, 1 irrigated, 1 carbon, 2 biodiversity, 1 regional)
-**Key Output**: `vm_area(j,kcr,w)` - used by 8+ modules
+**Key Output**: `vm_area(j,kcr,w)` - consumed by 7 modules (18, 29, 41, 42, 50, 53, 59)
 **Implementation Modes**: Rule-based (hard constraints) OR Penalty-based (soft constraints)
 **Scenarios**: 9 rotation scenarios, 4 penalty scenarios, 2 bioenergy types, 3 water management options
 **Key Parameters**: `s30_implementation`, `c30_rotation_rules`, `s30_betr_target`, `s30_annual_max_growth`
