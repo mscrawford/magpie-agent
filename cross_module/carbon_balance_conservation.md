@@ -74,7 +74,7 @@ MAgPIE tracks carbon in 3 pools for each land type:
 
 **Sources** (Module 52):
 - LPJmL simulations for equilibrium values
-- Linear convergence over 20 years (IPCC assumption, `start.gms:19,30,37`)
+- Linear convergence over 20 years (IPCC assumption, `modules/52_carbon/normal_dec17/start.gms:19,30,37`)
 
 ---
 
@@ -121,7 +121,7 @@ Carbon densities (tC per ha) provided for all 7 land types:
 - Soil carbon responds to tillage, inputs, irrigation (Module 59)
 - Crop-specific equilibrium based on residue production
 
-**Topsoil Equilibrium** (Module 59, `equations.gms:20-27`):
+**Topsoil Equilibrium** (Module 59, `modules/59_som/cellpool_jan23/equations.gms:20-27`):
 ```
 v59_som_target(j,"crop") = (
     Σ(kcr,w) [ Area(j,kcr,w) × C_ratio(j,kcr,w) ]                              # 1. cropland base
@@ -149,7 +149,7 @@ The simplified `Σ(crops) Area × C_ratio × Natural_density` shorthand used in 
 | litc | LPJmL | Moderate | 52 |
 | soilc | LPJmL + Module 59 | **Assumed constant** | 59 |
 
-**Key Assumption** (Module 59, `realization.gms:21-24`):
+**Key Assumption** (Module 59, `modules/59_som/cellpool_jan23/realization.gms:21-24`):
 - Pastures assumed to maintain **natural carbon density**
 - Does NOT model degradation from overgrazing
 - Does NOT model improvement from rotational grazing
@@ -166,7 +166,7 @@ The simplified `Σ(crops) Area × C_ratio × Natural_density` shorthand used in 
 | litc | Linear growth (20 years) | Converges to forest equilibrium | 52 |
 | soilc | LPJmL + Module 59 | Converges to natural density | 59 |
 
-**Vegetation Growth** (Module 52, `start.gms:17`):
+**Vegetation Growth** (Module 52, `modules/52_carbon/normal_dec17/start.gms:17`):
 ```
 vegc(ac) = S + (A - S) * (1 - exp(-k * ac*5))^m
 ```
@@ -208,7 +208,7 @@ vegc(ac) = S + (A - S) * (1 - exp(-k * ac*5))^m
 | litc | Linear growth (20 years) | Converges to forest equilibrium | 52 |
 | soilc | LPJmL + Module 59 | Converges to natural density | 59 |
 
-**Vegetation Growth** (Module 52, `start.gms:28`):
+**Vegetation Growth** (Module 52, `modules/52_carbon/normal_dec17/start.gms:28`):
 ```
 vegc(ac) = 0 + (A - 0) * (1 - exp(-k * ac*5))^m
 ```
@@ -262,7 +262,7 @@ vegc(ac) = 0 + (A - 0) * (1 - exp(-k * ac*5))^m
 
 ### 4.1 Core Equation
 
-**Source**: Module 52, `equations.gms:16-19`
+**Source**: Module 52, `modules/52_carbon/normal_dec17/equations.gms:16-19`
 
 ```gams
 q52_emis_co2_actual(i2,emis_oneoff) ..
@@ -355,7 +355,7 @@ CO₂ emissions (Tg CO₂) = C emissions (Tg C) × (44/12)
 
 **Core Concept**: Topsoil carbon gradually moves toward a new equilibrium when land use or management changes.
 
-**Equation** (Module 59, `equations.gms:46-52`):
+**Equation** (Module 59, `modules/59_som/cellpool_jan23/equations.gms:46-52`):
 ```gams
 v59_som_pool(j,land) =e=
   lossrate * v59_som_target(j,land)
@@ -377,7 +377,7 @@ v59_som_pool(j,land) =e=
 
 ### 5.2 Convergence Rates
 
-**Annual Loss Rate** (Module 59, `preloop.gms:45`):
+**Annual Loss Rate** (Module 59, `modules/59_som/cellpool_jan23/preloop.gms:45`):
 - 15% per year toward equilibrium
 - 85% remains from previous state
 
@@ -448,14 +448,14 @@ vegc(ac) = S + (A - S) * (1 - exp(-k * ac*5))^m
 
 ### 6.2 Climate-Specific Growth Parameters
 
-**Source**: `f52_growth_par.csv` (Module 52, `input.gms:37-43`)
+**Source**: `f52_growth_par.csv` (Module 52, `modules/52_carbon/normal_dec17/input.gms:37-43`)
 
 **Climate Classes** (Köppen-Geiger classification):
 - **Tropical**: High k (fast growth), typical values k ≈ 0.05-0.08
 - **Temperate**: Medium k, typical values k ≈ 0.03-0.05
 - **Boreal**: Low k (slow growth), typical values k ≈ 0.02-0.03
 
-**Effective Parameters** (Module 52, `start.gms:17`):
+**Effective Parameters** (Module 52, `modules/52_carbon/normal_dec17/start.gms:17`):
 ```
 k_eff = Σ(climate_class) climate_share × k(climate_class)
 m_eff = Σ(climate_class) climate_share × m(climate_class)
@@ -509,7 +509,7 @@ vm_emissions_reg(i,emis_oneoff,"co2_c") =
   (pcm_carbon_stock - vm_carbon_stock) / timestep_length
 ```
 
-**Climate Scenarios** (Module 52, `input.gms:22-23`):
+**Climate Scenarios** (Module 52, `modules/52_carbon/normal_dec17/input.gms:22-23`):
 - `cc`: Time-varying carbon densities from LPJmL climate projections
 - `nocc`: Fixed at 1995 levels
 - `nocc_hist`: Historical until sm_fix_cc, then frozen
@@ -690,7 +690,7 @@ v59_som_pool(j,land) = lossrate × target + (1-lossrate) × legacy
 
 *Note: This is a simplified example. Actual LPJmL projections include complex climate-vegetation feedbacks.*
 
-**Configuration** (Module 52, `input.gms:22-23`):
+**Configuration** (Module 52, `modules/52_carbon/normal_dec17/input.gms:22-23`):
 - `c52_carbon_scenario = "cc"`: Use time-varying LPJmL projections
 - `c52_carbon_scenario = "nocc"`: Fix carbon densities at 1995 (no climate effect)
 

@@ -27,10 +27,10 @@ Diet scenarios are configured entirely in **Module 15** (`anthro_iso_jun22`). Th
 
 | Parameter | Default | Options | What It Controls | File:Line |
 |-----------|---------|---------|-----------------|-----------|
-| `s15_exo_diet` | `0` | 0=off, 1=EAT-Lancet v1, 2=NIN+EAT, **3=recommended** | Exogenous diet scenario | `input.gms:76` |
-| `s15_exo_waste` | `0` | 0=regression waste, 1=exogenous target | Food waste scenario | `input.gms:74` |
-| `s15_elastic_demand` | `0` | 0=exogenous, 1=price-responsive | Demand responds to prices | `input.gms:66` |
-| `c15_food_scenario` | `SSP2` | SSP1–5, A1/A2/B1/B2 | Income/pop regression scenario | `input.gms:9` |
+| `s15_exo_diet` | `0` | 0=off, 1=EAT-Lancet v1, 2=NIN+EAT, **3=recommended** | Exogenous diet scenario | `modules/15_food/anthro_iso_jun22/input.gms:76` |
+| `s15_exo_waste` | `0` | 0=regression waste, 1=exogenous target | Food waste scenario | `modules/15_food/anthro_iso_jun22/input.gms:74` |
+| `s15_elastic_demand` | `0` | 0=exogenous, 1=price-responsive | Demand responds to prices | `modules/15_food/anthro_iso_jun22/input.gms:66` |
+| `c15_food_scenario` | `SSP2` | SSP1–5, A1/A2/B1/B2 | Income/pop regression scenario | `modules/15_food/anthro_iso_jun22/input.gms:9` |
 
 ### EAT-Lancet Diet Settings (only active when `s15_exo_diet` > 0)
 
@@ -38,10 +38,10 @@ Diet scenarios are configured entirely in **Module 15** (`anthro_iso_jun22`). Th
 
 | Parameter | Default | Options | File:Line |
 |-----------|---------|---------|-----------|
-| `c15_kcal_scen` | `healthy_BMI` | `healthy_BMI`, `2100kcal`, `2500kcal`, `endo`, `no_underweight`, `no_overweight`, `half_overweight`, `no_underweight_half_overweight` | `input.gms:21` |
-| `c15_EAT_scen` | `FLX` | `BMK`, `FLX`, `PSC`, `VEG`, `VGN`, `FLX_hmilk`, `FLX_hredmeat` | `input.gms:26` |
+| `c15_kcal_scen` | `healthy_BMI` | `healthy_BMI`, `2100kcal`, `2500kcal`, `endo`, `no_underweight`, `no_overweight`, `half_overweight`, `no_underweight_half_overweight` | `modules/15_food/anthro_iso_jun22/input.gms:21` |
+| `c15_EAT_scen` | `FLX` | `BMK`, `FLX`, `PSC`, `VEG`, `VGN`, `FLX_hmilk`, `FLX_hredmeat` | `modules/15_food/anthro_iso_jun22/input.gms:26` |
 
-**Commodity sub-switches** (`input.gms:82–95`) — all default ON (1) except `s15_exo_brans` (0).
+**Commodity sub-switches** (`modules/15_food/anthro_iso_jun22/input.gms:82–95`) — all default ON (1) except `s15_exo_brans` (0).
 Set any to 0 to exclude that food group from the exogenous diet shift:
 `s15_exo_monogastric`, `s15_exo_ruminant`, `s15_exo_fish`, `s15_exo_fruitvegnut`, `s15_exo_roots` (diet=3 only), `s15_exo_pulses`, `s15_exo_sugar`, `s15_exo_oils`, `s15_exo_brans` (⚠️ ON sets brans→0), `s15_exo_scp`, `s15_exo_alcohol` (diet=1,2,3).
 Alcohol ceiling: `s15_alc_scen` (default 0 = no alcohol; 0.014 = 1.4% of kcal).
@@ -50,33 +50,33 @@ Alcohol ceiling: `s15_alc_scen` (default 0 = no alcohol; 0.014 = 1.4% of kcal).
 
 | Parameter | Default | What It Controls | File:Line |
 |-----------|---------|-----------------|-----------|
-| `s15_ruminant_substitution` | `0` | Fraction (0–1) of ruminant meat phased out | `input.gms:103` |
-| `s15_fish_substitution` | `0` | Fraction of fish phased out | `input.gms:104` |
-| `s15_alcohol_substitution` | `0` | Fraction of alcohol phased out | `input.gms:105` |
-| `s15_livestock_substitution` | `0` | Fraction of ALL livestock phased out | `input.gms:106` |
-| `s15_rumdairy_substitution` | `0` | Ruminant meat + dairy phased out | `input.gms:107` |
-| `s15_rumdairy_scp_substitution` | `0` | Ruminant/dairy → SCP | `input.gms:108` |
-| `s15_livescen_target` | `0` | 0/1: converge livestock to kcal cap | `input.gms:109` |
-| `s15_kcal_pc_livestock_supply_target` | `430` | kcal/cap/day ceiling (if target=1) | `input.gms:98` |
-| `s15_livescen_target_subst` | `1` | 0=fadeout only, 1=substitute with plants | `input.gms:99` |
+| `s15_ruminant_substitution` | `0` | Fraction (0–1) of ruminant meat phased out | `modules/15_food/anthro_iso_jun22/input.gms:103` |
+| `s15_fish_substitution` | `0` | Fraction of fish phased out | `modules/15_food/anthro_iso_jun22/input.gms:104` |
+| `s15_alcohol_substitution` | `0` | Fraction of alcohol phased out | `modules/15_food/anthro_iso_jun22/input.gms:105` |
+| `s15_livestock_substitution` | `0` | Fraction of ALL livestock phased out | `modules/15_food/anthro_iso_jun22/input.gms:106` |
+| `s15_rumdairy_substitution` | `0` | Ruminant meat + dairy phased out | `modules/15_food/anthro_iso_jun22/input.gms:107` |
+| `s15_rumdairy_scp_substitution` | `0` | Ruminant/dairy → SCP | `modules/15_food/anthro_iso_jun22/input.gms:108` |
+| `s15_livescen_target` | `0` | 0/1: converge livestock to kcal cap | `modules/15_food/anthro_iso_jun22/input.gms:109` |
+| `s15_kcal_pc_livestock_supply_target` | `430` | kcal/cap/day ceiling (if target=1) | `modules/15_food/anthro_iso_jun22/input.gms:98` |
+| `s15_livescen_target_subst` | `1` | 0=fadeout only, 1=substitute with plants | `modules/15_food/anthro_iso_jun22/input.gms:99` |
 
 ### Timing & Transition Controls
 
 | Parameter | Default | What It Controls | File:Line |
 |-----------|---------|-----------------|-----------|
-| `s15_food_substitution_start/target` | `2025/2050` | Substitution fader window | `input.gms:101–102` |
-| `s15_food_subst_functional_form` | `1` | 1=linear, 2=sigmoid curve | `input.gms:100` |
-| `s15_exo_foodscen_start/target` | `2025/2050` | Exo diet + waste fader window | `input.gms:111–112` |
-| `s15_exo_foodscen_functional_form` | `1` | 1=linear, 2=sigmoid | `input.gms:110` |
-| `s15_exo_foodscen_convergence` | `1` | 0–1: degree of convergence to target | `input.gms:113` |
+| `s15_food_substitution_start/target` | `2025/2050` | Substitution fader window | `modules/15_food/anthro_iso_jun22/input.gms:101–102` |
+| `s15_food_subst_functional_form` | `1` | 1=linear, 2=sigmoid curve | `modules/15_food/anthro_iso_jun22/input.gms:100` |
+| `s15_exo_foodscen_start/target` | `2025/2050` | Exo diet + waste fader window | `modules/15_food/anthro_iso_jun22/input.gms:111–112` |
+| `s15_exo_foodscen_functional_form` | `1` | 1=linear, 2=sigmoid | `modules/15_food/anthro_iso_jun22/input.gms:110` |
+| `s15_exo_foodscen_convergence` | `1` | 0–1: degree of convergence to target | `modules/15_food/anthro_iso_jun22/input.gms:113` |
 
 ### Food Waste & Country Targeting
 
 | Parameter | Default | What It Controls | File:Line |
 |-----------|---------|-----------------|-----------|
-| `s15_exo_waste` | `0` | 0=regression waste, 1=exogenous target | `input.gms:74` |
-| `s15_waste_scen` | `1.2` | Demand/intake ratio (1.0=zero waste, 1.2=20%) | `input.gms:75` |
-| `scen_countries15` | all ISO countries | Which countries get exo diet/waste/substitution | `input.gms:33–58` |
+| `s15_exo_waste` | `0` | 0=regression waste, 1=exogenous target | `modules/15_food/anthro_iso_jun22/input.gms:74` |
+| `s15_waste_scen` | `1.2` | Demand/intake ratio (1.0=zero waste, 1.2=20%) | `modules/15_food/anthro_iso_jun22/input.gms:75` |
+| `scen_countries15` | all ISO countries | Which countries get exo diet/waste/substitution | `modules/15_food/anthro_iso_jun22/input.gms:33–58` |
 
 ---
 
@@ -134,7 +134,7 @@ cfg$gms$scen_countries15 <- "DEU,FRA,GBR,USA"
 2. **Set diet target**: For EAT-Lancet: `c15_kcal_scen` + `c15_EAT_scen`; for substitution: set share (0–1) per food group
 3. **Configure timing**: Faders default 2025→2050 linear; set `*_functional_form`=2 for sigmoid
 4. **Add waste reduction** (optional): `s15_exo_waste`=1 + `s15_waste_scen` (shares same fader as exo diet)
-5. **Restrict countries** (optional): edit `scen_countries15` — affects ALL three mechanisms via `p15_country_switch` (`preloop.gms:62–63`)
+5. **Restrict countries** (optional): edit `scen_countries15` — affects ALL three mechanisms via `p15_country_switch` (`modules/15_food/anthro_iso_jun22/preloop.gms:62–63`)
 6. **Check feed side**: diet changes don't auto-improve feed efficiency — consider matching `c70_feed_scen`
 
 ---
@@ -143,8 +143,8 @@ cfg$gms$scen_countries15 <- "DEU,FRA,GBR,USA"
 
 ```
 Module 15 (Food Demand) ── standalone NLP model, ISO-level
-  ├─ Exo diet + substitution + waste applied in exodietmacro.gms (included at intersolve.gms:155)
-  └─ Output: p15_kcal_pc_calibrated → q15_food_demand (equations.gms:10) → vm_dem_food(i,kfo)
+  ├─ Exo diet + substitution + waste applied in exodietmacro.gms (included at modules/15_food/anthro_iso_jun22/intersolve.gms:155)
+  └─ Output: p15_kcal_pc_calibrated → q15_food_demand (modules/15_food/anthro_iso_jun22/equations.gms:10) → vm_dem_food(i,kfo)
        │
 Module 16 ── vm_supply = vm_dem_food + vm_dem_feed + processing + material + bioen + seed + waste
        │
@@ -165,11 +165,11 @@ Modules 10/20/30/34/35 ── production needs → cropland/pasture/forest alloc
 
 3. **Two separate fader timelines** — Substitution faders use `s15_food_substitution_start/target`. EAT-Lancet and waste faders use `s15_exo_foodscen_start/target`. Mismatching them creates unexpected phasing.
 
-4. **`s15_exo_brans` default is 0** — Turning it ON sets brans intake to 0 (there is no EAT-Lancet target for brans). This is counterintuitive but by design (`input.gms:90`).
+4. **`s15_exo_brans` default is 0** — Turning it ON sets brans intake to 0 (there is no EAT-Lancet target for brans). This is counterintuitive but by design (`modules/15_food/anthro_iso_jun22/input.gms:90`).
 
-5. **`s15_exo_diet` = 1 is deprecated** — Use `s15_exo_diet` = 3 (MAgPIE-specific) for new work. Value 1 uses a fixed external dataset; value 3 uses `f15_rec_EATLancet` min/max bounds with the model's own intake projections (`exodietmacro.gms:441–442`).
+5. **`s15_exo_diet` = 1 is deprecated** — Use `s15_exo_diet` = 3 (MAgPIE-specific) for new work. Value 1 uses a fixed external dataset; value 3 uses `f15_rec_EATLancet` min/max bounds with the model's own intake projections (`modules/15_food/anthro_iso_jun22/exodietmacro.gms:441–442`).
 
-6. **Country selection affects ALL three mechanisms** — `scen_countries15` gates exo diet, waste reduction, AND substitution via `p15_country_switch` (`preloop.gms:62–63`).
+6. **Country selection affects ALL three mechanisms** — `scen_countries15` gates exo diet, waste reduction, AND substitution via `p15_country_switch` (`modules/15_food/anthro_iso_jun22/preloop.gms:62–63`).
 
 7. **Waste target is a ratio, not a percentage** — `s15_waste_scen = 1.2` means demand = 1.2 × intake (20% waste), NOT 120% waste. Setting it to 1.0 = zero waste.
 

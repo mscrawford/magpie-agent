@@ -193,14 +193,15 @@ If all match → **Full verification not needed immediately**
 
 ### File References
 
-✅ **Correct**:
-- `equations.gms:45` (single line)
-- `equations.gms:45-52` (range)
-- `presolve.gms:123-145`
+✅ **Correct** (always full-path `modules/NN_name/realization/file.gms:N`):
+- `modules/22_biodiversity/bv_btc_mar21/equations.gms:45` (single line)
+- `modules/22_biodiversity/bv_btc_mar21/equations.gms:45-52` (range)
+- `modules/14_yields/managementcalib_aug19/presolve.gms:123-145`
 
 ❌ **Wrong**:
 - "equations file" (too vague)
 - "line 45" (which file?)
+- `equations.gms:45` (bare basename — ambiguous in cross-module docs; Check 25 forbids) <!-- check-bare-cite -->
 
 ### Equation References
 
@@ -212,7 +213,7 @@ The biodiversity intactness index is calculated in equation `q22_bii`:
 q22_bii(j) .. vm_bii(j) =e= sum(land, pm_land_start(j,land) * f22_bii(land)) / sum(land, pm_land_start(j,land));
 ```
 
-(Source: `equations.gms:12-14`)
+(Source: `modules/22_biodiversity/bv_btc_mar21/equations.gms:12-14`)
 ```
 
 ❌ **Wrong**:
@@ -226,7 +227,7 @@ The BII is calculated by averaging land-type BII values.
 ✅ **Correct**:
 ```markdown
 `f22_bii(land)` - BII factor by land type (unitless, 0-1)
-Source: `input/f22_bii.csv`, loaded in `input.gms:34`
+Source: `input/f22_bii.csv`, loaded in `modules/22_land_conservation/area_based_apr22/input.gms:34`
 ```
 
 ❌ **Wrong**:
@@ -247,7 +248,7 @@ BII factors are loaded from input files.
 ### 2. Assuming Features Exist
 
 ❌ **Wrong**: "MAgPIE models fire dynamics in natural vegetation"
-✅ **Right**: "Fire impacts are NOT dynamically modeled; carbon loss from fire is parameterized via `f35_fire_loss(t,j)` (input.gms:45)"
+✅ **Right**: "Fire impacts are NOT dynamically modeled; carbon loss from fire is parameterized via `f35_fire_loss(t,j)` (modules/35_natveg/pot_forest_may24/input.gms:45)"
 
 ### 3. Vague Interface Variable Claims
 

@@ -42,7 +42,7 @@ MAgPIE distinguishes 5 water demand sectors, calculated by Module 42:
 |--------|------|--------|--------|-------------|
 | **Agriculture** | `agriculture` | 42 | Endogenous | Optimized based on irrigation area and livestock production |
 
-**Calculation** (Module 42, `equations.gms:10-14`):
+**Calculation** (Module 42, `modules/42_water_demand/all_sectors_aug13/equations.gms:10-14`):
 ```gams
 vm_watdem("agriculture",j) * v42_irrig_eff(j) =e=
   sum(kcr, vm_area(j,kcr,"irrigated") * ic42_wat_req_k(j,kcr))
@@ -66,14 +66,14 @@ vm_watdem("agriculture",j) * v42_irrig_eff(j) =e=
 | **Electricity** | `electricity` | 42 | Exogenous | WATERGAP model (SSP scenarios) |
 | **Domestic** | `domestic` | 42 | Exogenous | WATERGAP model (SSP scenarios) |
 
-**Fixed Values** (Module 42, `presolve.gms:40-54`):
+**Fixed Values** (Module 42, `modules/42_water_demand/all_sectors_aug13/presolve.gms:40-54`):
 ```gams
 vm_watdem.fx(watdem_ineldo,j) = f42_watdem_ineldo(t,j,ssp_scenario,watdem_ineldo,"withdrawal");
 ```
 
 **Key Point**: These sectors do **not respond** to water scarcity - demands fixed by SSP scenario
 
-**SSP Scenarios** (Module 42, `input.gms:9`):
+**SSP Scenarios** (Module 42, `modules/42_water_demand/all_sectors_aug13/input.gms:9`):
 - SSP1: Low demand (sustainability)
 - SSP2: Medium demand (middle of the road) - DEFAULT
 - SSP3: High demand (fragmentation)
@@ -86,19 +86,19 @@ vm_watdem.fx(watdem_ineldo,j) = f42_watdem_ineldo(t,j,ssp_scenario,watdem_ineldo
 |--------|------|--------|--------|---------|
 | **Ecosystem** | `ecosystem` | 42 | Exogenous | Maintain aquatic ecosystem health |
 
-**Calculation** (Module 42, `presolve.gms:87-88`):
+**Calculation** (Module 42, `modules/42_water_demand/all_sectors_aug13/presolve.gms:87-88`):
 ```gams
 vm_watdem.fx("ecosystem",j) =
   sum(cell(i,j), i42_env_flows_base(t,j) * (1 - ic42_env_flow_policy(i))
                 + i42_env_flows(t,j) * ic42_env_flow_policy(i));
 ```
 
-**Three Scenarios** (Module 42, `input.gms:22`):
+**Three Scenarios** (Module 42, `modules/42_water_demand/all_sectors_aug13/input.gms:22`):
 - **Scenario 0**: No environmental flows
 - **Scenario 1**: Fixed fraction (20% of available water, uniform)
 - **Scenario 2**: LPJmL Smakhtin algorithm (cell-specific) - DEFAULT
 
-**Environmental Flow Protection (EFP) Policy** (Module 42, `input.gms:35-36`):
+**Environmental Flow Protection (EFP) Policy** (Module 42, `modules/42_water_demand/all_sectors_aug13/input.gms:35-36`):
 - Linear ramp-up from 2025 (0%) to 2040 (100%)
 - Country-specific targeting (default: all 195 countries)
 - Development-state dependent: HIC only, or all countries, or none
@@ -119,12 +119,12 @@ MAgPIE defines 4 potential water sources, but **only surface water is active** i
 |--------|------|--------|--------|-------------|
 | **Surface Water** | `surface` | 43 | Active | LPJmL runoff during growing period |
 
-**Calculation** (Module 43, `preloop.gms:8`):
+**Calculation** (Module 43, `modules/43_water_availability/total_water_aug13/preloop.gms:8`):
 ```gams
 im_wat_avail(t,"surface",j) = f43_wat_avail(t,j);
 ```
 
-**LPJmL Processing** (Module 43, `realization.gms:9-42`):
+**LPJmL Processing** (Module 43, `modules/43_water_availability/total_water_aug13/realization.gms:9-42`):
 1. **Basin runoff**: Total runoff from LPJmL climate simulations
 2. **Growing period restriction**: Only runoff during crop growing period available
 3. **Dam exception**: Cells with dams → full annual runoff (not just growing period)
@@ -135,7 +135,7 @@ im_wat_avail(t,"surface",j) = f43_wat_avail(t,j);
 - Tropical regions: ~55-80% of annual runoff (200-300 day growing season)
 - With dams: 100% of annual runoff (storage captures off-season flows)
 
-**Climate Scenarios** (Module 43, `input.gms:9-12`):
+**Climate Scenarios** (Module 43, `modules/43_water_availability/total_water_aug13/input.gms:9-12`):
 - `cc` (climate change): Time-varying runoff from LPJmL projections - DEFAULT
 - `nocc`: Fixed at 1995 levels (no climate change)
 - `nocc_hist`: Historical until sm_fix_cc, then frozen
@@ -150,7 +150,7 @@ im_wat_avail(t,"surface",j) = f43_wat_avail(t,j);
 | **Renewable groundwater** | `ren_ground` | 43 | Inactive | Not modeled |
 | **Technical** | `technical` | 43 | Inactive | Desalination not modeled |
 
-**Implementation** (Module 43, `preloop.gms:10-12`):
+**Implementation** (Module 43, `modules/43_water_availability/total_water_aug13/preloop.gms:10-12`):
 ```gams
 im_wat_avail(t,"ground",j) = 0;
 im_wat_avail(t,"ren_ground",j) = 0;
@@ -165,7 +165,7 @@ im_wat_avail(t,"technical",j) = 0;
 
 ### 4.1 Mathematical Formulation
 
-**Equation**: q43_water (Module 43, `equations.gms:10-11`)
+**Equation**: q43_water (Module 43, `modules/43_water_availability/total_water_aug13/equations.gms:10-11`)
 
 ```gams
 q43_water(j2) ..
@@ -219,7 +219,7 @@ v43_watavail(j,"surface")  [+ buffer if needed]
 
 ### 4.3 Spatial Resolution
 
-**Applied at Cell Level** (Module 43, `equations.gms:10-11`):
+**Applied at Cell Level** (Module 43, `modules/43_water_availability/total_water_aug13/equations.gms:10-11`):
 - Each of ~200 MAgPIE cells has independent water balance
 - No inter-cell water trading or transfers
 - Each cell must balance its own water budget
@@ -255,7 +255,7 @@ v43_watavail(j,"surface")  [+ buffer if needed]
 
 ### 5.2 The Solution: Groundwater Buffer
 
-**Automatic Activation** (Module 43, `presolve.gms:14-16`):
+**Automatic Activation** (Module 43, `modules/43_water_availability/total_water_aug13/presolve.gms:14-16`):
 
 ```gams
 v43_watavail.fx("ground",j) = v43_watavail.up("ground",j)
@@ -308,7 +308,7 @@ v43_watavail.fx("ground",j) = v43_watavail.up("ground",j)
 - Non-agricultural sectors always meet demands (via unsustainable extraction)
 - Model cannot explore trade-offs between sectors when water scarce
 
-**Justification** (Module 43, `realization.gms:40-42`):
+**Justification** (Module 43, `modules/43_water_availability/total_water_aug13/realization.gms:40-42`):
 - Non-agricultural sectors typically have higher economic value
 - Politically difficult to cut manufacturing/domestic water
 - Agricultural water use is more elastic (can switch to rainfed, import food)
@@ -421,7 +421,7 @@ v43_watavail.fx("surface",j) = im_wat_avail(t,"surface",j);
 
 **Role**: Calculate production including livestock water demand
 
-**Livestock Water** (Module 42, `equations.gms:14`):
+**Livestock Water** (Module 42, `modules/42_water_demand/all_sectors_aug13/equations.gms:14`):
 ```gams
 sum(kli, vm_prod(j,kli) * ic42_wat_req_k(j,kli) * v42_irrig_eff(j))
 ```
@@ -549,7 +549,7 @@ sum(kli, vm_prod(j,kli) * ic42_wat_req_k(j,kli) * v42_irrig_eff(j))
 - **Agricultural cost**: Less water for irrigation → lower yields or area
 - **Food security**: May increase food prices, shift production, require imports
 
-**Policy Modes** (Module 42, `input.gms:122`):
+**Policy Modes** (Module 42, `modules/42_water_demand/all_sectors_aug13/input.gms:122`):
 - `off`: No EFP (base protection only, 5%)
 - `on`: Full EFP (all countries)
 - `mixed`: Development-state dependent (high-income countries only)
@@ -883,17 +883,17 @@ plot(diff_demand, main="Change in Water Demand vs Baseline")
 
 ### 11.2 Critical Equations
 
-**Water Balance** (Module 43, equations.gms:10-11):
+**Water Balance** (Module 43, modules/43_water_availability/total_water_aug13/equations.gms:10-11):
 ```
 Σ(demand sectors) Water Withdrawals ≤ Σ(water sources) Available Water
 ```
 
-**Agricultural Demand** (Module 42, equations.gms:10-14):
+**Agricultural Demand** (Module 42, modules/42_water_demand/all_sectors_aug13/equations.gms:10-14):
 ```
 Agricultural Water × Efficiency = Crop Irrigation + Livestock Water
 ```
 
-**Infeasibility Buffer** (Module 43, presolve.gms:14-16):
+**Infeasibility Buffer** (Module 43, modules/43_water_availability/total_water_aug13/presolve.gms:14-16):
 ```
 IF Exogenous Demands > Surface Water
 THEN Groundwater Buffer = Shortfall × 1.01

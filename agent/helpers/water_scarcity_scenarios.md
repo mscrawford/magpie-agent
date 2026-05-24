@@ -16,7 +16,7 @@ Water in MAgPIE is governed by three tightly coupled modules:
 | 43 | `water_availability` | `total_water_aug13` | Provides renewable surface water supply from LPJmL |
 | 41 | `area_equipped_for_irrigation` | `endo_apr13` | Controls irrigation infrastructure expansion |
 
-**Core constraint** — `q43_water(j2)` in Module 43 (`equations.gms:10-11`):
+**Core constraint** — `q43_water(j2)` in Module 43 (`modules/43_water_availability/total_water_aug13/equations.gms:10-11`):
 ```gams
 q43_water(j2) ..
   sum(wat_dem, vm_watdem(wat_dem,j2)) =l= sum(wat_src, v43_watavail(wat_src,j2));
@@ -155,7 +155,7 @@ cfg$gms$c42_env_flow_policy        <- "on"    # Enforce environmental flows
 cfg$gms$s42_env_flow_scenario      <- 2       # Smakhtin algorithm
 ```
 
-⚠️ **Note**: Pumping costs are currently parameterized primarily for India (`f42_pumping_cost`). Results outside India may not reflect real-world groundwater costs. The groundwater infeasibility buffer in Module 43 (`presolve.gms:14-16`) adds free groundwater when exogenous demands exceed supply — this is NOT penalized even with `s42_pumping = 1`.
+⚠️ **Note**: Pumping costs are currently parameterized primarily for India (`f42_pumping_cost`). Results outside India may not reflect real-world groundwater costs. The groundwater infeasibility buffer in Module 43 (`modules/42_water_demand/all_sectors_aug13/presolve.gms:14-16`) adds free groundwater when exogenous demands exceed supply — this is NOT penalized even with `s42_pumping = 1`.
 
 ---
 
@@ -241,7 +241,7 @@ Formula: `v42_irrig_eff = 1 / (1 + 2.718282^((-22160 - GDP_pc) / 37767))`
 
 4. **No inter-cell water transfer**: Water availability is enforced per cell (`j2`). There is no mechanism for water trade or transfer between cells. Arid cells with high agricultural potential may be infeasible even if neighboring cells have surplus water.
 
-5. **Free groundwater buffer hides stress**: Module 43's infeasibility buffer (`presolve.gms:14-16`) automatically adds zero-cost groundwater when exogenous demands exceed surface water. This means the model always solves, but results may mask unsustainable groundwater mining. Check `v43_watavail.l("ground",j)` in outputs for non-zero values.
+5. **Free groundwater buffer hides stress**: Module 43's infeasibility buffer (`modules/43_water_availability/total_water_aug13/presolve.gms:14-16`) automatically adds zero-cost groundwater when exogenous demands exceed surface water. This means the model always solves, but results may mask unsustainable groundwater mining. Check `v43_watavail.l("ground",j)` in outputs for non-zero values.
 
 6. **Irrigation expansion without water**: Setting `area_equipped_for_irrigation = "endo_apr13"` allows unlimited irrigation expansion, but this is only economically constrained (via `q41_cost_AEI`), not physically constrained by water availability alone. The water constraint `q43_water` must also be active and binding to limit irrigation realistically.
 

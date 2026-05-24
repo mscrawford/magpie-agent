@@ -265,4 +265,39 @@ python3 scripts/pr_doc_impact.py --base 9cba74ab7~1 --head 9cba74ab7   # 7 chang
 python3 scripts/pr_doc_impact.py --since-last-sync --head origin/develop   # 0 changes (only Docker/codecheck since 3836bbaa9)
 ```
 
-**Next session**: 5b — mechanical updater (`scripts/pr_mechanical_update.py`, ~150 LOC). For each "mechanical" entry from 5a JSON: apply line-citation offsets in docs, refresh scalar value markers. Run validators after. The line_shift entries from PR #876 are the natural first test case (8 hunks, mostly small deltas). Once 5b lands, the full 5a→5b loop can auto-fix line-citation drift on every PR.
+---
+
+## Progress log (2026-05-24 Phase 2 prep — bare-cite migration before 5b)
+
+After 5a landed, surfaced a gap: cross-module docs use 38% full-path + 62% bare-basename citations (`equations.gms:20` style). 5a's bare-basename matcher (deliberately) only matches in the citation's own module doc, so 5b would silently leave 62% of cross-module cite drift untouched.
+
+User chose Option B (migrate + add validator) over context-disambiguation in 5a or limiting 5b. Mechanisms > one-off fixes per the plan's stated stance.
+
+**20. ✅ Bare-cite migration** (`scripts/migrate_bare_cites.py`, ~200 LOC). For each `file.gms:N` in cross_module/, core_docs/, reference/, agent/helpers/, AGENT.md, README.md: infer module from paragraph context (±15-line window for `Module NN`/`modules/NN_*`/`NN_name`; same-line var-prefix `c15_*`/`q52_*` as fallback), look up default realization from `config/default.cfg`, construct `modules/NN_name/REAL/file.gms:N`, verify path resolves, rewrite. Multi-candidate inference (try each module hint in proximity order; pick the first whose path resolves) self-corrects misleading proximity matches.
+
+  Coverage: 109/128 = 85% mechanically converted across 19 docs. Hand-fixed 5 cases the heuristic couldn't pin down (M80 solve.gms cites with realization-only context; M56/M15 cites in tables without var-prefix hints). Updated normative format-example docs (AGENT.md, README.md, Verification_Protocol.md, AGENT_QUERY_FLOWCHART.md) to teach the full-path convention. Used per-line `<!-- check-bare-cite -->` marker for the one intentional bare cite in Bug_Taxonomy.md (Pattern 10 illustrates the WRONG form).
+
+**21. ✅ Check 25 — bare-cite validator** (`scripts/check_no_bare_cites.py`). Forbids bare `file.gms:N` in non-module docs. Allowlist markers: whole-doc `<!-- check-bare-cites: allow -->`, per-line `<!-- check-bare-cite -->`. Negative-tested: inserting a bare cite into `cross_module/water_balance_conservation.md` causes Check 25 to fire (1 violation reported); reverting passes. Wired into `validate_consistency.sh` as Check 25.
+
+**Validator state at end of migration**: 40 total checks, 37 passed, 3 advisory warnings (pre-existing s38/s59 param defaults + I2 doc-convention).
+
+**Insights captured for future**:
+- **Migrate before automating**: when an auto-update system would only cover a fraction of a doc class, fix the gap at the source before building the auto-updater. Otherwise the auto-update creates hidden inconsistency (some lines maintained, others drift) that's harder to detect than uniform manual maintenance. Memory candidate: [[migrate_before_automating]].
+- **Multi-candidate inference**: when proximity-based heuristics misfire, ranking candidates by proximity and trying each (with structural validation — does the path resolve?) is more robust than relying on a single "closest" pick. The structural validation step (file exists at that line) catches wrong inferences automatically. See [[multi_candidate_inference]].
+- **Normative format docs teach the rule**: a doc that demonstrates "✅ correct" citation format becomes a magnet for adopting the WRONG format if its examples are stale. Updating those examples to the current convention does double duty (passes the new validator AND teaches the right convention to future readers).
+
+**Now unblocked**: 5b can be built knowing 100% of non-module-doc citations use full-path form. The mechanical line-shift updater no longer needs special-case logic for bare basenames.
+
+---
+
+## Verification at migration session end (2026-05-24)
+
+```bash
+bash scripts/validate_consistency.sh                                # 37/40 passed, 3 advisories
+python3 scripts/check_no_bare_cites.py                              # 0 bare cites in non-module docs
+python3 scripts/migrate_bare_cites.py                               # dry-run: 1 conv, 12 skips (all pedagogical)
+python3 scripts/pr_doc_impact.py --base c7731e234~1 --head c7731e234 # PR #876: 16 changes, 7 docs (incl. cross_module/land_balance_conservation.md)
+python3 scripts/pr_doc_impact.py --since-last-sync --head origin/develop  # 0 changes
+```
+
+**Next session**: 5b — mechanical updater (`scripts/pr_mechanical_update.py`, ~150 LOC). For each "mechanical" entry from 5a JSON: apply line-citation offsets in docs, refresh scalar value markers. Run validators after. The line_shift entries from PR #876 are the natural first test case (~8 hunks across M14/M35/M52 docs + cross_module/land_balance_conservation.md). Once 5b lands, the full 5a→5b loop can auto-fix line-citation drift on every PR — and it covers cross-module docs uniformly thanks to the migration.

@@ -202,7 +202,7 @@ grep -rn "<new_parameter_name>" ../modules/ ../core/ --include="*.gms"
 ```
 Enumerate EVERY consumer in the documentation.
 
-**Worked example** (R20, 2026-04-20, Major): when `pm_carbon_density_*_ac_uncalib` was introduced, the doc listed only M29 (tree cover) as a consumer. Actually consumed by M32 (afforestation) and NDC at `presolve.gms:59,61,68` as well. A user refactoring the parameter would have missed two modules.
+**Worked example** (R20, 2026-04-20, Major): when `pm_carbon_density_*_ac_uncalib` was introduced, the doc listed only M29 (tree cover) as a consumer. Actually consumed by M32 (afforestation) and NDC at `modules/29_cropland/detail_apr24/presolve.gms:59,61,68` as well. A user refactoring the parameter would have missed two modules.
 
 **Verified by**: human review (no mechanical guard for consumer-set completeness; partially mitigated by `scripts/check_gams_variables.sh` flagging cross-module variable mentions).
 

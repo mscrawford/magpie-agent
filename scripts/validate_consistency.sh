@@ -912,7 +912,7 @@ fi
 # was renamed in MAgPIE before the doc was last edited" — the M14 pcm_tau
 # straggler class.
 # ===============================================
-print_section "24/24" "Checking historical-rename references..."
+print_section "24/25" "Checking historical-rename references..."
 
 RENAMES_CHECK_SCRIPT="$AGENT_DIR/scripts/check_renames.py"
 if [ -f "$RENAMES_CHECK_SCRIPT" ]; then
@@ -934,6 +934,31 @@ if [ -f "$RENAMES_CHECK_SCRIPT" ]; then
     fi
 else
     check_warning "Historical-rename checker not found: $RENAMES_CHECK_SCRIPT"
+fi
+
+# ===============================================
+# Check 25: Bare-basename .gms citations in non-module docs
+# Enforces full-path citation form (modules/NN_name/REAL/file.gms:N) in
+# cross_module/, core_docs/, reference/, agent/helpers/, AGENT.md, README.md.
+# Migration was applied 2026-05-24 via scripts/migrate_bare_cites.py.
+# Pedagogical examples can opt out via per-doc or per-line allow markers.
+# ===============================================
+print_section "25/25" "Checking for bare-basename .gms citations in non-module docs..."
+
+BARE_CITES_SCRIPT="$AGENT_DIR/scripts/check_no_bare_cites.py"
+if [ -f "$BARE_CITES_SCRIPT" ]; then
+    if BARE_OUTPUT=$(python3 "$BARE_CITES_SCRIPT" --summary-only 2>&1); then BARE_EXIT=0; else BARE_EXIT=$?; fi
+    if [ $BARE_EXIT -eq 0 ]; then
+        check_pass "No bare-basename .gms citations in non-module docs"
+    else
+        BARE_COUNT=$(echo "$BARE_OUTPUT" | grep -oE "Bare cites found: [0-9]+" | grep -oE "[0-9]+" || true)
+        check_error "${BARE_COUNT:-?} bare-basename .gms citation(s) in non-module docs"
+        echo "$BARE_OUTPUT" | grep "^  " | head -8 | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "Bare-cite checker not found: $BARE_CITES_SCRIPT"
 fi
 
 # ============

@@ -90,7 +90,7 @@ MAgPIE distinguishes 7 mutually exclusive land types that sum to total cell area
 
 ### 3.1 Mathematical Formulation
 
-**Equation**: q10_land_area (Module 10, `equations.gms:13-15`)
+**Equation**: q10_land_area (Module 10, `modules/10_land/landmatrix_dec18/equations.gms:13-15`)
 
 ```gams
 q10_land_area(j2) ..
@@ -185,20 +185,20 @@ q10_transition_to(j2,land_to) ..
 
 **Verified**: `modules/10_land/landmatrix_dec18/presolve.gms:10-23`
 
-1. **No Plantation on Primary Forest** (presolve.gms:13):
+1. **No Plantation on Primary Forest** (modules/10_land/landmatrix_dec18/presolve.gms:13):
    ```gams
    vm_lu_transitions.fx(j,"primforest","forestry") = 0;
    ```
    **Rationale**: Protect intact forests from conversion to plantations
 
-2. **No Primary Forest Creation** (presolve.gms:20):
+2. **No Primary Forest Creation** (modules/10_land/landmatrix_dec18/presolve.gms:20):
    ```gams
    vm_lu_transitions.fx(j,land_from,"primforest") = 0;
    ```
    **Rationale**: Primary forest is by definition undisturbed (one-way decline)
-   **Exception** (presolve.gms:21): `vm_lu_transitions.up(j,"primforest","primforest") = Inf` allows primforest to remain primforest
+   **Exception** (modules/10_land/landmatrix_dec18/presolve.gms:21): `vm_lu_transitions.up(j,"primforest","primforest") = Inf` allows primforest to remain primforest
 
-3. **Limited Within-Natveg Conversions** (presolve.gms:16-17):
+3. **Limited Within-Natveg Conversions** (modules/10_land/landmatrix_dec18/presolve.gms:16-17):
    ```gams
    vm_lu_transitions.fx(j,"primforest","other") = 0;
    vm_lu_transitions.fx(j,"secdforest","other") = 0;
@@ -563,7 +563,7 @@ Total land unchanged
 **Mechanism**:
 1. Modules 29-31 reduce cropland or pasture area
 2. Module 10 tracks transition: `vm_lu_transitions(j,"crop","other")`
-3. Module 35 receives abandoned land in `presolve.gms:47-73`
+3. Module 35 receives abandoned land in `modules/35_natveg/pot_forest_may24/presolve.gms:47-73`
 4. Recovery allocation:
    - If potential forest area available → youngsecdf (recovering to forest)
    - Otherwise → othernat (non-forest natural vegetation)
@@ -745,12 +745,12 @@ plot(land[,"y1995":"y2100",])  # Should show smooth transitions
 
 ### 10.2 Critical Equations
 
-**Land Balance** (Module 10, equations.gms:13-15):
+**Land Balance** (Module 10, modules/10_land/landmatrix_dec18/equations.gms:13-15):
 ```
 Σ(land types) Current Area = Σ(land types) Previous Area
 ```
 
-**Transition Balance** (Module 10, equations.gms:19-25):
+**Transition Balance** (Module 10, modules/10_land/landmatrix_dec18/equations.gms:19-25):
 ```
 Σ(destinations) Transitions from X = Previous Area X
 Σ(sources) Transitions to Y = Current Area Y

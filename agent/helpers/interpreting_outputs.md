@@ -119,7 +119,7 @@ readGDX(gdx, "p80_modelstat")                  # Read modelstat parameter
 
 ## Understanding Model Status
 
-`p80_modelstat(t)` records the GAMS solver status for each timestep (`modules/80_optimization/nlp_apr17/solve.gms:95`). The solver retries with different settings if modelstat > 2 (`solve.gms:47-92`).
+`p80_modelstat(t)` records the GAMS solver status for each timestep (`modules/80_optimization/nlp_apr17/solve.gms:95`). The solver retries with different settings if modelstat > 2 (`modules/80_optimization/nlp_apr17/solve.gms:47-92`).
 
 | modelstat | Meaning | Action |
 |-----------|---------|--------|
@@ -130,12 +130,12 @@ readGDX(gdx, "p80_modelstat")                  # Read modelstat parameter
 | **5** | Locally infeasible | ❌ Solver stuck. May need different starting point. |
 | **6** | Intermediate infeasible | ⚠️ Solver hit iteration/time limit while infeasible. |
 | **7** | Intermediate non-optimal | ⚠️ Solver hit limit but has feasible solution. Results usable with caution. |
-| **13** | NA (set by code) | ❌ Solver returned NA; treated as error (`solve.gms:44`). |
-| **14** | Initial value | ❌ Solve never ran for this timestep (`solve.gms:10`). |
+| **13** | NA (set by code) | ❌ Solver returned NA; treated as error (`modules/80_optimization/nlp_apr17/solve.gms:44`). |
+| **14** | Initial value | ❌ Solve never ran for this timestep (`modules/80_optimization/nlp_apr17/solve.gms:10`). |
 
 **Key rule**: modelstat ≤ 2 is acceptable. The script `scripts/output/extra/modelstat.R:50` checks `all(out==2)` and warns on anything else.
 
-If modelstat > 2 and ≠ 7, the model aborts with `"no feasible solution found!"` and dumps `fulldata.gdx` for debugging (`solve.gms:102-107`).
+If modelstat > 2 and ≠ 7, the model aborts with `"no feasible solution found!"` and dumps `fulldata.gdx` for debugging (`modules/80_optimization/nlp_apr17/solve.gms:102-107`).
 
 ## Comparing Scenarios
 

@@ -38,9 +38,9 @@ Now that you know the cycle, check the specific modules:
 3. **Read `modules/module_52.md`** → Find carbon stock growth equations
 
 **Key findings**:
-- Module 56: `vm_carbon_price(t,i)` derived from GHG policy (equations.gms:15-18)
-- Module 32: Afforestation cost includes `vm_carbon_price * s32_carbon_price_factor` (equations.gms:45)
-- Module 52: Carbon growth follows Chapman-Richards equation (equations.gms:23-28)
+- Module 56: `vm_carbon_price(t,i)` derived from GHG policy (modules/56_ghg_policy/price_aug22/equations.gms:15-18)
+- Module 32: Afforestation cost includes `vm_carbon_price * s32_carbon_price_factor` (modules/32_forestry/dynamic_may24/equations.gms:45)
+- Module 52: Carbon growth follows Chapman-Richards equation (modules/52_carbon/normal_dec17/equations.gms:23-28)
 
 ### Step 4: Construct Answer with Citations (30 seconds)
 
@@ -49,13 +49,13 @@ Now that you know the cycle, check the specific modules:
 > "Carbon pricing affects forest growth through a 5-module feedback cycle (documented in circular_dependency_resolution.md Section 3.4):
 >
 > 1. **Carbon Price Impact on Afforestation** (Module 56 → Module 32):
->    - GHG policy sets `vm_carbon_price(t,i)` (module_56.md, equations.gms:15-18)
->    - This price is factored into afforestation costs via `s32_carbon_price_factor` (module_32.md, equations.gms:45)
+>    - GHG policy sets `vm_carbon_price(t,i)` (module_56.md, modules/32_forestry/dynamic_may24/equations.gms:15-18)
+>    - This price is factored into afforestation costs via `s32_carbon_price_factor` (module_32.md, modules/32_forestry/dynamic_may24/equations.gms:45)
 >    - Higher carbon prices make afforestation more economically attractive
 >
 > 2. **Forest Growth and Carbon Sequestration** (Module 32 → Module 52):
 >    - New forest area (`vm_land(j,"primforest")` + `vm_land(j,"secdforest")`) grows carbon stocks
->    - Carbon growth follows Chapman-Richards: `pm_carbon_density_ac(t,j,ac,ag_pools)` (module_52.md, equations.gms:23-28)
+>    - Carbon growth follows Chapman-Richards: `pm_carbon_density_ac(t,j,ac,ag_pools)` (module_52.md, modules/52_carbon/normal_dec17/equations.gms:23-28)
 >
 > 3. **Feedback to Carbon Accounting** (Module 52 → Module 56):
 >    - Increased forest carbon stocks affect total emissions calculations
@@ -244,7 +244,7 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 1. Identify the specific module file (e.g., `modules/14_yields/managementcalib_aug19/equations.gms`)
 2. Find the line number (e.g., `:45-52`)
 3. Quote or describe the actual code
-4. Cite it: `equations.gms:45-52`
+4. Cite it: `modules/14_yields/managementcalib_aug19/equations.gms:45-52`
 
 ---
 

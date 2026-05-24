@@ -357,7 +357,7 @@ Before answering code-specific questions, verify documentation is current:
 
 **ALWAYS state where your information came from:**
 
-✅ **Good:** "According to module_70.md, livestock feed demand is calculated using equation q70_feed (equations.gms:17-20)..."
+✅ **Good:** "According to module_70.md, livestock feed demand is calculated using equation q70_feed (modules/70_livestock/fbask_jan16/equations.gms:17-20)..."
 
 **At the end of your response, state:**
 - 🟡 "Based on module_XX.md documentation"
@@ -583,7 +583,7 @@ Question Type                              → Check Here First
 
 **Every claim about MAgPIE or other models requires explicit verification status:**
 
-- 🟢 **Verified**: Read actual code THIS session (`file.gms:123`)
+- 🟢 **Verified**: Read actual code THIS session (`modules/NN_xxx/realization/file.gms:123`)
 - 🟡 **Documented**: Read official docs THIS session (cite source)
 - 🟠 **Literature**: Published papers (cite: Author et al. YEAR)
 - 🔵 **General Knowledge**: Domain knowledge about modeling/economics/ecology (NOT model-specific)
@@ -595,7 +595,7 @@ Question Type                              → Check Here First
 
 **Required Disclosure Pattern:**
 ```
-"MAgPIE uses [X methodology] (🟢 verified: file.gms:123).
+"MAgPIE uses [X methodology] (🟢 verified: modules/NN_xxx/realization/file.gms:123).
 
 Other IAMs may use different approaches:
 - Model Y: [claim] (🔴 inferred from training, NOT verified)

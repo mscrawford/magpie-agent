@@ -214,8 +214,8 @@ rather than looking up the actual declaration. Similar to Pattern 2 but for equa
 
 ### Pattern 10: Stale File:Line Citations
 
-**What it looks like**: `equations.gms:74` points past end of file (file has 49 lines),
-or `presolve.gms:20` references a file that doesn't exist (actual: `presolve_ini.gms`).
+**What it looks like**: `equations.gms:74` points past end of file (file has 49 lines), <!-- check-bare-cite -->
+or `presolve.gms:20` references a file that doesn't exist (actual: `presolve_ini.gms`). <!-- check-bare-cite -->
 
 **Why it happens**: Documentation written against older/different versions of GAMS files
 where the code was longer or structured differently. Also: wrong realization name in the
@@ -258,9 +258,9 @@ or removed, shifting all subsequent line numbers. Also occurs when input paramet
 are reordered during refactoring.
 
 **Examples**:
-- `q52_emis_co2_actual` cited at `equations.gms:19` but actually at line 16 (3 lines off)
-- `s14_carbon_fraction` cited at `input.gms:29` but actually at line 22 (7 lines off)
-- `i20_processing_unitcosts` cited at `input.gms:25` — actually `f20_processing_unitcosts` there (wrong prefix)
+- `q52_emis_co2_actual` cited at `modules/52_carbon/normal_dec17/equations.gms:19` but actually at line 16 (3 lines off)
+- `s14_carbon_fraction` cited at `modules/14_yields/managementcalib_aug19/input.gms:29` but actually at line 22 (7 lines off)
+- `i20_processing_unitcosts` cited at `modules/20_processing/substitution_may21/input.gms:25` — actually `f20_processing_unitcosts` there (wrong prefix)
 
 **Discovery stats**: 26 bugs across 9 module docs (292 claims checked, 91% → 99.3%)
 

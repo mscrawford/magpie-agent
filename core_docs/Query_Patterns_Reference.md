@@ -43,7 +43,7 @@
 
 **Response Pattern - If Parameterized But Not Implemented**:
 
-> "Tillage is **parameterized** (IPCC factors loaded, equation structure supports variation) but **NOT actively modeled** (hardcoded to 100% full tillage in `preloop.gms:52-53`).
+> "Tillage is **parameterized** (IPCC factors loaded, equation structure supports variation) but **NOT actively modeled** (hardcoded to 100% full tillage in `modules/59_som/cellpool_jan23/preloop.gms:52-53`).
 >
 > The infrastructure exists:
 > - Sets defined: full_tillage, reduced_tillage, no_tillage
@@ -110,7 +110,7 @@ s29_treecover_target = 0  ! Disabled by default
 > **1. Module 29 (Cropland)** - Tree cover optimization:
 > - Variable: `v29_treecover(j,ac)` by age class
 > - Equation: `q29_treecover` aggregates to `vm_treecover(j)`
-> - Location: `equations.gms:83-84`
+> - Location: `modules/59_som/cellpool_jan23/equations.gms:83-84`
 >
 > **2. Module 59 (SOM)** - SOM equilibrium:
 > - Uses: `vm_treecover` in cropland SOM target

@@ -76,7 +76,7 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 **How to Avoid**:
 - NEVER modify `vm_land` dimensions without updating ALL 10 direct consumers (22, 29, 30, 31, 32, 34, 35, 50, 58, 59) — see §1.2 table for the broader 18-module set touched by any Module 10 interface variable.
 - NEVER add land types without updating `land` set across entire model
-- NEVER modify `pcm_land` calculation (in postsolve.gms:8-9)
+- NEVER modify `pcm_land` calculation (in modules/10_land/landmatrix_dec18/postsolve.gms:8-9)
 - ALWAYS ensure transition matrix sums remain equal
 
 ### 1.4 Common Mistakes and Fixes
@@ -383,7 +383,7 @@ pm_prod_init(j,"rice") = 1000;  * 1000 mio. tDM in one cell!
 
 **Result**: Solver starts far from optimal solution, slow convergence or failure
 
-**✅ FIX**: Use realistic initialization (presolve.gms:10-16)
+**✅ FIX**: Use realistic initialization (modules/70_livestock/fbask_jan16/presolve.gms:10-16)
 ```gams
 * Correct initialization = Area × Yield
 pm_prod_init(j,kcr) = sum(w, fm_croparea("y1995",j,w,kcr) * pm_yields_semi_calib(j,kcr,w));
@@ -471,7 +471,7 @@ vm_prod_reg(i,kall) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
 
 ### 4.3 Policy Levers (100+ Scenarios)
 
-**Configuration Switches** (input.gms:84-117):
+**Configuration Switches** (modules/56_ghg_policy/price_aug22/input.gms:84-117):
 
 | Switch | Default | Options | Impact |
 |--------|---------|---------|--------|
@@ -529,7 +529,7 @@ s56_c_price_induced_aff = 0;  * Disabled CDR!
 
 **Result**: Model pays for emissions but cannot earn revenue from removals → unrealistic mitigation costs
 
-**✅ FIX**: Enable CDR if pricing CO2 (input.gms:103)
+**✅ FIX**: Enable CDR if pricing CO2 (`modules/56_ghg_policy/price_aug22/input.gms:103`)
 ```gams
 s56_c_price_induced_aff = 1;  * Enable afforestation CDR
 * Check vm_reward_cdr_aff provides incentive for forest expansion

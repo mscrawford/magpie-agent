@@ -104,12 +104,12 @@ Before answering any MAgPIE question, verify:
 **Example: Tillage in Module 59**
 
 **Parameterized** (infrastructure exists):
-- Sets defined: `tillage59` with full_tillage, reduced_tillage, no_tillage (`sets.gms:13-14`)
-- IPCC factors loaded: `f59_cratio_tillage` from file (`input.gms:49-52`)
-- Equation uses it: `i59_cratio` includes tillage factor (`preloop.gms:60-67`)
+- Sets defined: `tillage59` with full_tillage, reduced_tillage, no_tillage (`modules/59_som/cellpool_jan23/sets.gms:13-14`)
+- IPCC factors loaded: `f59_cratio_tillage` from file (`modules/59_som/cellpool_jan23/input.gms:49-52`)
+- Equation uses it: `i59_cratio` includes tillage factor (`modules/59_som/cellpool_jan23/preloop.gms:60-67`)
 
 **NOT Implemented** (hardcoded to defaults):
-- All regions set to: `i59_tillage_share(i,"full_tillage") = 1` (`preloop.gms:52-53`)
+- All regions set to: `i59_tillage_share(i,"full_tillage") = 1` (`modules/59_som/cellpool_jan23/preloop.gms:52-53`)
 - Never updated in presolve or equations
 - **Result**: Tillage has ZERO effect on results
 
@@ -117,7 +117,7 @@ Before answering any MAgPIE question, verify:
 
 ❌ WRONG: "MAgPIE models tillage effects on SOM"
 ❌ WRONG: "Tillage is not in the model"
-✅ RIGHT: "Tillage is **parameterized** (IPCC factors exist) but **NOT implemented** (hardcoded to 100% full tillage everywhere in `preloop.gms:52-53`)"
+✅ RIGHT: "Tillage is **parameterized** (IPCC factors exist) but **NOT implemented** (hardcoded to 100% full tillage everywhere in `modules/59_som/cellpool_jan23/preloop.gms:52-53`)"
 
 ### 🚩 Warning Signs for "Parameterized But Not Implemented"
 

@@ -182,7 +182,7 @@ q60_bioenergy_reg(i2) ..
   sum(kbe60, v60_2ndgen_bioenergy_dem_dedicated(i2,kbe60)) =g=
   sum(ct, i60_bioenergy_dem(ct,i2)) * c60_biodem_level;
 ```
-**Why critical**: Hard demand floor, **active by default** (`c60_biodem_level = 1`). Every region MUST produce its bioenergy — no inter-regional trade. Minimum floor of 1 mio. GJ/yr per region (`presolve.gms:62`).
+**Why critical**: Hard demand floor, **active by default** (`c60_biodem_level = 1`). Every region MUST produce its bioenergy — no inter-regional trade. Minimum floor of 1 mio. GJ/yr per region (`modules/60_bioenergy/1st2ndgen_priced_feb24/presolve.gms:62`).
 
 #### Rank 4: `q21_notrade` — Non-Tradable Commodities Autarky
 ```gams
@@ -210,7 +210,7 @@ q21_trade_reg(h2,k_trade) ..
   m21_baseline_production(...) * sum(ct, i21_trade_bal_reduction(ct,k_trade))
   - v21_import_for_feasibility(h2,k_trade);
 ```
-**Note**: `v21_import_for_feasibility` exists BUT is **fixed to 0 for ALL commodities except wood and woodfuel** (`preloop.gms:36-38`). For food crops and livestock: effectively **no slack**.
+**Note**: `v21_import_for_feasibility` exists BUT is **fixed to 0 for ALL commodities except wood and woodfuel** (`modules/21_trade/selfsuff_reduced/preloop.gms:36-38`). For food crops and livestock: effectively **no slack**.
 
 ### 🟡 MODERATE — Have Slacks or Are Conditional
 
@@ -546,12 +546,12 @@ The first relaxation that makes the model feasible identifies the binding constr
 - Check if `s15_elastic_demand = 1` — try setting to `0` for exogenous demand
 
 ### When You See: `"Unfixed nonlinear terms in linear solve!"`
-- Only in `lp_nlp_apr17` realization (`solve.gms:92`)
+- Only in `lp_nlp_apr17` realization (`modules/80_optimization/lp_nlp_apr17/solve.gms:92`)
 - Means a module's `nl_fix.gms` file is missing or incomplete
 - Check which module was recently added/modified
 
 ### When You See: `"Execution error"`
-- Only in `nlp_apr17` realization (`solve.gms:30`)
+- Only in `nlp_apr17` realization (`modules/80_optimization/nlp_apr17/solve.gms:30`)
 - Pre-solve GAMS error (bad data, domain violations, etc.)
 - Check `.lst` file for the specific GAMS error
 

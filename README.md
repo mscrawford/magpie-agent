@@ -205,10 +205,10 @@ magpie-agent/
 
 **Mandatory Citation Format**
 
-Every factual claim MUST cite source:
-- ✅ `equations.gms:45` or `equations.gms:45-52`
-- ✅ `presolve.gms:123`
-- ✅ `input.gms:67`
+Every factual claim MUST cite source using full-path form:
+- ✅ `modules/22_biodiversity/bv_btc_mar21/equations.gms:45` (single line) or `modules/22_biodiversity/bv_btc_mar21/equations.gms:45-52` (range)
+- ✅ `modules/14_yields/managementcalib_aug19/presolve.gms:123`
+- ✅ `modules/15_food/anthro_iso_jun22/input.gms:67`
 
 **Use Exact Variable Names**
 - ✅ `vm_land(j,land)` - correct

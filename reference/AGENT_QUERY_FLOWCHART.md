@@ -307,7 +307,7 @@ Agent Path:
    • Check 3: Hardcoded to 100% full_tillage (no dynamic feedback)
 3. Classify: PARAMETERIZED but NOT IMPLEMENTED
 4. Answer: "Infrastructure exists but hardcoded to defaults"
-5. Cite: 🟢 "Verified in module_59.md + preloop.gms:52"
+5. Cite: 🟢 "Verified in module_59.md + modules/59_som/cellpool_jan23/preloop.gms:52"
 
 Tokens: ~34K (16K + 15K patterns + 3K module)
 Time: 2 minutes
@@ -352,7 +352,7 @@ Time: 3-4 minutes
 
 Every response includes verification status:
 
-- 🟢 **Verified**: Read actual GAMS code this session (`file.gms:123`)
+- 🟢 **Verified**: Read actual GAMS code this session (`modules/NN_xxx/realization/file.gms:123`)
 - 🟡 **Documented**: Read AI docs this session (`module_XX.md`)
 - 🟠 **Literature**: Published papers (`Author et al. YEAR`)
 - 🔵 **General**: Domain knowledge (not model-specific)

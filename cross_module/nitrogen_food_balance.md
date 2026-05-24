@@ -35,7 +35,7 @@
 | **Atmospheric Deposition** | 50 | Wet/dry deposition from atmosphere | 1-20 kg N/ha/yr (exogenous) |
 | **SOM Mineralization** | 59 | N release from soil organic matter loss | Variable (land-use dependent) |
 
-**Source**: Module 50, `equations.gms:18-30`
+**Source**: Module 50, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:18-30`
 
 **Key Equation** (Module 50, nitrogen soil budget):
 ```gams
@@ -71,7 +71,7 @@ Where `ef` = IPCC emission factor (e.g., 0.01 for direct N₂O). MACCs for soil 
 
 ### 1.4 Soil Nitrogen Budget
 
-**Equation** (Module 50, `equations.gms:18-30`):
+**Equation** (Module 50, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:18-30`):
 ```
 Inputs = Outputs + ΔSoil_N_stock
 ```
@@ -177,7 +177,7 @@ Regional self-sufficiency is managed through `vm_supply` and trade variables (`v
 
 **Trade Costs**: Transport costs proportional to distance (Module 21)
 
-**Source**: Module 21, `equations.gms:10-25`
+**Source**: Module 21, `modules/21_trade/selfsuff_reduced/equations.gms:10-25`
 
 ---
 

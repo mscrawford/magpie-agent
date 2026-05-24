@@ -964,10 +964,10 @@ vm_problematic_var.fx(j) = baseline_value(j);
 
 | Variable | Module | Purpose | Updated in |
 |----------|--------|---------|------------|
-| `pcm_land(j,land)` | 10_land | Previous land allocation | postsolve.gms:9 |
-| `pcm_carbon_stock(j,land,c_pools,stockType)` | 56_ghg_policy | Previous carbon stocks | postsolve.gms:8 |
-| `pm_interest(t_all,i)` | 12_interest_rate | Interest rates | preloop.gms:23 |
-| `pcm_tau(j,tautype)` | 13_tc | Previous TC factors | postsolve.gms:16 |
+| `pcm_land(j,land)` | 10_land | Previous land allocation | modules/10_land/landmatrix_dec18/postsolve.gms:9 |
+| `pcm_carbon_stock(j,land,c_pools,stockType)` | 56_ghg_policy | Previous carbon stocks | modules/56_ghg_policy/price_aug22/postsolve.gms:8 |
+| `pm_interest(t_all,i)` | 12_interest_rate | Interest rates | modules/12_interest_rate/select_apr20/preloop.gms:23 |
+| `pcm_tau(j,tautype)` | 13_tc | Previous TC factors | modules/13_tc/endo_jan22/postsolve.gms:16 |
 | ... | ... | ... | ... |
 
 **Pattern**: All `pcm_*` variables are updated in `postsolve.gms` from corresponding `vm_*` optimal values
