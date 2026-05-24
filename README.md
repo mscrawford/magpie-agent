@@ -142,7 +142,7 @@ magpie-agent/
 │   ├── Infeasibility_Debugging_Guide.md
 │   └── Verification_Protocol.md
 │
-├── feedback/                  ← Internal iteration artifacts
+├── audit/                  ← Internal iteration artifacts
 │   ├── README.md              Directory overview
 │   ├── global/agent_lessons.md
 │   └── integrated/            Archived agent-recorded lessons
@@ -188,7 +188,7 @@ magpie-agent/
 **Path B: MAgPIE Question Support**
 - Follow instructions in `AGENT.md` (AI agent workflow)
 - Check AI docs FIRST before reading GAMS code
-- Use feedback system to improve documentation
+- Record corrections directly in `module_XX_notes.md` / helper Lessons Learned (see AGENT.md "Internal iteration loop")
 
 **Path C: Module Documentation**
 - Read `reference/Verification_Protocol.md`
@@ -401,9 +401,9 @@ dot -Tpng core_dependencies.dot -o core_dependencies.png
 
 ## 🔄 Internal iteration loop
 
-The agent records lessons directly during sessions — corrections, mechanism warnings, and helper improvements land in `modules/module_XX_notes.md`, `agent/helpers/*.md` Lessons Learned, or `feedback/global/agent_lessons.md`. There is no external user-submission inbox.
+The agent records lessons directly during sessions — corrections, mechanism warnings, and helper improvements land in `modules/module_XX_notes.md`, `agent/helpers/*.md` Lessons Learned, or `audit/global/agent_lessons.md`. There is no external user-submission inbox.
 
-See `AGENT.md` (section "🔄 Internal iteration loop") and `feedback/README.md` for the write-paths and conventions.
+See `AGENT.md` (section "🔄 Internal iteration loop") and `audit/README.md` for the write-paths and conventions.
 
 ---
 
@@ -487,7 +487,7 @@ See `AGENT.md` (section "🔄 Internal iteration loop") and `feedback/README.md`
 - Use the quality checklist
 - Follow Code Truth principles
 
-**If future AI is confused**: this protocol needs improvement — record the gap as a lesson in `feedback/global/agent_lessons.md` and update the relevant doc.
+**If future AI is confused**: this protocol needs improvement — record the gap as a lesson in `audit/global/agent_lessons.md` and update the relevant doc.
 
 ---
 

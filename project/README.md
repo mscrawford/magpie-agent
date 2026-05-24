@@ -7,7 +7,7 @@ If you're a MAgPIE developer looking to use the AI documentation, **you don't ne
 - `AGENT.md` - AI agent instructions
 - `modules/` - Module documentation
 - `core_docs/` - Architecture documentation
-- `feedback/` - User feedback system
+- `audit/` - User feedback system
 
 ---
 
@@ -72,7 +72,7 @@ magpie-agent/
 ├── agent/                 ← Agent commands
 ├── modules/               ← User-facing: module documentation
 ├── core_docs/             ← User-facing: architecture docs
-├── feedback/              ← User-facing: user feedback system
+├── audit/              ← User-facing: user feedback system
 └── ...
 ```
 

@@ -4,7 +4,7 @@
 **Scope**: 6 lenses, 6 parallel Opus sub-agents, **82 raw findings** (~75 unique after dedup)
 **Auditor model**: claude-opus-4-7
 **Status**: Triaged + fixed (this session); validators re-passed
-**Predecessor**: R1+R2 (`feedback/pipeline_audit_round1.md`, R2 in JSON)
+**Predecessor**: R1+R2 (`audit/pipeline_audit_round1.md`, R2 in JSON)
 
 ---
 
@@ -217,7 +217,7 @@ This would close the largest single coverage gap exposed by R3 (the 14 M11 §17.
 - `scripts/check_gams_equations.sh` takes 3.4s (38% of total wall-clock); same bash anti-pattern that made `check_gams_variables.sh` slow before its Python rewrite.
 - `scripts/check_gams_realizations.sh` takes 1.0s; same pattern.
 - `scripts/validate_consistency.sh.bak` (804 lines) — dead weight from R2 Python rewrite.
-- `feedback/archive/` (112KB) + `reference/archive/` (160KB) — referenced only in validator skip-paths.
+- `audit/archive/` (112KB) + `reference/archive/` (160KB) — referenced only in validator skip-paths.
 - AGENT.md "LINK DON'T DUPLICATE" section (~75 lines) — editorial guidance; only relevant when editing docs; could be hoisted to `maintenance_protocol.md`.
 - AGENT.md trigger overlaps: `realization` keyword fires both verifiers.md AND realization_selection.md (~4000 words of helper context when ~2000 would do); `scenario` substring fires 5 helpers.
 - adding_new_scenario.md + realization_selection.md teach the same `cfg$gms$<module>` mechanism redundantly.
@@ -310,7 +310,7 @@ R3 fixes landed in 7 root-cause-cluster commits stacked on plan commit `5708b6f`
 - `python3 scripts/check_gams_variables.py`: **100% (953/953 verified)** — up from 944 thanks to R3 regex extension (now covers `ic\d+_`, `oq\d+_`, `ov\d+_` prefixes)
 - `python3 scripts/refresh_aggregate_counts.py`: **all markers up to date**
 
-**Deferred to future session(s)** (with explicit reasons, see `feedback/next_session_plan.md`):
+**Deferred to future session(s)** (with explicit reasons, see `audit/next_session_plan.md`):
 - M30 + M38 + M80 full body rewrites (substantial; prominent header warnings added as interim mitigation)
 - M73 Section 2.1.x equation transcription rewrite (q73_prod_residues uses sum-over-natveg-and-plantation, not just wood)
 - Tier-2 validator Python rewrites (check_gams_equations.sh, check_gams_realizations.sh — would drop validator wall-clock from 8.8s → ~4.5s)

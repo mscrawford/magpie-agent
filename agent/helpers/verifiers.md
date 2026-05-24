@@ -1,6 +1,6 @@
 # Verifiers — MANDATEs for anti-confabulation
 
-**Purpose**: 16 binding rules that prevent the recurring confabulation patterns identified across <!--count:total_rounds-->23<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->457<!--/count--> bugs catalogued, <!--count:total_bugs_fixed-->301<!--/count--> fixed as of last update — see `feedback/validation_rounds.json.cumulative_stats`). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
+**Purpose**: 16 binding rules that prevent the recurring confabulation patterns identified across <!--count:total_rounds-->23<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->457<!--/count--> bugs catalogued, <!--count:total_bugs_fixed-->301<!--/count--> fixed as of last update — see `audit/validation_rounds.json.cumulative_stats`). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
 
 **Auto-load**: this file is loaded automatically when the user asks about specific GAMS modules, variables, equations, realizations, or default values. See `AGENT.md` Auto-Loading Context Helpers table.
 
@@ -8,7 +8,7 @@
 
 **Binding language**: MUST, FORBIDDEN, NEVER, ALWAYS are normative. If you cannot satisfy a MANDATE, state that explicitly rather than constructing a plausible workaround.
 
-**Cross-references**: each MANDATE references `feedback/validation_rounds.json` round R-numbers and `core_docs/Bug_Taxonomy.md` patterns. See `feedback/flywheel_rubric.md` for severity scoring.
+**Cross-references**: each MANDATE references `audit/validation_rounds.json` round R-numbers and `core_docs/Bug_Taxonomy.md` patterns. See `audit/flywheel_rubric.md` for severity scoring.
 
 ---
 

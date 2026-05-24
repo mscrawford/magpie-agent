@@ -8,7 +8,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AGENT_DIR="$(dirname "$SCRIPT_DIR")"
-METADATA_FILE="$AGENT_DIR/feedback/.compression_metadata.json"
+METADATA_FILE="$AGENT_DIR/audit/.compression_metadata.json"
 
 # Colors for output
 RED='\033[0;31m'
@@ -39,7 +39,7 @@ show_status() {
     fi
 
     echo -e "${BLUE}Integrated feedback files:${NC}"
-    INTEGRATED_COUNT=$(ls -1 "$AGENT_DIR/feedback/integrated/" 2>/dev/null | wc -l | tr -d ' ')
+    INTEGRATED_COUNT=$(ls -1 "$AGENT_DIR/audit/integrated/" 2>/dev/null | wc -l | tr -d ' ')
     echo "Total: $INTEGRATED_COUNT files"
     echo
 
@@ -60,7 +60,7 @@ list_uncompressed() {
     echo
 
     if [ ! -f "$METADATA_FILE" ]; then
-        ls -lt "$AGENT_DIR/feedback/integrated/"
+        ls -lt "$AGENT_DIR/audit/integrated/"
         return
     fi
 
@@ -68,7 +68,7 @@ list_uncompressed() {
     COMPRESSED=$(cat "$METADATA_FILE" | jq -r '.compressed_feedback[]' 2>/dev/null || echo "")
 
     # List all integrated files
-    for file in "$AGENT_DIR/feedback/integrated"/*.md; do
+    for file in "$AGENT_DIR/audit/integrated"/*.md; do
         filename=$(basename "$file")
 
         # Check if already compressed
@@ -182,7 +182,7 @@ WORKFLOW:
 
 SEE ALSO:
   - agent/commands/compress-documentation.md (full workflow)
-  - feedback/README.md (feedback system overview)
+  - audit/README.md (feedback system overview)
 
 EOF
 }

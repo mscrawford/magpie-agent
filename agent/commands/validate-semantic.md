@@ -16,7 +16,7 @@ The semantic validation flywheel generates expert questions, answers them from d
 GENERATE → ANSWER (Sonnet) → AUDIT (Opus) → SYNTHESIZE → IMPROVE → EXPAND
 ```
 
-**Baseline**: See `feedback/validation_rounds.json.cumulative_stats` for current totals (<!--count:total_rounds-->23<!--/count--> rounds, <!--count:total_docs_validated-->79<!--/count--> docs validated, <!--count:total_bugs_found-->457<!--/count--> bugs found, <!--count:total_bugs_fixed-->301<!--/count--> fixed as of last update). Authoritative trend is the `mean_score_trend` field in that file — do not duplicate it here (would drift).
+**Baseline**: See `audit/validation_rounds.json.cumulative_stats` for current totals (<!--count:total_rounds-->23<!--/count--> rounds, <!--count:total_docs_validated-->79<!--/count--> docs validated, <!--count:total_bugs_found-->457<!--/count--> bugs found, <!--count:total_bugs_fixed-->301<!--/count--> fixed as of last update). Authoritative trend is the `mean_score_trend` field in that file — do not duplicate it here (would drift).
 
 ---
 
@@ -74,9 +74,9 @@ Session startup checks `validation_rounds.json` for last validation date:
 
 ### Step 1: Generate Questions
 
-**Before designing questions**: review `feedback/probe_dedup_ledger.json`. Names appearing there within their lock-out window are off-limits for fresh probes (would test recognition, not capability). Calibration anchors are exempt — they recur by design.
+**Before designing questions**: review `audit/probe_dedup_ledger.json`. Names appearing there within their lock-out window are off-limits for fresh probes (would test recognition, not capability). Calibration anchors are exempt — they recur by design.
 
-**Each round MUST include at least 1 regression question** from `feedback/flywheel_rubric.md` §6 (initial set: G1 module-14 default realization, G2 vm_carbon_stock propagation) alongside new probes. See `feedback/validation_rounds.json` → `regression_questions` array.
+**Each round MUST include at least 1 regression question** from `audit/flywheel_rubric.md` §6 (initial set: G1 module-14 default realization, G2 vm_carbon_stock propagation) alongside new probes. See `audit/validation_rounds.json` → `regression_questions` array.
 
 Design 5 new probes + 1-2 regression questions using this rotation of **6 archetypes**:
 
@@ -120,11 +120,11 @@ QUESTION: [question]
 Launch **5 parallel Opus 4.6 agents** (or highest-capability model), each with:
 - The question + the Sonnet answer
 - Instructions to verify **every claim** against raw GAMS source code
-- A pointer to **`feedback/flywheel_rubric.md`** for severity tiers, mechanical checks, bug classes, and the audit report format.
+- A pointer to **`audit/flywheel_rubric.md`** for severity tiers, mechanical checks, bug classes, and the audit report format.
 
 Use the `general-purpose` agent type with `model: claude-opus-4.6`.
 
-**Scoring spec** (severity tiers, immutable anchor examples, per-question scoring formula, audit report format) is in `feedback/flywheel_rubric.md`. The auditor MUST read it before scoring. Do NOT inline-restate the rubric here — it drifts; the rubric file is the authority.
+**Scoring spec** (severity tiers, immutable anchor examples, per-question scoring formula, audit report format) is in `audit/flywheel_rubric.md`. The auditor MUST read it before scoring. Do NOT inline-restate the rubric here — it drifts; the rubric file is the authority.
 
 ### Step 4: Synthesize
 
@@ -165,14 +165,14 @@ After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic 
 
 ### Step 5b: Record Results
 
-**MANDATORY**: Append results to `feedback/validation_rounds.json` (schema v1.1 as of 2026-05-23). This is the persistent record for tracking quality over time. Include:
+**MANDATORY**: Append results to `audit/validation_rounds.json` (schema v1.1 as of 2026-05-23). This is the persistent record for tracking quality over time. Include:
 - Round number, date, commit hashes (before/after)
 - Per-question: topic, modules tested, score, bug counts by severity
 - **Regression questions section**: score the round's regression questions (G1, G2 minimum per `regression_questions` top-level array) and set `drift_observed=true` if any answer drifted from the expected_answer_summary. Append round number to `used_in_rounds` for each.
 - Summary: mean score, total bugs, bug sources (doc_error vs answerer_confabulation), root causes, files fixed, safeguards added
 - Update `cumulative_stats` at the bottom
 
-**Schema v1.1 changes** (2026-05-23): top-level `regression_questions` array added; each new round MUST include at least 1 regression question alongside new probes. Severity tiers and audit format are now in `feedback/flywheel_rubric.md` (hoisted from this command file).
+**Schema v1.1 changes** (2026-05-23): top-level `regression_questions` array added; each new round MUST include at least 1 regression question alongside new probes. Severity tiers and audit format are now in `audit/flywheel_rubric.md` (hoisted from this command file).
 
 This file allows future agents to compute trends: score over time, confabulation rate, calibration-anchor drift, which modules are reliable vs fragile.
 
@@ -218,7 +218,7 @@ Track across rounds:
 
 **R13** (module re-test): Post-fix quality check on 5 previously-validated modules. 4/5 scored ≥9.0, confirming fixes hold. ~10 bugs found, mostly minor drift.
 
-**Key insight**: Every doc category had errors when first validated. The flywheel's value is systematic first-pass coverage — scores jump 2-3 points after fixes. Authoritative cumulative counts live in `feedback/validation_rounds.json.cumulative_stats`; cite those rather than restating numbers here (the restated form drifts as rounds accumulate).
+**Key insight**: Every doc category had errors when first validated. The flywheel's value is systematic first-pass coverage — scores jump 2-3 points after fixes. Authoritative cumulative counts live in `audit/validation_rounds.json.cumulative_stats`; cite those rather than restating numbers here (the restated form drifts as rounds accumulate).
 
 ---
 

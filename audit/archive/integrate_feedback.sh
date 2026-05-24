@@ -28,7 +28,7 @@ if [ $# -lt 1 ]; then
   echo "Usage: ./scripts/integrate_feedback.sh <feedback_file> [--no-git]"
   echo ""
   echo "Example:"
-  echo "  ./scripts/integrate_feedback.sh feedback/pending/20251022_correction_module_70.md"
+  echo "  ./scripts/integrate_feedback.sh audit/pending/20251022_correction_module_70.md"
   echo ""
   echo "Options:"
   echo "  --no-git    Skip git pull/push operations (manual mode)"
@@ -101,8 +101,8 @@ if [ "$NO_GIT" = false ] && [ "$AUTO_GIT" = "true" ]; then
   fi
 
   # Check for uncommitted changes (except feedback files)
-  if ! git diff --quiet HEAD -- . ':!feedback/'; then
-    echo "⚠️  Warning: You have uncommitted changes outside feedback/"
+  if ! git diff --quiet HEAD -- . ':!audit/'; then
+    echo "⚠️  Warning: You have uncommitted changes outside audit/"
     echo ""
     git status --short
     echo ""
@@ -163,7 +163,7 @@ fi
 
 # Determine destination (paths relative to magpie-agent root)
 if [[ "$TARGET" == "AGENT.md" ]] || [[ "$TARGET" == "global" ]] || [[ "$TARGET" == "system-wide" ]] || [[ "$TARGET" == *"AGENT"* ]]; then
-  DEST="feedback/global/agent_lessons.md"
+  DEST="audit/global/agent_lessons.md"
   echo "→ This is GLOBAL feedback (affects agent behavior)"
   echo "→ Will be added to: $DEST"
   echo ""
@@ -253,7 +253,7 @@ EOF
 
 else
   # Cross-module or other
-  DEST="feedback/global/cross_module_lessons.md"
+  DEST="audit/global/cross_module_lessons.md"
   echo "→ This is CROSS-MODULE or OTHER feedback"
   echo "→ Will be added to: $DEST"
   echo ""
@@ -347,14 +347,14 @@ read -p "Mark as integrated (move to integrated/ and commit)? [y/n]: " MARK_INTE
 
 if [ "$MARK_INTEGRATED" = "y" ] || [ "$MARK_INTEGRATED" = "Y" ]; then
   # Create integrated directory if doesn't exist
-  mkdir -p "feedback/integrated/"
+  mkdir -p "audit/integrated/"
 
   # Get relative path for feedback file
   FEEDBACK_RELATIVE=$(realpath --relative-to="$MAGPIE_AGENT_ROOT" "$FEEDBACK_FILE" 2>/dev/null || python3 -c "import os; print(os.path.relpath('$FEEDBACK_FILE', '$MAGPIE_AGENT_ROOT'))")
 
   # Move feedback file
-  mv "$FEEDBACK_FILE" "feedback/integrated/"
-  INTEGRATED_FILE="feedback/integrated/$(basename $FEEDBACK_FILE)"
+  mv "$FEEDBACK_FILE" "audit/integrated/"
+  INTEGRATED_FILE="audit/integrated/$(basename $FEEDBACK_FILE)"
   echo "✅ Moved to $INTEGRATED_FILE"
   echo ""
 

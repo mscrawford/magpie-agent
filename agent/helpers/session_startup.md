@@ -87,7 +87,7 @@ Check when the last semantic validation round was run:
 # From magpie-agent directory (do NOT cd)
 python3 -c "
 import json, datetime
-with open('feedback/validation_rounds.json') as f:
+with open('audit/validation_rounds.json') as f:
     data = json.load(f)
 rounds = data.get('rounds', [])
 if rounds:

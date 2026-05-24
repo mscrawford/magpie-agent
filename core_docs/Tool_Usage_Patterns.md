@@ -255,7 +255,7 @@ Bash(command='grep -n "Section Title" /path/to/large.md')
 
 ```python
 Write(
-    file_path="/path/to/magpie-agent/feedback/integrated/file.md",
+    file_path="/path/to/magpie-agent/audit/integrated/file.md",
     content="..."
 )
 ```
@@ -264,7 +264,7 @@ Write(
 
 ```python
 # ❌ Relative path:
-Write(file_path="feedback/integrated/file.md", content="...")
+Write(file_path="audit/integrated/file.md", content="...")
 ```
 
 ### Pre-Write Verification
@@ -677,7 +677,7 @@ find . -name "AGENT.md"
 
 **Lesson**: Always use absolute paths or verify `pwd` first. Don't conclude "doesn't exist" from one relative path failure.
 
-**See**: `feedback/integrated/20251024_220843_global_bash_directory_navigation.md`
+**See**: `audit/integrated/20251024_220843_global_bash_directory_navigation.md`
 
 ---
 
@@ -706,7 +706,7 @@ find . -name "AGENT.md"
 
 - **AGENT.md**: General agent instructions and workflows
 - **Response_Guidelines.md**: Response patterns and query routing
-- **feedback/integrated/20251024_220843_global_bash_directory_navigation.md**: Detailed analysis of directory navigation errors
+- **audit/integrated/20251024_220843_global_bash_directory_navigation.md**: Detailed analysis of directory navigation errors
 
 ---
 

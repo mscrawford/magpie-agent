@@ -361,10 +361,7 @@ New documentation project session
 
 1. **Check precedence hierarchy** (above)
 2. **Trust higher-precedence source** (code > module docs > cross-module > notes)
-3. **Create feedback** if notes contradict main docs:
-   ```bash
-   # Use feedback command to report inconsistency
-   ```
+3. **Record the inconsistency** if notes contradict main docs: append a lesson to `audit/global/agent_lessons.md` (or to the relevant `module_XX_notes.md`) describing what disagreed and how it was resolved. The next sync/validation run can then act on it.
 
 **Example conflict resolution:**
 ```
@@ -383,7 +380,7 @@ Reason: Notes may be outdated, main doc is verified against code
 - **Module-specific**: `module_XX.md` (lists dependents for that module)
 - **User warnings**: `module_XX_notes.md` (practical lessons about dependencies)
 
-**If counts differ** → Trust Module_Dependencies.md, create feedback
+**If counts differ** → Trust Module_Dependencies.md; record the discrepancy in `audit/global/agent_lessons.md` for follow-up
 
 **Conservation Laws:**
 - **Authoritative source**: `cross_module/*_balance_conservation.md`
@@ -411,4 +408,4 @@ Reason: Notes may be outdated, main doc is verified against code
 - State: "I found conflicting information in [source A] and [source B]"
 - Apply precedence hierarchy
 - Offer to verify against actual GAMS code
-- Create feedback for the inconsistency
+- Record the inconsistency in `audit/global/agent_lessons.md` for follow-up

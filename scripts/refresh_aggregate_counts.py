@@ -13,7 +13,7 @@ Example markers in source:
     (<!--count:total_bugs_found-->445<!--/count--> bugs catalogued).
 
 Canonical sources:
-- feedback/validation_rounds.json.cumulative_stats (rounds, bugs, dates)
+- audit/validation_rounds.json.cumulative_stats (rounds, bugs, dates)
 - live validator output (variable/equation/citation/realization counts) by
   re-running the relevant checkers
 - validate_consistency.sh (number of print_section calls = validator_checks)
@@ -35,7 +35,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 AGENT_DIR = SCRIPT_DIR.parent
 
-VALIDATION_JSON = AGENT_DIR / "feedback" / "validation_rounds.json"
+VALIDATION_JSON = AGENT_DIR / "audit" / "validation_rounds.json"
 VALIDATE_SH = SCRIPT_DIR / "validate_consistency.sh"
 BUG_TAXONOMY_MD = AGENT_DIR / "core_docs" / "Bug_Taxonomy.md"
 

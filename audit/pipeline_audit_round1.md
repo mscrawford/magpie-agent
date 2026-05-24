@@ -104,7 +104,7 @@ Estimated effort: ~150 LOC Python; closes the largest coverage gap.
 - `verifiers.md:224` hardcodes `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent` — not portable.
 - MANDATE 16 name mismatch: AGENT.md says "post-merge lines"; verifiers.md says "post-merge line numbers".
 - `validate-semantic.md` doesn't mention the schema_version 1.1 bump or the new `regression_questions` array.
-- `feedback/README.md` doesn't list 4 new top-level files (flywheel_rubric.md, validation_rounds.json, pipeline_audit_rounds.json, probe_dedup_ledger.json).
+- `audit/README.md` doesn't list 4 new top-level files (flywheel_rubric.md, validation_rounds.json, pipeline_audit_rounds.json, probe_dedup_ledger.json).
 - 11 of 16 MANDATEs have no mechanical guard (M1, M2, M3, M4, M5, M6, M9, M10, M11, M12, M13) — pure aspirational text.
 
 **Root cause**: the hoist was structurally sound (numbering, deployed-copy diff, auto-load wiring) but didn't go far enough — content was duplicated rather than moved, triggers were too broad, and downstream docs weren't updated.
@@ -116,7 +116,7 @@ Estimated effort: ~150 LOC Python; closes the largest coverage gap.
 4. Replace `/Users/turnip/...` path in verifiers.md with portable form.
 5. Reconcile MANDATE 16 name.
 6. Add schema 1.1 note to validate-semantic.md.
-7. Update feedback/README.md directory structure.
+7. Update audit/README.md directory structure.
 8. Mark each MANDATE explicitly with "Verified by: <script> | human review only".
 
 ### Cluster 4 — Validator coverage gaps (structural)
@@ -151,7 +151,7 @@ Estimated effort: ~150 LOC Python; closes the largest coverage gap.
 
 **Root cause**: counts hardcoded in multiple places; no mechanism keeps them in sync.
 
-**Candidate intervention**: a single mechanical pass via `scripts/refresh_aggregate_counts.py` that reads canonical values from `feedback/validation_rounds.json.cumulative_stats` + `wc -w` and updates a few well-defined doc placeholders. Alternative: drop precise numbers; use "21 rounds" → "21+ rounds" → cite cumulative_stats as the authoritative source.
+**Candidate intervention**: a single mechanical pass via `scripts/refresh_aggregate_counts.py` that reads canonical values from `audit/validation_rounds.json.cumulative_stats` + `wc -w` and updates a few well-defined doc placeholders. Alternative: drop precise numbers; use "21 rounds" → "21+ rounds" → cite cumulative_stats as the authoritative source.
 
 ### Cluster 6 — Cross-doc dependency-count drift
 
@@ -217,7 +217,7 @@ These are the **mechanize** candidates for the follow-up session. Per user scope
 ## Performance findings (Lens 6)
 
 - `bash scripts/validate_consistency.sh` wall-clock: **51.7s total**, of which `check_gams_variables.sh` alone takes **47.2s (91%)** due to a nested per-variable grep loop (~2,300 subprocess invocations). A Python rewrite would drop total time to <10s.
-- `feedback/archive/` (112K) and `reference/archive/` (160K) contain stale planning docs referenced only in validator skip-paths. Candidate for removal.
+- `audit/archive/` (112K) and `reference/archive/` (160K) contain stale planning docs referenced only in validator skip-paths. Candidate for removal.
 
 ---
 

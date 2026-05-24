@@ -24,7 +24,7 @@ When loading `PREPROC_AGENT.md`, follow its session startup instructions (check 
 
 ## ⚠️ Twin-agent disambiguation (READ FIRST when terms below appear)
 
-Two independent agents share this workspace, each with its own flywheel and `feedback/validation_rounds.json`. This file (magpie-agent's CLAUDE.md) auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT. Counter that asymmetric prior.
+Two independent agents share this workspace, each with its own flywheel and `audit/validation_rounds.json`. This file (magpie-agent's CLAUDE.md) auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT. Counter that asymmetric prior.
 
 **Ambiguous terms** — `flywheel`, `round`, `round N`, `validation round`, `verification round`, `validation_rounds.json`, generic `validate` / `validation` without "consistency" or a specific module:
 → **ASK which agent before acting**. Cost of a wrong run is ~1 hour of compute and a polluted validation_rounds.json.
@@ -32,7 +32,7 @@ Two independent agents share this workspace, each with its own flywheel and `fee
 **Quick recency check** (run before assuming):
 ```bash
 python3 -c "import json,os
-for label,path in [('magpie','magpie-agent/feedback/validation_rounds.json'),('preproc','magpie-preproc-agent/feedback/validation_rounds.json')]:
+for label,path in [('magpie','magpie-agent/audit/validation_rounds.json'),('preproc','magpie-preproc-agent/audit/validation_rounds.json')]:
   if os.path.exists(path):
     d=json.load(open(path)); r=d.get('rounds',[])
     print(f'{label}: {len(r)} rounds, latest R{r[-1].get(\"round\")} on {r[-1].get(\"date\")}' if r else f'{label}: 0 rounds')"
@@ -147,7 +147,7 @@ Check if you made **any** of these changes during the session:
 - Appended entries to any helper's `## Lessons Learned` section
 - Created or updated a `modules/module_XX_notes.md` file
 - Discovered and recorded a user correction
-- Updated `feedback/global/agent_lessons.md`
+- Updated `audit/global/agent_lessons.md`
 
 If YES → show the user what changed (step 1 above), then **pull, commit, and push** to the magpie-agent repo:
 ```bash
@@ -198,7 +198,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/bootstrap` | First-time setup | New users |
 | `/validate` | Check documentation consistency (syntactic) | Maintainers |
 | `/validate-module` | Validate specific module docs | Maintainers |
-| `/validate-semantic` | Run adversarial semantic accuracy flywheel (scoring spec: `feedback/flywheel_rubric.md`) | Maintainers |
+| `/validate-semantic` | Run adversarial semantic accuracy flywheel (scoring spec: `audit/flywheel_rubric.md`) | Maintainers |
 | `/pipeline-audit` | Multi-lens structural audit of the agent's own machinery (6 parallel Opus agents) | Maintainers |
 
 **Note**: Agent auto-update and AGENT.md deployment happen automatically at session start (see session_startup.md Step 0). Use `/update` when you want to also sync docs with MAgPIE develop and run semantic freshness validation on affected modules.
@@ -278,7 +278,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 
 **For cross-cutting questions** ("How does X affect Y?" "What depends on Z?"):
 1. **First, check** `core_docs/Query_Patterns_Reference.md` for query patterns
-2. **Check** `feedback/global/agent_lessons.md` for system-wide lessons (if applicable)
+2. **Check** `audit/global/agent_lessons.md` for system-wide lessons (if applicable)
 3. **Then check**:
    - `Core_Architecture.md` for model structure and overview
    - `Module_Dependencies.md` for dependencies and interactions
@@ -325,7 +325,7 @@ Before answering code-specific questions, verify documentation is current:
 
 ### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 
-**16 MANDATEs** that prevent recurring confabulation patterns identified across <!--count:total_rounds-->23<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->457<!--/count--> catalogued bugs, <!--count:total_bugs_fixed-->301<!--/count--> fixed; see `feedback/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
+**16 MANDATEs** that prevent recurring confabulation patterns identified across <!--count:total_rounds-->23<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->457<!--/count--> catalogued bugs, <!--count:total_bugs_fixed-->301<!--/count--> fixed; see `audit/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
 
 **Why hoisted**: ~150 lines of binding rules don't belong in always-loaded AGENT.md context; auto-loading on relevant triggers saves tokens, and a dedicated MANDATE doc with binding language separates "must enforce" from "FYI".
 
@@ -350,7 +350,7 @@ Before answering code-specific questions, verify documentation is current:
 | 15 | Post-rename global grep | Any global rename |
 | 16 | Citation full-path + post-merge line numbers | `file:line` citations |
 
-**Validation tracking**: See `feedback/validation_rounds.json` for the full audit history (scores, bugs, root causes). The rubric for scoring is `feedback/flywheel_rubric.md`. Future agents append new rounds to validation_rounds.json. Severity tiers and immutable anchor examples are in flywheel_rubric.md §1.
+**Validation tracking**: See `audit/validation_rounds.json` for the full audit history (scores, bugs, root causes). The rubric for scoring is `audit/flywheel_rubric.md`. Future agents append new rounds to validation_rounds.json. Severity tiers and immutable anchor examples are in flywheel_rubric.md §1.
 
 ### Step 2: Cite Your Sources
 
@@ -466,13 +466,13 @@ When reporting documentation sync status, use these badges:
 **When a user corrects you** ("No, that's wrong" / "Actually it works like X"):
 1. **Immediately** append the correction to the relevant helper's `## Lessons Learned` or to `modules/module_XX_notes.md`
 2. Format: `- YYYY-MM-DD: CORRECTION — [what was wrong] → [what is correct] (source: user correction)`
-3. If the correction is system-wide, also append to `feedback/global/agent_lessons.md`
+3. If the correction is system-wide, also append to `audit/global/agent_lessons.md`
 4. **Tell the user**: "✅ Recorded — I've saved this correction so future sessions get it right."
 
 **When you discover a module warning** (infeasibility combo, silent bug, misleading parameter):
 1. Check if `modules/module_XX_notes.md` exists — if not, create it using the template in existing notes files
 2. Append the warning under the appropriate section
-3. This happens during normal use, not only via the feedback command
+3. This happens during normal use — the agent records lessons directly, with no external submission step
 
 **When a user's question reveals a helper gap** (no helper covers their workflow):
 1. Mention it: "💡 This workflow isn't covered by a helper yet. Want me to create one?"
@@ -607,7 +607,7 @@ Other IAMs may use different approaches:
 
 ---
 
-## 🛡️ QUALITY GUARD: Lessons from Hundreds of Verified Bug Fixes (current totals in `feedback/validation_rounds.json` cumulative_stats)
+## 🛡️ QUALITY GUARD: Lessons from Hundreds of Verified Bug Fixes (current totals in `audit/validation_rounds.json` cumulative_stats)
 
 > These rules come from systematic cross-verification of all documentation against
 > the GAMS codebase. **Every rule here prevented real bugs. Follow them.**
@@ -677,7 +677,7 @@ The agent records lessons directly during sessions. There is no external user-su
 User corrections / agent discoveries during sessions
   → modules/module_XX_notes.md   (module-specific lessons — written directly by agent)
   → agent/helpers/*.md Lessons Learned  (helper improvements — written directly by agent)
-  → feedback/global/agent_lessons.md  (system-wide lessons)
+  → audit/global/agent_lessons.md  (system-wide lessons)
 ```
 
 **When to record a lesson**:

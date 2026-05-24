@@ -41,7 +41,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 AGENT_DIR = SCRIPT_DIR.parent
 DOCS_DIR = AGENT_DIR / "modules"
-ALLOWLIST_PATH = AGENT_DIR / "feedback" / "advisory_allowlist.json"
+ALLOWLIST_PATH = AGENT_DIR / "audit" / "advisory_allowlist.json"
 
 
 def load_allowlist() -> set[tuple[str, str]]:
@@ -211,7 +211,7 @@ def main() -> int:
     print(f"Arity mismatches (likely drift): {len(arity_findings)}")
     print(f"Signature variants (same arity, different set/literal — usually OK): {len(sig_findings)}")
     if allowlisted_count:
-        print(f"Allowlisted (suppressed via feedback/advisory_allowlist.json): {allowlisted_count}")
+        print(f"Allowlisted (suppressed via audit/advisory_allowlist.json): {allowlisted_count}")
     print()
 
     if not all_findings:

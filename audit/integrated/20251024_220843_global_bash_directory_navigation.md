@@ -49,7 +49,7 @@
 
 **Clue 1**: When searching for feedback file with `find`:
 ```bash
-./magpie-agent/feedback/pending/[file].md
+./magpie-agent/audit/pending/[file].md
 ```
 The `./magpie-agent/` prefix indicates I was in the PARENT directory (`/magpie/`), not the expected location (`/magpie-agent/`).
 
@@ -216,7 +216,7 @@ ls core_docs/  # Fails
 
 **Why this matters**: Working directory can shift during sessions. Relative paths break. Absolute paths always work.
 
-**See**: `feedback/integrated/20251024_220843_global_bash_directory_navigation.md`
+**See**: `audit/integrated/20251024_220843_global_bash_directory_navigation.md`
 ```
 
 ---

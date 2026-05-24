@@ -15,21 +15,21 @@
       "new": "im_growing_stock",
       "since": "2026-04-20",
       "reason": "PR #869 — pm_timber_yield (tDM/ha/yr flux) replaced by im_growing_stock (tDM/ha stock); consumers divide by m_timestep_length_forestry to recover annual flux",
-      "exempt_paths": ["feedback/", "modules/module_14.md", "modules/module_35.md", "modules/module_14_notes.md", "agent/commands/sync.md"]
+      "exempt_paths": ["audit/", "modules/module_14.md", "modules/module_35.md", "modules/module_14_notes.md", "agent/commands/sync.md"]
     },
     {
       "old": "vm_cost_trade",
       "new": "vm_cost_trade_tariff | vm_cost_trade_margin | vm_cost_trade_feasibility",
       "since": "2026-04-21",
       "reason": "PR #866 — Module 21 trade-cost interface split into three components (tariff, margin, feasibility); single vm_cost_trade replaced by all three in q11_cost_reg",
-      "exempt_paths": ["feedback/", "modules/module_11.md", "modules/module_21.md"]
+      "exempt_paths": ["audit/", "modules/module_11.md", "modules/module_21.md"]
     },
     {
       "old": "sm_cdr_target",
       "new": "REMOVED",
       "since": "2026-05-23",
       "reason": "R3 audit found this was fabricated — no such scalar ever existed; M56 mechanism is price-driven CDR, not target-driven",
-      "exempt_paths": ["feedback/"]
+      "exempt_paths": ["audit/"]
     }
   ]
 }

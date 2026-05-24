@@ -221,7 +221,7 @@ Apply the three-check verification (from Warning Signs section):
 - ❌ "Emissions calculated from soil properties" → ✅ "Emissions use IPCC factors"
 - ❌ "The model simulates volatilization" → ✅ "The model applies volatilization rates (X% of N)"
 
-**See**: `feedback/integrated/20251024_215608_global_calculated_vs_mechanistic.md` for detailed examples
+**See**: `audit/integrated/20251024_215608_global_calculated_vs_mechanistic.md` for detailed examples
 
 ### APPENDIX: Complete Parameterization vs. Process-Based Modeling Guide
 

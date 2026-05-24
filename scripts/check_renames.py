@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check 24 — flag references to historically-renamed identifiers.
 
-Reads `feedback/renames.json` and greps for each `old` name in non-exempt
+Reads `audit/renames.json` and greps for each `old` name in non-exempt
 docs. Catches the class where an identifier was renamed in MAgPIE but a doc
 author wrote new content still referencing the old name (e.g., M14 pcm_tau
 h→j rename: stragglers in §7.2/§16.2 escaped R3 review).
@@ -27,7 +27,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 AGENT_DIR = SCRIPT_DIR.parent
-RENAMES_PATH = AGENT_DIR / "feedback" / "renames.json"
+RENAMES_PATH = AGENT_DIR / "audit" / "renames.json"
 
 # Where to scan. Exclude archives and the renames file itself.
 SCAN_DIRS = [
@@ -38,7 +38,7 @@ SCAN_DIRS = [
     AGENT_DIR / "reference",
 ]
 ALWAYS_EXEMPT = [
-    "feedback/*",
+    "audit/*",
     "*/.git/*",
     "reference/archive/*",
     "scripts/__pycache__/*",
@@ -56,7 +56,7 @@ def is_exempt(rel_path: str, exempt_patterns: list[str]) -> bool:
     for pat in exempt_patterns:
         if fnmatch.fnmatch(rel_path, pat) or fnmatch.fnmatch(rel_path, f"*{pat}*"):
             return True
-        # Substring match for directory globs like "feedback/"
+        # Substring match for directory globs like "audit/"
         if pat.endswith("/") and pat.rstrip("/") in rel_path.split(os.sep):
             return True
     return False
@@ -68,7 +68,7 @@ def main() -> int:
 
     renames = load_renames()
     if not renames:
-        print("⚠️  No renames defined in feedback/renames.json — skipping")
+        print("⚠️  No renames defined in audit/renames.json — skipping")
         return 0
 
     print("Historical-rename reference check")

@@ -6,7 +6,7 @@
 set -e
 
 # Check if running from correct directory
-if [ ! -d "feedback/templates" ]; then
+if [ ! -d "audit/templates" ]; then
   echo "❌ Error: Must run this script from the magpie-agent/ directory"
   echo ""
   echo "Current directory: $(pwd)"
@@ -54,7 +54,7 @@ echo ""
 if [ "$TEMPLATE" = "global" ]; then
   echo "Global feedback affects:"
   echo "  - AGENT.md (agent instructions and behavior)"
-  echo "  - feedback/global/agent_lessons.md (system-wide lessons)"
+  echo "  - audit/global/agent_lessons.md (system-wide lessons)"
   echo "  - System-wide workflow"
   echo ""
   read -p "Target document (or 'system-wide'): " TARGET
@@ -71,10 +71,10 @@ fi
 # Generate filename
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 TARGET_CLEAN=$(echo "$TARGET" | sed 's/\.md$//' | sed 's/[^a-zA-Z0-9_]/_/g')
-FILENAME="feedback/pending/${TIMESTAMP}_${TEMPLATE}_${TARGET_CLEAN}.md"
+FILENAME="audit/pending/${TIMESTAMP}_${TEMPLATE}_${TARGET_CLEAN}.md"
 
 # Copy template
-cp "feedback/templates/${TEMPLATE}.md" "$FILENAME"
+cp "audit/templates/${TEMPLATE}.md" "$FILENAME"
 
 # Pre-fill fields
 if [[ "$OSTYPE" == "darwin"* ]]; then

@@ -255,7 +255,7 @@ git checkout backup-pre-compression-YYYYMMDD_HHMMSS
 
 ### Issue: "Can't find original feedback after compression"
 **Solution:**
-Original files are in `feedback/integrated/` with compression markers:
+Original files are in `audit/integrated/` with compression markers:
 ```markdown
 ---
 **COMPRESSION STATUS**: ✅ Compressed into [files]
@@ -267,7 +267,7 @@ Original files are in `feedback/integrated/` with compression markers:
 ## 📚 See Also
 
 - `agent/commands/compress-documentation.md` - Complete workflow details
-- `feedback/README.md` - Feedback system overview
+- `audit/README.md` - Feedback system overview
 - `scripts/compress_feedback.sh` - Helper script reference
 - `AGENT.md` - Agent behavior documentation
 

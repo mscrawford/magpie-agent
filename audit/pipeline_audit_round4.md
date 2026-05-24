@@ -4,7 +4,7 @@
 **Scope**: 6 lenses, 6 parallel Opus sub-agents, **55 raw findings**
 **Auditor model**: claude-opus-4-7
 **Status**: Triaged + most CRITICAL/HIGH fixed + remaining LOW deferred
-**Predecessors**: R1+R2 (`feedback/pipeline_audit_round1.md`), R3 (`feedback/pipeline_audit_round3.md`)
+**Predecessors**: R1+R2 (`audit/pipeline_audit_round1.md`), R3 (`audit/pipeline_audit_round3.md`)
 
 ---
 
@@ -177,7 +177,7 @@ Plus undercounts for M12 (missing im_pop_iso) and M42 (missing 2 vars), plus 1 w
 13. **Session_startup.md section numbering** (mix of "### 0." and "### Step 2b:")
 14. **pipeline-audit.md "new verifiers.md"** — stale "new" adjective
 
-These will be queued in `feedback/next_session_plan.md` for a future round.
+These will be queued in `audit/next_session_plan.md` for a future round.
 
 ---
 
@@ -229,7 +229,7 @@ Per `[[template_verifier_mandate_flywheel]]` — a class with ≥2 instances in 
 - `python3 scripts/check_default_realizations.py`: **all 46 modules clean** — Check 18 actually operational now after regex fix
 - Validator wall-clock: **6.34s** (-28% from R3's 8.78s)
 
-**Deferred** (with explicit reasons): see "Findings deferred" section above; queued in `feedback/next_session_plan.md`.
+**Deferred** (with explicit reasons): see "Findings deferred" section above; queued in `audit/next_session_plan.md`.
 
 ---
 

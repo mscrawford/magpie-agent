@@ -1,7 +1,7 @@
 {
   "ledger_version": "1.0",
   "captured_at": "2026-05-24",
-  "_purpose": "Track GAMS modules / variables / equations / realizations named in agent-loaded text or prior round results, so future flywheel probes don't accidentally measure recognition rather than capability. See feedback/flywheel_rubric.md §5 (round composition) and §8 (stability mechanisms).",
+  "_purpose": "Track GAMS modules / variables / equations / realizations named in agent-loaded text or prior round results, so future flywheel probes don't accidentally measure recognition rather than capability. See audit/flywheel_rubric.md §5 (round composition) and §8 (stability mechanisms).",
   "schema": {
     "name": "string — exact GAMS module / variable / equation / realization name as it appears in source",
     "type": "module | variable | equation | realization | parameter",

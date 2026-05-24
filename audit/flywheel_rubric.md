@@ -137,7 +137,7 @@ A question with zero bugs → 10. A question with one Major + two Minor → 10 �
 
 ## 5. Round composition
 
-**Every round MUST include at least 1 regression question** alongside new probes. See `feedback/validation_rounds.json` → `regression_questions` array.
+**Every round MUST include at least 1 regression question** alongside new probes. See `audit/validation_rounds.json` → `regression_questions` array.
 
 - Regression questions are **calibration anchors** — they recur across rounds (`scope: "calibration_anchor"`, `exempt: true` in `probe_dedup_ledger.json`).
 - If a regression question regresses (`drift_observed: true`), this is signal that something near it broke — investigate before introducing new probes.
@@ -219,11 +219,11 @@ These exist specifically to prevent rubric drift across rounds:
 2. **Decision-tree triggers**, not feeling — pick the first trigger that fires, not the tier that "feels right".
 3. **Tie-breaker pulls down** (§1) — when ambiguous between two tiers, the lower one is chosen. Tracked via `tier_uncertainty` so excessive downgrade can be detected.
 4. **Finite bug-class list** (§3) — 14 classes; new classes added only at minor versions with rationale.
-5. **Probe-dedup ledger** (`feedback/probe_dedup_ledger.json`) — prevents rounds from re-probing names already in rule text (would conflate recognition with capability).
+5. **Probe-dedup ledger** (`audit/probe_dedup_ledger.json`) — prevents rounds from re-probing names already in rule text (would conflate recognition with capability).
 6. **Calibration anchors** (§6) — 1-2 questions recur every round. A regressing anchor flags something broke; a stable anchor with rising score is real improvement.
 
 ---
 
 ## 9. Changelog
 
-- **v1.0 (2026-05-23)**: Initial hoist from `agent/commands/validate-semantic.md`. Severity tiers and bug-class list preserved verbatim from prior practice; anchor examples drawn from R3, R6, R16, R20, R21 detailed bug records in `feedback/validation_rounds.json`. Established §5 (round composition with regression questions) and §6 (initial regression-question set G1/G2) as new structural requirements.
+- **v1.0 (2026-05-23)**: Initial hoist from `agent/commands/validate-semantic.md`. Severity tiers and bug-class list preserved verbatim from prior practice; anchor examples drawn from R3, R6, R16, R20, R21 detailed bug records in `audit/validation_rounds.json`. Established §5 (round composition with regression questions) and §6 (initial regression-question set G1/G2) as new structural requirements.

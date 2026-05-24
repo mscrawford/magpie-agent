@@ -1,6 +1,6 @@
 # Next Session Plan — magpie-agent
 
-**Origin**: deferred items from the 2026-05-23 R1+R2+R3 lens-audit + fix sessions (`feedback/pipeline_audit_round1.md`, `feedback/pipeline_audit_round3.md`, `feedback/pipeline_audit_rounds.json`).
+**Origin**: deferred items from the 2026-05-23 R1+R2+R3 lens-audit + fix sessions (`audit/pipeline_audit_round1.md`, `audit/pipeline_audit_round3.md`, `audit/pipeline_audit_rounds.json`).
 
 **Context**: R3 closed Clusters 1 (partial — headers added; full body rewrites deferred), 2, 3, 4, 5, 6, 7, 8 (partial — .bak deleted; archives + Python rewrites deferred). 82 findings → ~70 addressed (CRITICAL+HIGH all fixed except M30/M80 body rewrites which got prominent header warnings; LOW mostly documented not fixed). All validators pass (34/35, 1 known advisory).
 
@@ -28,7 +28,7 @@ Per [[feedback_confabulation_relocates]] — R3 confirmed confabulation relocate
 
 **Tier 3 — done (R3)**:
 
-7. ✅ R3 pipeline-audit run (6 parallel Opus lens agents, 82 raw findings, ~75 unique after dedup). Triage + fix + verify + 7 root-cause-cluster commits landed. Validator status: 34/35 passed, 1 known advisory. Report at `feedback/pipeline_audit_round3.md`; JSON entry in `feedback/pipeline_audit_rounds.json`.
+7. ✅ R3 pipeline-audit run (6 parallel Opus lens agents, 82 raw findings, ~75 unique after dedup). Triage + fix + verify + 7 root-cause-cluster commits landed. Validator status: 34/35 passed, 1 known advisory. Report at `audit/pipeline_audit_round3.md`; JSON entry in `audit/pipeline_audit_rounds.json`.
 
 **R3 commits stacked** (on top of R2's 4 commits):
 | # | SHA | Cluster |
@@ -72,7 +72,7 @@ Per Lens 6: check_gams_equations.sh = 3.4s (38% of 8.8s wall-clock); check_gams_
 
 ### 12. Archive removal (R3 Cluster 8 — needs user confirmation)
 
-`feedback/archive/` (112KB) + `reference/archive/` (160KB) = 272KB dead weight. Referenced only in validator skip-paths (and validate_consistency.sh.bak which R3 deleted). Per Lens 6, candidate for deletion — but needs user sign-off since git history preservation may matter.
+`audit/archive/` (112KB) + `reference/archive/` (160KB) = 272KB dead weight. Referenced only in validator skip-paths (and validate_consistency.sh.bak which R3 deleted). Per Lens 6, candidate for deletion — but needs user sign-off since git history preservation may matter.
 
 ### 13. AGENT.md "LINK DON'T DUPLICATE" hoist (R3 Cluster 8 — judgment call)
 
@@ -87,7 +87,7 @@ Per Lens 6: `realization` keyword fires both `verifiers.md` AND `realization_sel
 The new `regression_questions` slots (G1, G2) need a first real test. R22 will be the first round to include them.
 
 **Action**: design a round of 4 new probes + G1 + G2; run via `/validate-semantic`. Confirm:
-- The auditor uses `feedback/flywheel_rubric.md` correctly (no inline rubric inheritance from validate-semantic.md)
+- The auditor uses `audit/flywheel_rubric.md` correctly (no inline rubric inheritance from validate-semantic.md)
 - G1 and G2 scores are recorded; `used_in_rounds` is appended; `drift_observed` is set
 - `python3 scripts/probe_dedup_check.py round22_design.md` warns appropriately
 
@@ -100,7 +100,7 @@ The new `regression_questions` slots (G1, G2) need a first real test. R22 will b
 - **Module 13 internal vm_tau cleanup**: spot-checked in R2; deeper sweep deferred.
 - **Pattern 12 remaining 2 advisories**: both are legitimate false positives — M14 vm_tau (doc explicitly notes absence), M52 s32_aff_plantation (cite-paragraph spans the var location but the cite line itself doesn't).
 - **s59_nitrogen_uptake Pattern 13 advisory**: the only remaining validator warning (1 of 35). Caused by unit-conversion FP (`200 kg N/ha` doc claim vs `0.2 tN/ha` source value — same number, different units). Per Lens 3 fix candidate: extend check_param_defaults.py with a per-claim allowlist comment OR a unit-conversion table. Low priority since the advisory clearly identifies the issue.
-- **R3 LOW-severity spot bugs not fixed**: Lens-by-lens, ~25 LOW findings not individually addressed. Most are minor stylistic or single-occurrence drifts that don't warrant a commit. See `feedback/pipeline_audit_round3.md` for the full enumeration.
+- **R3 LOW-severity spot bugs not fixed**: Lens-by-lens, ~25 LOW findings not individually addressed. Most are minor stylistic or single-occurrence drifts that don't warrant a commit. See `audit/pipeline_audit_round3.md` for the full enumeration.
 
 ---
 
@@ -135,7 +135,7 @@ python3 scripts/refresh_aggregate_counts.py    # all markers up to date
 git log --oneline 5708b6f..HEAD                # 7 R3 commits stacked on plan commit
 ```
 
-R3 logged to `feedback/pipeline_audit_round3.md` (full report) and `feedback/pipeline_audit_rounds.json` round 3 entry (R1 schema mirrored).
+R3 logged to `audit/pipeline_audit_round3.md` (full report) and `audit/pipeline_audit_rounds.json` round 3 entry (R1 schema mirrored).
 
 ---
 
@@ -187,7 +187,7 @@ User chose Phase 3 (opportunistic cleanup) over Phase 2 (PR-integration ~2 weeks
 
 15. ✅ **D4 — Module_Dependencies §5.2 diagram**. Stale solid `↑` arrow on `14_yields → 32_forestry` converted to dashed `⇡` with explanatory caption (shared climate/age-structure context, not a real interface).
 
-16. ✅ **I5 — Generic rename checker** (`scripts/check_renames.py` + `feedback/renames.json`, Check 24). Reads JSON-declared historical renames (3 initial entries: pm_timber_yield → im_growing_stock; vm_cost_trade split; sm_cdr_target removed); greps for old names in non-exempt docs. Italic-historical convention (`*old*`) and allowlist marker lines auto-suppressed. Surfaced + fixed 2 real bugs: `reference/Verification_Protocol.md` (pm_timber_yield cited as the canonical "right way" example) and `reference/dependency_analysis/EXECUTIVE_SUMMARY.md` (old name in variable table).
+16. ✅ **I5 — Generic rename checker** (`scripts/check_renames.py` + `audit/renames.json`, Check 24). Reads JSON-declared historical renames (3 initial entries: pm_timber_yield → im_growing_stock; vm_cost_trade split; sm_cdr_target removed); greps for old names in non-exempt docs. Italic-historical convention (`*old*`) and allowlist marker lines auto-suppressed. Surfaced + fixed 2 real bugs: `reference/Verification_Protocol.md` (pm_timber_yield cited as the canonical "right way" example) and `reference/dependency_analysis/EXECUTIVE_SUMMARY.md` (old name in variable table).
 
 17. ✅ **C1 — Python rewrites of equations.sh + realizations.sh** (`scripts/check_gams_equations.py` + `scripts/check_gams_realizations.py`). Mirror of check_gams_variables.py's single-pass index + O(1) set-membership pattern. Speedups: equations 3.76s → 0.095s (40x), realizations 1.01s → 0.100s (10x). Validator total wall-clock dropped from ~7s to ~5s. Validator now prefers .py and falls back to .sh.
 

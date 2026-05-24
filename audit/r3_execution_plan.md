@@ -41,14 +41,14 @@ If validator fails or working tree is dirty: STOP and ask the user.
 ## Phase 1: Context loading (read these in order)
 
 1. `agent/commands/pipeline-audit.md` — full lens spec, agent brief template, synthesis steps. **Critical read** — this defines the 6 lenses precisely.
-2. `feedback/pipeline_audit_round1.md` — R1 baseline (71 findings, broken down by lens). Skim to know what was found before.
-3. `feedback/pipeline_audit_rounds.json` — R1 + R2 JSON entries. R3 must mirror R1's schema (R2 used a fix+mechanize schema, different).
-4. `feedback/next_session_plan.md` — progress log of what landed in the follow-up session (4 commits). Cross-check your work against the "Won't fix" list so you don't re-flag deliberately-deferred items.
+2. `audit/pipeline_audit_round1.md` — R1 baseline (71 findings, broken down by lens). Skim to know what was found before.
+3. `audit/pipeline_audit_rounds.json` — R1 + R2 JSON entries. R3 must mirror R1's schema (R2 used a fix+mechanize schema, different).
+4. `audit/next_session_plan.md` — progress log of what landed in the follow-up session (4 commits). Cross-check your work against the "Won't fix" list so you don't re-flag deliberately-deferred items.
 
 Optional (skim if uncertain):
 - `core_docs/Bug_Taxonomy.md` — 14 patterns Lens 3 should probe against
 - `agent/helpers/verifiers.md` — 16 MANDATEs Lens 4 audits as a target surface
-- `feedback/flywheel_rubric.md` — severity scoring
+- `audit/flywheel_rubric.md` — severity scoring
 
 ---
 
@@ -72,7 +72,7 @@ Each agent gets the shared brief template (in `pipeline-audit.md` line ~68) fill
 >
 > **Bias your hunt toward**:
 > - Defects in the above NEW infrastructure (validators with FPs/FNs; resolver edge cases; marker system gaps; M18 doc-internal consistency)
-> - Surfaces R2 did NOT close (per `feedback/next_session_plan.md` "Won't fix" list): unbacktiked-prose variables, 766 remaining bare-basename advisories, M13 internal cleanup
+> - Surfaces R2 did NOT close (per `audit/next_session_plan.md` "Won't fix" list): unbacktiked-prose variables, 766 remaining bare-basename advisories, M13 internal cleanup
 > - Confabulation relocation: with stronger guards on var names + realizations + citations, where did the next bugs surface? (Bug_Taxonomy patterns NOT yet mechanized are the natural targets.)
 >
 > **De-prioritize** (already fixed; if found, note as "R2-fixed, regression"):
@@ -98,7 +98,7 @@ Each agent returns a JSON array of findings plus a 2-3 line summary. Process:
 
 ## Phase 4: Log R3 entry
 
-### File A: `feedback/pipeline_audit_round3.md` (mirror R1 format)
+### File A: `audit/pipeline_audit_round3.md` (mirror R1 format)
 
 Sections to include:
 - Header: round, date, status, auditor model
@@ -110,7 +110,7 @@ Sections to include:
 - Recommended next mechanization candidates (which Bug_Taxonomy pattern still has 0% validator coverage?)
 - Status section (what was fixed in this session, what's deferred)
 
-### File B: append to `feedback/pipeline_audit_rounds.json` (R1 schema)
+### File B: append to `audit/pipeline_audit_rounds.json` (R1 schema)
 
 Schema keys (copy from R1 entry):
 ```
@@ -127,7 +127,7 @@ Schema keys (copy from R1 entry):
   "corroborated": [...],
   "root_cause_clusters": [...],
   "recurring_classes_for_mechanization": [...],
-  "report_path": "feedback/pipeline_audit_round3.md",
+  "report_path": "audit/pipeline_audit_round3.md",
   "guards_added": [<list of validators or markers added in this round>],
   "status": "<Triaged; partial fixes applied; X deferred>",
   "notes": "<1-2 paragraph synthesis>"
@@ -201,7 +201,7 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 
 ---
 
-## Update `feedback/next_session_plan.md`
+## Update `audit/next_session_plan.md`
 
 After R3 lands:
 - Mark Tier 3 item 7 as done
@@ -233,7 +233,7 @@ If R3 surfaces ZERO of these, that's also useful signal — would indicate the a
 - All CRITICAL and HIGH findings either FIXED or DOCUMENTED in R3 report's deferred section with reason
 - Validator passes cleanly (or only known-good advisories remain)
 - R3 log committed + pushed
-- `feedback/next_session_plan.md` updated
+- `audit/next_session_plan.md` updated
 
 If you've spent ~3 hours and aren't done: commit what you have, push, and note remaining work in next_session_plan.md. Don't leave a dirty tree.
 

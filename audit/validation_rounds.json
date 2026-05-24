@@ -11,12 +11,12 @@
       {
         "version": "1.1",
         "date": "2026-05-23",
-        "change": "added top-level regression_questions array for stability tracking across rounds; rubric hoisted to feedback/flywheel_rubric.md"
+        "change": "added top-level regression_questions array for stability tracking across rounds; rubric hoisted to audit/flywheel_rubric.md"
       }
     ],
     "created": "2026-03-07",
-    "instructions": "Append new rounds to the 'rounds' array. Each round must include all fields. Bug sources: 'doc_error' = bug in the AI documentation, 'answerer_confabulation' = agent invented wrong info despite docs being correct, 'ambiguous' = unclear which caused the error. Each new round MUST include at least 1 regression question from the top-level 'regression_questions' array (added 2026-05-23); score against expected_answer_summary; if regression, set drift_observed=true and update used_in_rounds. Severity tiers + audit format: feedback/flywheel_rubric.md.",
-    "rubric_path": "feedback/flywheel_rubric.md",
+    "instructions": "Append new rounds to the 'rounds' array. Each round must include all fields. Bug sources: 'doc_error' = bug in the AI documentation, 'answerer_confabulation' = agent invented wrong info despite docs being correct, 'ambiguous' = unclear which caused the error. Each new round MUST include at least 1 regression question from the top-level 'regression_questions' array (added 2026-05-23); score against expected_answer_summary; if regression, set drift_observed=true and update used_in_rounds. Severity tiers + audit format: audit/flywheel_rubric.md.",
+    "rubric_path": "audit/flywheel_rubric.md",
     "rubric_version": "1.0"
   },
   "regression_questions": [

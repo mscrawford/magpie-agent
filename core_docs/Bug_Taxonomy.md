@@ -5,7 +5,7 @@
 **Purpose**: Catalog recurring documentation error patterns so that future sessions
 can avoid them and automated checks can catch them.
 
-**Used by**: `feedback/flywheel_rubric.md` §3 (bug classes) — the rubric scores `/validate-semantic` bugs against the 14 patterns here. When this file gains a new pattern, bump flywheel_rubric.md at a minor version.
+**Used by**: `audit/flywheel_rubric.md` §3 (bug classes) — the rubric scores `/validate-semantic` bugs against the 14 patterns here. When this file gains a new pattern, bump flywheel_rubric.md at a minor version.
 
 This document is the product of iterative audit-analyze-record-prevent cycles.
 Each pattern includes: what it looks like, why it happens, and how to prevent it.

@@ -336,7 +336,7 @@ else
 fi
 
 # Count feedback integrated
-FEEDBACK_COUNT=$(ls -1 feedback/integrated/*.md 2>/dev/null | wc -l | tr -d ' ')
+FEEDBACK_COUNT=$(ls -1 audit/integrated/*.md 2>/dev/null | wc -l | tr -d ' ')
 check_pass "Feedback integrated: $FEEDBACK_COUNT files"
 
 # Count GAMS reference docs
@@ -357,8 +357,8 @@ STALE_CMD_COUNT=0
 while IFS= read -r file; do
     # Skip archived/historical files, top-level audit/plan artifacts, and this script's own source
     case "$file" in
-        ./feedback/integrated/*|./feedback/archive/*|./reference/archive/*) continue ;;
-        ./feedback/pipeline_audit_round*.md|./feedback/r*_execution_plan.md|./feedback/next_session_plan.md|./feedback/flywheel_rubric.md|./feedback/README.md) continue ;;
+        ./audit/integrated/*|./audit/archive/*|./reference/archive/*) continue ;;
+        ./audit/pipeline_audit_round*.md|./audit/r*_execution_plan.md|./audit/next_session_plan.md|./audit/flywheel_rubric.md|./audit/README.md) continue ;;
         ./scripts/validate_consistency.sh) continue ;; # self-references are check logic, not stale format
     esac
     # Count "command: X" outside of "When user says" lines and "Unknown command:" patterns
@@ -373,7 +373,7 @@ while IFS= read -r file; do
         STALE_CMD_COUNT=$((STALE_CMD_COUNT + BAD))
         log "    ⚠️  $file: ~$BAD possible stale 'command:' refs"
     fi
-done < <(find . -name "*.md" -not -path "./.git/*" -not -path "./feedback/integrated/*" -not -path "./feedback/archive/*" -not -path "./reference/archive/*" 2>/dev/null)
+done < <(find . -name "*.md" -not -path "./.git/*" -not -path "./audit/integrated/*" -not -path "./audit/archive/*" -not -path "./reference/archive/*" 2>/dev/null)
 
 # Also check shell scripts (excluding this script itself)
 while IFS= read -r file; do
@@ -397,16 +397,16 @@ fi
 # Exclude files that legitimately reference CLAUDE.md as a deployment target
 CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/null \
     | grep -v ".git" \
-    | grep -v "feedback/integrated/" \
-    | grep -v "feedback/archive/" \
-    | grep -v "feedback/pipeline_audit_round" \
-    | grep -v "feedback/validation_round" \
-    | grep -v "feedback/r.*_execution_plan" \
-    | grep -v "feedback/next_session_plan" \
-    | grep -v "feedback/flywheel_rubric" \
-    | grep -v "feedback/README.md" \
+    | grep -v "audit/integrated/" \
+    | grep -v "audit/archive/" \
+    | grep -v "audit/pipeline_audit_round" \
+    | grep -v "audit/validation_round" \
+    | grep -v "audit/r.*_execution_plan" \
+    | grep -v "audit/next_session_plan" \
+    | grep -v "audit/flywheel_rubric" \
+    | grep -v "audit/README.md" \
     | grep -v "reference/archive/" \
-    | grep -v "feedback/global/agent_lessons.md" \
+    | grep -v "audit/global/agent_lessons.md" \
     | grep -v "scripts/validate_consistency.sh" \
     | grep -v "agent/commands/validate.md" \
     | grep -v "./AGENT.md" \
@@ -600,13 +600,13 @@ print_section "12/24" "Checking for stale path prefixes..."
 # (since the working directory IS magpie-agent/, this creates double-nesting)
 PREFIX_ISSUES=0
 # Exclude: README.md/AGENT.md (may mention it in prose), Tool_Usage_Patterns (teaching examples),
-# archive dirs, feedback/integrated (historical records), session_startup.md (handles both dirs)
+# archive dirs, audit/integrated (historical records), session_startup.md (handles both dirs)
 PREFIX_HITS=$(grep -rn 'magpie-agent/' --include="*.md" . 2>/dev/null | \
     grep -v ".git" | \
     grep -v "archive/" | \
     grep -v "README.md\|AGENT.md\|Tool_Usage_Patterns\|session_startup.md" | \
     grep -v "github\|http\|repo\|git@\|clone\|remote" | \
-    grep -v "feedback/integrated/" | \
+    grep -v "audit/integrated/" | \
     grep -v "# From magpie-agent\|in magpie-agent\|is magpie-agent\|or magpie-agent\|the magpie-agent" | \
     grep '`[^`]*magpie-agent/[^`]*`' || true)
 
@@ -626,7 +626,7 @@ fi
 print_section "13/24" "Checking for unclosed code blocks..."
 
 UNCLOSED=0
-for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./feedback/archive/*"); do
+for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./audit/archive/*"); do
     fences=$(grep -c '```' "$f" 2>/dev/null || true)
     fences=${fences:-0}
     fences=$(echo "$fences" | tr -d '[:space:]')
@@ -909,7 +909,7 @@ fi
 
 # ===============================================
 # Check 24: Historical-rename references (I5)
-# Greps for old identifier names (from feedback/renames.json) in non-exempt
+# Greps for old identifier names (from audit/renames.json) in non-exempt
 # docs. Skips italicized historical refs (`*old*`) and allowlist marker lines
 # (which must name old names by design). Catches "doc references a name that
 # was renamed in MAgPIE before the doc was last edited" — the M14 pcm_tau

@@ -44,10 +44,10 @@ fi
 # Search in global lessons
 echo "🌍 Global Lessons:"
 echo "──────────────────"
-if [ -f "feedback/global/agent_lessons.md" ]; then
-  if grep -qi "$SEARCH_TERM" "feedback/global/agent_lessons.md"; then
+if [ -f "audit/global/agent_lessons.md" ]; then
+  if grep -qi "$SEARCH_TERM" "audit/global/agent_lessons.md"; then
     echo "✓ Found in: agent_lessons.md"
-    grep -i -n -C 1 "$SEARCH_TERM" "feedback/global/agent_lessons.md" | head -5
+    grep -i -n -C 1 "$SEARCH_TERM" "audit/global/agent_lessons.md" | head -5
     echo ""
   else
     echo "  (none found)"
@@ -59,7 +59,7 @@ fi
 echo "⏳ Pending Feedback:"
 echo "──────────────────"
 PENDING_FOUND=0
-for file in feedback/pending/*.md; do
+for file in audit/pending/*.md; do
   if [ ! -f "$file" ]; then
     continue
   fi
@@ -81,7 +81,7 @@ fi
 echo "✅ Integrated Feedback (archive):"
 echo "──────────────────────────────────"
 INTEGRATED_FOUND=0
-for file in feedback/integrated/*.md; do
+for file in audit/integrated/*.md; do
   if [ ! -f "$file" ]; then
     continue
   fi
@@ -93,7 +93,7 @@ done
 
 if [ $INTEGRATED_FOUND -gt 0 ]; then
   echo "✓ Found in $INTEGRATED_FOUND archived feedback items"
-  echo "  (Run: grep -r '$SEARCH_TERM' feedback/integrated/ to see details)"
+  echo "  (Run: grep -r '$SEARCH_TERM' audit/integrated/ to see details)"
 else
   echo "  (none found)"
 fi

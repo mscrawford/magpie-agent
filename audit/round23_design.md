@@ -6,7 +6,7 @@
 **Schema**: v1.1 (regression questions G1/G2 required alongside 5 new probes)
 **Scope bias**: Phase 2 migration-touched docs — cross_module/ (12 conservation/safety docs with 128 citation rewrites), agent/helpers/ (5 migrated; scenario_diet_change.md alone had 29 conversions), AGENT.md format examples
 **Models**: Answerer = claude-sonnet-4-6, Auditor = claude-opus-4-7
-**Coverage check**: All probe modules eligible per `feedback/probe_dedup_ledger.json` (no name with retirement_eligible_after >= 23 used as the primary subject of any probe)
+**Coverage check**: All probe modules eligible per `audit/probe_dedup_ledger.json` (no name with retirement_eligible_after >= 23 used as the primary subject of any probe)
 
 ---
 
@@ -63,7 +63,7 @@ A user runs MAgPIE with a counterfactual `lpj_runoff_minus30pct` water-availabil
 **Archetype**: modification impact + cross-module dependency
 **Modules probed**: 44 (primary); incidental references to M10 / M30 / M11 are not the test target
 **Migration coverage**: `cross_module/modification_safety_guide.md`, `cross_module/circular_dependency_resolution.md`
-**Dedup note**: `vm_land` (off-limits per ledger as MANDATE-10 worked example) appears as one expected answer for Q3(b) because it is the canonical land-state variable any cropland-related modification would touch — naming it is not testing recognition of the MANDATE-10 example, it is the obvious answer to a modification-safety question. Classified per `feedback/probe_dedup_check.py` option (b): the recognition signal being tested is whether the agent retrieves the right cross-module interface, not whether it can recall the variable name from rule text.
+**Dedup note**: `vm_land` (off-limits per ledger as MANDATE-10 worked example) appears as one expected answer for Q3(b) because it is the canonical land-state variable any cropland-related modification would touch — naming it is not testing recognition of the MANDATE-10 example, it is the obvious answer to a modification-safety question. Classified per `audit/probe_dedup_check.py` option (b): the recognition signal being tested is whether the agent retrieves the right cross-module interface, not whether it can recall the variable name from rule text.
 
 **Question**:
 A developer wants to modify M44 (biodiversity) to add a "critical-habitat protection" constraint that further restricts cropland expansion in BII-loss-prone cells.
@@ -134,7 +134,7 @@ Per AGENT.md Step 2 "Cite Your Sources" (around line 356) and the Epistemic Hier
 
 ## R23-G1 — Module 14 default realization + equation list (calibration anchor)
 
-(Verbatim from `feedback/validation_rounds.json.regression_questions.G1`.)
+(Verbatim from `audit/validation_rounds.json.regression_questions.G1`.)
 
 **Question**: What is the default realization of module 14 (yields)? List the equations defined in its equations.gms.
 
@@ -144,7 +144,7 @@ Per AGENT.md Step 2 "Cite Your Sources" (around line 356) and the Epistemic Hier
 
 ## R23-G2 — vm_carbon_stock propagation through M52 + M56 (calibration anchor)
 
-(Verbatim from `feedback/validation_rounds.json.regression_questions.G2`.)
+(Verbatim from `audit/validation_rounds.json.regression_questions.G2`.)
 
 **Question**: Walk through how `vm_carbon_stock` is computed in Module 52 and where it enters the GHG-policy cost in Module 56. Cite the relevant equations and file:line locations.
 

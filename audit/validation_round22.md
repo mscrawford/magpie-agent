@@ -76,7 +76,7 @@
 
 **Drift in the anchor itself**: the `expected_answer_summary` claimed 3 equations including `q14_yieldcalib` — but `q14_yieldcalib` doesn't exist in any M14 realization. The auditor recommended correcting the anchor.
 
-**Status**: FIXED. `feedback/validation_rounds.json` G1 expected_answer_summary corrected to remove the spurious equation and explicitly note "exactly 2 — q14_yield_crop and q14_yield_past". `drift_observed: false` (Sonnet was correct against ground truth; the anchor was wrong).
+**Status**: FIXED. `audit/validation_rounds.json` G1 expected_answer_summary corrected to remove the spurious equation and explicitly note "exactly 2 — q14_yield_crop and q14_yield_past". `drift_observed: false` (Sonnet was correct against ground truth; the anchor was wrong).
 
 ### R22-G2 — vm_carbon_stock chain (7.0; regression anchor)
 
@@ -91,7 +91,7 @@ These errors are in the contributing-modules auxiliary list, not the high-stakes
 
 **Drift in the anchor itself**: the `expected_answer_summary` said "Module 52 defines vm_carbon_stock via equations linking land-use to carbon density to stock" — but M52 doesn't declare it (M56 does) and doesn't compute it (land modules do). The producer/consumer distinction was inverted in the anchor.
 
-**Status**: FIXED. `feedback/validation_rounds.json` G2 expected_answer_summary rewritten to correctly attribute declaration to M56, populator role to land modules (29, 31, 32, 34, 35) and M59 (SOM, soilc pool), and reader role to M52. `drift_observed: true` (the drift was in the anchor, not in Sonnet's answer).
+**Status**: FIXED. `audit/validation_rounds.json` G2 expected_answer_summary rewritten to correctly attribute declaration to M56, populator role to land modules (29, 31, 32, 34, 35) and M59 (SOM, soilc pool), and reader role to M52. `drift_observed: true` (the drift was in the anchor, not in Sonnet's answer).
 
 ---
 

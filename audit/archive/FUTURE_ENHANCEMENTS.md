@@ -26,7 +26,7 @@ This document tracks potential improvements to the feedback system that aren't c
 **Implementation**:
 ```bash
 ./scripts/build_feedback_index.sh
-# Generates: feedback/INDEX.md
+# Generates: audit/INDEX.md
 # Lists all warnings, lessons, examples with one-line summaries
 ```
 
@@ -145,7 +145,7 @@ fi
 
 **Implementation**:
 ```bash
-./scripts/batch_integrate.sh feedback/pending/*.md
+./scripts/batch_integrate.sh audit/pending/*.md
 # Guided workflow for multiple items
 # Creates single commit for the batch
 ```
@@ -161,7 +161,7 @@ fi
 
 **Implementation**:
 ```bash
-./scripts/preview_feedback.sh feedback/pending/my_item.md
+./scripts/preview_feedback.sh audit/pending/my_item.md
 # Shows: How it will appear in notes file
 # Suggests: Section to add it to
 # Validates: Required fields filled

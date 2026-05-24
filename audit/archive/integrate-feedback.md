@@ -2,7 +2,7 @@
 
 **Purpose**: Validate and integrate pending user feedback into module documentation
 
-**When to use**: Weekly or monthly, whenever feedback accumulates in `feedback/pending/`
+**When to use**: Weekly or monthly, whenever feedback accumulates in `audit/pending/`
 
 **What it does**:
 - Validates pending feedback against current code
@@ -28,10 +28,10 @@
 
 ```bash
 # List pending feedback (flat structure in pending/)
-ls feedback/pending/*.md 2>/dev/null | grep -v README.md
+ls audit/pending/*.md 2>/dev/null | grep -v README.md
 
 # Count pending items
-ls feedback/pending/*.md 2>/dev/null | grep -v README.md | wc -l
+ls audit/pending/*.md 2>/dev/null | grep -v README.md | wc -l
 ```
 
 **Present to user**:
@@ -55,7 +55,7 @@ For each pending feedback file:
 
 ### 2a. Read the feedback
 ```bash
-cat feedback/pending/20251101_warning_module_10_land.md
+cat audit/pending/20251101_warning_module_10_land.md
 ```
 
 ### 2b. Validate against current code
@@ -80,7 +80,7 @@ correction      → modules/module_XX.md (fixes errors in core docs)
 missing_content → modules/module_XX.md (adds missing content to core docs)
 warning         → modules/module_XX_notes.md (user warnings and cautions)
 lesson_learned  → modules/module_XX_notes.md (practical insights)
-global          → feedback/global/agent_lessons.md (system-wide lessons)
+global          → audit/global/agent_lessons.md (system-wide lessons)
 ```
 
 **Why this matters**:
@@ -148,7 +148,7 @@ Present consolidated integration plan to user:
 **Integration changes**:
 - Update: modules/module_10.md (1 correction applied)
 - Create/update: modules/module_10_notes.md (1 warning, 1 lesson added)
-- Archive to: feedback/integrated/20251026_batch_module_10.md
+- Archive to: audit/integrated/20251026_batch_module_10.md
 - Update timestamps:
   - module_10.md: Last Verified: 2025-10-26
   - module_10_notes.md: Last Feedback Integration: 2025-10-26
@@ -236,7 +236,7 @@ If file exists, append to appropriate section:
 
 Create batch archive:
 ```bash
-# Archive file: feedback/integrated/20251026_150000_batch_module_10.md
+# Archive file: audit/integrated/20251026_150000_batch_module_10.md
 ```
 
 Content:
@@ -273,9 +273,9 @@ Content:
 
 ### 4d. Remove from pending
 ```bash
-rm feedback/pending/20251102_warning_module_10_land.md
-rm feedback/pending/20251105_lesson_module_10_age_class.md
-rm feedback/pending/20251103_correction_module_10_equation.md
+rm audit/pending/20251102_warning_module_10_land.md
+rm audit/pending/20251105_lesson_module_10_age_class.md
+rm audit/pending/20251103_correction_module_10_equation.md
 ```
 
 ### 4e. Update module footers
@@ -291,7 +291,7 @@ rm feedback/pending/20251103_correction_module_10_equation.md
 ---
 **Last Verified**: [When Module XX code was last verified]
 **Last Feedback Integration**: 2025-10-26
-**Pending feedback**: 0 items in feedback/pending/
+**Pending feedback**: 0 items in audit/pending/
 ```
 
 ---
@@ -315,9 +315,9 @@ After processing all modules:
 - modules/module_70_notes.md (created, 2 lessons added)
 
 **Archives created**:
-- feedback/integrated/20251026_150000_batch_module_10.md
-- feedback/integrated/20251026_150005_batch_module_52.md
-- feedback/integrated/20251026_150010_batch_module_70.md
+- audit/integrated/20251026_150000_batch_module_10.md
+- audit/integrated/20251026_150005_batch_module_52.md
+- audit/integrated/20251026_150010_batch_module_70.md
 
 **Pending feedback remaining**: 1 global item
 
@@ -432,9 +432,9 @@ Submit feedback → /integrate-feedback (weekly) → [Repeat] →
 
 ## 📚 Related Documentation
 
-- `feedback/README.md` - Complete feedback system overview
-- `feedback/pending/README.md` - Staged workflow details
-- `feedback/WORKFLOW_GUIDE.md` - When to use which command
+- `audit/README.md` - Complete feedback system overview
+- `audit/pending/README.md` - Staged workflow details
+- `audit/WORKFLOW_GUIDE.md` - When to use which command
 - `/compress-documentation` - Consolidation command (use AFTER integration)
 - `scripts/submit_feedback.sh` - Submission script
 

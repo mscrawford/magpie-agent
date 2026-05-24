@@ -243,7 +243,7 @@ where N_input optimized, NUE scenario-based, EF fixed
 - ✅ "Module 51 **calculates emissions using IPCC emission factors**, not mechanistic volatilization models"
 - ✅ "Emissions are **parameterized** (1% of N → N₂O), **adjusted dynamically** for NUE changes"
 
-**See**: `feedback/integrated/20251024_215608_global_calculated_vs_mechanistic.md` for detailed examples
+**See**: `audit/integrated/20251024_215608_global_calculated_vs_mechanistic.md` for detailed examples
 ```
 
 ### Target 2: AI_Agent_Behavior_Guide.md - Add Response Pattern

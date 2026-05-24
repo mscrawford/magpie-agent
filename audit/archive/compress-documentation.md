@@ -7,7 +7,7 @@
 **What it compresses**:
 - ✅ `module_XX_notes.md` (user experience - warnings, lessons, examples)
 - ✅ `AGENT.md` (agent instructions - if bloated)
-- ✅ `feedback/global/agent_lessons.md` (global lessons)
+- ✅ `audit/global/agent_lessons.md` (global lessons)
 - ❌ **NEVER** `module_XX.md` (core docs - facts are sacred!)
 
 **What it does**:
@@ -33,7 +33,7 @@
 **COMPRESS** (user experience, can be reorganized):
 - ✅ `modules/module_XX_notes.md` - User warnings, lessons, examples
 - ✅ `AGENT.md` - Agent behavioral guidance (if verbose)
-- ✅ `feedback/global/agent_lessons.md` - System-wide lessons
+- ✅ `audit/global/agent_lessons.md` - System-wide lessons
 
 **NEVER COMPRESS** (code truth, facts are sacred):
 - ❌ `modules/module_XX.md` - Core technical documentation (verified against code)
@@ -50,14 +50,14 @@ Check which feedback has been integrated since last compression:
 
 ```bash
 # Check compression metadata
-if [ -f feedback/.compression_metadata.json ]; then
-  cat feedback/.compression_metadata.json
+if [ -f audit/.compression_metadata.json ]; then
+  cat audit/.compression_metadata.json
 else
   echo "No previous compression - will analyze all integrated feedback"
 fi
 
 # List all integrated feedback files
-ls -lt feedback/integrated/
+ls -lt audit/integrated/
 ```
 
 ---
@@ -154,9 +154,9 @@ For each consolidation opportunity, create a proposal showing:
 **Theme**: Module 10 modification safety patterns
 
 **Source Feedback Files**:
-- feedback/integrated/20251015_warning_module_10_water.md
-- feedback/integrated/20251018_lesson_module_10_carbon.md
-- feedback/integrated/20251022_warning_module_10_dependencies.md
+- audit/integrated/20251015_warning_module_10_water.md
+- audit/integrated/20251018_lesson_module_10_carbon.md
+- audit/integrated/20251022_warning_module_10_dependencies.md
 
 **Current State** (total: ~150 lines across 3 entries in module_10_notes.md):
 
@@ -210,7 +210,7 @@ Potential line reduction: ~220 lines (35%)
 Files affected:
   - modules/module_10_notes.md
   - modules/module_70_notes.md
-  - feedback/global/agent_lessons.md
+  - audit/global/agent_lessons.md
 
 Themes identified:
   - Module 10 modification safety: 3 feedback files
@@ -273,7 +273,7 @@ Use Edit tool to replace scattered content with consolidated version
 
 ### 5c. Update compression metadata
 ```bash
-# Create/update feedback/.compression_metadata.json
+# Create/update audit/.compression_metadata.json
 {
   "last_compression_date": "2025-10-26",
   "compression_id": "compress_20251026_150000",
@@ -292,7 +292,7 @@ Use Edit tool to replace scattered content with consolidated version
     {
       "theme": "SSP2 testing best practices",
       "source_files": ["20251016_lesson_ssp2_testing.md", "20251019_lesson_ssp2_stability.md"],
-      "target_files": ["feedback/global/agent_lessons.md"],
+      "target_files": ["audit/global/agent_lessons.md"],
       "line_reduction": 60
     }
   ],
@@ -328,7 +328,7 @@ Themes addressed:
 Files updated:
 - modules/module_10_notes.md (warnings consolidated)
 - modules/module_70_notes.md (lessons unified)
-- feedback/global/agent_lessons.md (testing patterns added)
+- audit/global/agent_lessons.md (testing patterns added)
 
 All original feedback preserved with compression markers.
 Compression ID: compress_20251026_150000"
@@ -352,11 +352,11 @@ After completing compression:
 **Files modified**:
 - modules/module_10_notes.md (3 warnings → 1 comprehensive safety section)
 - modules/module_70_notes.md (2 lessons → 1 unified best practice)
-- feedback/global/agent_lessons.md (3 scattered lessons → 1 testing guide)
+- audit/global/agent_lessons.md (3 scattered lessons → 1 testing guide)
 
 **Compression metadata**:
 - Compression ID: compress_20251026_150000
-- Metadata file: feedback/.compression_metadata.json
+- Metadata file: audit/.compression_metadata.json
 
 **Quality metrics**:
 - ✅ All unique insights preserved
@@ -415,7 +415,7 @@ See feedback W001, W003, W007 for detailed incidents.
 💡 L009: Start testing with SSP2 baseline (45 lines)
 ```
 
-**After** (in feedback/global/agent_lessons.md, 70 lines):
+**After** (in audit/global/agent_lessons.md, 70 lines):
 ```markdown
 ## Testing Best Practices (L001, L005, L009)
 
@@ -560,8 +560,8 @@ Submit feedback → /integrate-feedback (weekly) → [Repeat] →
 
 ## 📚 Related Documentation
 
-- `feedback/README.md` - Complete feedback system overview
-- `feedback/WORKFLOW_GUIDE.md` - When to use which command
+- `audit/README.md` - Complete feedback system overview
+- `audit/WORKFLOW_GUIDE.md` - When to use which command
 - `/integrate-feedback` - Integration command (use BEFORE compression)
 - `scripts/submit_feedback.sh` - Submission script
 

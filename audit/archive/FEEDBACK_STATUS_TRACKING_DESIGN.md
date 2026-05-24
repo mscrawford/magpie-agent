@@ -70,7 +70,7 @@ Run `/feedback status module_10` for details on specific module
 
 **Automatically generate integration report after `/integrate-feedback`**:
 
-**File**: `feedback/integrated/INTEGRATION_REPORT_2025-10-26.md`
+**File**: `audit/integrated/INTEGRATION_REPORT_2025-10-26.md`
 
 ```markdown
 # Integration Report: 2025-10-26
@@ -109,7 +109,7 @@ Run `/feedback status module_10` for details on specific module
 
 **Feedback #7**: correction_equation_typo_2025-10-15.md
 - **Reason**: Outdated - equation already fixed in recent code update
-- **Archived**: feedback/integrated/20251026_outdated_module_52.md
+- **Archived**: audit/integrated/20251026_outdated_module_52.md
 
 ---
 
@@ -123,7 +123,7 @@ Run `/feedback status module_10` for details on specific module
 ---
 
 **Next integration**: Typically in 1-4 weeks
-**Pending feedback**: 15 items remaining in feedback/pending/
+**Pending feedback**: 15 items remaining in audit/pending/
 ```
 
 **Benefits**:
@@ -145,8 +145,8 @@ Run `/feedback status module_10` for details on specific module
    - Effort: ~15 minutes (just template addition)
 
 2. **Create `/feedback-status` command**
-   - List pending feedback (read feedback/pending/)
-   - List recently integrated (read feedback/integrated/ with status)
+   - List pending feedback (read audit/pending/)
+   - List recently integrated (read audit/integrated/ with status)
    - Show summary counts
    - Effort: ~30 minutes (simple script)
 
@@ -216,11 +216,11 @@ Check the status of your submitted feedback.
 ## What It Shows
 
 **Pending feedback**:
-- All items in `feedback/pending/` waiting for integration
+- All items in `audit/pending/` waiting for integration
 - When next integration typically happens (weekly/monthly)
 
 **Integrated feedback**:
-- Items from `feedback/integrated/` with status
+- Items from `audit/integrated/` with status
 - What file they were integrated into
 - When integration happened
 
@@ -243,7 +243,7 @@ Check the status of your submitted feedback.
 Create comprehensive report:
 
 ```bash
-# File: feedback/integrated/INTEGRATION_REPORT_YYYYMMDD.md
+# File: audit/integrated/INTEGRATION_REPORT_YYYYMMDD.md
 ```
 
 Include:

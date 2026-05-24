@@ -15,7 +15,7 @@ magpie-agent's GAMS domain. The preproc version matched madrat tokens
 (vm_*/pm_*/v<N>_*/p<N>_*/s<N>_*/q<N>_*/module_XX/realization_<month><year>).
 
 USAGE CONTEXT: invoked during round-design step in every flywheel round
-(per feedback/flywheel_rubric.md §5 "Round composition"). The round
+(per audit/flywheel_rubric.md §5 "Round composition"). The round
 design doc typically lives at `~/.claude/plans/magpie-agent-rounds/round_N_design.md`
 (outside the agent tree, to prevent probe contamination).
 
@@ -28,7 +28,7 @@ import re
 import sys
 from pathlib import Path
 
-LEDGER = Path(__file__).parent.parent / "feedback" / "probe_dedup_ledger.json"
+LEDGER = Path(__file__).parent.parent / "audit" / "probe_dedup_ledger.json"
 
 # Match MAgPIE GAMS tokens that appear in the ledger.
 # - Modules: module_14, module_52, module_14_yields
@@ -143,7 +143,7 @@ def main():
         file=sys.stderr,
     )
     print(
-        "  (a) rotate to a fresh probe candidate (consult feedback/flywheel_rubric.md §6 for archetypes)",
+        "  (a) rotate to a fresh probe candidate (consult audit/flywheel_rubric.md §6 for archetypes)",
         file=sys.stderr,
     )
     print(

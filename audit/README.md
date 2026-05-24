@@ -17,7 +17,7 @@ Sessions end with the agent showing a learning summary and (with the user's perm
 ## Directory contents
 
 ```
-feedback/
+audit/
 ├── global/                          ← System-wide agent lessons (agent_lessons.md)
 ├── integrated/                      ← Archived agent-recorded lessons (history)
 ├── templates/                       ← Templates referenced by validators/auditors
@@ -29,7 +29,7 @@ feedback/
 ├── probe_dedup_ledger.json          ← Names off-limits for fresh probes
 ├── advisory_allowlist.json          ← Allowlisted advisory findings for validate_consistency.sh
 ├── renames.json                     ← Tracked historical renames (for validate_consistency.sh)
-├── agent_simplification_plan.md     ← Plan for /feedback removal + feedback/ → audit/ rename
+├── agent_simplification_plan.md     ← Plan for /feedback removal + audit/ → audit/ rename
 ├── magpie4_scaffolding_plan.md      ← Plan for the magpie4 lean scaffolding initiative
 ├── round*.md                        ← Per-round design/answer/report markdown for flywheel rounds
 └── README.md                        ← You are here
@@ -51,7 +51,7 @@ feedback/
 | Correction to a module fact | `modules/module_XX.md` (direct edit) | Agent edits the doc, records the change |
 | Warning about a module pitfall | `modules/module_XX_notes.md` | Append-only |
 | Helper-specific lesson | `agent/helpers/<helper>.md` `## Lessons Learned` | Append-only |
-| System-wide pattern | `feedback/global/agent_lessons.md` | Append-only |
+| System-wide pattern | `audit/global/agent_lessons.md` | Append-only |
 | Documentation gap that turned into a usable fix | `modules/module_XX.md` + entry in agent_lessons.md | Edit + append |
 
 For the archived formal-integration pipeline (scripts, guides), see `archive/`.

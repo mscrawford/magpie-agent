@@ -10,7 +10,7 @@ echo "=========================="
 echo ""
 
 # Count pending items
-PENDING_COUNT=$(find feedback/pending -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+PENDING_COUNT=$(find audit/pending -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
 
 if [ "$PENDING_COUNT" -eq 0 ]; then
   echo "✅ No pending feedback items"
@@ -23,7 +23,7 @@ echo "Found $PENDING_COUNT pending feedback item(s):"
 echo ""
 
 # List all pending items with metadata
-for file in feedback/pending/*.md; do
+for file in audit/pending/*.md; do
   if [ ! -f "$file" ]; then
     continue
   fi
@@ -54,8 +54,8 @@ done
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "To integrate feedback:"
-echo "  1. Review each file: cat feedback/pending/[filename]"
-echo "  2. Integrate: ./scripts/integrate_feedback.sh feedback/pending/[filename]"
+echo "  1. Review each file: cat audit/pending/[filename]"
+echo "  2. Integrate: ./scripts/integrate_feedback.sh audit/pending/[filename]"
 echo ""
 echo "To see this week's stats:"
 echo "  ./scripts/feedback_stats.sh"

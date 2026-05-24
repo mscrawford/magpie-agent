@@ -35,7 +35,7 @@ Documentation health is maintained through three complementary layers, each catc
 
 **Key principle**: This layer is cheap and fast — never skip it after editing docs.
 
-**Advisory allowlist**: `feedback/advisory_allowlist.json` suppresses known false-positives from advisory checks (currently `check_param_defaults` for unit-rendering FPs, `check_multi_section_consistency` for prose-shorthand FPs). Each entry documents the reason. **Audit on every `/pipeline-audit` run** — if a suppression no longer applies (regex tightened, doc rewritten, unit convention standardised), delete the entry and let the validator surface the case again. To add a new suppression, append an `{check, file, key, reason, added, added_in_round}` object to the `allowlist` array.
+**Advisory allowlist**: `audit/advisory_allowlist.json` suppresses known false-positives from advisory checks (currently `check_param_defaults` for unit-rendering FPs, `check_multi_section_consistency` for prose-shorthand FPs). Each entry documents the reason. **Audit on every `/pipeline-audit` run** — if a suppression no longer applies (regex tightened, doc rewritten, unit convention standardised), delete the entry and let the validator surface the case again. To add a new suppression, append an `{check, file, key, reason, added, added_in_round}` object to the `allowlist` array.
 
 ### Layer 2 — Code Sync (manual, triggered by MAgPIE updates)
 
@@ -77,7 +77,7 @@ Documentation health is maintained through three complementary layers, each catc
 2. Answers each question using ONLY the AI documentation (no code access)
 3. Audits each answer against the actual GAMS source code using 10 parallel agents
 4. Scores accuracy (1–10) and categorizes bugs as Critical/Major/Minor
-5. Records results in `feedback/validation_rounds.json`
+5. Records results in `audit/validation_rounds.json`
 
 **Cadence**: After major sync events (>20 commits integrated), or approximately quarterly.
 
@@ -213,7 +213,7 @@ Documentation is considered **healthy** when all of these conditions are met:
 |---|---|---|
 | ✅ Validator | All <!--count:validator_sub_checks-->40<!--/count--> sub-checks pass | `/validate` |
 | ✅ Sync | 🟢 badge (≤5 commits behind, <14 days) | Session startup check |
-| ✅ Semantic | Latest round mean ≥8.0/10 with 0 Critical bugs | `feedback/validation_rounds.json` |
+| ✅ Semantic | Latest round mean ≥8.0/10 with 0 Critical bugs | `audit/validation_rounds.json` |
 | ✅ Coverage | All modules have `module_XX.md` docs | `/validate` (includes coverage check) |
 | ✅ AGENT.md | All 3 copies synced (source, `../AGENT.md`, `../CLAUDE.md`) | `/validate` (includes deployment check) |
 
@@ -307,7 +307,7 @@ diff AGENT.md ../CLAUDE.md  # should show no differences
 | Validation command details | `agent/commands/validate.md` |
 | Semantic validation command | `agent/commands/validate-semantic.md` (if exists) |
 | Sync state tracking | `project/sync_log.json` |
-| Validation results | `feedback/validation_rounds.json` |
+| Validation results | `audit/validation_rounds.json` |
 | Module documentation | `modules/module_XX.md` |
 | User feedback & notes | `modules/module_XX_notes.md` |
 

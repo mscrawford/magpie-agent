@@ -19,7 +19,7 @@
 ### `/integrate-feedback` - Process New Submissions
 
 **What it does**:
-- Takes new feedback from `feedback/pending/`
+- Takes new feedback from `audit/pending/`
 - Validates against current code
 - Routes corrections → `module_XX.md` (fixes errors)
 - Routes warnings/lessons → `module_XX_notes.md` (user experience)
@@ -27,8 +27,8 @@
 
 **When to use**: Weekly or monthly, whenever feedback accumulates
 
-**Input**: `feedback/pending/*.md` (new submissions)
-**Output**: Updated docs + `feedback/integrated/` archives
+**Input**: `audit/pending/*.md` (new submissions)
+**Output**: Updated docs + `audit/integrated/` archives
 
 **Example workflow**:
 ```bash
@@ -46,14 +46,14 @@ scripts/submit_feedback.sh
 ### `/compress-documentation` - Reduce Bloat
 
 **What it does**:
-- Analyzes accumulated feedback in `feedback/integrated/`
+- Analyzes accumulated feedback in `audit/integrated/`
 - Identifies redundant or scattered content
 - Consolidates similar warnings/lessons
 - Reorganizes for clarity
 
 **When to use**: Quarterly, or when notes files feel bloated
 
-**Input**: `feedback/integrated/` archives (from past integrations)
+**Input**: `audit/integrated/` archives (from past integrations)
 **Output**: Consolidated notes files with reduced redundancy
 
 **Example workflow**:
@@ -72,7 +72,7 @@ scripts/submit_feedback.sh
 ┌─────────────────────────────────────────────────────────────┐
 │ STEP 1: Users submit feedback (anytime)                     │
 │ scripts/submit_feedback.sh                                   │
-│ → feedback/pending/20251101_143000_warning_module_10.md     │
+│ → audit/pending/20251101_143000_warning_module_10.md     │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -80,13 +80,13 @@ scripts/submit_feedback.sh
 │ /integrate-feedback all                                      │
 │ → Validates feedback                                        │
 │ → Updates module_10_notes.md                                │
-│ → Archives to feedback/integrated/                          │
+│ → Archives to audit/integrated/                          │
 └─────────────────────────────────────────────────────────────┘
                             ↓ (repeat 10+ times)
 ┌─────────────────────────────────────────────────────────────┐
 │ STEP 3: Quarterly compression (optional)                    │
 │ /compress-documentation                                      │
-│ → Analyzes feedback/integrated/                             │
+│ → Analyzes audit/integrated/                             │
 │ → Merges 3 similar warnings → 1 comprehensive version       │
 │ → Reduces bloat in module_10_notes.md                       │
 └─────────────────────────────────────────────────────────────┘
@@ -107,7 +107,7 @@ scripts/submit_feedback.sh
 ## ❓ When to Use Which Command
 
 ### Use `/integrate-feedback` when:
-- ✅ New feedback has accumulated in `feedback/pending/`
+- ✅ New feedback has accumulated in `audit/pending/`
 - ✅ You want to add user submissions to documentation
 - ✅ You're doing weekly/monthly maintenance
 - ✅ You want corrections to reach `module_XX.md`
@@ -133,7 +133,7 @@ scripts/submit_feedback.sh
 ### ✅ COMPRESS (user experience):
 - `modules/module_XX_notes.md` - User warnings, lessons, examples
 - `AGENT.md` - Agent behavioral guidance (if bloated)
-- `feedback/global/agent_lessons.md` - System-wide lessons
+- `audit/global/agent_lessons.md` - System-wide lessons
 
 ### ❌ NEVER COMPRESS (code truth):
 - `modules/module_XX.md` - Core technical documentation
@@ -185,7 +185,7 @@ Do you have new feedback submissions?
 ### Example 1: Weekly Workflow
 ```bash
 # Monday: 5 users submitted feedback over the weekend
-ls feedback/pending/*.md | grep -v README  # → 5 new files
+ls audit/pending/*.md | grep -v README  # → 5 new files
 
 # Use integrate command
 /integrate-feedback all
@@ -193,14 +193,14 @@ ls feedback/pending/*.md | grep -v README  # → 5 new files
 # Result:
 # - 5 items validated and integrated
 # - module_10_notes.md updated
-# - feedback/pending/ cleared
-# - feedback/integrated/ archives created
+# - audit/pending/ cleared
+# - audit/integrated/ archives created
 ```
 
 ### Example 2: Quarterly Compression
 ```bash
 # After 3 months and 15 integration sessions:
-ls feedback/integrated/  # → 45 archived feedback files
+ls audit/integrated/  # → 45 archived feedback files
 
 # Notes file is getting long
 wc -l modules/module_10_notes.md  # → 320 lines (was 80)
@@ -230,7 +230,7 @@ wc -l modules/module_10_notes.md  # → 320 lines (was 80)
 ### Example 3: What NOT to Do
 ```bash
 # ❌ WRONG: Compressing before integrating
-ls feedback/pending/module_10/  # → 5 new files
+ls audit/pending/module_10/  # → 5 new files
 /compress-documentation  # ← WRONG! Nothing to compress yet
 
 # ✅ CORRECT: Integrate first, compress later
@@ -319,8 +319,8 @@ ls feedback/pending/module_10/  # → 5 new files
 
 ## 📚 Related Documentation
 
-- `feedback/README.md` - Complete feedback system overview
-- `feedback/pending/README.md` - Staged workflow details
+- `audit/README.md` - Complete feedback system overview
+- `audit/pending/README.md` - Staged workflow details
 - `agent/commands/integrate-feedback.md` - Integration command details
 - `agent/commands/compress-documentation.md` - Compression command details
 - `scripts/submit_feedback.sh` - How to submit feedback

@@ -32,7 +32,7 @@ MAGPIE_DIR = os.path.dirname(AGENT_DIR)
 DEFAULT_CFG = os.path.join(MAGPIE_DIR, "config", "default.cfg")
 MODULES_DIR = os.path.join(MAGPIE_DIR, "modules")
 DOCS_DIR = os.path.join(AGENT_DIR, "modules")
-ALLOWLIST_PATH = os.path.join(AGENT_DIR, "feedback", "advisory_allowlist.json")
+ALLOWLIST_PATH = os.path.join(AGENT_DIR, "audit", "advisory_allowlist.json")
 
 
 def load_allowlist():
