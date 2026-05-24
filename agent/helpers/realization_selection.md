@@ -1,7 +1,14 @@
 # Helper: Choosing Between Realizations
 
-**Auto-load triggers**: "which realization", "choose realization", "realization comparison", "default realization", "switch realization", "alternative realization"
-**Last updated**: 2026-03-06
+**Auto-load triggers**: "which realization", "choose realization", "realization comparison", "switch realization", "alternative realization", "compare realizations"
+
+> Note: "default realization" is intentionally NOT a trigger here — that phrase
+> is owned by `verifiers.md` (MANDATE-driven active-realization verification per
+> AGENT.md Step 1c). This helper is for choice-oriented questions about which
+> of the AVAILABLE realizations to use (the comparison/selection task), not
+> identifying-what-is-default. R5 audit 2026-05-24 separation.
+
+**Last updated**: 2026-05-24
 **Lessons count**: 1 entries
 
 ---

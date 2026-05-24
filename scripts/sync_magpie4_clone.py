@@ -14,8 +14,17 @@ Usage:
   python3 scripts/sync_magpie4_clone.py             # clone/update to pinned SHA
   python3 scripts/sync_magpie4_clone.py --check     # SHA alignment only, no changes
   python3 scripts/sync_magpie4_clone.py --renv-lock PATH  # explicit renv.lock
+  python3 scripts/sync_magpie4_clone.py --allow-head-fallback  # accept HEAD if SHA+tag both unavailable (default: refuse)
 
 Idempotent: re-running while already at the pinned SHA is a no-op.
+
+Exit codes (per R5 audit Cluster L hardening, 2026-05-24):
+  0 — aligned (pinned SHA matches local HEAD, or sync completed at the SHA)
+  1 — misaligned (local cache exists but HEAD does not match pin)
+  2 — not cloned (no local cache yet; only --check)
+  3 — silent HEAD-fallback refused (SHA and tag both unavailable on GitHub
+      and --allow-head-fallback not set). Callers can decide whether to
+      retry, escalate, or accept the downgrade via the flag.
 """
 
 import argparse
@@ -116,8 +125,8 @@ def write_version_pins(agent_dir, version, sha, source_dir, lock_path, resolutio
     return pins_file
 
 
-def checkout_pinned(dest, sha, version):
-    """Try SHA → tag → HEAD. Return resolution string used."""
+def checkout_pinned(dest, sha, version, allow_head_fallback=False):
+    """Try SHA → tag → HEAD (if allowed). Return resolution string used or None if HEAD fallback refused."""
     try:
         run(["git", "-C", str(dest), "checkout", "--quiet", sha])
         return "sha"
@@ -132,6 +141,13 @@ def checkout_pinned(dest, sha, version):
     except subprocess.CalledProcessError:
         pass
 
+    if not allow_head_fallback:
+        print(f"  ERROR: SHA {sha[:10]} and v{version} tag both unavailable on GitHub. "
+              f"Refusing to silently downgrade to HEAD. Pass --allow-head-fallback "
+              f"to accept the downgrade explicitly (version_pins.json will record "
+              f"resolution='head'). Exit code 3.")
+        return None
+
     head_sha = current_sha(dest) or "unknown"
     print(f"  WARNING: SHA {sha[:10]} and v{version} tag unavailable; using HEAD ({head_sha}). "
           f"Version may NOT match renv.lock pin.")
@@ -144,6 +160,9 @@ def main():
                         help="Verify SHA alignment only; no clone/checkout.")
     parser.add_argument("--renv-lock", metavar="PATH",
                         help="Explicit path to renv.lock (overrides candidate search).")
+    parser.add_argument("--allow-head-fallback", action="store_true",
+                        help="Accept HEAD fallback if SHA and version tag are both "
+                             "unavailable on GitHub (default: refuse with exit 3).")
     args = parser.parse_args()
 
     agent_dir = Path(__file__).resolve().parent.parent
@@ -163,8 +182,8 @@ def main():
     if args.check:
         live = current_sha(dest)
         if not live:
-            print(f"  Not cloned. Run without --check to clone.")
-            sys.exit(1)
+            print(f"  Not cloned. Run without --check to clone. Exit code 2.")
+            sys.exit(2)
         aligned = sha.startswith(live) or live.startswith(sha[:10])
         print(f"  local HEAD: {live} {'✓ aligned' if aligned else '✗ MISMATCH'}")
         sys.exit(0 if aligned else 1)
@@ -197,7 +216,11 @@ def main():
         except subprocess.CalledProcessError as e:
             sys.exit(f"ERROR cloning {PACKAGE}: {e.stderr.strip()}")
 
-    resolution = checkout_pinned(dest, sha, version)
+    resolution = checkout_pinned(dest, sha, version, allow_head_fallback=args.allow_head_fallback)
+    if resolution is None:
+        # HEAD-fallback was refused. Do NOT write version_pins.json (caller
+        # would otherwise consume a downgraded pin without realizing).
+        sys.exit(3)
 
     final_sha = current_sha(dest)
     print(f"  {PACKAGE} v{version} cached at {dest} (HEAD: {final_sha}, resolution: {resolution})")

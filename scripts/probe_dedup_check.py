@@ -99,16 +99,45 @@ def scan(text, off_limits, metadata):
     return hits
 
 
+def auto_detect_next_round():
+    """Read validation_rounds.json to find the next round number.
+
+    Returns the next round number to design (latest + 1), or 0 if no rounds
+    exist or the file can't be read. 0 keeps everything off-limits, which is
+    the safe default — running the check on a stale "round 99" was the R5
+    Cluster E bug (returned 0 off-limits because every numeric retirement
+    value satisfied retirement_eligible_after <= 99).
+    """
+    val_path = Path(__file__).parent.parent / "audit" / "validation_rounds.json"
+    if not val_path.exists():
+        return 0
+    try:
+        data = json.loads(val_path.read_text())
+        rounds = data.get("rounds", [])
+        if rounds:
+            return max(r.get("round", 0) for r in rounds) + 1
+    except (json.JSONDecodeError, OSError):
+        pass
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("input", nargs="?", help="Round design markdown (or stdin)")
     ap.add_argument(
-        "--round", type=int, default=99,
-        help="Current round number (controls rotation; default 99 = all off-limits)",
+        "--round", type=int, default=None,
+        help="Round number being designed (controls which names have "
+             "rotated back in). Default: auto-detect from "
+             "audit/validation_rounds.json (latest + 1); falls back to 0 "
+             "(all off-limits) if unavailable. R5 2026-05-24 fix replaces "
+             "the prior broken default of 99 which rotated everything in.",
     )
     ap.add_argument("--dry-run", action="store_true",
                     help="Just verify the script and ledger load correctly")
     args = ap.parse_args()
+
+    if args.round is None:
+        args.round = auto_detect_next_round()
 
     off_limits, metadata = load_off_limits(args.round)
 
