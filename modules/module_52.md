@@ -137,7 +137,7 @@ pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc") =
 
 > **⚠️ As of 2026-04-20**: The vegc value computed here is **overwritten in preloop.gms** when `s52_growingstock_calib = 1` (default). The uncalibrated value is preserved in `pm_carbon_density_secdforest_ac_uncalib` and is still used downstream for afforestation/NDC use cases (Module 32's `af_ndc` realization logic, Module 29's tree cover). See Section 2.C below.
 
-**Other land** (start.gms:35):
+**Other land** (start.gms:48):
 ```
 pm_carbon_density_other_ac(t_all,j,ac,"vegc") =
   m_growth_vegc(
@@ -196,7 +196,7 @@ pm_carbon_density_secdforest_ac(t_all,j,ac,"litc") =
   );
 ```
 
-**Other land** (start.gms:38):
+**Other land** (start.gms:51):
 ```
 pm_carbon_density_other_ac(t_all,j,ac,"litc") =
   m_growth_litc_soilc(
@@ -451,7 +451,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Description**: Vegetation other land carbon density by age class (tC per ha)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
 - **Pools**: vegc, litc
-- **Calculation**: `start.gms:35,38` (NOT calibrated — no FRA target for "other" land)
+- **Calculation**: `start.gms:48,51` (NOT calibrated — no FRA target for "other" land)
 - **Consumers**: Module 14, Module 35 (other land carbon accounting)
 
 **3. pm_carbon_density_plantation_ac** (declarations.gms:13)
@@ -1106,7 +1106,7 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 
 **Parameters**: Confirmed ✅
 - pm_carbon_density_secdforest_ac: Calculated in start.gms:28,31
-- pm_carbon_density_other_ac: Calculated in start.gms:35,38
+- pm_carbon_density_other_ac: Calculated in start.gms:48,51
 - pm_carbon_density_plantation_ac: Calculated in start.gms:17,20
 - fm_carbon_density: Loaded in input.gms:16
 

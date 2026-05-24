@@ -33,7 +33,7 @@ Module 11 is the **central cost aggregation hub** and **defines MAgPIE's optimiz
 - Any cost missed here is **ignored by optimization** (model will use "free" resources)
 
 **Dependency Impact:**
-- **Upstream:** 30+ modules provide cost variables
+- **Upstream:** 27 modules provide cost variables
 - **Downstream:** Solver uses `vm_cost_glo` to guide all land-use and production decisions
 
 ---
@@ -165,7 +165,7 @@ RegionalCost = CropProductionCosts
 
 ## 3. Cost Components by Source Module
 
-Module 11 aggregates costs from 30+ modules. Here is the complete mapping of each cost variable to its source module:
+Module 11 aggregates costs from 27 modules. Here is the complete mapping of each cost variable to its source module:
 
 ### 3.1 Production Costs
 
@@ -173,8 +173,8 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 
 **Variable:** `vm_cost_prod_crop(i,factors)`
 **Source Module:** Module 38 (Factor Costs)
-**Description:** Labor, capital, and land costs for crop production
-**Dimensions:** i (regions), factors (labor, capital)
+**Description:** Labor and capital costs for crop production (land rents are handled separately in Module 11; not part of the M38 `factors` set)
+**Dimensions:** i (regions), factors (labor, capital) — verified at `modules/38_factor_costs/sticky_feb18/sets.gms:15-16`
 **Citation:** `equations.gms:15`, documented in `equations.gms:51`
 
 ---
@@ -257,7 +257,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Urban Land Costs
 
 **Variable:** `vm_cost_urban(j)`
-**Source Module:** Module 10 (Land) or Module 34 (Urban)
+**Source Module:** Module 34 (Urban) — verified `find ../modules -name declarations.gms -exec grep -l vm_cost_urban {} \;`
 **Description:** Costs for urban land expansion
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
@@ -305,7 +305,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Rotation Penalty
 
 **Variable:** `vm_rotation_penalty(i)`
-**Source Module:** Module 30 (Crop) or Module 32 (Forestry)
+**Source Module:** Module 30 (Croparea) — verified `find ../modules -name declarations.gms -exec grep -l vm_rotation_penalty {} \;`
 **Description:** Penalty costs for deviating from recommended crop/forest rotations
 **Dimensions:** i (regions)
 **Citation:** `equations.gms:23`
@@ -327,7 +327,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Phosphorus Fertilizer Costs
 
 **Variable:** `vm_p_fert_costs(i)`
-**Source Module:** Module 50 (Nitrogen Soil Budget) or Module 51 (Phosphorus)
+**Source Module:** Module 54 (Phosphorus) — declared at `../modules/54_phosphorus/off/declarations.gms`. NOT Module 50 or 51 despite the variable name suggesting nitrogen-related origin.
 **Description:** Costs for purchasing and applying phosphorus fertilizers
 **Dimensions:** i (regions)
 **Citation:** `equations.gms:25`
@@ -349,7 +349,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Water Costs
 
 **Variable:** `vm_water_cost(i)`
-**Source Module:** Module 42 (Water Demand) or Module 43 (Water Availability)
+**Source Module:** Module 42 (Water Demand)
 **Description:** Costs for water extraction, treatment, and delivery
 **Dimensions:** i (regions)
 **Citation:** `equations.gms:46`
@@ -371,7 +371,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Timber Harvest Costs
 
 **Variable:** `vm_cost_timber(i)`
-**Source Module:** Module 32 (Forestry) or Module 73 (Timber)
+**Source Module:** Module 73 (Timber)
 **Description:** Costs for harvesting timber from plantations
 **Dimensions:** i (regions)
 **Citation:** `equations.gms:34`
@@ -456,7 +456,7 @@ Module 11 aggregates costs from 30+ modules. Here is the complete mapping of eac
 #### Biodiversity Loss Costs
 
 **Variable:** `vm_cost_bv_loss(j)`
-**Source Module:** Module 44 (Biodiversity) or Module 22 (Conservation)
+**Source Module:** Module 44 (Biodiversity)
 **Description:** Costs/penalties for biodiversity loss (if biodiversity accounting enabled)
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
@@ -584,7 +584,7 @@ Only **one realization exists:** `default`
 
 ### 7.1 Critical Upstream Dependencies
 
-**Module 11 depends on 30+ modules** providing cost variables:
+**Module 11 depends on 27 modules** providing cost variables:
 
 **Core Production Modules:**
 - Module 38 (Factor Costs): Production costs for crops only (`vm_cost_prod_crop`)
@@ -931,7 +931,7 @@ MAgPIE minimizes costs **one time step at a time**, without anticipating future 
 
 ### 13.2 Receives Cost Variables From
 
-**30+ modules** — see complete list in Section 3
+**27 modules** — see complete list in Section 3
 
 **Key Providers:**
 - Module 38 (Factor Costs): Crop production costs (`vm_cost_prod_crop`) — largest contributor
@@ -1031,7 +1031,7 @@ Module 11 is at the **end of the dependency chain** — it aggregates costs but 
 Module 11 is the **simplest yet most critical module in MAgPIE**:
 
 **What It Does:**
-- Aggregates costs from 30+ modules into regional totals (`q11_cost_reg`)
+- Aggregates costs from 27 modules into regional totals (`q11_cost_reg`)
 - Sums regional totals into global cost (`q11_cost_glo`)
 - Defines the objective function MAgPIE minimizes
 
@@ -1043,7 +1043,7 @@ Module 11 is the **simplest yet most critical module in MAgPIE**:
 **Critical Principle:** Every economic consideration in MAgPIE MUST flow through Module 11 to affect optimization. Missing costs = free resources = over-use.
 
 **Key Dependencies:**
-- **Upstream:** 30+ modules providing cost variables
+- **Upstream:** 27 modules providing cost variables
 - **Downstream:** GAMS solver minimizing `vm_cost_glo`
 - **No circular dependencies**
 

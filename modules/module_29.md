@@ -679,8 +679,8 @@ p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac(t,j,ac,
 | Variable | Description | Dimensions | Units | Used By |
 |----------|-------------|------------|-------|---------|
 | `vm_cost_cropland` | Cropland module costs | (j) | Mio. USD17MER/yr | Module 11 (Costs) |
-| `vm_fallow` | Fallow land area | (j) | Mio. ha | Module 44 (Biodiversity) |
-| `vm_treecover` | Tree cover area | (j) | Mio. ha | Module 44 (Biodiversity) |
+| `vm_fallow` | Fallow land area | (j) | Mio. ha | Modules 32 (Forestry), 50 (NR Soil Budget), 59 (SOM) |
+| `vm_treecover` | Tree cover area | (j) | Mio. ha | Modules 22 (Conservation), 59 (SOM) |
 | `vm_bv` | Biodiversity value (crop_fallow, crop_tree) | (j,landcover,potnatveg) | Mio. ha | Module 44 (Biodiversity) |
 
 **Source**: `declarations.gms:38-45`, verified via grep

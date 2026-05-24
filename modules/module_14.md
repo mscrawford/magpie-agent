@@ -720,7 +720,7 @@ Module 14 reads 9 input data files:
 **From Module 13 (Technological Change):**
 
 - **vm_tau(j,"crop")**: Current technological change factor (optimization variable)
-- **pcm_tau(h,"crop")**: Previous time step τ factor (for pasture spillover)
+- **pcm_tau(j,"crop")**: Previous time step τ factor (for pasture spillover; cluster-level since the f_btc2 rename — verify at `../modules/13_tc/exo/declarations.gms`)
 - **fm_tau1995(h)**: Baseline τ in 1995 (fixed parameter)
 
 **Citation:** Used in `equations.gms:16,39`
@@ -1185,7 +1185,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 ### 16.2 Receives Intensification From
 
 - **Module 13 (Technological Change):** `vm_tau(j,"crop")` → scales crop yields
-- **Module 13 (Technological Change):** `pcm_tau(h,"crop")` → scales pasture yields (lagged)
+- **Module 13 (Technological Change):** `pcm_tau(j,"crop")` → scales pasture yields (lagged; cluster level since f_btc2 rename)
 
 ### 16.3 Receives Carbon Density From
 

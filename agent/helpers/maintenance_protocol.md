@@ -209,7 +209,7 @@ Documentation is considered **healthy** when all of these conditions are met:
 
 | Gate | Criteria | How to check |
 |---|---|---|
-| ✅ Validator | <!--count:validator_sub_checks-->36<!--/count-->/35 sub-checks pass | `/validate` |
+| ✅ Validator | All <!--count:validator_sub_checks-->36<!--/count--> sub-checks pass | `/validate` |
 | ✅ Sync | 🟢 badge (≤5 commits behind, <14 days) | Session startup check |
 | ✅ Semantic | Latest round mean ≥8.0/10 with 0 Critical bugs | `feedback/validation_rounds.json` |
 | ✅ Coverage | All modules have `module_XX.md` docs | `/validate` (includes coverage check) |

@@ -265,7 +265,7 @@ Only 2-3 connections per module, minimal integration with core system.
 
 | Module | Dependencies | Critical Interfaces |
 |--------|--------------|-------------------|
-| 11_costs | 32 cost vars from 25 modules (2026-05-23 recount) | All cost components |
+| 11_costs | 32 cost vars from 27 modules (recount; see §3.2) | All cost components |
 | 32_forestry | 11 inputs | Land, yields, policy |
 | 21_trade | 10 inputs | Production, demand |
 | 16_demand | 9 inputs | Population, production |

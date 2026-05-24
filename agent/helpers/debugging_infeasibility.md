@@ -116,7 +116,7 @@ MAgPIE has 13 slack variables with high penalty costs. When they activate, the m
 ### 1. Conservation targets conflict with food production
 **Symptom**: Infeasibility in later timesteps (2050+) as population grows
 **Cause**: Protected areas (Module 22) + minimum forest (Module 35) lock too much land
-**Fix**: Reduce `s22_protect_scenario` or use more flexible conservation targets
+**Fix**: Reduce `c22_protect_scenario` (config switch in `config/default.cfg`, not a scalar — common confusion) or use more flexible conservation targets
 
 ### 2. Water-limited regions with irrigation expansion
 **Symptom**: Infeasibility in arid regions

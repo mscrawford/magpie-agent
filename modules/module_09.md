@@ -135,10 +135,11 @@ $setglobal c09_pal_scenario  SSP2  * Physical Activity Level
 
 **Use cases**:
 - Food demand (Module 15)
-- Labor availability (Module 36)
-- Urban land (Module 34)
 - Livestock demand (Module 70)
 - Timber demand (Module 73)
+- Interest-rate weighting (Module 12)
+- Nutrient demand scaling (Module 50)
+- AWMS / GHG-policy regional aggregation (Modules 55, 56)
 
 **3.1.2 im_pop(t_all,i)** - Population by MAgPIE region
 
@@ -328,46 +329,46 @@ i09_gdp_pc_ppp_iso_raw(t_all,iso,pop_gdp_scen09)$(i09_gdp_pc_ppp_iso_raw(t_all,i
 
 #### 5.2 Provides To (Sends Variables To)
 
-**14 modules receive outputs from Module 09**:
+**Modules receiving outputs from Module 09** (recomputed 2026-05-24 R4; verified via `find ../modules/<NN> -name '*.gms' -exec grep -oE 'im_<var>\b' {} \;`):
 
-1. **Module 12 (interest_rate)** ← `im_development_state`
-   - Interest rates vary by development level
+1. **Module 12 (interest_rate)** ← `im_development_state`, `im_pop_iso`
+   - Interest rates vary by development level; population used in regional aggregation
 
-2. **Module 13 (tc - technological change)** ← `im_gdp_pc_ppp_iso`
-   - Technology adoption driven by income
+2. **Module 13 (tc - technological change)** ← `im_gdp_pc_ppp_iso`, `im_pop_iso`
+   - Technology adoption driven by income; population for ISO-level scaling
 
-3. **Module 15 (food)** ← `im_pop_iso`, `im_gdp_pc_ppp_iso`, `im_demography`, `im_physical_inactivity`
+3. **Module 15 (food)** ← `im_pop_iso`, `im_pop`, `im_gdp_pc_ppp_iso`, `im_gdp_pc_mer_iso`, `im_demography`, `im_physical_inactivity`
    - Food demand = population × per capita consumption (income-elastic) × age/sex structure
 
 4. **Module 18 (residues)** ← `im_development_state`
    - Residue use varies by development
 
-5. **Module 36 (employment)** ← `im_pop`
-   - Labor force from working-age population
+5. **Module 36 (employment)** ← `im_gdp_pc_mer_iso`
+   - Wage levels scale with GDP per capita (MER)
 
-6. **Module 38 (factor_costs)** ← `im_gdp_pc_mer`, `im_development_state`
-   - Agricultural wages scale with GDP per capita
+6. **Module 38 (factor_costs)** ← `im_gdp_pc_ppp_iso`
+   - Capital share regression uses GDP per capita PPP (all three M38 realizations consume this in preloop)
 
-7. **Module 42 (water_demand)** ← `im_development_state`
-   - Water use efficiency by development level
+7. **Module 42 (water_demand)** ← `im_development_state`, `im_gdp_pc_mer`, `im_pop_iso`
+   - Water use efficiency, regional GDP, and population
 
-8. **Module 50 (nr_soil_budget)** ← `im_development_state`
-   - Nutrient management practices by development
+8. **Module 50 (nr_soil_budget)** ← `im_pop_iso`
+   - Population used in nutrient demand calculations
 
-9. **Module 55 (awms - animal waste management)** ← `im_gdp_pc_ppp_iso`, `im_pop_iso`
-   - Livestock product demand by demographics
+9. **Module 55 (awms - animal waste management)** ← `im_development_state`, `im_pop_iso`
+   - Manure system shares vary by development; population for ISO-level scaling
 
-10. **Module 56 (ghg_policy)** ← `im_development_state`
-    - Carbon price implementation varies by income/development
+10. **Module 56 (ghg_policy)** ← `im_development_state`, `im_pop_iso`
+    - GHG-policy targets by development and population
 
-11. **Module 60 (bioenergy)** ← `im_gdp_pc_mer_iso`, `im_development_state`
-    - Bioenergy demand scenarios
+11. **Module 60 (bioenergy)** ← `im_pop_iso`
+    - Per-capita bioenergy demand scaling
 
-12. **Module 62 (material)** ← `im_gdp_pc_mer_iso`, `im_pop_iso`
-    - Material demand (wood products, biomaterials)
+12. **Module 62 (material)** ← `im_pop`
+    - Material demand scales with regional population
 
-13. **Module 70 (livestock)** ← `im_development_state`
-    - Livestock system intensity by development
+13. **Module 70 (livestock)** ← `im_pop`, `im_pop_iso`
+    - Livestock product demand by population (regional + ISO)
 
 14. **Module 73 (timber)** ← `im_gdp_pc_ppp_iso`, `im_pop_iso`
     - Timber demand = population × income-elastic per capita demand
@@ -479,10 +480,10 @@ else
    - SSP2 baseline until sm_fix_SSP2 = 2025: `preloop.gms:37-45`
    - Selected scenario after 2025: `preloop.gms:46-55`
 
-6. ✅ **Provides 8 interface variables**:
+6. ✅ **Provides 8 interface variables** (consumer counts recomputed 2026-05-24 R4):
    - im_pop_iso (10 modules), im_pop (3 modules)
    - im_gdp_pc_ppp_iso (4 modules), im_gdp_pc_mer_iso (2 modules), im_gdp_pc_mer (1 module)
-   - im_development_state (6 modules), im_demography (1 module), im_physical_inactivity (1 module)
+   - im_development_state (5 modules: 12, 18, 42, 55, 56), im_demography (1 module), im_physical_inactivity (1 module)
 
 7. ✅ **Small constant for demographics**:
    - +0.000001 added to demography to avoid division by zero: `preloop.gms:39, 48`

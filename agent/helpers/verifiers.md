@@ -102,6 +102,7 @@ These are NOT preferences. They are evidence-derived rules. Violating them silen
 
 **Rule**: NEVER construct variable or parameter names from patterns. ALWAYS look up the actual name in `modules/module_XX.md` or by grepping the GAMS code: `grep -rn "<candidate_name>" ../modules/*/declarations.gms`. If you cannot find it, state that the name was not located.
 
+<!-- check-gams-vars: allow vm_water_available, vm_water_demand, pcm_AEI -->
 **Worked example** (R3, 2026-03-07): the agent invented `vm_water_available`, `vm_water_demand`, `pcm_AEI` — combining MAgPIE naming conventions (vm_ for interface, water domain, AEI = Area Equipped for Irrigation). None exist. The actual variables are different.
 
 **Verification**: `bash scripts/check_gams_variables.sh` after writing; it greps for every backtick-quoted variable name against the actual declarations.

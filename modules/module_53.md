@@ -10,7 +10,7 @@
 - Calculates CH4 emissions from 4 agricultural sources
 - IPCC 2006 methodology for enteric fermentation, AWMS, and rice
 - IPCC 2019 revision for agricultural residue burning
-- MACC technical mitigation for all 4 sources
+- MACC technical mitigation for 3 of 4 sources (ent_ferm, awms, rice — NOT resid_burn)
 - Writes emissions to Module 56 (GHG Policy) for carbon pricing
 
 ---
@@ -54,7 +54,7 @@ Module 53 calculates **methane (CH4) emissions** from **4 agricultural sources**
 - FAO statistics for calibration (equations.gms:45,57)
 
 **MACC technical mitigation**:
-- All 4 sources include `(1 - im_maccs_mitigation(...))` term (equations.gms:29,52,63,72)
+- 3 of 4 sources include `(1 - im_maccs_mitigation(...))` term (equations.gms:29, 52, 63 — for ent_ferm, awms, rice). Residue burning (q53_emissionbal_ch4_resid_burn) is the exception — see §326 — and is mitigated only via reducing the burned amount itself, not by MACC technical mitigation.
 - Mitigation fractions from Module 57 (MACCs)
 - Represents adoption of technical mitigation measures (e.g., feed additives, manure digesters, alternate wetting/drying for rice)
 
@@ -390,13 +390,13 @@ Module 53 uses interface variables declared in other modules.
 **1. vm_feed_intake** (Module 70: Livestock)
 - **Declaration**: `vm_feed_intake(i,kap,kall)` (Module 70 `modules/70_livestock/fbask_jan16/declarations.gms:18`) — the second set is `kap` (all animal products: livst_rum, livst_pig, livst_chick, livst_egg, livst_milk, fish), NOT `kli`. Module 53 only references the `kli` subset (excluding fish) in its equations, but the variable itself is dimensioned over the broader `kap` set.
 - **Description**: Feed intake by livestock type and feed type (tDM per year)
-- **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:21,25,27)
+- **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:23, 25, 27)
 - **Provider**: Module 70 (Livestock) calculates feed demand based on livestock productivity
 
 **2. fm_attributes** (Core data)
 - **Declaration**: `fm_attributes(attributes,kall)` (Core declarations or Module 09)
 - **Description**: Attributes of commodities (ge=gross energy, nr=nitrogen, dm=dry matter, etc.)
-- **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:21,26,28)
+- **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:24, 26, 28)
 - **Unit**: GJ/tDM for gross energy
 - **Provider**: Core data files, potentially Module 09 (Drivers)
 
@@ -421,7 +421,7 @@ Module 53 uses interface variables declared in other modules.
 **6. im_maccs_mitigation** (Module 57: MACCs)
 - **Declaration**: `im_maccs_mitigation(t,i,emis_source,pollutants)` (Module 57 declarations.gms)
 - **Description**: Technical mitigation fraction for emission source and pollutant (0 to 1)
-- **Usage**: Equations q53_emissionbal_ch4_ent_ferm, q53_emissionbal_ch4_awms, q53_emissionbal_ch4_rice (equations.gms:59,52,63)
+- **Usage**: Equations q53_emissionbal_ch4_ent_ferm, q53_emissionbal_ch4_awms, q53_emissionbal_ch4_rice (equations.gms:29, 52, 63)
 - **Provider**: Module 57 (MACCs) calculates mitigation based on GHG price and MACC curves
 
 ### Variables Written by Module 53

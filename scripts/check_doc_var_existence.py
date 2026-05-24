@@ -45,6 +45,8 @@ AGENT_DIR = SCRIPT_DIR.parent
 SCAN_DIRS = [
     AGENT_DIR / "cross_module",
     AGENT_DIR / "core_docs",
+    AGENT_DIR / "agent" / "helpers",
+    AGENT_DIR / "agent" / "commands",
 ]
 
 

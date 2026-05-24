@@ -115,7 +115,15 @@ def check_doc_default_labels(module_num, module_name, actual_default):
 
         # Check header patterns like "Realization: realname (default)"
         # or "Default realization: realname" where realname is NOT the actual default
-        default_real_match = re.search(r"[Dd]efault\s+[Rr]ealization[:\s]*`?(\w+)`?", line)
+        # R4 fix (2026-05-24): allow optional bold wrappers around 'Default Realization'
+        # AND around the captured name. Previously the regex required `[:\s]*` between
+        # 'Realization' and the colon, which failed for the canonical `**Default
+        # Realization**: \`name\`` format used by ALL 46 module-doc headers — making
+        # Check 18's Pattern C effectively dormant.
+        default_real_match = re.search(
+            r"\*{0,2}[Dd]efault\s+[Rr]ealization\*{0,2}\s*:?\s*\*{0,2}\s*`?(\w+)`?",
+            line,
+        )
         if default_real_match:
             claimed = default_real_match.group(1)
             if claimed in available_realizations and claimed != actual_default:

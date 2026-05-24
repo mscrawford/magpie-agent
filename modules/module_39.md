@@ -317,7 +317,7 @@ vm_cost_landcon(j,land)   ! Land conversion costs (mio. USD17MER/yr)
 - **File**: `modules/39_landconversion/calib/input.gms:9`
 - **Value**: 12,300 USD17MER/ha
 - **Source**: Literature estimates + model calibration
-- **Components**: Clearing (3000), preparation (4000), infrastructure (5000), misc (300)
+- **Components**: not broken down in the source — `s39_cost_establish_crop` is a single scalar at `input.gms:9`. Any sub-component breakdown would need to be derived from the calibration data, not the GAMS code.
 
 **s39_cost_establish_past** - Pasture expansion cost
 - **File**: `modules/39_landconversion/calib/input.gms:11`
@@ -516,7 +516,7 @@ s39_reward_crop_reduction = 0  ! Was: 7380
 **Files to modify**:
 `modules/39_landconversion/calib/input.gms:9`
 ```gams
-s39_cost_establish_crop = 18450  ! Was: 12300 (forest clearing +50%)
+s39_cost_establish_crop = 18450  ! Was: 12300 (+50% cropland-establishment cost; affects expansion regardless of source land type)
 ```
 
 **Context**: Current model doesn't distinguish source land type. This modification uses higher base cost as proxy for forest clearing.

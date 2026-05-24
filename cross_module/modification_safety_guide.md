@@ -1069,18 +1069,20 @@ library(magpie4)
 
 ## Appendix B: Interface Variable Reference
 
-### Most Critical Variables (11+ Consumers)
+### Most Critical Variables (highest consumer counts)
 
 | Variable | Consumers | Producer | Type | Description |
 |----------|-----------|----------|------|-------------|
-| `vm_land(j,land)` | 11 | 10_land | vm_ | Land allocation by type |
-| `im_pop_iso(t,iso)` | 11 | 09_drivers | im_ | Population by country |
-| `pm_interest(t,i)` | 10 | 12_interest_rate | pm_ | Interest rates for NPV |
-| `vm_prod(j,k)` | 9 | 17_production | vm_ | Cell-level production |
-| `vm_prod_reg(i,kall)` | 9 | 17_production | vm_ | Regional production |
-| `vm_area(j,kcr,w)` | 9 | 30_croparea | vm_ | Cropland area by irrigation |
+| `vm_land(j,land)` | 10 | 10_land | vm_ | Land allocation by type |
+| `im_pop_iso(t,iso)` | 10 | 09_drivers | im_ | Population by country |
+| `pm_interest(t,i)` | 9 | 12_interest_rate | pm_ | Interest rates for NPV |
+| `vm_prod(j,k)` | 8 | 17_production | vm_ | Cell-level production |
+| `vm_prod_reg(i,kall)` | 8 | 17_production | vm_ | Regional production |
+| `vm_area(j,kcr,w)` | 8 | 30_croparea | vm_ | Cropland area by irrigation |
 
-**Source**: Module_Dependencies.md (lines 46-59)
+> **Counts recomputed 2026-05-24 R4**: each excludes the producer module; matches the authoritative Module_Dependencies.md §2.1 table (which R3 also recomputed). Use `find ../modules -name '*.gms' -exec grep -l '<var>' {} \; | awk -F/ '{print $3}' | sort -u | grep -v '<producer>'` to re-derive.
+
+**Source**: Module_Dependencies.md §2.1 (lines 46-59)
 
 ---
 

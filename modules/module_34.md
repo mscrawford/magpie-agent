@@ -109,7 +109,7 @@ vm_cost_urban(j2) =e= (v34_cost1(j2) + v34_cost2(j2)) * s34_urban_deviation_cost
 
 **Parameters**:
 - s34_urban_deviation_cost = 1e6 USD17/ha (`input.gms:13`)
-- Scaling: vm_cost_urban.scale(j) = 10e3 for numerical stability (`scaling.gms:8`)
+- Scaling: vm_cost_urban.scale(j) = 1e3 for numerical stability (`scaling.gms:8`)
 
 **Interface**: vm_cost_urban(j) provided to Module 11 (Costs) for inclusion in objective function
 
@@ -515,12 +515,12 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 
 ### Scaling
 
-**vm_cost_urban.scale(j) = 10e3** (`scaling.gms:8`):
-- Purpose: Numerical stability when costs reach millions USD17
-- Effect: GAMS solver sees vm_cost_urban/10e3 internally (rescaled to ~1-1000 range)
+**vm_cost_urban.scale(j) = 1e3** (`scaling.gms:8`):
+- Purpose: Numerical stability when costs reach thousands of USD17
+- Effect: GAMS solver sees vm_cost_urban/1e3 internally (rescaled by factor 1000)
 
 **v34_cost1, v34_cost2 scaling commented out** (`scaling.gms:9-10`):
-- Original: v34_cost1.scale(j) = 10e-4, v34_cost2.scale(j) = 10e-4
+- Original: v34_cost1.scale(j) = 1e-4, v34_cost2.scale(j) = 1e-4
 - Reason for disabling: Likely caused solver issues (extreme rescaling), left for reference
 
 ---

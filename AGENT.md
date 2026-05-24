@@ -733,8 +733,8 @@ User asks to WRITE or EDIT module documentation
 | Information Type | Authoritative Source | Link Format |
 |-----------------|---------------------|-------------|
 | Module equations, parameters, variables | `modules/module_XX.md` | `modules/module_XX.md#equation-name` |
-| Dependency counts & lists | `core_docs/Module_Dependencies.md` | `core_docs/Module_Dependencies.md#module-XX` |
-| Conservation law equations | `cross_module/*_balance.md` | `cross_module/land_balance_conservation.md#enforcement` |
+| Dependency counts & lists | `core_docs/Module_Dependencies.md` | `core_docs/Module_Dependencies.md` §2.1 (centrality table) |
+| Conservation law equations | `cross_module/*_balance.md` | `cross_module/land_balance_conservation.md` |
 | GAMS syntax & patterns | `reference/GAMS_*.md` | `reference/GAMS_MAgPIE_Patterns.md#topic` |
 | Data file sources | `core_docs/Data_Flow.md` | `core_docs/Data_Flow.md#file-name` |
 
@@ -774,7 +774,7 @@ q10_land_area(j2) .. sum(land, vm_land(j2,land)) =e= ...
 
 ✅ **CORRECT** - Link to authoritative source:
 ```markdown
-Module 29 uses land allocation from Module 10 (see `modules/module_10.md#equation-1`)
+Module 29 uses land allocation from Module 10 (see `modules/module_10.md` §1 — Equation 1: Land Area Conservation)
 ```
 
 ✅ **ACCEPTABLE** - Legitimate pedagogical duplication:
@@ -841,7 +841,7 @@ Module 29 uses land allocation from Module 10 (see `modules/module_10.md#equatio
 
 ## 🔄 KEEPING DOCUMENTATION IN SYNC
 
-Documentation freshness is checked **automatically** at session start (session_startup.md Step 0 fetches MAgPIE develop, Steps 2-3 count new commits and display a staleness badge).
+Documentation freshness is checked **automatically** at session start (session_startup.md Step 0 fetches MAgPIE develop, Step 2 counts new commits and displays a staleness badge).
 
 For **deep sync** (reading commit diffs and updating module docs), use `/sync`.
 
