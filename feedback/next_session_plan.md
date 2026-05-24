@@ -213,3 +213,56 @@ python3 scripts/check_gams_realizations.py   # 100% (77/77 realizations)
 **Next session**: Phase 2 — S2 PR-integration pipeline (~2 weeks focused). Start with 5a (PR impact analyzer, ~200 LOC). See `~/.claude/plans/magpie-agent-infrastructure-buildout.md` §5.
 
 Phase 3 cumulative: 6 real drift cases caught and fixed across both phases (M71 + M73 missing-dim drift surfaced by I2; safety_guide vm_prod_reg + pm_prod_init surfaced by I1; Verification_Protocol + EXECUTIVE_SUMMARY pm_timber_yield refs surfaced by I5). Each finding represents a doc bug that would have misled a downstream user; each was caught mechanically rather than via human review.
+
+---
+
+## Progress log (2026-05-24 Phase 2 session — 5a landed)
+
+Plan: `~/.claude/plans/magpie-agent-infrastructure-buildout.md` §5.
+
+**5a — done**:
+
+18. ✅ **PR impact analyzer** (`scripts/pr_doc_impact.py`, ~500 LOC incl. docstrings). Given a MAgPIE commit range (`--base`/`--head`, `--since-last-sync`, or `--pr N`), emits structured JSON listing each magpie-agent doc that needs updates. Four change classes:
+    - `identifier_added` / `identifier_removed` — diff `declarations.gms` lines; dedup by name across multi-realization modules; skip removals with zero stale-reference docs
+    - `default_value_change` — parse `input.gms` scalar `/ VALUE /` declarations at both revs
+    - `line_shift` — per-file diff hunk headers; cumulative deltas applied to each cited line
+    - `new_realization` — added `modules/NN_x/REAL/` directory (gated by `realization.gms` existence at head)
+
+    Per-doc confidence tier (`mechanical | semantic | manual`) for 5b/5c dispatch.
+
+    **Acceptance tests (all 4 PRs from sync_log)**:
+    | PR | Commit | Changes | Docs touched | Matches sync_log? |
+    |----|--------|---------|--------------|-------------------|
+    | #866 trade-cost split | 1c2e7031c | 41 | 6 | ✅ M21+M11+nitrogen_food_balance |
+    | #876 secdforest carbon | c7731e234 | 15 | 7 | ✅ M35+M52 (+ ripple) |
+    | #869 timber overhaul | 75d7ee167 | 56 | 9 | ✅ M14+M21+M32+M35+M52+M73 |
+    | #871 IPOPT solver | 9cba74ab7 | 7 | 3 | ✅ new_realization detected: nlp_ipopt → M80 doc + AGENT.md |
+
+19. ✅ **Surfaced gap: `pc<N>_` prefix missing from check_gams_variables regex**. Same R3-class bug as ic/oq/ov\d+_. `pc35_secdforest_natural` was uncheckable. Extended both `GAMS_NUMBERED_RE` and `DOC_VAR_RE`. Validator stays 36/39 pass — no new false positives. Inherited by `pr_doc_impact.py` (which imports `GAMS_NUMBERED_RE`); PR #876 now correctly surfaces the pc35 addition.
+
+**Noise-reduction iterations during MVP** (each was a measurable win, not a stylistic choice):
+- Bare-basename citation matches (`equations.gms:N`) now restricted to the module's OWN doc (`modules/module_NN.md`). Cross-module and reference docs must use the full-path form `modules/NN_name/REAL/equations.gms:N` to match. Reduced PR #866 from 78 → 6 docs touched.
+- Identifier add/remove dedup by name across realizations — a var added in 3 realizations is one finding with 3 `in_files`, not three findings.
+- `identifier_removed` entries with empty `affected_docs` suppressed (when the rename has already been synced to docs, nothing to flag).
+
+**Insights captured for future**:
+- **Prefix surface auto-discovery (candidate future work)**: this is the SECOND time we've found a missing numbered prefix in `check_gams_variables.py` (R3: ic/oq/ov; today: pc). The conservative-hardcoded approach lets prefixes silently slip in. A more robust check: derive the prefix set from observed declarations.gms patterns and warn when a new prefix appears. Memory candidate: [[gams_prefix_autodiscovery]].
+- **MVP citation-matching defensiveness pays off immediately**: 78 → 6 docs after the bare-basename restriction. The lossy initial regex would have generated dozens of false-positive doc-update tasks for downstream 5b/5c, eroding trust before 5b/5c even shipped. Always defang citation matching at the source.
+
+**Validator state at end of 5a**: unchanged — 36/39 passed, 3 known advisories. New tool is invocation-only; not wired into validate_consistency.sh.
+
+---
+
+## Verification at 5a session end (2026-05-24)
+
+```bash
+bash scripts/validate_consistency.sh         # 36/39 passed (unchanged)
+python3 scripts/check_gams_variables.py      # 100% verified (1806-var index, up from ~944 — pc<N>_ extension)
+python3 scripts/pr_doc_impact.py --base 1c2e7031c~1 --head 1c2e7031c   # 41 changes, 6 docs
+python3 scripts/pr_doc_impact.py --base c7731e234~1 --head c7731e234   # 15 changes, 7 docs
+python3 scripts/pr_doc_impact.py --base 75d7ee167~1 --head 75d7ee167   # 56 changes, 9 docs
+python3 scripts/pr_doc_impact.py --base 9cba74ab7~1 --head 9cba74ab7   # 7 changes, 3 docs (new_realization)
+python3 scripts/pr_doc_impact.py --since-last-sync --head origin/develop   # 0 changes (only Docker/codecheck since 3836bbaa9)
+```
+
+**Next session**: 5b — mechanical updater (`scripts/pr_mechanical_update.py`, ~150 LOC). For each "mechanical" entry from 5a JSON: apply line-citation offsets in docs, refresh scalar value markers. Run validators after. The line_shift entries from PR #876 are the natural first test case (8 hunks, mostly small deltas). Once 5b lands, the full 5a→5b loop can auto-fix line-citation drift on every PR.

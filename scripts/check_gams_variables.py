@@ -33,13 +33,15 @@ GAMS_NUMBERED_RE = re.compile(
     # R3 (2026-05-23): extended to cover module-numbered ic\d+_, oq\d+_, ov\d+_
     # prefixes (e.g., ic42_pumping_cost, ov56_*) which were previously
     # uncheckable due to single-char [vpfisc] class.
-    r"\b(?:ic\d+_|oq\d+_|ov\d+_|[vpfisc]\d+_)[a-zA-Z0-9_]+[a-zA-Z0-9]"
+    # 2026-05-24: pc\d+_ added — carry-over from previous timestep (e.g.
+    # pc35_secdforest_natural). Surfaced by pr_doc_impact.py on PR #876.
+    r"\b(?:ic\d+_|oq\d+_|ov\d+_|pc\d+_|[vpfisc]\d+_)[a-zA-Z0-9_]+[a-zA-Z0-9]"
 )
 GAMS_CORE_SCALAR_RE = re.compile(r"\bs_[a-zA-Z0-9_]+[a-zA-Z0-9]")
 
 DOC_VAR_RE = re.compile(
     r"`((?:vm_|pm_|fm_|im_|pcm_|ic_|ov_|oq_|sm_|cm_"
-    r"|ic\d+_|oq\d+_|ov\d+_"
+    r"|ic\d+_|oq\d+_|ov\d+_|pc\d+_"
     r"|v\d+_|p\d+_|f\d+_|i\d+_|s\d+_|c\d+_|s_)[a-zA-Z0-9_]+[a-zA-Z0-9])"
 )
 
