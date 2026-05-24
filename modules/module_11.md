@@ -493,7 +493,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 #### Additional Monitoring Costs
 
 **Variable:** `vm_costs_additional_mon(i)`
-**Source Module:** Module 71 (Disaggregated Livestock) — declared at `modules/71_disagg_lvst/foragebased_aug18/declarations.gms:11` as `vm_costs_additional_mon(i)` (1D, region only). It is a penalty cost for additionally-transported monogastric `livst_egg`, NOT a monitoring cost. The name "additional_mon" is short for "additional monogastric".
+**Source Module:** Module 71 (Disaggregated Livestock) — declared at `modules/71_disagg_lvst/foragebased_jul23/declarations.gms:11` (the default realization) as `vm_costs_additional_mon(i)` (1D, region only). It is a penalty cost for additionally-transported monogastric `livst_egg`, NOT a monitoring cost. The name "additional_mon" is short for "additional monogastric".
 **Description:** Penalty cost for additionally-transported monogastric `livst_egg` from M71's regional-to-cell disaggregation.
 **Dimensions:** i (regions)
 **Citation:** `equations.gms:40`

@@ -17,14 +17,14 @@
       "scope": "calibration_anchor",
       "exempt_from_dedup": true,
       "question": "What is the default realization of module 14 (yields)? List the equations defined in its equations.gms.",
-      "expected_answer_summary": "Default realization: managementcalib_aug19 (verify via 'grep cfg$gms$yields ../config/default.cfg'). Equations include q14_yield_crop, q14_yield_past, q14_yieldcalib (verify count and exact names against modules/14_yields/managementcalib_aug19/equations.gms).",
+      "expected_answer_summary": "Default realization: managementcalib_aug19 (verify via 'grep cfg$gms$yields ../config/default.cfg'). Equations defined in equations.gms: exactly 2 — q14_yield_crop (crop yields) and q14_yield_past (pasture yields). Verify exact line ranges against modules/14_yields/managementcalib_aug19/equations.gms. (Note: 'q14_yieldcalib' was historically listed in this anchor but does NOT exist as a defined equation — corrected 2026-05-24 R22 after audit.)",
       "ground_truth_sources": [
         "config/default.cfg (search 'cfg$gms$yields' for default)",
         "modules/14_yields/managementcalib_aug19/equations.gms (equation list)"
       ],
       "calibration_intent": "tests whether the agent (a) consults default.cfg before describing the realization, (b) reads the actual equations file rather than reconstructing from memory, (c) reports the equation count correctly (Bug_Taxonomy.md Pattern 6 -- Hardcoded counts drift)",
       "first_used_round": 22,
-      "used_in_rounds": [],
+      "used_in_rounds": [22],
       "drift_observed": false
     },
     {
@@ -32,15 +32,16 @@
       "scope": "calibration_anchor",
       "exempt_from_dedup": true,
       "question": "Walk through how vm_carbon_stock is computed in Module 52 and where it enters the GHG-policy cost in Module 56. Cite the relevant equations and file:line locations.",
-      "expected_answer_summary": "Module 52 defines vm_carbon_stock via equations linking land-use to carbon density to stock. Module 56's GHG policy multiplies vm_carbon_stock deltas (or related stock-change expressions) by a carbon price into vm_emission_costs. Citations must point at actual lines in modules/52_carbon/*/equations.gms and modules/56_ghg_policy/*/equations.gms (full relative paths per MANDATE 16).",
+      "expected_answer_summary": "vm_carbon_stock is DECLARED in Module 56 (price_aug22/declarations.gms:34) — NOT in Module 52. Land modules (29 cropland, 31 pasture, 32 forestry, 34 urban, 35 natveg) and Module 59 (SOM, soilc pool) POPULATE the variable. Module 52 only READS vm_carbon_stock and pcm_carbon_stock to compute CO2 emissions via q52_emis_co2_actual (normal_dec17/equations.gms:16-19). Module 56's chain: q56_emis_pricing_co2 (equations.gms:19-22) reads (pcm - vm)/timestep_length → v56_emis_pricing → q56_emission_cost_oneoff (equations.gms:45-52) → v56_emission_cost → q56_emission_costs (equations.gms:56-58) → vm_emission_costs(i). The %c56_carbon_stock_pricing% switch default is 'actualNoAcEst'. Citations must use full relative paths per MANDATE 16. (Corrected 2026-05-24 R22 — earlier summary incorrectly attributed declaration to M52.)",
       "ground_truth_sources": [
-        "modules/52_carbon/*/equations.gms",
-        "modules/52_carbon/*/declarations.gms",
-        "modules/56_ghg_policy/*/equations.gms"
+        "modules/56_ghg_policy/price_aug22/declarations.gms (vm_carbon_stock declaration site)",
+        "modules/52_carbon/normal_dec17/equations.gms (q52_emis_co2_actual reads vm_carbon_stock)",
+        "modules/56_ghg_policy/price_aug22/equations.gms (q56_emis_pricing_co2 chain)",
+        "modules/29_cropland/, 31_past/, 32_forestry/, 34_urban/, 35_natveg/, 59_som/ (populators)"
       ],
-      "calibration_intent": "tests (a) cross-module dependency tracing, (b) precise file:line citations, (c) variable-name fidelity (no confabulation of related-sounding names like vm_carbon_stocks), (d) gate-tabulation behavior when the chain has multiple branches",
+      "calibration_intent": "tests (a) cross-module dependency tracing, (b) precise file:line citations, (c) variable-name fidelity (no confabulation of related-sounding names like vm_carbon_stocks), (d) gate-tabulation behavior when the chain has multiple branches, (e) producer-vs-consumer distinction (which module DECLARES vs which only READS the variable)",
       "first_used_round": 22,
-      "used_in_rounds": [],
+      "used_in_rounds": [22],
       "drift_observed": false
     }
   ],
@@ -2617,22 +2618,141 @@
           "Q3 surfaced a genuine model behavior worth documenting: Module 52's growing-stock bisection is a fixed 25-iteration loop with no convergence test, so k clamps to a bound when the FRA target is unreachable. Caveat added to module_52.md."
         ]
       }
+    },
+    {
+      "round": 22,
+      "date": "2026-05-24",
+      "commit_before": "e9d4b7b",
+      "commit_after": "pending (R22 fixes recorded together with this round entry)",
+      "answerer_model": "claude-sonnet-4.6",
+      "auditor_model": "claude-opus-4.7",
+      "type": "full",
+      "scope": "First round under schema v1.1 \u2014 includes G1 and G2 regression questions plus 4 new probes designed to test R3 + R4 fixes (M11 \u00a717.2 + \u00a73, M70 vm_costs_additional_mon attribution, land conservation, AEI default).",
+      "questions": [
+        {
+          "id": "R22-Q1",
+          "archetype": "cross-module causal chain",
+          "modules_tested": [11, 54, 50],
+          "question": "Trace how a unit of phosphorus-fertilizer cost enters MAgPIE's objective function. Name the variable; producing module; consuming module + equation; show form and file:line.",
+          "score": 8.0,
+          "bugs_found": 1,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 0,
+          "bugs_nitpick": 0,
+          "notes": "Sonnet correctly identified vm_p_fert_costs, M54 attribution (not M50/M51), the 'off' realization-only and .fx(i)=0 in preloop, the q11_cost_reg consumption, and the q11_cost_glo objective aggregation. Q1-B1 (Major, answerer_confabulation): Sonnet cited 'equations.gms:93' for vm_nr_inorg_fert_costs and 'equations.gms:94' for vm_p_fert_costs \u2014 actual lines are 24 and 25 (the equations.gms file is only 69 lines total). Sonnet appears to have confused the doc's module_11.md line numbers (the cost vars appear at L93/94 of the doc) with equations.gms line numbers. Internally inconsistent \u2014 same answer correctly cited the q11_cost_reg block as spanning equations.gms:15-47."
+        },
+        {
+          "id": "R22-Q2",
+          "archetype": "default-vs-switch + quantitative",
+          "modules_tested": [70, 71, 11],
+          "question": "Examine vm_costs_additional_mon: dimensions; producer; meaning of 'additional_mon'; entry into M11; M70 vs M71 attribution.",
+          "score": 8.0,
+          "bugs_found": 1,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 0,
+          "bugs_nitpick": 0,
+          "notes": "Sonnet correctly identified 1D dimensions, M71 attribution (not M70), 'additional monogastric' meaning (not monitoring), the s71_punish_additional_mon=15000 calibration, the q71_punishment_mon aggregation, M11 entry at equations.gms:40. Q2-B1 (Major, doc_error introduced in R3 commit ae3763f): Sonnet cited the variable's declaration at 'modules/71_disagg_lvst/foragebased_aug18/declarations.gms:11' \u2014 but the default realization is foragebased_jul23 (verified in config/default.cfg). The R3 fix in module_70.md and module_11.md \u00a717.2 introduced foragebased_aug18 references; both fixed this session in R22 cleanup. Internally inconsistent \u2014 Sonnet correctly named foragebased_jul23 elsewhere in same answer."
+        },
+        {
+          "id": "R22-Q3",
+          "archetype": "conservation law enforcement",
+          "modules_tested": [10],
+          "question": "Land conservation: which equation; mathematical form; module; set; failure if bioenergy_plantation added; equality vs inequality.",
+          "score": 10.0,
+          "bugs_found": 0,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0,
+          "bugs_nitpick": 0,
+          "notes": "Perfect answer. Sonnet correctly identified q10_land_area, exact file:line (modules/10_land/landmatrix_dec18/equations.gms:13-15), the strict-equality form with sum(land,...) preserved (NOT enumerated \u2014 explicitly avoided the R16 anchor bug), correct land-set membership (7 members) and definition location (core/sets.gms:250-251), and a technically sound failure-mechanism analysis for adding a new land type. Mechanical-check misses (M4 epistemic badges, M6 closing source statement) noted but not scored as bugs per rubric \u00a72."
+        },
+        {
+          "id": "R22-Q4",
+          "archetype": "default-vs-switch + edge case",
+          "modules_tested": [41, 30, 42, 11],
+          "question": "Module 41 (AEI): realizations + default; endogenous vs exogenous by default; cfg switch + default value; consequence for expansion; downstream modules; how to switch.",
+          "score": 9.0,
+          "bugs_found": 1,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 1,
+          "bugs_nitpick": 0,
+          "notes": "Sonnet correctly identified 2 realizations (endo_apr13 default + static), the cfg switch + default value, the vm_AEI.lo (endo) vs vm_AEI.fx (static) distinction, q41_area_irrig coupling to M30 vm_area, q41_cost_AEI in endo_apr13 only, s41_AEI_depreciation=0 \u2192 irreversibility, switching procedure. Q4-B1 (Minor, framing): M42 attribution loose \u2014 M42 reads vm_area(j,kcr,'irrigated') directly, not vm_AEI. M41 affects M42 only indirectly via the q41_area_irrig cap on vm_area. Substantively correct framing; just imprecise about mechanism."
+        },
+        {
+          "id": "R22-G1",
+          "archetype": "regression_question_calibration_anchor",
+          "modules_tested": [14],
+          "question": "What is the default realization of Module 14 (Yields)? List equations defined in equations.gms with names + descriptions.",
+          "score": 10.0,
+          "bugs_found": 0,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0,
+          "bugs_nitpick": 0,
+          "regression_flag": "expected_answer_summary was WRONG (claimed 3 equations including q14_yieldcalib which does not exist); Sonnet correctly identified 2 equations (q14_yield_crop, q14_yield_past). Anchor corrected this session; drift_observed: false (Sonnet correct against ground truth).",
+          "notes": "Sonnet verified all claims: default managementcalib_aug19 (only realization), exactly 2 equations q14_yield_crop (eq.gms:14-16) and q14_yield_past (eq.gms:35-39), correct formulas, s14_yld_past_switch=0.25 default. Also caught an internal doc inconsistency (two cite ranges for q14_yield_past). G1 expected_answer_summary in validation_rounds.json corrected to remove the spurious q14_yieldcalib reference."
+        },
+        {
+          "id": "R22-G2",
+          "archetype": "regression_question_calibration_anchor",
+          "modules_tested": [52, 56, 29, 31, 32, 34, 35, 59],
+          "question": "Walk through how vm_carbon_stock is computed in M52 and where it enters the GHG-policy cost in M56. Cite equations and file:line.",
+          "score": 7.0,
+          "bugs_found": 3,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 3,
+          "bugs_nitpick": 0,
+          "regression_flag": "expected_answer_summary was WRONG (claimed M52 defines vm_carbon_stock; actually M56 declares it, M52 only reads). Sonnet had the producer/consumer distinction CORRECT \u2014 better than the anchor. Anchor rewritten this session; drift_observed: true (drift was in anchor, not Sonnet).",
+          "notes": "Sonnet correctly identified the producer/consumer distinction (M56 declares vm_carbon_stock, M52 only reads), the q52_emis_co2_actual chain, the M56 chain (q56_emis_pricing_co2 \u2192 v56_emis_pricing \u2192 q56_emission_cost_oneoff \u2192 v56_emission_cost \u2192 q56_emission_costs \u2192 vm_emission_costs), and the %c56_carbon_stock_pricing% default 'actualNoAcEst'. G2-B1/B2/B3 (Minor each, answerer_confabulation, auxiliary list errors): listed M30 as populator (actual: M29 \u2014 M30 declares vm_carbon_stock_croparea which is a separate variable M29 uses); listed M58 as populator (actual: M58 does NOT populate vm_carbon_stock; peatland flows through separate path); omitted M59 (SOM populates the soilc pool). The cited equation chain is correct \u2014 these errors are in the contributing-modules auxiliary list, not the high-stakes citation chain."
+        }
+      ],
+      "summary": {
+        "total_bugs": 6,
+        "bugs_by_severity": { "critical": 0, "major": 2, "minor": 4, "nitpick": 0 },
+        "bugs_by_root_cause": { "answerer_confabulation": 5, "documentation_drift": 1 },
+        "mean_score": 8.67,
+        "score_range": [7.0, 10.0],
+        "regression_anchors_corrected": [
+          "G1 expected_answer_summary: removed spurious q14_yieldcalib reference (equation does not exist in any module 14 realization)",
+          "G2 expected_answer_summary: corrected M52-as-declarer to M56-as-declarer; added M59 (SOM) to populator list; removed M58; clarified that M52 only READS vm_carbon_stock"
+        ],
+        "bugs_fixed_this_session": [
+          "Q2-B1 (Major, doc_error): module_70.md L712 + module_11.md L496: changed 'modules/71_disagg_lvst/foragebased_aug18/declarations.gms:11' \u2192 'modules/71_disagg_lvst/foragebased_jul23/declarations.gms:11' (the actual default realization). Bug was introduced in R3 commit ae3763f."
+        ],
+        "bugs_deferred": [
+          "Q1-B1 (answerer_confabulation, lines 93/94 vs 24/25): not a doc bug. Sonnet confused doc line numbers with source line numbers. No doc fix needed.",
+          "G2-B1/B2/B3 (answerer auxiliary-list errors): not doc bugs \u2014 these are Sonnet attribution errors. No doc fix needed.",
+          "Q4-B1 (framing): could be addressed by tightening module_41.md's downstream description but not strictly wrong."
+        ],
+        "highlights": [
+          "First round under schema v1.1 (regression_questions G1 + G2 included alongside 4 new probes).",
+          "Mean score 8.67/10 (Mostly Accurate band; comparable to R6's 8.7 high water mark).",
+          "Zero Critical bugs \u2014 first time both regression anchors AND new probes had no Criticals. R3+R3-followup+R4 mechanizations are holding.",
+          "Q3 (land conservation) was a perfect 10/10. Sonnet explicitly avoided the R16 anchor bug (preserved sum notation instead of enumerating set members).",
+          "Both regression anchors (G1, G2) had expected_answer_summary errors that Sonnet OUTPERFORMED. This is a strong signal \u2014 the anchors themselves needed correction; agent's actual capability exceeded the calibration baseline.",
+          "5/6 R3+R4-doc-fix-targeted probes scored \u22658 \u2014 confirms the prior session fixes hold and the docs are accurate enough for downstream answer quality."
+        ]
+      }
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 21,
+    "total_rounds": 22,
     "total_docs_validated": 79,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 445,
-    "total_bugs_fixed": 297,
+    "total_bugs_found": 451,
+    "total_bugs_fixed": 298,
     "validator_checks": 21,
     "validator_sub_checks": 36,
     "gams_variables_verified": 953,
     "gams_equations_verified": 139,
     "gams_realizations_verified": 75,
     "file_line_citations_verified": 2598,
-    "last_validation_date": "2026-05-16",
-    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0"
+    "last_validation_date": "2026-05-24",
+    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67"
   }
 }
