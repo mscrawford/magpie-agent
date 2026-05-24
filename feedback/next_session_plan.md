@@ -175,4 +175,41 @@ python3 scripts/check_gams_variables.py          # 100% (973/973 verified)
 python3 scripts/check_multi_section_consistency.py  # 3 arity mismatches (false-positive doc conventions)
 ```
 
-**Next session**: Phase 2 — S2 PR-integration pipeline (~2 weeks focused). Start with 5a (PR impact analyzer). See `~/.claude/plans/magpie-agent-infrastructure-buildout.md` §5.
+---
+
+## Progress log (2026-05-24 infrastructure-buildout session, Phase 3)
+
+User chose Phase 3 (opportunistic cleanup) over Phase 2 (PR-integration ~2 weeks) after Phase 1 landed. All Phase 3 items except D1 done in one ~1h session.
+
+**Phase 3 — done**:
+
+14. ✅ **D2 — Conservation-law equation simplifications**. `nitrogen_food_balance.md` q21_trade_glo: added missing `+ sum(ct, f21_trade_balanceflow(ct,k_trade))` term with brief annotation explaining the historical FAO-trade residual. `carbon_balance_conservation.md` q59_som_target_cropland: replaced one-line simplification with full 4-term equation (cropland base + SCM uplift + fallow + treecover).
+
+15. ✅ **D4 — Module_Dependencies §5.2 diagram**. Stale solid `↑` arrow on `14_yields → 32_forestry` converted to dashed `⇡` with explanatory caption (shared climate/age-structure context, not a real interface).
+
+16. ✅ **I5 — Generic rename checker** (`scripts/check_renames.py` + `feedback/renames.json`, Check 24). Reads JSON-declared historical renames (3 initial entries: pm_timber_yield → im_growing_stock; vm_cost_trade split; sm_cdr_target removed); greps for old names in non-exempt docs. Italic-historical convention (`*old*`) and allowlist marker lines auto-suppressed. Surfaced + fixed 2 real bugs: `reference/Verification_Protocol.md` (pm_timber_yield cited as the canonical "right way" example) and `reference/dependency_analysis/EXECUTIVE_SUMMARY.md` (old name in variable table).
+
+17. ✅ **C1 — Python rewrites of equations.sh + realizations.sh** (`scripts/check_gams_equations.py` + `scripts/check_gams_realizations.py`). Mirror of check_gams_variables.py's single-pass index + O(1) set-membership pattern. Speedups: equations 3.76s → 0.095s (40x), realizations 1.01s → 0.100s (10x). Validator total wall-clock dropped from ~7s to ~5s. Validator now prefers .py and falls back to .sh.
+
+**D1 skipped**: GAMS reference revalidation requires a targeted /validate-semantic run which the plan explicitly defers (R22 just completed).
+
+**Validator state at end of Phase 3**: 39 total checks, 36 passed, 3 advisory warnings (pre-existing s38/s59 + I2 doc-convention advisories + CLAUDE.md ref). Wall-clock ~5s (down from ~7s).
+
+**Insights captured for future**:
+- Header-gated markdown table parsing: look at table header before treating row values as semantic claims. Avoids false-positives where same `| name | N |` row format means different things in different tables (consumer count vs default value). See [[header_gated_markdown_tables]].
+- Rename ledger as defensive infrastructure: declarative `renames.json` + grep-based checker turns out to be a high-leverage mechanism. 19 raw hits collapsed to 2 real bugs via 2 convention-suppression rules (italics + allowlist markers). See [[rename_ledger_defensive_infra]].
+
+---
+
+## Verification at Phase 3 session end (2026-05-24)
+
+```bash
+bash scripts/validate_consistency.sh         # 36/39 passed, 3 advisory warnings
+python3 scripts/check_renames.py             # 0 hits across 3 tracked renames
+python3 scripts/check_gams_equations.py      # 100% (147/147 equations)
+python3 scripts/check_gams_realizations.py   # 100% (77/77 realizations)
+```
+
+**Next session**: Phase 2 — S2 PR-integration pipeline (~2 weeks focused). Start with 5a (PR impact analyzer, ~200 LOC). See `~/.claude/plans/magpie-agent-infrastructure-buildout.md` §5.
+
+Phase 3 cumulative: 6 real drift cases caught and fixed across both phases (M71 + M73 missing-dim drift surfaced by I2; safety_guide vm_prod_reg + pm_prod_init surfaced by I1; Verification_Protocol + EXECUTIVE_SUMMARY pm_timber_yield refs surfaced by I5). Each finding represents a doc bug that would have misled a downstream user; each was caught mechanically rather than via human review.
