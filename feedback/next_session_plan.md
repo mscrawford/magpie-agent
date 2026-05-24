@@ -378,4 +378,91 @@ python3 scripts/pr_mechanical_update.py --input /tmp/pr876_5a.json --apply
         # (test-only; would be 0 in production where head matches working tree)
 ```
 
-**Next session**: 5c — semantic updater (LLM-driven, ~200 LOC orchestrator). For each `confidence: semantic` entry from 5a JSON (currently exclusively `identifier_added` / `identifier_removed` / `new_realization`): spawn a magpie-helper agent with the change context to draft the doc edit; spawn an opus auditor to verify against actual GAMS source (mirrors `/validate-semantic` audit pattern). Auditor confidence ≥8/10 → write changes; <8 → fix-loop or escalate. Once 5c lands, the 5a→5b→5c loop covers all confidence tiers; 5d wires it into CI.
+---
+
+## Progress log (2026-05-24 Phase 2 5c session)
+
+**23. ✅ 5c — Semantic updater MVP** (`scripts/pr_semantic_update.py`, ~290 LOC).
+Reads 5a JSON, processes `confidence: semantic` entries via a writer/auditor
+LLM pipeline. MVP scope: `identifier_added` only (`identifier_removed` and
+`new_realization` deferred).
+
+Architecture:
+- Writer (sonnet-4-6, `max_turns=3`, `allowed_tools=[]`) drafts a focused doc
+  edit given the GAMS declaration context + current doc excerpt. Returns
+  structured JSON: `{section_to_modify, insert_after_line, new_content, rationale}`.
+- Auditor (sonnet-4-6 for MVP; opus recommended for production) verifies
+  against actual GAMS source. Scores 1-10; lists specific bugs.
+- Outcomes:
+  - `applied`: auditor ≥8 + `--apply` flag → write to working tree
+  - `passed_audit_dry_run`: auditor ≥8 + dry-run → report
+  - `already_documented`: writer recognized the identifier exists in doc
+  - `escalated`: auditor <8 → write `/tmp/magpie_5c_escalations/<type>_<name>.md`
+  - `writer_failed` / `auditor_failed`: LLM output unparseable
+
+Uses `claude-agent-sdk` (Python). Auth via existing Claude Code CLI (no
+ANTHROPIC_API_KEY needed). Per-call overhead ~$0.07 cache_creation; total
+~$0.50 per identifier (writer + auditor combined).
+
+**Smoke tests**:
+- PR #876 `p14_corr_last`: writer drafted addition; auditor correctly flagged
+  FABRICATED IDENTIFIER (current working tree no longer has it — PR #876's
+  transient state was refactored away by later commits). Escalated.
+- PR #866 `i21_import_supply_historical`: writer returned `already_documented`
+  (module_21.md was rewritten by the 2026-05-16 sync to include this).
+
+**Important production caveat**: 5c reads files from the working tree. In
+production, 5c runs immediately after a PR merges, so working tree matches
+the PR head. Running 5c on a stale commit (where the working tree has moved
+past the PR's transient state) causes the auditor to flag legitimate
+"this identifier no longer exists" — correct behavior, but not useful for
+re-applying old PRs.
+
+**Known limitations (deferred)**:
+- `identifier_removed`: requires understanding which prose to remove vs.
+  update. Harder edit-shape than `identifier_added`. Pure markdown
+  insertion (current model) doesn't work.
+- `new_realization`: requires generating a substantial new section
+  (realization comparison, sometimes whole module overview). Token-cost
+  much higher; might need opus writer.
+- Cost: $0.50/identifier × ~30 = ~$15/PR. Tolerable for production but
+  worth caching opportunities. Future work: use `ClaudeSDKClient` to
+  amortize system-prompt cache across calls.
+
+**Insights captured for future**:
+- **LLM auditor refuses fabrications cleanly**: the auditor caught wrong
+  dimensions, missing citations, and fabricated identifiers without any
+  retry loop. Pre-existing semantic discipline (Check 25 + MANDATEs)
+  shows up in auditor behavior because the prompt cites them explicitly.
+  Memory candidate: [[llm_auditor_internalizes_validator_rules]].
+- **Working-tree-vs-commit divergence is the new failure mode**: 5a is
+  commit-anchored, 5c is working-tree-anchored. For correctness, both
+  need to operate on the same snapshot. Future work: extend 5c to accept
+  `--head` and use `git show <head>:<file>` for reads.
+
+**Validator state at end of 5c MVP**: unchanged on clean tree (37/40 passed,
+3 known advisories). 5c never commits; auto-applied edits write to working
+tree for human review with `git diff`.
+
+---
+
+## Verification at 5c session end (2026-05-24)
+
+```bash
+pip install claude-agent-sdk                                            # 0.2.87
+python3 scripts/pr_doc_impact.py --base 1c2e7031c~1 --head 1c2e7031c \
+        --output /tmp/pr866_5a.json                                     # 41 changes
+python3 scripts/pr_semantic_update.py --input /tmp/pr866_5a.json --limit 1
+        # 1 change, already_documented, $0.50
+python3 scripts/pr_semantic_update.py --input /tmp/pr876_5a.json --limit 1
+        # 1 change, escalated (fabrication caught by auditor), $0.66
+```
+
+**Next session**: 5d — CI integration. Two design questions before building:
+(a) GitHub Actions workflow vs. local pre-merge hook; (b) auto-PR-create on
+mechanical updates vs. comment-only. Once those are answered, the wiring
+itself is straightforward — ~50-100 LOC of YAML + a small dispatcher script.
+
+Also queued: extending 5c with `--head <commit>` for reproducible runs against
+old commits (uses `git show <head>:<file>` instead of working-tree reads);
+implementing `identifier_removed` and `new_realization` handlers.
