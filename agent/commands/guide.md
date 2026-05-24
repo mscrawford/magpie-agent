@@ -40,7 +40,6 @@ Type these to access specific features:
 | `/trace` | Trace a variable's flow through the model |
 | `/update` | Full pipeline: pull agent + sync MAgPIE + semantic freshness |
 | `/sync` | Update docs after MAgPIE code changes |
-| `/feedback` | Submit feedback to improve the agent |
 | `/bootstrap` | First-time setup (new users) |
 | `/validate` | Check documentation consistency (maintainers) |
 | `/validate-module` | Validate specific module docs (maintainers) |

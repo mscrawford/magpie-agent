@@ -142,10 +142,10 @@ magpie-agent/
 │   ├── Infeasibility_Debugging_Guide.md
 │   └── Verification_Protocol.md
 │
-├── feedback/                  ← User Feedback System
-│   ├── README.md              System overview
+├── feedback/                  ← Internal iteration artifacts
+│   ├── README.md              Directory overview
 │   ├── global/agent_lessons.md
-│   └── integrated/            Archived feedback
+│   └── integrated/            Archived agent-recorded lessons
 │
 └── scripts/                   ← Validation scripts
     └── validate_consistency.sh
@@ -399,15 +399,11 @@ dot -Tpng core_dependencies.dot -o core_dependencies.png
 
 ---
 
-## 🔄 User Feedback System
+## 🔄 Internal iteration loop
 
-MAgPIE developers can improve agent performance through feedback!
+The agent records lessons directly during sessions — corrections, mechanism warnings, and helper improvements land in `modules/module_XX_notes.md`, `agent/helpers/*.md` Lessons Learned, or `feedback/global/agent_lessons.md`. There is no external user-submission inbox.
 
-- Say "/feedback" for complete system overview
-- Submit corrections, warnings, and lessons via feedback templates
-- The agent also records corrections automatically during sessions
-
-See `feedback/README.md` for details.
+See `AGENT.md` (section "🔄 Internal iteration loop") and `feedback/README.md` for the write-paths and conventions.
 
 ---
 
@@ -491,7 +487,7 @@ See `feedback/README.md` for details.
 - Use the quality checklist
 - Follow Code Truth principles
 
-**If future AI is confused**: This protocol needs improvement → submit feedback!
+**If future AI is confused**: this protocol needs improvement — record the gap as a lesson in `feedback/global/agent_lessons.md` and update the relevant doc.
 
 ---
 

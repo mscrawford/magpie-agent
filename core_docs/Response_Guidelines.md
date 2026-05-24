@@ -290,28 +290,22 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 
 **Remember: The AI documentation exists to make your job easier AND more accurate. Use it!**
 
-### Encouraging User Feedback
+### When the user corrects you
 
-**Occasionally remind users they can submit feedback** (use sparingly, not every response):
+**Record the correction directly** — the agent maintains its own iteration loop; there is no external user-submission inbox.
 
-**When to mention**:
-- ✅ After explaining a complex module or mechanism
-- ✅ When user asks detailed technical questions (shows engagement)
-- ✅ If you notice a gap or potential error in documentation
-- ✅ When user corrects you or provides additional context
-- ❌ Not on simple factual queries
-- ❌ Not more than once every 3-4 responses
+**When to record**:
+- ✅ User corrects you on a fact, mechanism, or recommended approach → append to the relevant `modules/module_XX_notes.md` or helper `Lessons Learned` section
+- ✅ User reveals a documentation gap that turned into a usable fix → append + update the affected doc
+- ✅ Long debugging session uncovered a non-obvious pattern → append
+- ❌ Routine Q&A where nothing new surfaced → no action
 
-**How to mention** (pick one style, keep it brief):
+**Tell the user briefly**:
 ```
-📝 Spot an error or have insights to share? Say "/feedback" to help improve the documentation!
-```
-Or:
-```
-💡 Your question revealed interesting details - consider using "/feedback" to document this for others!
+✅ Recorded — I've saved this correction so future sessions get it right.
 ```
 
-**Goal**: Encourage quality feedback without being annoying. Users should feel invited, not pestered.
+See AGENT.md `## 🔄 Internal iteration loop` for write-paths.
 
 ---
 

@@ -103,7 +103,7 @@ I'm your AI assistant for the MAgPIE land-use model. I have curated documentatio
 🧠 I learn from our conversations — if you correct me or share insights, I record them so future sessions benefit.
 
 💡 New here? Type /guide for a quick orientation.
-   Need more? /sync, /feedback are also available.
+   Need more? /sync is also available.
 ```
 
 **If working on the MAgPIE AI Documentation Project:**
@@ -195,7 +195,6 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/trace` | Trace a variable's flow through the model | Everyone |
 | `/update` | Full pipeline: pull agent + sync MAgPIE + semantic freshness | Everyone |
 | `/sync` | Check MAgPIE code for changes, update docs | Everyone |
-| `/feedback` | Submit feedback to improve the agent | Everyone |
 | `/bootstrap` | First-time setup | New users |
 | `/validate` | Check documentation consistency (syntactic) | Maintainers |
 | `/validate-module` | Validate specific module docs | Maintainers |
@@ -665,31 +664,27 @@ Syntactic audits (variable names, equation names, realization names, citations) 
 
 ---
 
-## 🔄 User Feedback System
+## 🔄 Internal iteration loop
 
-**MAgPIE developers can improve agent performance through feedback!**
+The agent records lessons directly during sessions. There is no external user-submission inbox — improvement happens through the agent-user iteration that produces commits to this repo.
 
 - Each `module_XX.md` may have a `module_XX_notes.md` with warnings, lessons, corrections, and examples
 - Always read notes files when answering about a module
-- **For complete details on the feedback system, type `/feedback`.**
 
-### Feedback flow
+### Where the agent writes lessons
 
 ```
 User corrections / agent discoveries during sessions
   → modules/module_XX_notes.md   (module-specific lessons — written directly by agent)
   → agent/helpers/*.md Lessons Learned  (helper improvements — written directly by agent)
   → feedback/global/agent_lessons.md  (system-wide lessons)
-
-User submits formal feedback (via /feedback command)
-  → feedback/pending/           (new feedback lands here for maintainer review)
 ```
 
-**When to remind users about feedback** (not every session — only when triggered):
-- ✅ After you **correct yourself** or the user corrects you — "I've recorded this correction. You can also submit formal feedback with `/feedback`"
+**When to record a lesson**:
+- ✅ After you **correct yourself** or the user corrects you — append to the appropriate notes / Lessons Learned section and tell the user: "✅ Recorded — I've saved this correction so future sessions get it right."
 - ✅ After a **long debugging session** where new patterns were discovered
-- ✅ When the user expresses **frustration with documentation** quality or gaps
-- ❌ Do NOT remind on routine Q&A sessions or simple lookups
+- ✅ When the user expresses **frustration with documentation** quality or gaps that turns into a usable fix
+- ❌ Do NOT record on routine Q&A sessions where nothing new surfaced
 
 ---
 

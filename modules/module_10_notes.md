@@ -7,20 +7,19 @@
 
 ## ⚠️ Warnings & Common Mistakes
 
-*No warnings submitted yet. Type `/feedback` to contribute.*
+*No warnings recorded yet.*
 
 ---
 
 ## 💡 Lessons Learned
 
-*No lessons submitted yet. Type `/feedback` to contribute.*
+*No lessons recorded yet.*
 
 ---
 
 ## 🧪 Real-World Examples
 
-*No examples submitted yet. Type `/feedback` to contribute.*
+*No examples recorded yet.*
 
 ---
 
-**Contributing**: Found something useful? Type `/feedback` to share your experience!
