@@ -136,3 +136,43 @@ git log --oneline 5708b6f..HEAD                # 7 R3 commits stacked on plan co
 ```
 
 R3 logged to `feedback/pipeline_audit_round3.md` (full report) and `feedback/pipeline_audit_rounds.json` round 3 entry (R1 schema mirrored).
+
+---
+
+## Progress log (2026-05-24 infrastructure-buildout session, Phase 1)
+
+Plan: `~/.claude/plans/magpie-agent-infrastructure-buildout.md`. Phase 1 (quick-win validators) complete.
+
+**Phase 1 — done**:
+
+10. ✅ **I1 — Consumer-attribution checker** (`scripts/check_consumer_attribution.py`, ~250 LOC). Builds producer map from `declarations.gms` (1133 vars), consumer map from all module `.gms` files (1780 vars), then validates every `| \`var\` | N |` consumer-table row across `core_docs/Module_Dependencies.md`, `cross_module/modification_safety_guide.md`, all `modules/module_*.md`. Header-gated (only fires inside tables whose 2nd column header contains `Consumer`/`Used by`/etc.) to avoid false-positives on scalar default-value tables. Wired as Check 22 advisory. Surfaced 2 real drift cases in `modification_safety_guide.md` §3.2 — `vm_prod_reg` 9→8, `pm_prod_init` 3→1 — both fixed and verified.
+
+11. ✅ **I3 — Multi-path VERIFIED_RE fix** (`scripts/check_module_realizations.py`). Split single-pattern parsing into two-stage: VERIFIED_LINE_RE captures the footer line; PATH_RE finds ALL `modules/NN_name/realization/` paths within it. Surfaced 4 multi-realization footers (M18, M38, M80) that were previously invisible. Added classification logic: when at least one cited realization matches the default, additional non-default cites are treated as documented-alternative INFO (not ERROR). All 4 cases pass cleanly under this rule.
+
+12. ✅ **I4 — Allowlist marker robustness** (`scripts/check_gams_variables.py`). Added `PER_DOC_ALLOW_LOOSE_RE` + `find_typo_allow_markers()`. When the loose pattern matches but the strict regex does not, the marker is silently failing — emit WARN. Unit-tested on 7 cases (strict markers, underscore/missing-colon typos, valid no-space variants). Validator-side: `|| true` guard added to handle `set -e` + `grep` no-match exit code 1. Current tree has 0 typo'd markers.
+
+13. ✅ **I2 — Multi-section consistency check** (`scripts/check_multi_section_consistency.py`, ~140 LOC). For each module doc, finds all backticked `var(dims)` references outside code blocks, groups by var, flags vars with >1 distinct normalized dim signature. Normalization: whitespace, quote unification, set-alias collapse (j/j2/j3 → j; i/i2 → i; h/h2 → h; cell2 → cell; supreg2 → supreg), quoted-literal masking (`"crop"` → `<lit>`). Two-tier output: arity mismatches (likely drift) vs signature variants (usually legit context). Convention-suppression filters out `...` ellipsis, `t-1`/`t+1` annotations, and pure-literal partial references. Wired as Check 23 advisory. Surfaced 2 real arity-drift bugs in `module_71.md` (`im_feed_baskets` missing t dim) and `module_73.md` (`im_timber_prod_cost` missing i dim) — both fixed. 3 remaining arity findings are doc-convention false positives (M29 vm_land shorthand, M35 partial reference, M80 multi-realization variant).
+
+**Validator state at end of Phase 1**: 38 total checks, 35 passed, 3 warnings (pre-existing s38/s59 param-default advisories + new I2 advisory + CLAUDE.md ref). Wall-clock ~7s.
+
+**Triage budget vs spend**: plan budgeted ~30 min for I1 surface; spent ~10 min (only 2 real drift cases; less than expected 5-15). Plan budget total ~3 hours for Phase 1; actual ~2 hours. Under budget.
+
+**Insights captured for future**:
+- Header-gated table parsing (look at table's 2nd column header before treating row counts as consumer claims) — reusable pattern for any markdown-table consistency check.
+- Two-stage parsing of footer constructs ("locate header → find paths within") is cleaner than a single regex when the construct has multiple instances per line.
+- Set-alias collapsing in dim comparisons (j↔j2) is essential — otherwise legitimate solver-rename variants false-positive overwhelmingly.
+- I2's signature-variant tier is mostly noise on current docs (75 variants); the arity tier (3 findings after fix) is the actionable signal. Same-arity-different-set drift (e.g., the original M14 pcm_tau h→j case) is now caught at the arity-collapse boundary — h is NOT aliased to j.
+
+---
+
+## Verification at Phase 1 session end (2026-05-24)
+
+```bash
+bash scripts/validate_consistency.sh   # 35/38 passed, 3 advisory warnings
+python3 scripts/check_consumer_attribution.py    # 23/23 claims verified, 0 mismatches
+python3 scripts/check_module_realizations.py     # 0 errors, 0 warnings, 64 docs (I3 multi-path now resolves)
+python3 scripts/check_gams_variables.py          # 100% (973/973 verified)
+python3 scripts/check_multi_section_consistency.py  # 3 arity mismatches (false-positive doc conventions)
+```
+
+**Next session**: Phase 2 — S2 PR-integration pipeline (~2 weeks focused). Start with 5a (PR impact analyzer). See `~/.claude/plans/magpie-agent-infrastructure-buildout.md` §5.

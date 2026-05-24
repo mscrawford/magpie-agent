@@ -427,7 +427,7 @@ vm_cost_glo = ... + Σ(i2) vm_costs_additional_mon(i2) + ...
 
 ### 5. **Regional Feed Baskets Applied Uniformly**
 
-**What the code does**: Uses regional average feed baskets (`im_feed_baskets(i,kli_rum,kforage)`).
+**What the code does**: Uses regional average feed baskets (`im_feed_baskets(t,i,kli_rum,kforage)`; declared at `modules/70_livestock/fbask_jan16/declarations.gms:36`).
 
 **What the code does NOT do**:
 - Does NOT account for cell-specific feed quality or composition

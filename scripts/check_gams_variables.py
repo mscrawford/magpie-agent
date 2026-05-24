@@ -48,6 +48,13 @@ DOC_VAR_RE = re.compile(
 PER_DOC_ALLOW_RE = re.compile(
     r"<!--\s*check-gams-vars:\s*allow\s+([^>]+?)\s*-->"
 )
+# I4 (2026-05-24): loose pattern that catches typo variants (underscore
+# instead of dash, missing colon, missing space, etc.). When this matches but
+# the strict regex does not, the marker is silently failing — emit a WARNing.
+PER_DOC_ALLOW_LOOSE_RE = re.compile(
+    r"<!--[^>]*?\bcheck[-_]?gams[-_]?vars\b[^>]*?\ballow\b[^>]*?-->",
+    re.IGNORECASE,
+)
 
 # Template-style placeholder: var_<type>, var_{type}, var_%type%, var_$type
 TEMPLATE_SUFFIX_CHARS = "<{%$"
@@ -150,6 +157,21 @@ def collect_per_doc_allow(text: str) -> set[str]:
     return out
 
 
+def find_typo_allow_markers(text: str) -> list[str]:
+    """Return loose-match marker strings that fail the strict allow regex.
+
+    I4 (2026-05-24): catches typo variants of the per-doc allowlist marker
+    that silently fail the strict regex. Returns the raw marker substring
+    so callers can show it in WARNings.
+    """
+    typos = []
+    for lm in PER_DOC_ALLOW_LOOSE_RE.finditer(text):
+        raw = lm.group(0)
+        if not PER_DOC_ALLOW_RE.search(raw):
+            typos.append(raw)
+    return typos
+
+
 def main() -> int:
     summary_only = "--summary-only" in sys.argv
     target_module = None
@@ -172,6 +194,7 @@ def main() -> int:
     total_mismatches = 0
     modules_checked = 0
     per_doc_mismatches: list[tuple[str, str]] = []
+    typo_markers: list[tuple[str, str]] = []  # (doc.name, raw_marker)
 
     for doc in sorted(DOCS_DIR.glob("module_*.md")):
         m = re.match(r"^module_(\d+)\.md$", doc.name)
@@ -183,6 +206,8 @@ def main() -> int:
         text = doc.read_text(encoding="utf-8", errors="ignore")
         doc_vars = set(DOC_VAR_RE.findall(text))
         per_doc_allow = collect_per_doc_allow(text)
+        for typo in find_typo_allow_markers(text):
+            typo_markers.append((doc.name, typo))
         filtered = filter_doc_vars(text, doc_vars, per_doc_allow)
         total_doc_vars += len(filtered)
         for var in filtered:
@@ -192,6 +217,14 @@ def main() -> int:
 
     print(f"AI doc variable references: {total_doc_vars} (across {modules_checked} modules)")
     print()
+
+    if typo_markers:
+        print(f"⚠️  Found {len(typo_markers)} likely typo'd allowlist marker(s) (silently failing):")
+        for doc, raw in sorted(set(typo_markers)):
+            preview = raw if len(raw) < 100 else raw[:97] + "..."
+            print(f"  {doc}: {preview}")
+            print(f"    → expected format: <!-- check-gams-vars: allow NAME[,NAME...] -->")
+        print()
 
     if total_mismatches == 0:
         print("✅ All variable references verified against GAMS code")

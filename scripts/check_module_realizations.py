@@ -49,16 +49,21 @@ CONFIG_RE = re.compile(
 HEADER_REAL_RE = re.compile(
     r'\*{0,2}Realization\*{0,2}\s*:\s*\*{0,2}\s*`?(?P<real>[a-zA-Z_][\w]*)`?'
 )
-# Matches "Verified Against:" footer paths like:
-#   ../modules/14_yields/managementcalib_aug19/*.gms
-#   modules/15_food/anthro_iso_jun22/                  (no leading ./ or ../)
-#   ../modules/17_*/sector_may15/*.gms  (glob form — name part is `*`)
-# R3 fix (2026-05-23): leading `./` or `../` is now optional; previously
-# footers without a dot prefix (used in M15, M22, M36, M37, M73) were
-# scanned but not validated.
-VERIFIED_RE = re.compile(
-    r'(?:Verified\s+Against|verified\s+against)[:\s\*]+`?(?:\.{1,2}/)?modules/(?P<num>\d+)_(?P<name>[a-z_*]+)/(?P<real>[a-zA-Z][\w]*)/'
+# "Verified Against" footer parsing is now two-stage:
+# 1) VERIFIED_LINE_RE identifies the footer line and captures the rest of the line.
+# 2) PATH_RE finds ALL `modules/NN_name/realization/` paths within that line.
+# I3 fix (2026-05-24): previously this was a single regex anchored on
+# "Verified Against" + first path, which silently dropped any additional paths
+# in multi-path footers (e.g. M18's flexreg_apr16 default body + flexcluster_jul23
+# alternative summary). Now all cited realizations are validated.
+VERIFIED_LINE_RE = re.compile(
+    r'(?:Verified\s+Against|verified\s+against)[:\s\*]+(?P<rest>[^\n]+)'
 )
+PATH_RE = re.compile(
+    r'`?(?:\.{1,2}/)?modules/(?P<num>\d+)_(?P<name>[a-z_*]+)/(?P<real>[a-zA-Z][\w]*)/'
+)
+# Backwards-compat alias for any external imports.
+VERIFIED_RE = VERIFIED_LINE_RE
 
 # Module-number → -doc-file
 MODULE_DOC_RE = re.compile(r'module_(\d+)\.md$')
@@ -120,8 +125,15 @@ def find_realization_claims(doc_text):
         header_real = header_match.group("real")
 
     footer_claims = []
-    for m in VERIFIED_RE.finditer(doc_text):
-        footer_claims.append((m.group("real"), m.group("num"), m.group("name")))
+    seen = set()
+    for line_match in VERIFIED_LINE_RE.finditer(doc_text):
+        rest = line_match.group("rest")
+        for m in PATH_RE.finditer(rest):
+            claim = (m.group("real"), m.group("num"), m.group("name"))
+            if claim in seen:
+                continue
+            seen.add(claim)
+            footer_claims.append(claim)
 
     return header_real, footer_claims
 
@@ -158,7 +170,15 @@ def check_one_module(doc_path, defaults, module_map, verbose=False):
                 f"{doc_path.name}: header claims `{header_real}` as the documented realization but config/default.cfg default is `{expected_default}`. (Documenting non-default realizations is allowed but should be clearly marked.)"
             ))
 
-    # Check footer-cited realization
+    # Check footer-cited realization.
+    # I3 (2026-05-24): with multi-path footer parsing, footers may explicitly
+    # cite the default PLUS one or more documented alternatives (e.g. M18, M38,
+    # M80). A non-default claim is only an ERROR when no other claim in the
+    # same doc cites the default — otherwise it's a documented alternative
+    # (INFO-only, doesn't surface in normal output).
+    any_footer_matches_default = expected_default is not None and any(
+        fr == expected_default for fr, _, _ in footer_claims
+    )
     for footer_real, footer_num, footer_name in footer_claims:
         if footer_num != num:
             findings.append((
@@ -171,10 +191,17 @@ def check_one_module(doc_path, defaults, module_map, verbose=False):
                 f"{doc_path.name}: 'Verified Against' footer cites `{footer_real}` but directory {dir_name}/ has no such subdir. Available: {available_realizations}"
             ))
         elif expected_default is not None and footer_real != expected_default:
-            findings.append((
-                "ERROR",
-                f"{doc_path.name}: footer cites `{footer_real}` but default per config/default.cfg is `{expected_default}`. Footers should reference the default realization (the documented one)."
-            ))
+            if any_footer_matches_default:
+                if verbose:
+                    findings.append((
+                        "INFO",
+                        f"{doc_path.name}: footer also cites alternative realization `{footer_real}` (default `{expected_default}` is cited elsewhere in the footer)"
+                    ))
+            else:
+                findings.append((
+                    "ERROR",
+                    f"{doc_path.name}: footer cites `{footer_real}` but default per config/default.cfg is `{expected_default}`. Footers should reference the default realization (the documented one)."
+                ))
 
     # R3 Phase B: body-realization-mismatch — count self-module body cites,
     # flag when the dominant realization differs from the header. This catches

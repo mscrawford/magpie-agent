@@ -582,7 +582,7 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 1. **Module 32 (forestry)** ← 2 variables:
    - `pm_demand_forestry(t,i,kforestry)` - Regional timber demand (mio. tDM/yr)
      - **Use**: Drives plantation establishment and harvest decisions
-   - `im_timber_prod_cost(kforestry)` - Unit production costs (USD17MER/tDM)
+   - `im_timber_prod_cost(i,kforestry)` - Unit production costs (USD17MER/tDM; declared at `declarations.gms:17`)
      - **Use**: Calculate forestry establishment costs in Module 32 (`32_forestry/dynamic_may24/equations.gms`)
 
 2. **Module 62 (material)** ← 1 variable:

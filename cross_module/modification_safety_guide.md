@@ -332,8 +332,10 @@ q11_cost_reg(i2) =e= ... - vm_reward_cdr_aff(i2);  * Subtract reward
 
 | Variable | Consumers | Description |
 |----------|-----------|-------------|
-| `vm_prod_reg(i,kall)` | 9 modules | Regional production (for trade, demand) |
-| `pm_prod_init(j,kcr)` | 3 modules | Initial production (solver starting point) |
+| `vm_prod_reg(i,kall)` | 8 modules | Regional production (for trade, demand) |
+| `pm_prod_init(j,kcr)` | 1 module  | Initial production (solver starting point) |
+
+> **Counts recomputed 2026-05-24 (I1 deployment)** via `find ../modules -name '*.gms' -exec grep -l '\b<var>\b' {} \; | awk -F/ '{print $3}' | sort -u | grep -v '17_production' | wc -l`. Consumers exclude the producer module (17_production). `vm_prod_reg` reaches 16, 18, 20, 21, 38, 50, 70, 71; `pm_prod_init` reaches only 38_factor_costs.
 
 **Key Equation**: `q17_prod_reg` aggregates cell-level production to regional level
 

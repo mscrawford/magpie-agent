@@ -80,7 +80,7 @@ cd "$AGENT_DIR"
 # ===========================
 # Check 1: Dependency Counts
 # ===========================
-print_section "1/21" "Checking dependency counts..."
+print_section "1/23" "Checking dependency counts..."
 
 # Check Module 10
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
@@ -134,7 +134,7 @@ fi
 # =====================================
 # Check 2: Equation Parameter Counts
 # =====================================
-print_section "2/21" "Checking equation parameters..."
+print_section "2/23" "Checking equation parameters..."
 
 # Chapman-Richards parameters
 CR_PARAMS=$(grep -r "Chapman-Richards\|Chapman Richards" \
@@ -178,7 +178,7 @@ fi
 # ============================
 # Check 3: Cross-References
 # ============================
-print_section "3/21" "Checking cross-references..."
+print_section "3/23" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
@@ -246,7 +246,7 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/21" "Checking duplicate equations..."
+print_section "4/23" "Checking duplicate equations..."
 
 # Check for common equations mentioned in multiple places
 # q70_feed
@@ -271,7 +271,7 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 # Check 5: Entry Point Consistency
 # =================================
-print_section "5/21" "Checking entry point consistency..."
+print_section "5/23" "Checking entry point consistency..."
 
 # README should point to CURRENT_STATE.json for project work
 if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
@@ -311,7 +311,7 @@ fi
 # =======================
 # Check 6: File Counts
 # =======================
-print_section "6/21" "Checking file counts..."
+print_section "6/23" "Checking file counts..."
 
 # Count module docs
 MODULE_COUNT=$(ls -1 modules/module_*.md 2>/dev/null | grep -v "_notes" | wc -l | tr -d ' ')
@@ -348,7 +348,7 @@ fi
 # ==========================================
 # Check 7: Convention Linter (stale formats)
 # ==========================================
-print_section "7/21" "Checking naming conventions..."
+print_section "7/23" "Checking naming conventions..."
 
 # Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
 STALE_CMD_COUNT=0
@@ -428,7 +428,7 @@ fi
 # ==============================================
 # Check 8: Markdown Link Validator (key files)
 # ==============================================
-print_section "8/21" "Checking markdown link targets..."
+print_section "8/23" "Checking markdown link targets..."
 
 BROKEN_LINKS=0
 
@@ -481,7 +481,7 @@ fi
 # ==============================================
 # Check 9: Trigger Keyword Sync
 # ==============================================
-print_section "9/21" "Checking helper trigger keyword sync..."
+print_section "9/23" "Checking helper trigger keyword sync..."
 
 TRIGGER_ISSUES=0
 
@@ -529,7 +529,7 @@ fi
 # =============================================
 # Check 10: AGENT.md Deployment Freshness
 # =============================================
-print_section "10/21" "Checking AGENT.md deployment..."
+print_section "10/23" "Checking AGENT.md deployment..."
 
 DEPLOY_OK=0
 DEPLOY_FAIL=0
@@ -565,7 +565,7 @@ fi
 # =============================================
 # Check 11: Anti-Hardcoding Guard
 # =============================================
-print_section "11/21" "Checking for hardcoded values in mechanism files..."
+print_section "11/23" "Checking for hardcoded values in mechanism files..."
 
 HARDCODED_ISSUES=0
 
@@ -591,7 +591,7 @@ fi
 # ================================================
 # Check 12: Path prefix check (magpie-agent/)
 # ================================================
-print_section "12/21" "Checking for stale path prefixes..."
+print_section "12/23" "Checking for stale path prefixes..."
 
 # Files inside magpie-agent/ should not use magpie-agent/ as a path prefix
 # (since the working directory IS magpie-agent/, this creates double-nesting)
@@ -620,7 +620,7 @@ fi
 # ================================================
 # Check 13: Unclosed code blocks
 # ================================================
-print_section "13/21" "Checking for unclosed code blocks..."
+print_section "13/23" "Checking for unclosed code blocks..."
 
 UNCLOSED=0
 for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./feedback/archive/*"); do
@@ -639,7 +639,7 @@ fi
 
 # Check 14: GAMS Variable Name Verification
 # ==========================================
-print_section "14/21" "Checking GAMS variable names in docs..."
+print_section "14/23" "Checking GAMS variable names in docs..."
 
 GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.py"
 if [ -f "$GAMS_CHECK_SCRIPT" ]; then
@@ -654,13 +654,20 @@ if [ -f "$GAMS_CHECK_SCRIPT" ]; then
             log "    $line"
         done
     fi
+    # I4: surface typo'd allowlist markers (loose-match passes, strict-match fails).
+    # These warnings appear independently of the main check above.
+    # `|| true` guards against `set -e` aborting on grep no-match.
+    TYPO_COUNT=$(echo "$GAMS_OUTPUT" | grep -oE "Found [0-9]+ likely typo" | grep -oE "[0-9]+" || true)
+    if [ -n "$TYPO_COUNT" ] && [ "$TYPO_COUNT" -gt 0 ]; then
+        check_warning "Allowlist marker typos: $TYPO_COUNT marker(s) silently failing (see check_gams_variables.py output)"
+    fi
 else
     check_warning "GAMS variable checker not found or not executable: $GAMS_CHECK_SCRIPT"
 fi
 
 # Check 15: GAMS Equation Name Verification
 # ==========================================
-print_section "15/21" "Checking GAMS equation names in docs..."
+print_section "15/23" "Checking GAMS equation names in docs..."
 
 EQ_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_equations.sh"
 if [ -x "$EQ_CHECK_SCRIPT" ]; then
@@ -681,7 +688,7 @@ fi
 
 # Check 16: GAMS Realization Name Verification
 # =============================================
-print_section "16/21" "Checking GAMS realization names in docs..."
+print_section "16/23" "Checking GAMS realization names in docs..."
 
 REAL_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_realizations.sh"
 if [ -x "$REAL_CHECK_SCRIPT" ]; then
@@ -702,7 +709,7 @@ fi
 
 # Check 17: File:Line Citation Verification
 # ==========================================
-print_section "17/21" "Checking file:line citations in docs..."
+print_section "17/23" "Checking file:line citations in docs..."
 
 CIT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_citations.sh"
 if [ -x "$CIT_CHECK_SCRIPT" ]; then
@@ -723,7 +730,7 @@ fi
 
 # Check 18: Default Realization Cross-Reference
 # ==============================================
-print_section "18/21" "Checking default realization labels against config/default.cfg..."
+print_section "18/23" "Checking default realization labels against config/default.cfg..."
 
 DEFAULT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_default_realizations.py"
 if [ -f "$DEFAULT_CHECK_SCRIPT" ]; then
@@ -744,7 +751,7 @@ fi
 
 # Check 19: Realization-Validity (header + footer cross-reference)
 # =================================================================
-print_section "19/21" "Checking module-doc realization validity (header + Verified Against footer)..."
+print_section "19/23" "Checking module-doc realization validity (header + Verified Against footer)..."
 
 REAL_CHECK_SCRIPT="$AGENT_DIR/scripts/check_module_realizations.py"
 if [ -f "$REAL_CHECK_SCRIPT" ]; then
@@ -769,7 +776,7 @@ fi
 
 # Check 20: Parameter default values (Pattern 13)
 # ===============================================
-print_section "20/21" "Checking parameter default values against source (Pattern 13)..."
+print_section "20/23" "Checking parameter default values against source (Pattern 13)..."
 
 PARAM_DEFAULT_SCRIPT="$AGENT_DIR/scripts/check_param_defaults.py"
 if [ -f "$PARAM_DEFAULT_SCRIPT" ]; then
@@ -798,7 +805,7 @@ fi
 # Catches fabricated [vmps]\d*_<name> tokens in cross_module/ and core_docs/.
 # Complements Check 14 (which scans modules/module_*.md).
 # ===============================================
-print_section "21/21" "Checking identifier existence in cross-cutting docs..."
+print_section "21/23" "Checking identifier existence in cross-cutting docs..."
 
 DOC_VAR_EXIST_SCRIPT="$AGENT_DIR/scripts/check_doc_var_existence.py"
 if [ -f "$DOC_VAR_EXIST_SCRIPT" ]; then
@@ -820,6 +827,64 @@ if [ -f "$DOC_VAR_EXIST_SCRIPT" ]; then
     fi
 else
     check_warning "Cross-cutting identifier checker not found: $DOC_VAR_EXIST_SCRIPT"
+fi
+
+# ===============================================
+# Check 22: Consumer-count attribution (I1 / R4 Cluster 3+4+5 mechanization)
+# For every `var | N (modules)?` row in consumer-tables across module docs,
+# Module_Dependencies, and modification_safety_guide, recompute the actual
+# consumer count from .gms sources and flag mismatches. Advisory mode.
+# ===============================================
+print_section "22/23" "Checking consumer-count attribution against GAMS source..."
+
+CONSUMER_CHECK_SCRIPT="$AGENT_DIR/scripts/check_consumer_attribution.py"
+if [ -f "$CONSUMER_CHECK_SCRIPT" ]; then
+    if CONSUMER_OUTPUT=$(python3 "$CONSUMER_CHECK_SCRIPT" 2>&1); then CONSUMER_EXIT=0; else CONSUMER_EXIT=$?; fi
+    if echo "$CONSUMER_OUTPUT" | grep -q "All consumer-count claims match"; then
+        SCANNED=$(echo "$CONSUMER_OUTPUT" | grep "claims scanned:" | grep -oE "[0-9]+" | head -1)
+        check_pass "Consumer-count attribution: ${SCANNED:-?} claims verified"
+    elif [ $CONSUMER_EXIT -eq 0 ]; then
+        MISMATCH_COUNT=$(echo "$CONSUMER_OUTPUT" | grep -oE "Found [0-9]+ consumer-count" | grep -oE "[0-9]+" | head -1)
+        check_warning "Consumer-count attribution: ${MISMATCH_COUNT:-?} mismatch(es)"
+        echo "$CONSUMER_OUTPUT" | grep "^  " | head -10 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Consumer-count attribution checker failed (exit $CONSUMER_EXIT)"
+        echo "$CONSUMER_OUTPUT" | head -5 | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "Consumer-count attribution checker not found: $CONSUMER_CHECK_SCRIPT"
+fi
+
+# ===============================================
+# Check 23: Multi-section dimension consistency (I2 / R4 Lens 1 mechanization)
+# When a backticked variable is mentioned with parenthesized dimensions in
+# multiple sections of one module doc, verify all mentions use consistent
+# dimensions (set-alias normalized). Catches rename stragglers like the M14
+# pcm_tau h→j drift. Advisory mode (variants are usually legitimate context).
+# ===============================================
+print_section "23/23" "Checking multi-section dimension consistency..."
+
+CONSISTENCY_SCRIPT="$AGENT_DIR/scripts/check_multi_section_consistency.py"
+if [ -f "$CONSISTENCY_SCRIPT" ]; then
+    if CONSISTENCY_OUTPUT=$(python3 "$CONSISTENCY_SCRIPT" --summary-only 2>&1); then CONSISTENCY_EXIT=0; else CONSISTENCY_EXIT=$?; fi
+    ARITY_COUNT=$(echo "$CONSISTENCY_OUTPUT" | grep -oE "Arity mismatches \(likely drift\): [0-9]+" | grep -oE "[0-9]+" || true)
+    VARIANT_COUNT=$(echo "$CONSISTENCY_OUTPUT" | grep -oE "Signature variants .*: [0-9]+" | grep -oE "[0-9]+" | tail -1 || true)
+    if [ -z "$ARITY_COUNT" ]; then ARITY_COUNT=0; fi
+    if [ -z "$VARIANT_COUNT" ]; then VARIANT_COUNT=0; fi
+    if [ "$ARITY_COUNT" = "0" ]; then
+        check_pass "Multi-section consistency: 0 arity mismatches ($VARIANT_COUNT variants advisory)"
+    else
+        check_warning "Multi-section consistency: $ARITY_COUNT arity mismatch(es), $VARIANT_COUNT variant(s) [advisory]"
+        echo "$CONSISTENCY_OUTPUT" | grep -E "^  module_" | head -5 | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "Multi-section consistency checker not found: $CONSISTENCY_SCRIPT"
 fi
 
 # ============
