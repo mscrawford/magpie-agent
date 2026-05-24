@@ -1,0 +1,60 @@
+{
+  "_schema": {
+    "purpose": "Advisory-allowlist registry for validate_consistency.sh checks. Each entry suppresses ONE known false positive so the validator can report clean state when the pool is actually clean. Every entry MUST include a reason — periodic reviewers should be able to audit at a glance whether the suppression is still load-bearing.",
+    "review_cadence": "Audit on every /pipeline-audit run. If a suppression's reason no longer applies (regex tightened, doc rewritten, unit convention standardised), delete the entry and let the validator surface the case again.",
+    "consumers": {
+      "check_param_defaults": "scripts/check_param_defaults.py (Check 20, Pattern 13)",
+      "check_multi_section_consistency": "scripts/check_multi_section_consistency.py (Check 23, I2)"
+    },
+    "fields": {
+      "check": "checker identifier (matches the 'consumers' key)",
+      "file": "path relative to magpie-agent root (e.g. 'modules/module_38.md')",
+      "key": "for check_param_defaults: param name (e.g. 's38_immobile'). For check_multi_section_consistency: variable name (e.g. 'vm_land')",
+      "reason": "why this is a false positive (one sentence)",
+      "added": "ISO date the entry was added",
+      "added_in_round": "round identifier that surfaced it (e.g. 'R23', 'R22-followup')"
+    }
+  },
+  "allowlist": [
+    {
+      "check": "check_param_defaults",
+      "file": "modules/module_38.md",
+      "key": "s38_immobile",
+      "reason": "Doc table column correctly shows default=1; the regex greedy-matches '100' from the description prose '(default: 100% immobile)' where 100% is the human-readable rendering of the 1.0 share. Not a real mismatch.",
+      "added": "2026-05-24",
+      "added_in_round": "R23"
+    },
+    {
+      "check": "check_param_defaults",
+      "file": "modules/module_59.md",
+      "key": "s59_nitrogen_uptake",
+      "reason": "Unit-conversion false positive: doc says '200 kg N/ha', source value is 0.2 t N/ha. Same physical quantity, different unit. The checker does not perform unit normalization.",
+      "added": "2026-05-23",
+      "added_in_round": "R22-followup"
+    },
+    {
+      "check": "check_multi_section_consistency",
+      "file": "modules/module_29.md",
+      "key": "vm_land",
+      "reason": "Doc uses shorthand: vm_land(j,\"crop\") and vm_land(j,land) are both legitimate references; the (<lit>) form is a partial-prose reference. The I2 arity check cannot distinguish prose shorthand from real arity drift.",
+      "added": "2026-05-24",
+      "added_in_round": "R23"
+    },
+    {
+      "check": "check_multi_section_consistency",
+      "file": "modules/module_35.md",
+      "key": "pm_carbon_density_secdforest_ac",
+      "reason": "(vegc) is a literal partial reference in prose; full arity is (t,j,ac,ag_pools) at the structural mentions. Doc-convention shorthand the heuristic cannot suppress.",
+      "added": "2026-05-24",
+      "added_in_round": "R23"
+    },
+    {
+      "check": "check_multi_section_consistency",
+      "file": "modules/module_80.md",
+      "key": "p80_modelstat",
+      "reason": "(t) is the default-realization form; (t,h) appears in alternative-realization documentation. Multi-realization variant the I2 check reads as drift.",
+      "added": "2026-05-24",
+      "added_in_round": "R23"
+    }
+  ]
+}

@@ -398,6 +398,7 @@ CLAUDE_REFS=$(grep -rl "CLAUDE\.md" --include="*.md" --include="*.sh" . 2>/dev/n
     | grep -v "feedback/integrated/" \
     | grep -v "feedback/archive/" \
     | grep -v "feedback/pipeline_audit_round" \
+    | grep -v "feedback/validation_round" \
     | grep -v "feedback/r.*_execution_plan" \
     | grep -v "feedback/next_session_plan" \
     | grep -v "feedback/flywheel_rubric" \

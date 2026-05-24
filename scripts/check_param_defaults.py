@@ -20,6 +20,7 @@ Usage: python3 scripts/check_param_defaults.py [--verbose]
   --verbose: also print params that were skipped because source could not be located.
 """
 
+import json
 import os
 import re
 import sys
@@ -31,6 +32,20 @@ MAGPIE_DIR = os.path.dirname(AGENT_DIR)
 DEFAULT_CFG = os.path.join(MAGPIE_DIR, "config", "default.cfg")
 MODULES_DIR = os.path.join(MAGPIE_DIR, "modules")
 DOCS_DIR = os.path.join(AGENT_DIR, "modules")
+ALLOWLIST_PATH = os.path.join(AGENT_DIR, "feedback", "advisory_allowlist.json")
+
+
+def load_allowlist():
+    """Return set of (file, key) tuples allowlisted for this checker."""
+    if not os.path.exists(ALLOWLIST_PATH):
+        return set()
+    with open(ALLOWLIST_PATH) as f:
+        data = json.load(f)
+    return {
+        (entry["file"], entry["key"])
+        for entry in data.get("allowlist", [])
+        if entry.get("check") == "check_param_defaults"
+    }
 
 # Param name in backticks followed by (default VALUE) on the same line.
 # VALUE: number with optional commas/decimals, quoted string, bare identifier, or y-prefixed year.
@@ -229,6 +244,7 @@ def scan_doc(doc_path, defaults_map):
 def main():
     verbose = "--verbose" in sys.argv
     defaults_map = parse_default_cfg()
+    allowlist = load_allowlist()
     if not os.path.isdir(DOCS_DIR):
         print(f"  Error: docs directory missing: {DOCS_DIR}", file=sys.stderr)
         return 1
@@ -237,6 +253,7 @@ def main():
     total_matches_scanned = 0
     total_mismatches = 0
     total_skipped = 0
+    total_allowlisted = 0
     all_mismatches = []
     all_skipped = []
 
@@ -250,26 +267,32 @@ def main():
         with open(doc_path) as f:
             content = f.read()
         total_matches_scanned += len(PARAM_DEFAULT_RE.findall(content))
-        total_mismatches += len(mismatches)
         total_skipped += len(skipped)
+        rel_path = f"modules/{fname}"
         for mm in mismatches:
             mm["doc"] = fname
+            if (rel_path, mm["name"]) in allowlist:
+                total_allowlisted += 1
+                continue
+            total_mismatches += 1
             all_mismatches.append(mm)
         for sk in skipped:
             sk["doc"] = fname
             all_skipped.append(sk)
 
     if all_mismatches:
-        print(f"  Param defaults: {total_mismatches} advisory mismatch(es) in {total_docs} docs ({total_matches_scanned} claims scanned)")
+        suffix = f" ({total_allowlisted} allowlisted)" if total_allowlisted else ""
+        print(f"  Param defaults: {total_mismatches} advisory mismatch(es) in {total_docs} docs ({total_matches_scanned} claims scanned){suffix}")
         for mm in all_mismatches:
             print(
                 f"    {mm['doc']}:{mm['line']}  `{mm['name']}` claims default '{mm['claimed']}' "
                 f"but source says '{mm['actual']}' ({mm['source']})"
             )
     else:
+        suffix = f", {total_allowlisted} allowlisted" if total_allowlisted else ""
         print(
             f"  Param defaults: {total_matches_scanned} claims scanned across {total_docs} docs, 0 mismatches "
-            f"({total_skipped} skipped - source not located)"
+            f"({total_skipped} skipped - source not located{suffix})"
         )
 
     if verbose and all_skipped:

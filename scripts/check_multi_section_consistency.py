@@ -32,6 +32,7 @@ Exit: 0 always (advisory)
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from collections import defaultdict
@@ -40,6 +41,20 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 AGENT_DIR = SCRIPT_DIR.parent
 DOCS_DIR = AGENT_DIR / "modules"
+ALLOWLIST_PATH = AGENT_DIR / "feedback" / "advisory_allowlist.json"
+
+
+def load_allowlist() -> set[tuple[str, str]]:
+    """Return set of (file, key) tuples allowlisted for this checker."""
+    if not ALLOWLIST_PATH.exists():
+        return set()
+    with ALLOWLIST_PATH.open() as f:
+        data = json.load(f)
+    return {
+        (entry["file"], entry["key"])
+        for entry in data.get("allowlist", [])
+        if entry.get("check") == "check_multi_section_consistency"
+    }
 
 # Backticked GAMS-style variable with dimensions:
 #   `vm_land(j,land)`
@@ -169,6 +184,7 @@ def main() -> int:
     print("Multi-section dimension consistency check")
     print("==========================================")
 
+    allowlist = load_allowlist()
     docs_scanned = 0
     all_findings: list[tuple[str, str, dict[str, list[int]]]] = []
     for doc in sorted(DOCS_DIR.glob("module_*.md")):
@@ -179,13 +195,31 @@ def main() -> int:
 
     arity_findings, sig_findings = classify_findings(all_findings)
 
+    # Filter allowlisted entries (apply to arity findings — the actionable tier).
+    allowlisted_count = 0
+    if allowlist:
+        filtered_arity = []
+        for doc_name, var, dim_map in arity_findings:
+            rel = f"modules/{doc_name}"
+            if (rel, var) in allowlist:
+                allowlisted_count += 1
+                continue
+            filtered_arity.append((doc_name, var, dim_map))
+        arity_findings = filtered_arity
+
     print(f"Module docs scanned: {docs_scanned}")
     print(f"Arity mismatches (likely drift): {len(arity_findings)}")
     print(f"Signature variants (same arity, different set/literal — usually OK): {len(sig_findings)}")
+    if allowlisted_count:
+        print(f"Allowlisted (suppressed via feedback/advisory_allowlist.json): {allowlisted_count}")
     print()
 
     if not all_findings:
         print("✅ All variable dimensions consistent within each module doc")
+        return 0
+
+    if not arity_findings and not sig_findings:
+        print("✅ All variable dimensions consistent (after applying allowlist)")
         return 0
 
     if arity_findings:
