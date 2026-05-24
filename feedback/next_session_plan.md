@@ -300,4 +300,82 @@ python3 scripts/pr_doc_impact.py --base c7731e234~1 --head c7731e234 # PR #876: 
 python3 scripts/pr_doc_impact.py --since-last-sync --head origin/develop  # 0 changes
 ```
 
-**Next session**: 5b — mechanical updater (`scripts/pr_mechanical_update.py`, ~150 LOC). For each "mechanical" entry from 5a JSON: apply line-citation offsets in docs, refresh scalar value markers. Run validators after. The line_shift entries from PR #876 are the natural first test case (~8 hunks across M14/M35/M52 docs + cross_module/land_balance_conservation.md). Once 5b lands, the full 5a→5b loop can auto-fix line-citation drift on every PR — and it covers cross-module docs uniformly thanks to the migration.
+---
+
+## Progress log (2026-05-24 Phase 2 5b session)
+
+**22. ✅ 5b — Mechanical updater** (`scripts/pr_mechanical_update.py`, ~200 LOC).
+Consumes a 5a JSON report and applies all `confidence: mechanical` entries
+(currently exclusively `line_shift`). Handles single-line and range citations
+(`path:START` and `path:START-END`); shifts both endpoints via 5a's hunks.
+EOF safety: skips rewrites where `suggested > new_eof` (the original cite
+pointed past OLD EOF and the shift cannot reliably project it). Tries the
+full-path form first, then bare-basename in module's own doc (post-migration,
+the bare form only exists there).
+
+Runs `validate_consistency.sh` after `--apply`; returns non-zero if new
+errors appear. Never commits.
+
+**Acceptance test (PR #876, c7731e234)**: 116 cites matched across 7 docs
+including `cross_module/land_balance_conservation.md` (which the migration
+enabled), `reference/GAMS_Control_Structures.md`, and
+`reference/Infeasibility_Debugging_Guide.md` alongside M14/M35/M44/M52 module
+docs. 3 cites correctly skipped as pre-existing stale (past OLD EOF).
+
+**Surfaced + fixed bugs while building 5b**:
+
+- 5a hunk anchor was wrong for pure insertion. `@@ -X,0 +Y,N @@` means
+  "insert N lines AFTER old line X", so old line X is unchanged; the first
+  shifted line is X+1. My 5a v1 set `from_line = old_start = X` and applied
+  `from_line <= cited_line`, which over-shifted cites at exactly old_start.
+  Fixed: `first_shifted = old_start + 1` for pure insertion, `old_start +
+  old_count` for replacement (lines INSIDE a replacement hunk are
+  ambiguous; conservative "no shift" treats them as stale rather than
+  over-shifted). See [[gams_diff_hunk_anchor]].
+
+- 5b range citation handling: original `path:START` regex couldn't match
+  ranges. Extended to `path:START(-END)?` pattern; updates both endpoints
+  using the same hunks-based projection.
+
+- Added `new_file_line_count` to each 5a `line_shift` change so 5b can
+  enforce the EOF bound without re-fetching files.
+
+**Insights captured for future**:
+
+- **Cite range end-shifts use the same hunks**: a range cite's end shifts by
+  the cumulative delta UP TO the end line, NOT the same delta as the start.
+  Start and end can shift by different amounts if hunks lie BETWEEN them.
+  5b's `shift_old_to_new(hunks, old_line)` is the canonical projection
+  function. Memory candidate: [[range_cite_per_endpoint_shift]].
+
+- **Testing against a past commit shows working-tree drift, not bugs**:
+  when testing 5b on PR #876 against MAgPIE's current HEAD, the validator
+  flags EOF errors that reflect drift between c7731e234 and HEAD, not 5b's
+  output for c7731e234. In production, 5b runs immediately post-merge and
+  this drift doesn't exist.
+
+- **Pre-existing stale cites surface during automation**: 3 cites in
+  module_35.md already pointed past OLD EOF before PR #876. 5b's EOF check
+  catches and skips these. A follow-up task could flag them for the
+  semantic updater (5c) to investigate, since the original cite is
+  fundamentally broken.
+
+**Validator state at end of 5b**: unchanged on clean tree (37/40 passed, 3
+known advisories). 5b applies dirty changes for human review; doesn't
+commit.
+
+---
+
+## Verification at 5b session end (2026-05-24)
+
+```bash
+bash scripts/validate_consistency.sh                                    # 37/40 passed (clean tree)
+python3 scripts/pr_doc_impact.py --base c7731e234~1 --head c7731e234 \
+        --output /tmp/pr876_5a.json                                     # 16 changes, 7 docs
+python3 scripts/pr_mechanical_update.py --input /tmp/pr876_5a.json     # dry-run: 116/116 matched
+python3 scripts/pr_mechanical_update.py --input /tmp/pr876_5a.json --apply
+        # 116 applied, 3 stale-EOF skips; 4 working-tree-drift errors
+        # (test-only; would be 0 in production where head matches working tree)
+```
+
+**Next session**: 5c — semantic updater (LLM-driven, ~200 LOC orchestrator). For each `confidence: semantic` entry from 5a JSON (currently exclusively `identifier_added` / `identifier_removed` / `new_realization`): spawn a magpie-helper agent with the change context to draft the doc edit; spawn an opus auditor to verify against actual GAMS source (mirrors `/validate-semantic` audit pattern). Auditor confidence ≥8/10 → write changes; <8 → fix-loop or escalate. Once 5c lands, the 5a→5b→5c loop covers all confidence tiers; 5d wires it into CI.

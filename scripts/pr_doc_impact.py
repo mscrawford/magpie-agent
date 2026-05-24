@@ -174,7 +174,21 @@ def detect_scalar_value_changes(base: str, head: str, input_path: str) -> list[d
 
 
 def detect_line_shifts(base: str, head: str, path: str) -> list[dict]:
-    """Return per-hunk shift records: anchor line in OLD file + size delta."""
+    """Return per-hunk shift records: first-shifted line in OLD file + size delta.
+
+    Hunk-header semantics (git diff --unified=0):
+      @@ -X,M +Y,N @@  describes a region of the OLD file (lines X..X+M-1) being
+      replaced by N new lines starting at Y. The FIRST OLD LINE that shifts is:
+        - X+1 for pure insertion (M=0): new content is inserted AFTER old line X,
+          so old line X is unchanged; old line X+1 maps to new line Y+N.
+        - X+M for replacement/deletion: lines inside the hunk (X..X+M-1) have
+          undefined mapping; the first definitely-shifting line is X+M.
+
+    Using "first-shifted line" as `from_line` with `from_line <= cited_line`
+    gives the right cumulative-delta calculation for cites OUTSIDE any hunk.
+    Cites INSIDE a replacement hunk are inherently ambiguous; this logic
+    treats them as "no shift" (conservative — leave stale rather than over-shift).
+    """
     diff = run_git(["diff", "-U0", f"{base}..{head}", "--", path])
     shifts = []
     for line in diff.splitlines():
@@ -185,14 +199,22 @@ def detect_line_shifts(base: str, head: str, path: str) -> list[dict]:
         old_count = int(m.group(2)) if m.group(2) else 1
         new_count = int(m.group(4)) if m.group(4) else 1
         delta = new_count - old_count
-        if delta != 0:
-            # Anchor: the last unchanged line BEFORE the hunk.
-            # For a pure addition at line N, old_start = N-1 with old_count=0.
-            # For other hunks, use old_start as the "from" line; citations at or
-            # after this line shift by delta.
-            anchor = old_start if old_count > 0 else old_start
-            shifts.append({"from_line": anchor, "delta": delta})
+        if delta == 0:
+            continue
+        if old_count == 0:
+            first_shifted = old_start + 1
+        else:
+            first_shifted = old_start + old_count
+        shifts.append({"from_line": first_shifted, "delta": delta})
     return shifts
+
+
+def new_file_line_count(rev: str, path: str) -> int | None:
+    """Line count of `path` at `rev`. None if file doesn't exist there."""
+    text = git_show(rev, path)
+    if not text:
+        return None
+    return len(text.splitlines())
 
 
 def detect_new_realizations(base: str, head: str) -> list[dict]:
@@ -406,6 +428,7 @@ def assemble_report(base: str, head: str) -> dict:
                 "type": "line_shift",
                 "in_file": path,
                 "hunks": shifts,
+                "new_file_line_count": new_file_line_count(head, path),
                 "affected_docs": affected,
             })
 
