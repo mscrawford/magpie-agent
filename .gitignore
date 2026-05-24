@@ -20,4 +20,13 @@ session_logs/temp_*
 
 # Claude Code settings (copied from parent, user-specific)
 .claude/settings.local.json
+
+# Validation reports (now written into .cache/validation_reports/)
 validation_report_*.txt
+
+# Local cache: SHA-pinned R package clones (e.g. magpie4) + validator reports
+.cache/
+
+# Python bytecode
+__pycache__/
+*.pyc

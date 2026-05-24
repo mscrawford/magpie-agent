@@ -20,7 +20,9 @@ ERRORS=0
 
 # Report file
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-REPORT_FILE="validation_report_${TIMESTAMP}.txt"
+REPORT_DIR=".cache/validation_reports"
+mkdir -p "$REPORT_DIR"
+REPORT_FILE="${REPORT_DIR}/validation_report_${TIMESTAMP}.txt"
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
