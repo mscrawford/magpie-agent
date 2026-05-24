@@ -1,8 +1,8 @@
-# Flywheel rubric (v1.0)
+# Flywheel rubric (v1.1)
 
 Used by the Opus auditor to score Sonnet magpie-agent answers in semantic-validation rounds (`/validate-semantic`). Designed to maximize stability across rounds (so trends are real) while staying sensitive to actual agent improvements.
 
-**Version**: 1.0 (2026-05-23). Hoisted from the rubric content previously embedded in `agent/commands/validate-semantic.md`. Bumps required for any change to severity criteria, anchor examples, or bug-class definitions. Adding new bug classes is permitted at minor versions (1.x). See §9 Changelog.
+**Version**: 1.1 (2026-05-24). Bumps required for any change to severity criteria, anchor examples, or bug-class definitions. Adding new bug classes and extending the regression-question set is permitted at minor versions (1.x). See §9 Changelog.
 
 **Anchor examples are immutable across rubric versions** — they are the empirical reference points that prevent rubric drift. If reality contradicts an anchor, fix the underlying issue or bump the major version; do not silently re-interpret the anchor.
 
@@ -149,17 +149,19 @@ A question with zero bugs → 10. A question with one Major + two Minor → 10 �
 
 ---
 
-## 6. Initial regression-question set
+## 6. Regression-question set
 
-These are the first 2 calibration anchors. They will be carried forward as `regression_questions` in every future round. Update only when the underlying ground truth changes (config default flip, equation rename, module refactor).
+These calibration anchors are carried forward as `regression_questions` in every future round. Each round must score against at least one. Update only when the underlying ground truth changes (config default flip, equation rename, module refactor, version pin advance).
+
+The authoritative source for the full text and expected-answer details is `audit/validation_rounds.json` → `regression_questions[]`. The summaries below are the rubric-side reference; on conflict, the JSON wins (it gets updated as bugs are corrected — e.g., the G1 equation list was corrected in R22 audit).
 
 ### G1 — Module 14 default realization (stability anchor)
 
 **Question**: "What is the default realization of module 14 (yields)? List the equations defined in its equations.gms."
 
-**Expected answer summary**: Default is `managementcalib_aug19`. Equations include `q14_yield_crop`, `q14_yield_past`, `q14_yieldcalib` (verify count and names against `modules/14_yields/managementcalib_aug19/equations.gms`).
+**Expected answer summary**: Default is `managementcalib_aug19` (verify via `grep cfg$gms$yields ../config/default.cfg`). Equations defined in `modules/14_yields/managementcalib_aug19/equations.gms`: exactly 2 — `q14_yield_crop` and `q14_yield_past`. (R22 audit corrected an earlier rubric draft that listed a non-existent `q14_yieldcalib`.)
 
-**Ground truth source**: `config/default.cfg` line ~42 (search `cfg$gms$yields`) for default; `modules/14_yields/managementcalib_aug19/equations.gms` for equation list.
+**Ground truth source**: `config/default.cfg` (search `cfg$gms$yields`) for default; `modules/14_yields/managementcalib_aug19/equations.gms` for the equation list.
 
 **Calibration intent**: tests whether the agent (a) consults default.cfg before describing the realization, (b) reads the actual equations file rather than reconstructing from memory, (c) reports the equation count correctly (Pattern 6 — Hardcoded counts drift).
 
@@ -167,11 +169,31 @@ These are the first 2 calibration anchors. They will be carried forward as `regr
 
 **Question**: "Walk through how `vm_carbon_stock` is computed in Module 52 and where it enters the GHG-policy cost in Module 56. Cite the relevant equations and file:line locations."
 
-**Expected answer summary**: Module 52 defines `vm_carbon_stock` via equations linking land-use → carbon density → stock. Module 56's GHG policy multiplies `vm_carbon_stock` deltas by a carbon price into `vm_emission_costs`. Citations must point at actual lines in `modules/52_carbon/*/equations.gms` and `modules/56_ghg_policy/*/equations.gms`.
+**Expected answer summary**: `vm_carbon_stock` is DECLARED in Module 56 (`price_aug22/declarations.gms:34`) — NOT in Module 52. Land modules (29, 31, 32, 34, 35) and Module 59 (SOM) POPULATE it. Module 52 only READS it via `q52_emis_co2_actual` (`normal_dec17/equations.gms:16-19`). The Module-56 chain is `q56_emis_pricing_co2` → `v56_emis_pricing` → `q56_emission_cost_oneoff` → `v56_emission_cost` → `q56_emission_costs` → `vm_emission_costs(i)`. (R22 audit corrected an earlier rubric draft that attributed the declaration to M52.)
 
-**Ground truth source**: `modules/52_carbon/*/equations.gms`, `modules/52_carbon/*/declarations.gms`, `modules/56_ghg_policy/*/equations.gms`.
+**Ground truth source**: `modules/56_ghg_policy/price_aug22/declarations.gms` (declaration site), `modules/52_carbon/normal_dec17/equations.gms` (reader), `modules/56_ghg_policy/price_aug22/equations.gms` (pricing chain), `modules/29_cropland/`, `31_past/`, `32_forestry/`, `34_urban/`, `35_natveg/`, `59_som/` (populators).
 
-**Calibration intent**: tests (a) cross-module dependency tracing, (b) precise file:line citations, (c) variable-name fidelity (no confabulation of related-sounding names like `vm_carbon_stocks`), (d) gate-tabulation behavior when the chain has multiple branches.
+**Calibration intent**: tests (a) cross-module dependency tracing, (b) precise file:line citations, (c) variable-name fidelity (no confabulation of related-sounding names like `vm_carbon_stocks`), (d) gate-tabulation behavior when the chain has multiple branches, (e) producer-vs-consumer distinction.
+
+### G3 — magpie4 source-of-truth discipline (version-pin anchor) — added v1.1
+
+**Question**: "Which version of magpie4 does this agent's source-of-truth clone reflect, and how was that version determined? Cite the file(s) you read."
+
+**Expected answer summary**: Agent must read `project/version_pins.json` (NOT the workspace clone at `~/Documents/Work/Workspace/magpie4/`). Reports the version and SHA from that file; identifies the upstream authoritative source as `../input/renv.lock` (`Packages.magpie4`, fields `Version` + `RemoteSha`). The workspace clone is intentionally NOT source-of-truth (drifts ahead of the renv pin). Pin can be regenerated via `python3 scripts/sync_magpie4_clone.py`.
+
+**Ground truth source**: `project/version_pins.json` (the cached pin snapshot), `../input/renv.lock` (Packages.magpie4 entry). The auditor MUST read `project/version_pins.json` directly to compute the expected version/SHA at audit time — do not hardcode it here (pin advances when the user pulls upstream MAgPIE).
+
+**Calibration intent**: tests (a) source-of-truth discipline for the two-clone setup (SHA-pinned `.cache/sources/magpie4/` vs drift-prone workspace clone), (b) auto-load of `agent/helpers/magpie4_reference.md` before answering (its three pre-answer rules), (c) version-pin awareness (no confabulation from training data).
+
+### G4 — magpie4 getReport dispatch (R-package structural anchor) — added v1.1
+
+**Question**: "How does `magpie4::getReport` organize its reporting? Describe the dispatch pattern, how many unique `report*` functions it calls, and cite the file:line range from the pinned clone."
+
+**Expected answer summary**: Agent reads from `.cache/sources/magpie4/R/getReport.R` (the SHA-pinned clone). Dispatch is a flat `tryList(...)` of unconditional calls to ~106 unique `report*` functions (117 total call lines — some functions called multiple times with different argument combos: `reportYields(..., physical=T/F)`, `reportProcessing(..., indicator=...)`, `reportPriceFoodIndex(..., baseyear=...)`, `reportAgEmployment(..., type=...)`, `reportWageDevelopment(..., baseYear=...)`, `reportFactorCostShares(..., type=...)`, `reportGrowingStock(..., indicator=...)`). There is NO `control` argument and NO `if (any(grepl(...)))` filtering. Signature: `getReport(gdx, file=NULL, scenario=NULL, filter=c(1,2,7), detail=TRUE, level="regglo", ...)`. Body lines ~56-235; tryList block ~62-181 (v2.70.0 @ a360d8c9ec — re-verify on the pinned clone).
+
+**Ground truth source**: `.cache/sources/magpie4/R/getReport.R` at the version_pins.json-pinned SHA.
+
+**Calibration intent**: tests (a) reading from the SHA-pinned clone rather than the workspace clone, (b) faithful description of dispatch (no confabulation of control-based gating or grepl filtering — this was the magpie4 plan's initial-but-wrong description), (c) reasonable count of unique `report*` functions (off-by-few = Minor; off-by-order = Critical), (d) precise file:line citation with version pin per MANDATE 16.
 
 ---
 
@@ -227,3 +249,4 @@ These exist specifically to prevent rubric drift across rounds:
 ## 9. Changelog
 
 - **v1.0 (2026-05-23)**: Initial hoist from `agent/commands/validate-semantic.md`. Severity tiers and bug-class list preserved verbatim from prior practice; anchor examples drawn from R3, R6, R16, R20, R21 detailed bug records in `audit/validation_rounds.json`. Established §5 (round composition with regression questions) and §6 (initial regression-question set G1/G2) as new structural requirements.
+- **v1.1 (2026-05-24)**: Extended the §6 regression-question set with G3 (magpie4 source-of-truth / version-pin discipline) and G4 (magpie4 getReport dispatch structure), following the 2026-05-24 magpie4 lean-scaffolding initiative (commit d44823f). G1 expected-answer text in §6 corrected to remove the non-existent `q14_yieldcalib` reference (R22 audit had already corrected the JSON; v1.0 rubric was stale on this point). §1 severity tiers unchanged — the existing "Invented variable name", "Citation drift", and "Module attribution" triggers cover magpie4-specific bugs naturally (with `report*` function names and the two-clone source-of-truth distinction as the new surface).

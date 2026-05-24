@@ -76,7 +76,7 @@ Session startup checks `validation_rounds.json` for last validation date:
 
 **Before designing questions**: review `audit/probe_dedup_ledger.json`. Names appearing there within their lock-out window are off-limits for fresh probes (would test recognition, not capability). Calibration anchors are exempt — they recur by design.
 
-**Each round MUST include at least 1 regression question** from `audit/flywheel_rubric.md` §6 (initial set: G1 module-14 default realization, G2 vm_carbon_stock propagation) alongside new probes. See `audit/validation_rounds.json` → `regression_questions` array.
+**Each round MUST include at least 1 regression question** from `audit/flywheel_rubric.md` §6 (current set: G1 module-14 default realization, G2 vm_carbon_stock propagation, G3 magpie4 source-of-truth / version-pin discipline, G4 magpie4 getReport dispatch structure) alongside new probes. See `audit/validation_rounds.json` → `regression_questions` array. **Rotate** so all four are exercised over a few rounds — the magpie4 anchors (G3, G4) are especially load-bearing because they protect the version-pin discipline the agent depends on for correct magpie4 source reads.
 
 Design 5 new probes + 1-2 regression questions using this rotation of **6 archetypes**:
 
@@ -88,13 +88,15 @@ Design 5 new probes + 1-2 regression questions using this rotation of **6 archet
 | **Timing/sequencing** | Ask about execution order | "Is preloop per-timestep or once?" |
 | **Conservation law enforcement** | Ask how constraints work | "How does land balance prevent double-counting?" |
 | **Edge case/failure mode** | Ask what causes problems | "What makes the water module infeasible?" |
+| **R-to-GAMS provenance** (magpie4) | Trace a report.mif variable back to its GAMS origin | "Where does the IAMC variable `Emissions\|N2O\|Land` come from? Trace from the magpie4 function to the underlying GAMS module." |
 
 **Question design rules**:
-1. Each question must span **≥3 modules**
-2. Each question must require reading **≥2 doc files**
+1. Each GAMS-side question must span **≥3 modules**. *Exception*: magpie4 R-package questions can be single-package since magpie4 itself is one layer above all modules — but they must still cite version-pinned source paths (`.cache/sources/magpie4/...`).
+2. Each question must require reading **≥2 doc files** (or for magpie4: ≥1 source file from the pinned clone + the helper)
 3. Cover modules **not tested in previous rounds** (check coverage matrix below)
 4. Bias toward **high-centrality modules**: 11, 10, 56, 32, 30, 70, 17, 09
-5. Include specific requests for variable names, equations, or formulas (forces precision)
+5. Include specific requests for variable names, equations, formulas, or `report*` function names (forces precision)
+6. **Include at least one magpie4 question every 2-3 rounds**: the helper is new (2026-05-24) and under-validated. Good targets: report.mif variable provenance, version-pin discipline, getReport dispatch structure, IAMC-hierarchy traversal. The auto-loaded helper is `agent/helpers/magpie4_reference.md`.
 
 ### Step 2: Answer with Sonnet
 
@@ -168,7 +170,7 @@ After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic 
 **MANDATORY**: Append results to `audit/validation_rounds.json` (schema v1.1 as of 2026-05-23). This is the persistent record for tracking quality over time. Include:
 - Round number, date, commit hashes (before/after)
 - Per-question: topic, modules tested, score, bug counts by severity
-- **Regression questions section**: score the round's regression questions (G1, G2 minimum per `regression_questions` top-level array) and set `drift_observed=true` if any answer drifted from the expected_answer_summary. Append round number to `used_in_rounds` for each.
+- **Regression questions section**: score the round's regression questions (rotate across G1-G4 per `regression_questions` top-level array; minimum 1 per round). Set `drift_observed=true` if any answer drifted from the expected_answer_summary. Append round number to `used_in_rounds` for each used. For G3 (magpie4 version pin), the auditor must read `project/version_pins.json` directly to compute the expected version/SHA — do NOT score against a hardcoded version, the pin advances when upstream renv.lock updates.
 - Summary: mean score, total bugs, bug sources (doc_error vs answerer_confabulation), root causes, files fixed, safeguards added
 - Update `cumulative_stats` at the bottom
 
