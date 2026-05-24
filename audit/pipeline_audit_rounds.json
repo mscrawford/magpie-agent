@@ -648,8 +648,16 @@
         "Variable signature mismatch -> new dimension-verification check"
       ],
       "report_path": "audit/pipeline_audit_round5.md",
-      "guards_added": [],
-      "status": "triaged; fix + mechanize pending user review",
+      "guards_added": [
+        "scripts/check_gams_citations_impl.py \u2014 extended scan_paths to cover cross_module/, core_docs/, agent/helpers/, agent/commands/, reference/, AGENT.md, README.md; non-module-doc errors softened to advisory (BARE/FILE-NM/LINE-NM warnings)",
+        "scripts/check_gams_realizations.py \u2014 module-aware via build_realization_index_by_module(); cross-module references surface as advisory (legitimate); fabricated realizations remain hard errors",
+        "scripts/check_doc_var_existence.py \u2014 SCAN_DIRS extended to include reference/; 19 pedagogical identifiers allowlisted via <!-- check-gams-vars: allow ... --> markers in 4 reference docs",
+        "scripts/validate_consistency.sh \u2014 count_lines() helper fixes Check 1 vacuous-pass (empty grep was returning wc -l = 1)",
+        "scripts/sync_magpie4_clone.py \u2014 distinct exit codes (0/1/2/3); refuses silent HEAD-downgrade unless --allow-head-fallback passed",
+        "scripts/probe_dedup_check.py \u2014 auto_detect_next_round() reads validation_rounds.json; replaces broken default=99 (which rotated everything back in)",
+        "core_docs/Bug_Taxonomy.md \u2014 Patterns 12 and 13 status updated to reflect existing automation"
+      ],
+      "status": "fixed + mechanized; 3 phases committed (e3b0cc2 spot-fixes, 99917e3 mechanizations, bb6ec32 opportunistic cleanup)",
       "notes": "R5 ran immediately after a high-change session (commits d44823f magpie4 scaffolding + 327116c /feedback removal + 1c7df77 feedback->audit rename + e7bbb39 G3/G4 regression questions). Lens 4 (instruction-surface) deliberately biased toward the new surface; AGENT.md / deployed copies / helper trigger sync all verified clean. The session's changes themselves introduced no CRITICAL bugs; the sed-sweep produced LOW-severity collateral in historical narrative (Cluster D). Most HIGH/MEDIUM findings predate this session (Pattern 6 count drift, Pattern 10 citations, M18 wrong consumer, M30 default realization deferred since R3). Highest-leverage intervention: one-line scope extension in check_gams_citations_impl.py (Cluster B) \u2014 closes the largest historical bug class outside its current modules/-only scope. Six lenses ran in parallel; total wall-clock ~13 minutes; ~6 Opus 4.7 subagents."
     }
   ]
