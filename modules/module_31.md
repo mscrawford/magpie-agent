@@ -373,7 +373,7 @@ vm_bv(j2,"rangeland",potnatveg) =e=
 
 **Purpose**: Production cost factor to prevent overproduction during calibration timestep.
 
-**Temporal Behavior** (`equations.gms:34-35`):
+**Temporal Behavior**: declared at `input.gms:10` with default value 1 USD17MER/tDM; comment block at `equations.gms:34-35` documents the intended reset; actual zeroing happens in `postsolve.gms:10` (`s31_fac_req_past = 0;`) after the calibration timestep.
 - Initial calibration: 1 USD17MER/tDM
 - All subsequent time steps: 0 USD17MER/tDM
 

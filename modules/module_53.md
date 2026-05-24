@@ -1064,7 +1064,7 @@ vm_emissions_reg(i2,"resid_burn","ch4") =e=
 - s53_ef_ch4_res_ag_burn: Residue burning emission factor = 0.0027 (input.gms:24-26)
 
 **Sets**: Confirmed ✅
-- k_conc53: 24 concentrate feed types (sets.gms:10-14)
+- k_conc53: 27 concentrate feed types (sets.gms:10-14)
 - k_noconc53: 5 non-concentrate feed types (sets.gms:16-17)
 - k_ruminants53: 2 ruminant types (livst_rum, livst_milk) (sets.gms:19-20)
 - emis_source_methane53: 4 CH4 sources (awms, rice, ent_ferm, resid_burn) (sets.gms:22-23)

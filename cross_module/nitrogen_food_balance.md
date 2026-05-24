@@ -29,7 +29,7 @@
 
 | Source | Module | Description | Typical Magnitude |
 |--------|--------|-------------|-------------------|
-| **Mineral Fertilizer** | 51 | Synthetic N applied to crops | 50-250 kg N/ha/yr (optimized) |
+| **Mineral Fertilizer** | 50 | Synthetic N applied to crops (`vm_nr_inorg_fert_reg`, declared in `modules/50_nr_soil_budget/macceff_aug22/declarations.gms`) | 50-250 kg N/ha/yr (optimized) |
 | **Biological N Fixation** | 50 | Legume crops (soybean, pulses) | 50-300 kg N/ha/yr (crop-specific) |
 | **Manure** | 50, 55 | Livestock excreta recycled to crops (`vm_manure_recycling` from M55) | Variable (regional) |
 | **Atmospheric Deposition** | 50 | Wet/dry deposition from atmosphere | 1-20 kg N/ha/yr (exogenous) |

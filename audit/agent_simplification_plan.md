@@ -1,4 +1,6 @@
-# Agent simplification: drop /feedback machinery + rename `audit/` → `audit/`
+# Agent simplification: drop /feedback machinery + rename `feedback/` → `audit/`
+
+> **Status (2026-05-24)**: EXECUTED. Phase A in commit `327116c`, Phase B in commit `1c7df77`. References to the directory below as `audit/` post-execution reflect the new name; this plan was *written* when the directory was still `feedback/`. The post-execution sed sweep (commit `1c7df77`) rewrote some historical-narrative references; this header is the canonical statement of what was renamed.
 
 **Created**: 2026-05-24
 **Origin**: User decisions on 2026-05-24:
@@ -13,8 +15,8 @@
 ## Goal
 
 Reduce the agent's surface to match its actual use pattern:
-- Drop the **external user-feedback collection** capability (`/feedback` command + `audit/pending/` submission inbox + the "submit feedback" prompt path).
-- Rename the directory `audit/` → `audit/` to reflect its actual contents (validation rounds, pipeline audits, plans, rubrics, registries — all internal iteration artifacts, not user-submitted feedback).
+- Drop the **external user-feedback collection** capability (`/feedback` command + `feedback/pending/` submission inbox + the "submit feedback" prompt path).
+- Rename the directory `feedback/` → `audit/` to reflect its actual contents (validation rounds, pipeline audits, plans, rubrics, registries — all internal iteration artifacts, not user-submitted feedback).
 
 This is **not** a scope reduction of iteration capability. The agent will continue to:
 - Run semantic-validation flywheel rounds (now `/validate-semantic` → results land in `audit/validation_rounds.json`)
@@ -25,15 +27,15 @@ This is **not** a scope reduction of iteration capability. The agent will contin
 
 ## Motivation
 
-1. **Empirical**: zero formal feedback submissions exist in `audit/pending/` (only a README). Colleagues don't engage with the formal submission flow.
+1. **Empirical**: zero formal feedback submissions exist in `feedback/pending/` (only a README). Colleagues don't engage with the formal submission flow.
 2. **Workflow fit**: the working pattern has been *agent-and-user iteration*, not external-PR review of feedback submissions. Every doc fix in R3, R22, R23, and pipeline-audit rounds came from the agent-user loop, not from `/feedback`-submitted entries.
-3. **Naming accuracy**: `audit/` was named for the user-submission flow. With that gone, the directory's contents (rounds, rubrics, plans, audits) are categorically *audit artifacts*. The user's "audit" preference matches the actual contents.
+3. **Naming accuracy**: `feedback/` was named for the user-submission flow. With that gone, the directory's contents (rounds, rubrics, plans, audits) are categorically *audit artifacts*. The user's "audit" preference matches the actual contents.
 
 ## Non-goals
 
 - **Don't** remove the internal write-path to `audit/global/agent_lessons.md`. The agent still records systemic lessons during sessions; only the formal user-submission inbox is removed.
-- **Don't** rename `audit/` in any external systems (e.g., colleagues' personal forks, the magpie-preproc-agent repo). The rename is local to magpie-agent.
-- **Don't** restructure `audit/` internals during this pass. Just rename the top-level directory; sub-structure stays as-is.
+- **Don't** rename `feedback/` in any external systems (e.g., colleagues' personal forks, the magpie-preproc-agent repo). The rename is local to magpie-agent.
+- **Don't** restructure the directory internals during this pass. Just rename the top-level directory; sub-structure stays as-is.
 
 ---
 
@@ -42,7 +44,7 @@ This is **not** a scope reduction of iteration capability. The agent will contin
 ### Files to delete
 
 - `agent/commands/feedback.md` (77 lines — the slash-command spec)
-- `audit/pending/` (subdirectory + its README; empty of submissions)
+- `feedback/pending/` (subdirectory + its README; empty of submissions)
 
 ### Files to edit
 
@@ -53,7 +55,7 @@ This is **not** a scope reduction of iteration capability. The agent will contin
 | `agent/commands/bootstrap.md` | Remove first-time-user reference to `/feedback`. |
 | `core_docs/Tool_Usage_Patterns.md` | Remove the "submit /feedback" suggestion (1 occurrence). |
 | `core_docs/Response_Guidelines.md` | Remove the "remind user about /feedback" guidance (3 occurrences). |
-| `agent/commands/validate-semantic.md` + `agent/commands/pipeline-audit.md` | Audit for any "/feedback" mention (likely none; these reference `audit/` as a path, not the command — that's Phase B's job). |
+| `agent/commands/validate-semantic.md` + `agent/commands/pipeline-audit.md` | Audit for any "/feedback" mention (likely none; these reference `feedback/` as a path, not the command — that's Phase B's job). |
 
 ### Acceptance
 
@@ -67,19 +69,19 @@ Single commit: `simplify: remove /feedback command + external-submission machine
 
 ---
 
-## Phase B: Rename `audit/` → `audit/` (~45 min, ~40K tokens)
+## Phase B: Rename `feedback/` → `audit/` (~45 min, ~40K tokens)
 
 ### Why a separate phase
 
-Phase A removes a chunk of the surface (deletes `agent/commands/feedback.md`, `audit/pending/`, edits ~6 doc files). Doing Phase A first means Phase B's rename doesn't have to update files that no longer exist. Two clean commits beat one tangled one.
+Phase A removes a chunk of the surface (deletes `agent/commands/feedback.md`, `feedback/pending/`, edits ~6 doc files). Doing Phase A first means Phase B's rename doesn't have to update files that no longer exist. Two clean commits beat one tangled one.
 
 ### Inventory (counted 2026-05-24, pre-Phase-A)
 
-- **43 files** outside `audit/` reference `audit/` as a path
+- **43 files** outside `feedback/` reference `feedback/` as a path
 - **100+ individual references** when including archives, scripts, JSON registries
 - Memory hits (in `~/.claude/`):
-  - `~/.claude/memory/rename_ledger_defensive_infra.md` (mentions `audit/renames.json`)
-  - `~/.claude/projects/.../memory/template_verifier_mandate_flywheel.md` (mentions validation_rounds.json + flywheel_rubric in audit/)
+  - `~/.claude/memory/rename_ledger_defensive_infra.md` (mentions `feedback/renames.json`)
+  - `~/.claude/projects/.../memory/template_verifier_mandate_flywheel.md` (mentions validation_rounds.json + flywheel_rubric in feedback/)
   - NOT `feedback_run_gates_after_last_edit.md` — that's a memory-TYPE prefix, not a path reference
 
 ### Steps
@@ -94,10 +96,10 @@ Phase A removes a chunk of the surface (deletes `agent/commands/feedback.md`, `a
    # macOS sed needs '' after -i
    find . -type f \( -name "*.md" -o -name "*.py" -o -name "*.sh" -o -name "*.json" \) \
      -not -path "./.git/*" -not -path "./.cache/*" \
-     -exec sed -i '' 's|audit/|audit/|g' {} +
+     -exec sed -i '' 's|feedback/|audit/|g' {} +
    ```
 
-   This is safe because the search pattern `audit/` (with trailing slash) is unambiguously path-form. The word "feedback" without slash (in prose like "if you receive feedback from hooks") is left alone.
+   This is safe because the search pattern `feedback/` (with trailing slash) is unambiguously path-form. The word "feedback" without slash (in prose like "if you receive feedback from hooks") is left alone.
 
 3. **Review residual "feedback" mentions** in prose:
    - `grep -rni "feedback" --include="*.md" .` — review remaining occurrences
@@ -105,8 +107,8 @@ Phase A removes a chunk of the surface (deletes `agent/commands/feedback.md`, `a
    - Target: ~10–20 manual edits after the sed pass
 
 4. **Update memory files**:
-   - `~/.claude/memory/rename_ledger_defensive_infra.md` — `audit/renames.json` → `audit/renames.json`
-   - `~/.claude/projects/.../memory/template_verifier_mandate_flywheel.md` — `audit/...` paths → `audit/...`
+   - `~/.claude/memory/rename_ledger_defensive_infra.md` — `feedback/renames.json` → `audit/renames.json`
+   - `~/.claude/projects/.../memory/template_verifier_mandate_flywheel.md` — `feedback/...` paths → `audit/...`
 
 5. **Validator + check linkage**:
    - `bash scripts/validate_consistency.sh` — must hold 40/40
@@ -117,13 +119,13 @@ Phase A removes a chunk of the surface (deletes `agent/commands/feedback.md`, `a
    - `python3 scripts/refresh_aggregate_counts.py` — must read `audit/validation_rounds.json`
 
 6. **Update validate_consistency.sh internals**:
-   - `REPORT_DIR=".cache/validation_reports"` doesn't reference `audit/` (already gitignored under .cache/), no change needed
-   - But the script reads/greps from `audit/` in places — sed handles those
+   - `REPORT_DIR=".cache/validation_reports"` doesn't reference `feedback/` (already gitignored under .cache/), no change needed
+   - But the script reads/greps from `feedback/` in places — sed handles those
    - Check for any heredoc / quoted paths the sed missed
 
 ### Acceptance
 
-- `git ls-files | xargs grep -l "audit/" | grep -v "feedback" | head` returns empty
+- `git ls-files | xargs grep -l "feedback/" | grep -v "feedback" | head` returns empty
 - Validator + all 5 Python checkers run cleanly against `audit/`
 - `ls audit/ 2>&1` returns "No such file or directory"
 - `ls audit/` shows all the migrated contents

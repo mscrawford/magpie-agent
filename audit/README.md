@@ -1,8 +1,8 @@
 # Audit / iteration artifacts for the MAgPIE agent
 
-This directory holds the **internal iteration artifacts** for the agent — validation rounds, pipeline audits, plans, rubrics, ledgers, and the agent-side write paths for lessons learned. There is no longer an external user-submission inbox (the `/feedback` command and `pending/` were removed; see the `agent_simplification_plan.md` in this directory for the rationale).
+This directory holds the **internal iteration artifacts** for the agent — validation rounds, pipeline audits, plans, rubrics, ledgers, and the agent-side write paths for lessons learned. There is no longer an external user-submission inbox (the `/feedback` command and `pending/` were removed in commit `327116c` on 2026-05-24; see `agent_simplification_plan.md` in this directory for the rationale).
 
-> The directory will be renamed `audit/` in a follow-up commit (Phase B of the simplification plan). After that rename, the *artifacts* described here are unchanged — only the directory name.
+> This directory was previously named `feedback/`; it was renamed to `audit/` in commit `1c7df77` on 2026-05-24 to match its actual contents. The artifacts inside are unchanged from before the rename.
 
 ## How the agent records lessons
 
@@ -22,14 +22,14 @@ audit/
 ├── integrated/                      ← Archived agent-recorded lessons (history)
 ├── templates/                       ← Templates referenced by validators/auditors
 ├── archive/                         ← Historical infrastructure (older scripts, design docs)
-├── validation_rounds.json           ← Semantic-flywheel round log (schema v1.1)
+├── validation_rounds.json           ← Semantic-flywheel round log (schema v1.2)
 ├── flywheel_rubric.md               ← Canonical scoring spec for /validate-semantic
 ├── pipeline_audit_rounds.json       ← Structural-audit round log
 ├── pipeline_audit_roundN.md         ← Per-round detailed findings reports
 ├── probe_dedup_ledger.json          ← Names off-limits for fresh probes
 ├── advisory_allowlist.json          ← Allowlisted advisory findings for validate_consistency.sh
 ├── renames.json                     ← Tracked historical renames (for validate_consistency.sh)
-├── agent_simplification_plan.md     ← Plan for /feedback removal + audit/ → audit/ rename
+├── agent_simplification_plan.md     ← Plan for /feedback removal + feedback/ → audit/ rename (executed 2026-05-24)
 ├── magpie4_scaffolding_plan.md      ← Plan for the magpie4 lean scaffolding initiative
 ├── round*.md                        ← Per-round design/answer/report markdown for flywheel rounds
 └── README.md                        ← You are here

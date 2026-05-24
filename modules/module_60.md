@@ -276,16 +276,16 @@ f60_res_2ndgenBE_dem(t,i,scen2ndres60)  // mio. GJ per yr
 
 ### 2nd Generation Dedicated Bioenergy Scenarios (`scen2nd60`)
 
-Module 60 includes **90+ scenarios** for 2nd generation dedicated bioenergy demand (`sets.gms:15-103`):
+Module 60 includes **88 scenarios** for 2nd generation dedicated bioenergy demand (`sets.gms:15-103`; family counts recomputed 2026-05-24 R5):
 
 **Scenario Families**:
 1. **PIK scenarios** (7 scenarios): PIK_GDP, PIK_H2C, PIK_HBL, PIK_HOS, PIK_LIN, PIK_NPI, PIK_OPT
-2. **REMIND-MAgPIE R21M42** (18 scenarios): SSP1/2/5 + SDP × (NDC, NPi, PkBudg900/1100/1300)
+2. **REMIND-MAgPIE R21M42** (20 scenarios): SSP1/2/5 + SDP × (NDC, NPi, PkBudg900/1100/1300)
 3. **REMIND-MAgPIE R2M41** (5 scenarios): SSP2 × (NDC, NPi, Budg600/950/1300)
-4. **REMIND-MAgPIE R32M46** (16 scenarios): SSP1/2EU/5 + SDP_MC × (NDC, NPi, PkBudg650/1050)
+4. **REMIND-MAgPIE R32M46** (15 scenarios): SSP1/2EU/5 + SDP_MC × (NDC, NPi, PkBudg650/1050)
 5. **REMIND-MAgPIE R34BC** (4 scenarios): SSP2-PkBudg650 with biochar variants (BCdef, BCpess, CTS01, BM70)
-6. **REMIND-MAgPIE R34M410** (12 scenarios): SSP1/2/2_lowEn/3/5 × (NPi2025, PkBudg650/1000, rollBack)
-7. **SSPDB IMAGE/REMIND-MAGPIE** (38 scenarios): SSP1/2/5 × (Ref, 19/26/34/45/60)
+6. **REMIND-MAgPIE R34M410** (15 scenarios): SSP1/2/2_lowEn/3/5 × (NPi2025, PkBudg650/1000, rollBack)
+7. **SSPDB IMAGE/REMIND-MAGPIE** (22 scenarios): SSP1/2/5 × (Ref, 19/26/34/45/60)
 
 **Scenario Structure**:
 - SSP storylines (socioeconomic pathways)

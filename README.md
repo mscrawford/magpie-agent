@@ -103,8 +103,8 @@ magpie-agent/
 ├── AGENT.md                   ← AI agent instructions (SOURCE - edit here)
 │
 ├── agent/                     ← AGENT SYSTEM
-│   ├── commands/              ← Slash command definitions (6 commands)
-│   └── helpers/               ← Auto-loading context helpers (9 helpers)
+│   ├── commands/              ← Slash command definitions (see AGENT.md command table for current list)
+│   └── helpers/               ← Auto-loading context helpers (see AGENT.md auto-load table for current list)
 │
 ├── project/                   ← PROJECT MANAGEMENT (maintainers only)
 │   ├── README.md              ← What's in this folder

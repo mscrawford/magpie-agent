@@ -225,7 +225,7 @@ i09_gdp_pc_ppp_iso_raw(t_all,iso,pop_gdp_scen09)$(i09_gdp_pc_ppp_iso_raw(t_all,i
 **Location**: `declarations.gms:32`
 **Dimensions**: (t_all, i)
 **Units**: Dimensionless (0 = low income, 1 = high income)
-**Used by**: 6 modules
+**Used by**: 5 modules (12, 18, 42, 55, 56 — verified 2026-05-24 R5 via `find ../modules -name '*.gms' -exec grep -l '\bim_development_state\b' {} \;`)
 **Source**: World Bank income group definitions
 **Purpose**: Policy constraints, technology access, consumption patterns vary by development state
 

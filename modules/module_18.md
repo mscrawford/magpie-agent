@@ -400,7 +400,7 @@ v18_res_ag_removal.fx(i,nonused18,attributes) = 0;
 |----------|-------------|------------|-------|---------|
 | `vm_res_biomass_ag` | AG residue biomass | (i, kcr, attributes) | Mio. tX/yr | Internal (field balance, burning, BG biomass) |
 | `vm_res_biomass_bg` | BG residue biomass | (i, kcr, dm_nr) | Mio. tX/yr | Internal (N recycling) |
-| `vm_res_ag_burn` | Burned AG residues | (i, kcr, attributes) | Mio. tX/yr | Module 50 (nitrogen budget), Module 57 (GHG emissions) |
+| `vm_res_ag_burn` | Burned AG residues | (i, kcr, attributes) | Mio. tX/yr | Module 51 (nitrogen emissions from burned residues), Module 53 (CH4 from burning) — verified 2026-05-24 R5 |
 | `vm_res_recycling` | Recycled nutrients | (i, npk) | Mio. tX/yr | Module 50 (nitrogen and P/K budgets) |
 | `vm_cost_prod_kres` | Residue harvest costs | (i, kres) | Mio. USD17MER/yr | Module 11 (Costs) |
 | `vm_prod_reg` | Regional residue production (kres slice) | (i, kres) | Mio. tDM/yr | Module 21 (Trade), Module 16 (Demand) |
@@ -478,13 +478,15 @@ Other scaling entries for `vm_res_ag_burn`, `q18_prod_res_bg_reg`, `q18_res_fiel
 
 3. **Module 50 (Nitrogen Budget)**:
    - `vm_res_recycling(i, "nr")` - N recycling from residues
-   - `vm_res_ag_burn(i, kcr, "nr")` - N from burned residues
 
 4. **Module 50 (Phosphorus/Potassium Budget)**:
    - `vm_res_recycling(i, pk18)` - P/K recycling from residues
 
-5. **Module 57 (GHG Emissions)**:
-   - `vm_res_ag_burn(i, kcr, attributes)` - residue burning emissions
+5. **Module 51 (Nitrogen Emissions)**:
+   - `vm_res_ag_burn(i, kcr, "nr")` - N from burned residues (used at `modules/51_nitrogen/rescaled_jan21/equations.gms:52`)
+
+6. **Module 53 (Methane)**:
+   - `vm_res_ag_burn(i, kcr, attributes)` - residue burning CH4 emissions (used at `modules/53_methane/ipcc2006_aug22/equations.gms:72`)
 
 ---
 

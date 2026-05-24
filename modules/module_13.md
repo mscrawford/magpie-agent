@@ -137,9 +137,11 @@ q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year
 
 | Variable | Provider | Purpose | Source |
 |----------|----------|---------|--------|
-| `pm_interest(t,i)` | Module 12 (Interest Rate) | Regional interest rates for time shifting and annuity | declarations.gms:26 |
-| `pcm_land(j,land)` | Module 10 (Land) | Previous timestep land areas for cost scaling | presolve.gms:9-10 |
-| `pm_land_conservation(t,j,land,consv_type)` | Module 22 (Conservation) | Conservation area shares for tau differentiation | presolve.gms:41 |
+| `pm_interest(t_all,i)` | Module 12 (Interest Rate) | Regional interest rates for time shifting and annuity | `modules/12_interest_rate/select_apr20/declarations.gms:9` |
+| `pcm_land(j,land)` | Module 10 (Land) | Previous timestep land areas for cost scaling | presolve.gms:8-9 |
+| `pm_land_conservation(t,j,land,consv_type)` | Module 22 (Conservation) | Conservation area shares for tau differentiation | presolve.gms:40 |
+| `im_gdp_pc_ppp_iso(t_all,iso)` | Module 09 (Drivers) | GDP per capita cap on tech investments | presolve.gms:26 |
+| `im_pop_iso(t_all,iso)` | Module 09 (Drivers) | Population weight for GDP cap | presolve.gms:26 |
 
 ---
 
@@ -148,7 +150,7 @@ q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year
 | Variable | Consumer | Purpose | Source |
 |----------|----------|---------|--------|
 | `vm_tau(j,tautype)` | Module 14 (Yields), Module 38 (Factor Costs) | Land use intensity factor at cluster level | declarations.gms:13 |
-| `vm_tech_cost(i)` | Module 11 (Costs) | Annualized technology costs for objective function | declarations.gms:10 |
+| `vm_tech_cost(i)` | Module 11 (Costs) | Annualized technology costs for objective function | `modules/13_tc/endo_jan22/declarations.gms:10` |
 
 **Critical Role**: `vm_tau` is the central mechanism linking intensification investments (Module 13) to yield improvements (Module 14) and production costs (Module 38), creating the core tradeoff between land expansion and intensification.
 

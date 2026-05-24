@@ -13,9 +13,9 @@ MAgPIE modules communicate through three types of interface variables:
 
 | Type | Prefix | Count | Purpose | Scope |
 |------|--------|-------|---------|-------|
-| **Variables** | `vm_` | 81 | Optimization variables | Shared across modules |
-| **Parameters** | `pm_` | 19 | Model parameters | Calculated and shared |
-| **Input Data** | `im_` | 15 | External input data | Read from files |
+| **Variables** | `vm_` | 83 | Optimization variables | Shared across modules |
+| **Parameters** | `pm_` | 21 | Model parameters | Calculated and shared |
+| **Input Data** | `im_` | 17 | External input data | Read from files |
 
 **Key Design Pattern:**
 - **Producers**: Modules that declare interface variables (in `declarations.gms`)
@@ -135,8 +135,8 @@ Layer 6: Optimization
 - 45_climate → 4 modules (14_yields, 52_carbon, 58_peatland, 59_som)
 
 **Pure Sinks (consume only):**
-- 80_optimization ← vm_cost_glo (from 11_costs) + vm_landdiff (from 10_land)
-- 11_costs ← 31 distinct cost/penalty input variables from 27 source modules (recomputed 2026-05-23 R3; matches the per-module enumeration in `modules/module_11.md` §3). The exact count drifts as cost terms are added or refactored; treat the canonical source as the per-equation grep, not this docstring.
+- 80_optimization ← `vm_cost_glo` (always; default `nlp_apr17` minimizes only this); `vm_landdiff` is additionally consumed only by the non-default `lp_nlp_apr17` realization for its cost-tied stabilization solve
+- 11_costs ← 32 distinct cost/penalty/reward input variables from 27 source modules (re-verified 2026-05-24 R5; matches `modules/module_11.md` §3 and the per-equation grep `awk '/^ q11_cost_reg/,/^;/' ../modules/11_costs/default/equations.gms | grep -oE 'vm_\w+' | sort -u`). The exact count drifts as cost terms are added or refactored; treat the canonical source as the per-equation grep, not this docstring.
 
 **Central Hubs (high bidirectional):**
 - 17_production: 13 out, 1 in

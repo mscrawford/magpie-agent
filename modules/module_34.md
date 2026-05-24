@@ -506,9 +506,9 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 
 ### Variable Bounds
 
-**exo_nov21** (`presolve.gms:10-14`):
-- **t=1**: vm_land.fx(j,"urban") = i34_urban_area(t,j) (fixed)
-- **t>1**: vm_land.lo/up(j,"urban") = 0/Inf (unbounded), .l = i34_urban_area(t,j) (initialized)
+**exo_nov21** (`presolve.gms:11-14`):
+- **t=1**: vm_land.fx(j,"urban") = i34_urban_area(t,j) (fixed; line 11)
+- **t>1**: vm_land.lo(j,"urban") = 0; vm_land.l(j,"urban") = i34_urban_area(t,j) (lines 13-14); vm_land.up(j,"urban") = Inf (line 15)
 
 **static** (`static/presolve.gms:9`):
 - **All t**: vm_land.fx(j,"urban") = pcm_land(j,"urban") = i34_urban_area("y1995",j) (fixed to 1995)

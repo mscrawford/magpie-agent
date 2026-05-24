@@ -32,14 +32,22 @@ And optionally minimizes land use changes (vm_landdiff) to select among equivale
 
 ## Interface Variables (INPUTS to optimization)
 
-Module 80 does NOT define variables, but uses 2 interface variables defined elsewhere:
+Module 80 does NOT define variables. The interface-variable set used depends on the active realization:
+
+**Default `nlp_apr17` realization** — uses 1 interface variable:
 
 | Variable | Provider | Dimensions | Unit | Description | Reference |
 |----------|----------|------------|------|-------------|-----------|
-| `vm_cost_glo` | Module 11 (Costs) | (none, global) | 10⁶ USD17MER/yr | Total global system costs (objective function) | module.gms:15 |
-| `vm_landdiff` | Module 10 (Land) | (none, global) | 10⁶ ha | Gross land use changes compared to previous timestep | module.gms:16 |
+| `vm_cost_glo` | Module 11 (Costs) | (none, global) | 10⁶ USD17MER/yr | Total global system costs (objective function) | `modules/80_optimization/nlp_apr17/solve.gms` lines 34, 36, 70, 71 (`MINIMIZING vm_cost_glo`) |
 
-**Note**: Module 80 does NOT provide variables to other modules. It only solves for the optimal values of ALL variables in the model (module.gms:14-16).
+**Non-default `lp_nlp_apr17` realization** — uses 2 interface variables (adds `vm_landdiff`):
+
+| Variable | Provider | Dimensions | Unit | Description | Reference |
+|----------|----------|------------|------|-------------|-----------|
+| `vm_cost_glo` | Module 11 (Costs) | (none, global) | 10⁶ USD17MER/yr | Cost objective for LP phase | `modules/80_optimization/lp_nlp_apr17/solve.gms` |
+| `vm_landdiff` | Module 10 (Land) | (none, global) | 10⁶ ha | Land-use change penalty used in the cost-tied stabilization solve | `modules/80_optimization/lp_nlp_apr17/solve.gms` lines 76, 77, 196, 197 |
+
+**Note**: Module 80 does NOT provide variables to other modules. It only solves for the optimal values of ALL variables in the model.
 
 ---
 

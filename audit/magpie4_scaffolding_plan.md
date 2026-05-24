@@ -5,6 +5,8 @@
 **Estimated effort**: 1–1.5 hours wall-clock, ~70–100K tokens
 **Tier chosen**: Mid (renv-pinned SHA-anchored clone + sync script + helper doc; not full preproc-parity)
 
+> **Post-execution correction (2026-05-24 R5 audit)**: §22 below states "`getReport.R` calls 108 unique `report*` functions via an `if/else if (any(grepl(...)))` dispatch pattern." Both halves of that claim were wrong on inspection: actual count is **106 unique** `report*` functions, and the dispatch is a **flat `tryList(...)` of unconditional calls** — there is no `control` argument and no `grepl`-based gating. The agent/helpers/magpie4_reference.md helper (commit d44823f) documents the corrected structure; the rubric's G4 regression question (commit e7bbb39) tests for this. Treat the helper, not §22, as authoritative going forward.
+
 ---
 
 ## Goal

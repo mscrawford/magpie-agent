@@ -164,7 +164,7 @@ vm_maccs_costs(i2,"capital") =e=
 
 **Convert GHG prices to MACC step indices** (1-201)
 
-**N₂O Conversion** (`preloop.gms:24`):
+**N₂O Conversion** (`preloop.gms:25`):
 ```gams
 i57_mac_step_n2o = min(201, ceil(Price_N2O / 298 * 28/44 * 44/12 / Step_length) + 1)
 ```
@@ -178,7 +178,7 @@ i57_mac_step_n2o = min(201, ceil(Price_N2O / 298 * 28/44 * 44/12 / Step_length) 
   3. `×44/12`: N₂O → C (molecular weight adjustment)
   4. `/Step_length`: Price → MACC step (6.15 or 22.4 USD17/tC-eq per step)
 
-**CH₄ Conversion** (`preloop.gms:25`):
+**CH₄ Conversion** (`preloop.gms:26`):
 ```gams
 i57_mac_step_ch4 = min(201, ceil(Price_CH4 / 25 * 44/12 / Step_length) + 1)
 ```

@@ -240,8 +240,8 @@ sum((awms_conf,kli),
 ### Inputs (from other modules)
 
 **From Module 70 (Livestock)**:
-- `vm_feed_intake(i,kli,feed_type)`: Feed intake by livestock and feed type (Mt DM) (`equations.gms:28-31,39,46,54`)
-  - Feed types: crops (`kcr`), animal products (`kap`), seeds (`ksd`), residues (`kres`), pasture
+- `vm_feed_intake(i,kap,kall)`: Feed intake by livestock and feed type (Mt DM) — Module 55 references the `kli` subset of `kap` (livestock products) and the `kcr`/`kap`/`ksd`/`kres`/`"pasture"` subsets of `kall` (`equations.gms:28-31,39,46,54`). Declared at `modules/70_livestock/fbask_jan16/declarations.gms:18`.
+  - Feed types iterated: crops (`kcr`), animal products (`kap`), seeds (`ksd`), residues (`kres`), pasture
 
 **From Module 09 (Drivers)** (via global parameters):
 - `im_development_state(t,i)`: Regional development indicator (0=developing, 1=developed) (`equations.gms:32,55`)
@@ -496,7 +496,7 @@ AWMS_share = Scenario_share × Region_share + Fallback_share × (1 - Region_shar
 
 | Module | Variables | Purpose |
 |--------|-----------|---------|
-| **70** (Livestock) | `vm_feed_intake(i,kli,feed_type)` | Feed consumption by livestock and feed type |
+| **70** (Livestock) | `vm_feed_intake(i,kap,kall)` (iterated over kli×{kcr,kap,ksd,kres,pasture} in M55) | Feed consumption by livestock and feed type |
 | **09** (Drivers) | `im_development_state(t,i)` | Development indicator for residue feeding split |
 | **09** (Drivers) | `im_pop_iso(t,iso)` | Country population for scenario weighting |
 | **70** (preprocessed) | `im_slaughter_feed_share(t,i,kli,npk)` | Nutrient retention in animal biomass |

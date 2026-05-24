@@ -270,8 +270,8 @@ magpie4 functions consume gdx state; for the GAMS-side machinery that *produces*
 
 | magpie4 area | GAMS module(s) |
 |---|---|
-| reportEmissions / reportFireEmissions / reportBiochar | `modules/module_51.md` (nitrogen emissions), `modules/module_52.md` (carbon), `modules/module_56.md` (GHG policy), `modules/module_57.md` (MACC) |
-| reportLandUse / reportCroparea / reportPeatland | `modules/module_10.md`, `module_29.md`, `module_30.md`, `module_58.md` |
+| reportEmissions / reportFireEmissions / reportBiochar | `modules/module_51.md` (N emissions), `module_52.md` (carbon stocks → CO2), `module_53.md` (CH4), `module_55.md` (animal-waste N), `module_56.md` (GHG policy), `module_57.md` (MACC mitigation), `module_58.md` (peatland CO2/CH4), `module_59.md` (SOM C) — verified 2026-05-24 R5 against `.cache/sources/magpie4/R/reportEmissions.R` |
+| reportLandUse / reportLandUseChange / reportCroparea / reportPeatland | `modules/module_10.md` (land core), `module_29.md` (cropland), `module_30.md` (croparea), `module_31.md` (pasture), `module_32.md` (forestry), `module_34.md` (urban), `module_35.md` (natveg / secdforest / primforest), `module_58.md` (peatland) — verified 2026-05-24 R5 against `.cache/sources/magpie4/R/reportLandUse.R` |
 | reportWaterUsage / reportWaterAvailability / reportAEI | `modules/module_41.md`, `module_42.md`, `module_43.md` |
 | reportNitrogen* | `modules/module_50.md`, `module_51.md`, `module_55.md` |
 | reportCosts | `modules/module_11.md` |

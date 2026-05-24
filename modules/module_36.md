@@ -498,7 +498,7 @@ log(hourly_wage) ~ β₀ + β₁ × log(GDP_pc) + country_FE + year_FE
 ### 7. Module Dependencies
 
 **From Phase 2 Dependency Analysis**:
-- **Dependency Count**: 6 connections (low-medium centrality)
+- **Dependency Count**: 3 downstream consumers (Modules 38, 57, 70) + ~4 upstream parameter dependencies (Module 09 GDP + back-calculation inputs from 38, 57, 70) — verified 2026-05-24 R5 via `find ../modules -name '*.gms' -exec grep -l '\bpm_hourly_costs\b' {} \;`
 - **Role**: Wage provider + employment reporter
 
 #### 7.1 Provides TO (Downstream Modules)
@@ -569,7 +569,7 @@ Module 36 is a **reporting and post-processing module** that back-calculates emp
 #### Dependency Chains
 
 **Centrality**: ~35 of 46 modules (low centrality)
-**Total Connections**: 2 (provides to 1-2, depends on 2-3)
+**Total Connections**: 3 downstream consumers (Modules 38, 57, 70) + ~4 upstream parameter dependencies (Module 09 + back-calculation from 38, 57, 70)
 **Hub Type**: Post-Processing Hub (wage calculation + employment reporting)
 
 **Provides To**: Module 11 (Costs - labor cost parameters), Module 38 (Factor Costs - wage inputs), Reporting modules (employment statistics)

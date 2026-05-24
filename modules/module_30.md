@@ -151,7 +151,7 @@ q30_rotation_max(j2,rotamax_red30)$(i30_implementation = 1) ..
 rotamax_red30(rotamax30) = yes$(i30_rotation_rules(t,rotamax30) < 1);
 ```
 
-**Crop Groups** (`sets.gms:16-35`): 29 maximum constraint groups including:
+**Crop Groups** (`sets.gms:16-35`): 30 maximum constraint groups including:
 - `cereals1_max`, `cereals2_max`: Prevent excessive cereals (tece, maiz, trce, rice)
 - `legumes_max`: Limit legumes (foddr, puls, soybean, groundnut)
 - `oilcrops_max`: Limit oilcrops (sunflower, rapeseed)
@@ -507,7 +507,7 @@ The `simple_apr24` realization uses a **simplified, rule-based-only** approach t
 | Feature | detail_apr24 | simple_apr24 |
 |---|---|---|
 | Implementation modes | Rule-based OR penalty-based (`i30_implementation`) | Rule-based only (hard constraints) |
-| Crop-group sets | `rotamax30` / `rotamin30` (29 max + 6 min groups) | `crpmax30` / `crpmin30` subsets of `crp30` (20 crop-rotation types) |
+| Crop-group sets | `rotamax30` / `rotamin30` (30 max + 6 min groups) | `crpmax30` / `crpmin30` subsets of `crp30` (20 crop-rotation types) |
 | Water dimension | Summed across `w` | Separate constraint **per** `w` (rainfed and irrigated independently) |
 | Share parameters | `i30_rotation_rules(ct,rota30)` — time-varying via scenario fader | `f30_rotation_max_shr(crp30)` / `f30_rotation_min_shr(crp30)` — static from CSV input |
 | On/off switch | `s30_implementation` scalar | `c30_rotation_constraints` compile-time switch (`input.gms:24`) |

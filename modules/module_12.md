@@ -221,13 +221,13 @@ p12_reg_shr(t,i) = sum(i_to_iso(i,iso), p12_country_switch(iso) * im_pop_iso(t,i
 
 ---
 
-#### **D. Internal Parameters** (`declarations.gms`)
+#### **D. Internal Parameters**
 
-| Parameter | Description | Units | Type |
-|-----------|-------------|-------|------|
-| `p12_reg_shr(t,i)` | Regional share of selected countries | 1 | Calculated |
-| `p12_country_switch(iso)` | 1 if country selected, 0 otherwise | 1 | Switch |
-| `p12_interest_select(t,i)` | Interest rate for selected countries (coupling mode) | 1 | From file |
+| Parameter | Description | Units | Type | Where declared |
+|-----------|-------------|-------|------|----------------|
+| `p12_reg_shr(t,i)` | Regional share of selected countries | 1 | Calculated | `declarations.gms` |
+| `p12_country_switch(iso)` | 1 if country selected, 0 otherwise | 1 | Switch | `declarations.gms` |
+| `p12_interest_select(t_all,i)` | Interest rate for selected countries (coupling mode) | 1 | From file | Implicitly declared via assignment in `preloop.gms:21` (not in declarations.gms) |
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "description": "Persistent record of /pipeline-audit rounds — structural audits of the magpie-agent's machinery (modules docs, validators, instruction surface, cross-doc consistency, efficiency). Behavioral answer-quality lives in validation_rounds.json; this file is its structural counterpart.",
+    "description": "Persistent record of /pipeline-audit rounds \u2014 structural audits of the magpie-agent's machinery (modules docs, validators, instruction surface, cross-doc consistency, efficiency). Behavioral answer-quality lives in validation_rounds.json; this file is its structural counterpart.",
     "schema_version": "1.0",
     "created": "2026-05-23",
     "instructions": "Append new rounds to the 'rounds' array. Each round: round number, date, commit, lenses run, total findings, severity breakdown, per-lens breakdown, corroborated findings, root-cause clusters, report file path, guards added, status. The detailed findings report (severity-ordered with evidence) lives in audit/pipeline_audit_roundN.md, referenced from each round entry."
@@ -37,13 +37,20 @@
       },
       "corroborated": [
         {
-          "finding": "Hoist underdelivered — AGENT.md shrank only 10 lines (-7%) while verifiers.md adds 1,888 words; broad 'module' trigger means net token cost per session went UP; CRITICAL WARNINGS section in AGENT.md still duplicates MANDATEs 7, 8, 16",
-          "lenses": ["instruction-surface-integrity", "efficiency"],
+          "finding": "Hoist underdelivered \u2014 AGENT.md shrank only 10 lines (-7%) while verifiers.md adds 1,888 words; broad 'module' trigger means net token cost per session went UP; CRITICAL WARNINGS section in AGENT.md still duplicates MANDATEs 7, 8, 16",
+          "lenses": [
+            "instruction-surface-integrity",
+            "efficiency"
+          ],
           "severity": "HIGH"
         },
         {
-          "finding": "Realization-aware verification missing — 13/46 module docs have stale or fabricated 'Verified Against' footers; Module 18 describes non-default realization as active (Critical); realization regex misses 20/59 non-month-format names; my own freshly-written MANDATE 8 example fabricates fbask_jul23",
-          "lenses": ["doc-code-fidelity-reading", "validator-soundness", "cross-doc-consistency"],
+          "finding": "Realization-aware verification missing \u2014 13/46 module docs have stale or fabricated 'Verified Against' footers; Module 18 describes non-default realization as active (Critical); realization regex misses 20/59 non-month-format names; my own freshly-written MANDATE 8 example fabricates fbask_jul23",
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "validator-soundness",
+            "cross-doc-consistency"
+          ],
           "severity": "CRITICAL"
         }
       ],
@@ -51,49 +58,73 @@
         {
           "cluster": "1. Realization-aware verification missing",
           "findings_count": 20,
-          "lenses": ["doc-code-fidelity-reading", "validator-soundness", "cross-doc-consistency"],
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "validator-soundness",
+            "cross-doc-consistency"
+          ],
           "candidate_intervention": "Add single Python check that for each module doc: extract Realization header + Verified Against footer; cross-reference against config/default.cfg; verify directory exists. ~80 LOC. Closes 13 footer bugs + Module 18 Critical + MANDATE 8 fabrication + future drift."
         },
         {
           "cluster": "2. Citation drift / content mismatch",
           "findings_count": 10,
-          "lenses": ["doc-code-fidelity-grep", "validator-soundness"],
+          "lenses": [
+            "doc-code-fidelity-grep",
+            "validator-soundness"
+          ],
           "candidate_intervention": "Extend check_gams_citations_impl.py: (a) parse end-of-range :NN-MM; (b) verify content match within +/-5 lines of cited line; (c) WARN on bare-basename ambiguity with realization candidates. ~150 LOC. Pattern 12 has zero coverage today."
         },
         {
           "cluster": "3. Hoist incomplete (this session's work)",
           "findings_count": 12,
-          "lenses": ["doc-code-fidelity-reading", "instruction-surface-integrity", "efficiency"],
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "instruction-surface-integrity",
+            "efficiency"
+          ],
           "candidate_intervention": "Doc-editing session: (a) drop 'module' and 'equation' from verifiers.md triggers; (b) delete CRITICAL WARNINGS duplicates; (c) fix MANDATE 8 fabrication (fbask_jul23 -> fbask_jan16); (d) replace hardcoded /Users/turnip path; (e) reconcile MANDATE 16 name; (f) update validate-semantic.md schema 1.1 note; (g) update audit/README.md directory listing; (h) mark each MANDATE Verified by: <script> | human."
         },
         {
           "cluster": "4. Validator coverage gaps",
           "findings_count": 8,
-          "lenses": ["validator-soundness"],
+          "lenses": [
+            "validator-soundness"
+          ],
           "candidate_intervention": "New checkers: check_param_defaults.py (Pattern 13), check_citation_content.py (Pattern 12), check_unbacktiked_gams.py. Extend GAMS-index regex for c<N>_/cm_/sm_. Generalize Check 1 to all 46 modules."
         },
         {
           "cluster": "5. Stale aggregate counts everywhere",
           "findings_count": 8,
-          "lenses": ["instruction-surface-integrity"],
-          "candidate_intervention": "scripts/refresh_aggregate_counts.py — read canonical values from validation_rounds.json.cumulative_stats + wc -w; update well-defined placeholders. ~50 LOC. Or simpler: drop precise numbers from prose; cite cumulative_stats."
+          "lenses": [
+            "instruction-surface-integrity"
+          ],
+          "candidate_intervention": "scripts/refresh_aggregate_counts.py \u2014 read canonical values from validation_rounds.json.cumulative_stats + wc -w; update well-defined placeholders. ~50 LOC. Or simpler: drop precise numbers from prose; cite cumulative_stats."
         },
         {
           "cluster": "6. Cross-doc dependency-count drift",
           "findings_count": 6,
-          "lenses": ["cross-doc-consistency"],
+          "lenses": [
+            "cross-doc-consistency"
+          ],
           "candidate_intervention": "Python pass: recompute consumer counts via grep -l; update Module_Dependencies.md, module_10.md, module_11.md, modification_safety_guide.md."
         },
         {
           "cluster": "7. Cross-doc interface attribution / dimension drift",
           "findings_count": 7,
-          "lenses": ["doc-code-fidelity-reading", "doc-code-fidelity-grep", "cross-doc-consistency"],
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "doc-code-fidelity-grep",
+            "cross-doc-consistency"
+          ],
           "candidate_intervention": "Python checker: for each vm_*/pm_* reference in a module doc, look up declared dimensions in producer module's declarations.gms; flag mismatches."
         },
         {
           "cluster": "8. Module-specific spot bugs",
           "findings_count": 5,
-          "lenses": ["doc-code-fidelity-reading", "doc-code-fidelity-grep"],
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "doc-code-fidelity-grep"
+          ],
           "candidate_intervention": "Hand fixes for biome count, c60_biodem_level default, vm_water_cost unit, climate-type count, region count. Overlaps Cluster 4 (Pattern 13 coverage) and Cluster 5 (count drift)."
         }
       ],
@@ -106,7 +137,7 @@
       "report_path": "audit/pipeline_audit_round1.md",
       "guards_added": [],
       "status": "triaged; fix+mechanize deferred to follow-up session (per user scope choice)",
-      "notes": "First R1 audit caught a confabulation introduced in this session: MANDATE 8 worked example in agent/helpers/verifiers.md claims livestock default is fbask_jul23; actual default is fbask_jan16; fbask_jul23 does not exist in the repo. This is exactly the failure mode the lens-based audit exists to catch — the audit detected the agent inventing a worked example for the rule warning against inventing realization names. Recommended ordering for follow-up: address Clusters 1, 3, 5 first (root fixes that close ~40 of 71 findings). Reserve Clusters 2, 4, 6, 7 for a second follow-up session (higher effort)."
+      "notes": "First R1 audit caught a confabulation introduced in this session: MANDATE 8 worked example in agent/helpers/verifiers.md claims livestock default is fbask_jul23; actual default is fbask_jan16; fbask_jul23 does not exist in the repo. This is exactly the failure mode the lens-based audit exists to catch \u2014 the audit detected the agent inventing a worked example for the rule warning against inventing realization names. Recommended ordering for follow-up: address Clusters 1, 3, 5 first (root fixes that close ~40 of 71 findings). Reserve Clusters 2, 4, 6, 7 for a second follow-up session (higher effort)."
     },
     {
       "round": 2,
@@ -118,14 +149,14 @@
       "actions": {
         "cluster_1_realization_validity": {
           "action": "mechanized + applied",
-          "mechanization": "scripts/check_module_realizations.py (~150 LOC) — cross-references each module doc's Realization header + Verified Against footer against config/default.cfg AND verifies directory exists. Hooked in as Check 19 of validate_consistency.sh.",
-          "doc_fixes": "18 module-doc footer fabrications fixed (modules 09, 17, 20, 28, 31, 34, 36, 40, 44, 45, 50, 51, 53, 55, 56, 57, 58, 59); Module 18 (CRITICAL: described non-default flexcluster_jul23 as active) — added prominent Quick Reference for default flexreg_apr16 with correct 9 equations + regional dimension; full body rewrite flagged as pending.",
+          "mechanization": "scripts/check_module_realizations.py (~150 LOC) \u2014 cross-references each module doc's Realization header + Verified Against footer against config/default.cfg AND verifies directory exists. Hooked in as Check 19 of validate_consistency.sh.",
+          "doc_fixes": "18 module-doc footer fabrications fixed (modules 09, 17, 20, 28, 31, 34, 36, 40, 44, 45, 50, 51, 53, 55, 56, 57, 58, 59); Module 18 (CRITICAL: described non-default flexcluster_jul23 as active) \u2014 added prominent Quick Reference for default flexreg_apr16 with correct 9 equations + regional dimension; full body rewrite flagged as pending.",
           "result": "Validator surfaces 0 errors / 0 warnings on this check; previously hidden bugs now mechanically guarded.",
-          "self_finding_resolved": "MANDATE 8 worked example fbask_jul23 → fbask_jan16 (actual default); ledger entry updated; croparea_nov24 added as a different verified-absent example."
+          "self_finding_resolved": "MANDATE 8 worked example fbask_jul23 \u2192 fbask_jan16 (actual default); ledger entry updated; croparea_nov24 added as a different verified-absent example."
         },
         "cluster_2_citation_drift": {
           "action": "mechanized + applied",
-          "mechanization": "scripts/check_gams_citations_impl.py extended (~50 LOC added) — now parses range END :NN-MM (was start only), warns on bare-basename ambiguity, performs content-match check within ±5 lines of cited line when a backticked GAMS identifier is nearby (Pattern 12 coverage).",
+          "mechanization": "scripts/check_gams_citations_impl.py extended (~50 LOC added) \u2014 now parses range END :NN-MM (was start only), warns on bare-basename ambiguity, performs content-match check within \u00b15 lines of cited line when a backticked GAMS identifier is nearby (Pattern 12 coverage).",
           "doc_fixes": "Module 13 input.gms 6 citations re-derived (off by 35-45 lines); equation citations q13_tau / q13_tau_consv corrected; vm_tau cluster-vs-supreg internal contradiction resolved; full-path prefix applied to all bare-basename citations in module_13.md.",
           "bulk_clamp": "Auto-clamped 31 +1 range-end overruns and 18 larger range-end overruns to file EOF (all real drifts surfaced by the enhanced checker; previously hidden by 'only check start of range' bug).",
           "advisory_state": "874 bare-basename ambiguity warnings and 25 content-mismatch advisories now surface non-blockingly (informational, not failing)."
@@ -134,7 +165,7 @@
           "action": "applied",
           "fixes": [
             "verifiers.md auto-load triggers narrowed (dropped over-broad 'module' and 'equation'; kept specific prefixes vm_/pm_/v<N>_/p<N>_/s<N>_/c<N>_/q<N>_/realization/'default value'/'modify code'/'variable name'/'equation name')",
-            "AGENT.md CRITICAL WARNINGS section (lines 606-635) collapsed — the MAgPIE-specific 'MAgPIE accounts for / models X' epistemological reminder kept; MANDATEs duplicates deleted (now solely in verifiers.md)",
+            "AGENT.md CRITICAL WARNINGS section (lines 606-635) collapsed \u2014 the MAgPIE-specific 'MAgPIE accounts for / models X' epistemological reminder kept; MANDATEs duplicates deleted (now solely in verifiers.md)",
             "verifiers.md hardcoded /Users/turnip path removed",
             "MANDATE 16 name reconciled (AGENT.md table and verifiers.md heading both 'Citation full-path + post-merge line numbers')",
             "validate-semantic.md updated to mention schema v1.1 + regression_questions requirement",
@@ -145,51 +176,51 @@
         "cluster_5_aggregate_counts": {
           "action": "applied (manual; refresh script deferred)",
           "fixes": [
-            "17 checks → 18 checks across AGENT.md, validate.md",
-            "32 sub-checks → 33 sub-checks across AGENT.md, validate.md",
-            "291 bugs → 445 bugs (or cite cumulative_stats) across AGENT.md, verifiers.md, pipeline-audit.md, validate-semantic.md",
-            "213 fixes → 297 fixes (or cite cumulative_stats) in AGENT.md",
-            "13 patterns → 14 patterns in AGENT.md (Bug_Taxonomy.md actually has 14)",
-            "~290,000 words → ~342,000 words in AGENT.md; dropped precise count from guide.md (now uses 'extensive')",
+            "17 checks \u2192 18 checks across AGENT.md, validate.md",
+            "32 sub-checks \u2192 33 sub-checks across AGENT.md, validate.md",
+            "291 bugs \u2192 445 bugs (or cite cumulative_stats) across AGENT.md, verifiers.md, pipeline-audit.md, validate-semantic.md",
+            "213 fixes \u2192 297 fixes (or cite cumulative_stats) in AGENT.md",
+            "13 patterns \u2192 14 patterns in AGENT.md (Bug_Taxonomy.md actually has 14)",
+            "~290,000 words \u2192 ~342,000 words in AGENT.md; dropped precise count from guide.md (now uses 'extensive')",
             "validate-semantic.md metrics table replaced with pointer to cumulative_stats (was stale at R13)",
             "/guide command list expanded from 6 to 11 commands",
-            "flywheel_rubric.md §10 → §9 (numbering gap fixed)",
-            "Added reciprocal link Bug_Taxonomy.md → flywheel_rubric.md"
+            "flywheel_rubric.md \u00a710 \u2192 \u00a79 (numbering gap fixed)",
+            "Added reciprocal link Bug_Taxonomy.md \u2192 flywheel_rubric.md"
           ]
         },
         "cluster_6_dependency_counts": {
           "action": "applied (spot)",
           "fixes": [
-            "Module_Dependencies.md line 137: '19 cost vars' → '32 cost vars from 25 source modules (2026-05-23 recount)' with recompute command embedded; line 266 table cell updated to match",
-            "modification_safety_guide.md '15 consumers of vm_land' → '10 direct consumers' with recompute command, plus clarification about the broader 15 modules touched by all Module 10 interface variables"
+            "Module_Dependencies.md line 137: '19 cost vars' \u2192 '32 cost vars from 25 source modules (2026-05-23 recount)' with recompute command embedded; line 266 table cell updated to match",
+            "modification_safety_guide.md '15 consumers of vm_land' \u2192 '10 direct consumers' with recompute command, plus clarification about the broader 15 modules touched by all Module 10 interface variables"
           ]
         },
         "cluster_7_interface_attribution_dimension_drift": {
           "action": "applied (spot fixes)",
           "fixes": [
-            "Module 51: vm_manure_recycling attribution Module 50 → Module 55 (AWMS, actual declaring module)",
-            "Module 51: vm_emissions_reg declaration citation from M51 declarations.gms:9-16 → M56 price_aug22/declarations.gms:40",
-            "Module 53: vm_feed_intake set kli → kap (broader animal-product set; M53 uses only kli subset)",
-            "Module 14: vm_tau(h,...) → vm_tau(j,...) (2 occurrences) — post-f_btc2 cluster-level interface",
-            "carbon_balance_conservation.md: vm_carbon_stock(j,land,c_pools) → 4D with stockType; M56 declaration cited",
-            "Module 29: vm_area(j,kcr) → vm_area(j,kcr,w) (3 occurrences)",
-            "Module 45: 30 climate types → 31 (5 occurrences; sets.gms has 31)",
+            "Module 51: vm_manure_recycling attribution Module 50 \u2192 Module 55 (AWMS, actual declaring module)",
+            "Module 51: vm_emissions_reg declaration citation from M51 declarations.gms:9-16 \u2192 M56 price_aug22/declarations.gms:40",
+            "Module 53: vm_feed_intake set kli \u2192 kap (broader animal-product set; M53 uses only kli subset)",
+            "Module 14: vm_tau(h,...) \u2192 vm_tau(j,...) (2 occurrences) \u2014 post-f_btc2 cluster-level interface",
+            "carbon_balance_conservation.md: vm_carbon_stock(j,land,c_pools) \u2192 4D with stockType; M56 declaration cited",
+            "Module 29: vm_area(j,kcr) \u2192 vm_area(j,kcr,w) (3 occurrences)",
+            "Module 45: 30 climate types \u2192 31 (5 occurrences; sets.gms has 31)",
             "Module 60: c60_biodem_level default-state caveat added (q60_bioenergy_glo inactive by default; regional is default at = 1)"
           ]
         },
         "verifier_was_wrong_skipped": [
-          "Module 44 71→70 biomes — Lens 2 was incorrect; sets.gms has 71 unique biomes. Skipped per [[feedback_verifier_layer_coupling]] — verify before fixing."
+          "Module 44 71\u219270 biomes \u2014 Lens 2 was incorrect; sets.gms has 71 unique biomes. Skipped per [[feedback_verifier_layer_coupling]] \u2014 verify before fixing."
         ]
       },
       "new_mechanical_guards": [
-        "scripts/check_module_realizations.py (Check 19) — realization-validity",
-        "scripts/check_gams_citations_impl.py extended — range-end check, bare-basename ambiguity warning, Pattern 12 content-match check (advisory)"
+        "scripts/check_module_realizations.py (Check 19) \u2014 realization-validity",
+        "scripts/check_gams_citations_impl.py extended \u2014 range-end check, bare-basename ambiguity warning, Pattern 12 content-match check (advisory)"
       ],
-      "validator_status": "33 → 34 passing checks (1 new check added); 0 errors, 0 warnings",
+      "validator_status": "33 \u2192 34 passing checks (1 new check added); 0 errors, 0 warnings",
       "remaining_deferred": [
         "Cluster 4 (validator coverage gaps): Pattern 12 content-match works as advisory but not blocking; Pattern 13 (param default values) still uncovered; c<N>_/cm_/sm_ regex extension not applied; unbacktiked-prose scanner not added",
         "Cluster 6 (count refresh script): manual recount applied to Modules 10/11/safety guide; full automated refresh_aggregate_counts.py script deferred",
-        "Module 18 full body rewrite: prominent default-realization Quick Reference + warning added at top; full body still describes the alternative flexcluster_jul23 realization — flagged as a future doc-revision task in the doc header",
+        "Module 18 full body rewrite: prominent default-realization Quick Reference + warning added at top; full body still describes the alternative flexcluster_jul23 realization \u2014 flagged as a future doc-revision task in the doc header",
         "Module-13 internal vm_tau citations: post-bulk-fix some equation lines may still be off; advisory warnings now surface them"
       ]
     },
@@ -224,13 +255,19 @@
       },
       "corroborated": [
         {
-          "finding": "Module 11 §17.2 (lines 1094-1132) fabricates 14 cost-variable names (v12_interest, vm_cost_natveg, v22_cost_conservation, v28_cost_age_class, vm_cost_cropland_expansion, vm_cost_pasture, v36_employment_costs, vm_cost_livst, vm_cost_material, vm_cost_bioen, vm_cost_som, vm_cost_croparea, v18_res_use_costs, v20_processing_costs) — none exist in any GAMS file. Section internally contradicts Section 3 of same file.",
-          "lenses": ["doc-code-fidelity-grep", "cross-doc-consistency"],
+          "finding": "Module 11 \u00a717.2 (lines 1094-1132) fabricates 14 cost-variable names (v12_interest, vm_cost_natveg, v22_cost_conservation, v28_cost_age_class, vm_cost_cropland_expansion, vm_cost_pasture, v36_employment_costs, vm_cost_livst, vm_cost_material, vm_cost_bioen, vm_cost_som, vm_cost_croparea, v18_res_use_costs, v20_processing_costs) \u2014 none exist in any GAMS file. Section internally contradicts Section 3 of same file.",
+          "lenses": [
+            "doc-code-fidelity-grep",
+            "cross-doc-consistency"
+          ],
           "severity": "CRITICAL"
         },
         {
           "finding": "Validator check-count markers stale across 4+ files: AGENT.md L618+L663, validate.md L15+L55, maintenance_protocol.md L21+L212, Response_Guidelines.md L286, validate-module.md L271 hardcode counts (18/33, 32, 11, 24) instead of using marker syntax. Actual: 20 main / 35 sub-checks, 14 patterns.",
-          "lenses": ["instruction-surface-integrity", "efficiency"],
+          "lenses": [
+            "instruction-surface-integrity",
+            "efficiency"
+          ],
           "severity": "HIGH"
         }
       ],
@@ -238,67 +275,91 @@
         {
           "cluster": "1. Multi-realization body drift (escalation of R1 Cluster 1)",
           "findings_count": 4,
-          "lenses": ["doc-code-fidelity-reading", "doc-code-fidelity-grep", "instruction-surface-integrity"],
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "doc-code-fidelity-grep",
+            "instruction-surface-integrity"
+          ],
           "candidate_intervention": "Extend check_module_realizations.py to scan body citations (first 5 file:line cites) against claimed realization. M38, M30, M80 body rewrites deferred; AGENT.md L325 list updated."
         },
         {
           "cluster": "2. Fabricated identifiers in backticked prose (NEW class)",
           "findings_count": 5,
-          "lenses": ["doc-code-fidelity-reading", "doc-code-fidelity-grep", "cross-doc-consistency"],
-          "candidate_intervention": "New check_doc_var_existence.py: for each backticked [vmps]\\d*_[a-z_]+ token in module docs, verify it exists in ../modules/*/*.gms. ~80 LOC. Would have blocked all 14 M11 §17.2 fabrications. Strongest R3 mechanization candidate."
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "doc-code-fidelity-grep",
+            "cross-doc-consistency"
+          ],
+          "candidate_intervention": "New check_doc_var_existence.py: for each backticked [vmps]\\d*_[a-z_]+ token in module docs, verify it exists in ../modules/*/*.gms. ~80 LOC. Would have blocked all 14 M11 \u00a717.2 fabrications. Strongest R3 mechanization candidate."
         },
         {
           "cluster": "3. Post-PR citation/value drift (chronic, R1 Cluster 2 recurrence)",
           "findings_count": 12,
-          "lenses": ["doc-code-fidelity-reading", "doc-code-fidelity-grep", "cross-doc-consistency"],
-          "candidate_intervention": "Spot-fix individual cases (M73 defaults, M11 cites, M21 filename, M32 cites, M22 cites, M51 attribution, M53 awms_conf→awms, M70 vm_costs_additional_mon dimensions). Mechanization: widen Pattern 12 window ±5→±15 + full-file fallback."
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "doc-code-fidelity-grep",
+            "cross-doc-consistency"
+          ],
+          "candidate_intervention": "Spot-fix individual cases (M73 defaults, M11 cites, M21 filename, M32 cites, M22 cites, M51 attribution, M53 awms_conf\u2192awms, M70 vm_costs_additional_mon dimensions). Mechanization: widen Pattern 12 window \u00b15\u2192\u00b115 + full-file fallback."
         },
         {
           "cluster": "4. Dependency-count drift across cross-cutting docs (R1 Cluster 6 recurrence)",
           "findings_count": 8,
-          "lenses": ["instruction-surface-integrity", "cross-doc-consistency"],
-          "candidate_intervention": "Spot-fix 9 consumer counts in Module_Dependencies.md §2.1 (systematically inflated by 1), 5 counts in modification_safety_guide.md, pm_timber_yield fabrication, M11 25→27 source modules, M14 yields 5→3 consumers, M28 1→2 consumers, M12 missing consumers, M35 inflated 'Provides to', M15 incomplete 'Provides to'. Mechanization: generic Python checker for cross-doc dep counts."
+          "lenses": [
+            "instruction-surface-integrity",
+            "cross-doc-consistency"
+          ],
+          "candidate_intervention": "Spot-fix 9 consumer counts in Module_Dependencies.md \u00a72.1 (systematically inflated by 1), 5 counts in modification_safety_guide.md, pm_timber_yield fabrication, M11 25\u219227 source modules, M14 yields 5\u21923 consumers, M28 1\u21922 consumers, M12 missing consumers, M35 inflated 'Provides to', M15 incomplete 'Provides to'. Mechanization: generic Python checker for cross-doc dep counts."
         },
         {
           "cluster": "5. Validator soundness: false-positives and false-negatives (NEW R3 class)",
           "findings_count": 12,
-          "lenses": ["validator-soundness"],
+          "lenses": [
+            "validator-soundness"
+          ],
           "candidate_intervention": "HIGH: fix check_gams_citations_impl.py silent-fallback (defeats MANDATE 16). MED: loosen check_module_realizations.py HEADER_REAL_RE and VERIFIED_RE; extend check_gams_variables.py prefix coverage (ic\\d+_, oq\\d+_, ov\\d+_); widen check_gams_realizations.sh realization-name regex. LOW: marker-typo loose scanner; refresh strict mode; truncation order."
         },
         {
           "cluster": "6. Aggregate-count markers incomplete (R1 Cluster 5 narrower recurrence)",
           "findings_count": 6,
-          "lenses": ["instruction-surface-integrity", "efficiency"],
+          "lenses": [
+            "instruction-surface-integrity",
+            "efficiency"
+          ],
           "candidate_intervention": "Add validator_main_checks, validator_sub_checks, bug_taxonomy_patterns keys to refresh_aggregate_counts.py MARKER_VALUES + validation_rounds.json cumulative_stats. Markerize 7 occurrences."
         },
         {
           "cluster": "7. Instruction-surface drift (NEW)",
           "findings_count": 5,
-          "lenses": ["instruction-surface-integrity"],
+          "lenses": [
+            "instruction-surface-integrity"
+          ],
           "candidate_intervention": "helpers/README.md L23-32: replace duplicate routing table with pointer to AGENT.md. AGENT.md L407: drop Phase 5 reference. AGENT.md L325: add modules 71, 80. AGENT.md L409/496/529/705: fix 4 bare Response_Guidelines.md paths. verifiers.md: document allowlist marker under MANDATE 7."
         },
         {
           "cluster": "8. Efficiency wins (LOW priority)",
           "findings_count": 7,
-          "lenses": ["efficiency"],
-          "candidate_intervention": "Tier-1: delete validate_consistency.sh.bak (dead 804 lines); archives candidate for removal (272KB, asks user). Tier-2 LATER: Python rewrites of check_gams_equations.sh + check_gams_realizations.sh (would drop validator 8.8s→4.5s). Tier-3 DEFER: trigger narrowing, helper consolidation."
+          "lenses": [
+            "efficiency"
+          ],
+          "candidate_intervention": "Tier-1: delete validate_consistency.sh.bak (dead 804 lines); archives candidate for removal (272KB, asks user). Tier-2 LATER: Python rewrites of check_gams_equations.sh + check_gams_realizations.sh (would drop validator 8.8s\u21924.5s). Tier-3 DEFER: trigger narrowing, helper consolidation."
         }
       ],
       "recurring_classes_for_mechanization": [
-        "Multi-realization body drift (4 instances; new class — body citations leak realization Y while header claims X)",
+        "Multi-realization body drift (4 instances; new class \u2014 body citations leak realization Y while header claims X)",
         "Fabricated identifiers in backticked prose (5 instances; new class; check_doc_var_existence.py would catch all)",
         "Post-PR citation/value drift (12 instances; recurring from R1 Cluster 2)",
         "Dependency-count drift across cross-cutting docs (8 instances; recurring from R1 Cluster 6)"
       ],
       "report_path": "audit/pipeline_audit_round3.md",
       "guards_added": [
-        "scripts/check_gams_citations_impl.py: silent-fallback fixed — when full-path realization doesn't exist, emit FILE warning instead of silently rewriting via bare-basename walk-order (closes Cluster 5 HIGH)",
+        "scripts/check_gams_citations_impl.py: silent-fallback fixed \u2014 when full-path realization doesn't exist, emit FILE warning instead of silently rewriting via bare-basename walk-order (closes Cluster 5 HIGH)",
         "scripts/check_module_realizations.py: HEADER_REAL_RE loosened to accept **Realization:** (colon inside bold) + parenthetical-in-h1 form; VERIFIED_RE prefix made optional to catch no-dot footers",
         "scripts/check_gams_variables.py: regex extended to cover ic<N>_, oq<N>_, ov<N>_ prefixes (closes Cluster 5 MED FN gap)",
         "scripts/refresh_aggregate_counts.py: added validator_main_checks (20), validator_sub_checks (35), bug_taxonomy_patterns (14) marker keys to MARKER_VALUES (closes Cluster 6)"
       ],
       "status": "triaged + fixed + verified (this session); root-cause-cluster commits stacked; full body rewrites of M30/M38/M80 deferred to future sessions",
-      "notes": "R3 surfaced 82 findings vs R1's 71 — more raw, but THIS IS EXPECTED per [[feedback_confabulation_relocates]]. R2 closed 4 surfaces (header-realization drift, simple citation drift, hoist incomplete, aggregate-count drift in audit docs); bugs relocated to: (a) body-level realization drift in M38/M30/M80 — Check 19 only catches header drift, so body citation drift surfaced unguarded; (b) fabricated identifier templates in module §17.2-style 'overview' sections (14 invented names in M11 — Cluster 2 NEW); (c) dependency-count drift in cross-cutting docs that R2 only spot-fixed (Cluster 4 RECURRING); (d) FP/FN in newly-added validators (Cluster 5 NEW — guard surface moved as predicted). CRITICAL count rose from 1 to 3 — not because the agent regressed, but because confabulation moved to higher-stakes surfaces (default-realization mismatches in M38/M73 mislead modification-safety reasoning). Strongest next mechanization candidate: check_doc_var_existence.py (single new validator closes Cluster 2 entirely). Status of this session's fixes: 18 of 20 CRITICAL+HIGH findings fixed directly; 2 deferred (M30+M80 body rewrites need their own session); ~12 MEDIUM mechanical fixes applied; LOW findings documented but not all fixed."
+      "notes": "R3 surfaced 82 findings vs R1's 71 \u2014 more raw, but THIS IS EXPECTED per [[feedback_confabulation_relocates]]. R2 closed 4 surfaces (header-realization drift, simple citation drift, hoist incomplete, aggregate-count drift in audit docs); bugs relocated to: (a) body-level realization drift in M38/M30/M80 \u2014 Check 19 only catches header drift, so body citation drift surfaced unguarded; (b) fabricated identifier templates in module \u00a717.2-style 'overview' sections (14 invented names in M11 \u2014 Cluster 2 NEW); (c) dependency-count drift in cross-cutting docs that R2 only spot-fixed (Cluster 4 RECURRING); (d) FP/FN in newly-added validators (Cluster 5 NEW \u2014 guard surface moved as predicted). CRITICAL count rose from 1 to 3 \u2014 not because the agent regressed, but because confabulation moved to higher-stakes surfaces (default-realization mismatches in M38/M73 mislead modification-safety reasoning). Strongest next mechanization candidate: check_doc_var_existence.py (single new validator closes Cluster 2 entirely). Status of this session's fixes: 18 of 20 CRITICAL+HIGH findings fixed directly; 2 deferred (M30+M80 body rewrites need their own session); ~12 MEDIUM mechanical fixes applied; LOW findings documented but not all fixed."
     },
     {
       "round": 4,
@@ -331,102 +392,265 @@
       },
       "corroborated": [
         {
-          "finding": "Shadow-table sync gap — Module_Dependencies.md L268 says '25 modules' for M11 but L139 (R3 recount) says 27; modification_safety_guide.md Appendix B (L1075-1080) has 6 consumer counts inflated by +1 (R3 fixed §1.2 only).",
-          "lenses": ["instruction-surface-integrity", "cross-doc-consistency"],
+          "finding": "Shadow-table sync gap \u2014 Module_Dependencies.md L268 says '25 modules' for M11 but L139 (R3 recount) says 27; modification_safety_guide.md Appendix B (L1075-1080) has 6 consumer counts inflated by +1 (R3 fixed \u00a71.2 only).",
+          "lenses": [
+            "instruction-surface-integrity",
+            "cross-doc-consistency"
+          ],
           "severity": "HIGH"
         },
         {
-          "finding": "Trigger overlap (R3 finding persists) — 'default realization' and 'modify code' each appear as trigger keywords in TWO helpers, causing redundant ~2000-token loads on common queries; 'scenario' substring fires 5 helpers.",
-          "lenses": ["instruction-surface-integrity", "efficiency"],
+          "finding": "Trigger overlap (R3 finding persists) \u2014 'default realization' and 'modify code' each appear as trigger keywords in TWO helpers, causing redundant ~2000-token loads on common queries; 'scenario' substring fires 5 helpers.",
+          "lenses": [
+            "instruction-surface-integrity",
+            "efficiency"
+          ],
           "severity": "MEDIUM"
         },
         {
-          "finding": "M11 attribution drift across multiple sections — R3 fixed §17.2 (CRITICAL fabrication cluster) but §3 retained 6 'Module X or Module Y' rows; worst case vm_p_fert_costs attributed to M50/M51 but actual is M54.",
-          "lenses": ["doc-code-fidelity-reading", "cross-doc-consistency"],
+          "finding": "M11 attribution drift across multiple sections \u2014 R3 fixed \u00a717.2 (CRITICAL fabrication cluster) but \u00a73 retained 6 'Module X or Module Y' rows; worst case vm_p_fert_costs attributed to M50/M51 but actual is M54.",
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "cross-doc-consistency"
+          ],
           "severity": "HIGH"
         }
       ],
       "root_cause_clusters": [
         {
-          "cluster": "1. Validator fix — Check 18 Pattern C regex was dormant",
+          "cluster": "1. Validator fix \u2014 Check 18 Pattern C regex was dormant",
           "findings_count": 1,
-          "lenses": ["validator-soundness"],
+          "lenses": [
+            "validator-soundness"
+          ],
           "candidate_intervention": "FIXED. Relaxed regex to accept canonical **Default Realization**: form."
         },
         {
-          "cluster": "2. Validator coverage extension — helpers/commands now scanned",
+          "cluster": "2. Validator coverage extension \u2014 helpers/commands now scanned",
           "findings_count": 1,
-          "lenses": ["validator-soundness"],
-          "candidate_intervention": "FIXED. Check 21 SCAN_DIRS extended; 1 real bug surfaced and fixed (s22→c22 in debugging_infeasibility.md)."
+          "lenses": [
+            "validator-soundness"
+          ],
+          "candidate_intervention": "FIXED. Check 21 SCAN_DIRS extended; 1 real bug surfaced and fixed (s22\u2192c22 in debugging_infeasibility.md)."
         },
         {
           "cluster": "3. Shadow-table sync gap (corroborated)",
           "findings_count": 2,
-          "lenses": ["instruction-surface-integrity", "cross-doc-consistency"],
+          "lenses": [
+            "instruction-surface-integrity",
+            "cross-doc-consistency"
+          ],
           "candidate_intervention": "FIXED. Both shadow tables updated. Mechanization candidate: generic cross-doc dep-count checker for ALL tables, not just primary."
         },
         {
           "cluster": "4. M09 consumer table (9 wrong attributions)",
           "findings_count": 9,
-          "lenses": ["doc-code-fidelity-grep"],
+          "lenses": [
+            "doc-code-fidelity-grep"
+          ],
           "candidate_intervention": "FIXED. Recomputed all 14 module attributions via grep. Mechanization candidate: generic consumer-attribution checker."
         },
         {
-          "cluster": "5. M11 §3 attribution drift (6 rows + 6× '30+ modules')",
+          "cluster": "5. M11 \u00a73 attribution drift (6 rows + 6\u00d7 '30+ modules')",
           "findings_count": 13,
-          "lenses": ["doc-code-fidelity-reading", "cross-doc-consistency"],
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "cross-doc-consistency"
+          ],
           "candidate_intervention": "FIXED. All 6 rows + 6 'XX+ modules' references corrected."
         },
         {
           "cluster": "6. M14 cross-section consistency (pcm_tau dimension)",
           "findings_count": 2,
-          "lenses": ["doc-code-fidelity-reading"],
+          "lenses": [
+            "doc-code-fidelity-reading"
+          ],
           "candidate_intervention": "FIXED. Mechanization candidate: 'multi-section consistency' check when identifier mentioned >1x in single doc."
         },
         {
           "cluster": "7. M29 vm_fallow/vm_treecover consumer attribution",
           "findings_count": 2,
-          "lenses": ["doc-code-fidelity-grep"],
+          "lenses": [
+            "doc-code-fidelity-grep"
+          ],
           "candidate_intervention": "FIXED."
         },
         {
-          "cluster": "8. M34 scaling values 10× off",
+          "cluster": "8. M34 scaling values 10\u00d7 off",
           "findings_count": 3,
-          "lenses": ["doc-code-fidelity-grep"],
+          "lenses": [
+            "doc-code-fidelity-grep"
+          ],
           "candidate_intervention": "FIXED."
         },
         {
           "cluster": "9. M53 overview + citation drifts",
           "findings_count": 4,
-          "lenses": ["doc-code-fidelity-grep"],
+          "lenses": [
+            "doc-code-fidelity-grep"
+          ],
           "candidate_intervention": "FIXED."
         },
         {
           "cluster": "10. M52 Other land + M39 fabrication",
           "findings_count": 5,
-          "lenses": ["doc-code-fidelity-reading"],
+          "lenses": [
+            "doc-code-fidelity-reading"
+          ],
           "candidate_intervention": "FIXED."
         },
         {
           "cluster": "11. AGENT.md cleanups",
           "findings_count": 4,
-          "lenses": ["instruction-surface-integrity"],
+          "lenses": [
+            "instruction-surface-integrity"
+          ],
           "candidate_intervention": "FIXED."
         }
       ],
       "recurring_classes_for_mechanization": [
-        "Shadow-table sync gap (R3 → R4): when primary tables are recomputed, secondary tables in other files remain stale. Candidate: generic dep-count checker scanning ALL tables.",
-        "Wrong consumer attribution tables (R1 → R3 → R4): chronic. M09 + M11 + M29 + Module_Dependencies + safety_guide all manifest the same pattern. Candidate: for every backticked vm_*/pm_*/im_*, verify producer/consumer claim against grep.",
-        "Validator coverage gaps in new scopes (R3 → R4): Check 18 dormant; helpers/commands unscanned. Candidate: periodic regex-coverage audit with format-variant test cases.",
+        "Shadow-table sync gap (R3 \u2192 R4): when primary tables are recomputed, secondary tables in other files remain stale. Candidate: generic dep-count checker scanning ALL tables.",
+        "Wrong consumer attribution tables (R1 \u2192 R3 \u2192 R4): chronic. M09 + M11 + M29 + Module_Dependencies + safety_guide all manifest the same pattern. Candidate: for every backticked vm_*/pm_*/im_*, verify producer/consumer claim against grep.",
+        "Validator coverage gaps in new scopes (R3 \u2192 R4): Check 18 dormant; helpers/commands unscanned. Candidate: periodic regex-coverage audit with format-variant test cases.",
         "Multi-section consistency within one doc (NEW in R4): M14 pcm_tau. Candidate: cross-section identifier-consistency check."
       ],
       "report_path": "audit/pipeline_audit_round4.md",
       "guards_added": [
         "scripts/check_default_realizations.py: relaxed Pattern C regex to accept the canonical **Default Realization**: form (was dormant for all 46 module docs)",
-        "scripts/check_doc_var_existence.py: SCAN_DIRS extended to include agent/helpers/ and agent/commands/ (closes coverage gap that hid the s22→c22 bug)"
+        "scripts/check_doc_var_existence.py: SCAN_DIRS extended to include agent/helpers/ and agent/commands/ (closes coverage gap that hid the s22\u2192c22 bug)"
       ],
       "status": "triaged + most CRITICAL/HIGH fixed in single commit (d0870ae); ~14 LOW findings deferred to audit/next_session_plan.md",
-      "notes": "R4 produced 55 findings vs R3's 82 — a 33% reduction. CRITICAL count dropped from 3 to 0 — the R3-followup mechanizations (check_doc_var_existence + body-citation extension) closed the M11-§17.2-fabrication and M38-body-drift classes entirely. NO new CRITICAL emerged. This REVERSES the R1→R3 confabulation-relocation pattern — instead of bugs moving to new surfaces, the surfaces themselves narrowed and total found bugs dropped. Where R4 bugs concentrate: (a) cross-cutting doc consumer/attribution tables (M09 §5.2, M11 §3, Module_Dependencies shadow tables) — 'hand-maintained denormalizations' of grep-derivable facts that don't sync when primary tables are recomputed; (b) validator coverage gaps that R3-followup didn't close (Check 18 was effectively dormant for the canonical doc format!); (c) numerical and citation drift in less-trafficked sections. Strongest R5 candidate: generic consumer-attribution checker that recomputes counts from grep and flags mismatches across ALL tables (primary + shadow). This single mechanization would close Clusters 3 + 4 + 5 entirely. Validator state after fixes: 35/36 passed, 1 known advisory (s59 unit-conv FP); validator wall-clock dropped 8.78s → 6.34s (-28%). Validator coverage now spans modules/ (Check 14) + cross_module/ + core_docs/ + agent/helpers/ + agent/commands/ (Check 21). Check 18 actually operational for the first time on canonical doc format."
+      "notes": "R4 produced 55 findings vs R3's 82 \u2014 a 33% reduction. CRITICAL count dropped from 3 to 0 \u2014 the R3-followup mechanizations (check_doc_var_existence + body-citation extension) closed the M11-\u00a717.2-fabrication and M38-body-drift classes entirely. NO new CRITICAL emerged. This REVERSES the R1\u2192R3 confabulation-relocation pattern \u2014 instead of bugs moving to new surfaces, the surfaces themselves narrowed and total found bugs dropped. Where R4 bugs concentrate: (a) cross-cutting doc consumer/attribution tables (M09 \u00a75.2, M11 \u00a73, Module_Dependencies shadow tables) \u2014 'hand-maintained denormalizations' of grep-derivable facts that don't sync when primary tables are recomputed; (b) validator coverage gaps that R3-followup didn't close (Check 18 was effectively dormant for the canonical doc format!); (c) numerical and citation drift in less-trafficked sections. Strongest R5 candidate: generic consumer-attribution checker that recomputes counts from grep and flags mismatches across ALL tables (primary + shadow). This single mechanization would close Clusters 3 + 4 + 5 entirely. Validator state after fixes: 35/36 passed, 1 known advisory (s59 unit-conv FP); validator wall-clock dropped 8.78s \u2192 6.34s (-28%). Validator coverage now spans modules/ (Check 14) + cross_module/ + core_docs/ + agent/helpers/ + agent/commands/ (Check 21). Check 18 actually operational for the first time on canonical doc format."
+    },
+    {
+      "round": 5,
+      "date": "2026-05-24",
+      "commit": "e7bbb39",
+      "auditor_model": "claude-opus-4-7",
+      "round_type": "structural-audit",
+      "lenses_run": [
+        "doc-code-fidelity-reading",
+        "doc-code-fidelity-grep",
+        "validator-soundness",
+        "instruction-surface-integrity",
+        "cross-doc-consistency",
+        "efficiency"
+      ],
+      "findings_total": 54,
+      "by_severity": {
+        "CRITICAL": 0,
+        "HIGH": 6,
+        "MEDIUM": 16,
+        "LOW": 32
+      },
+      "by_lens": {
+        "doc-code-fidelity-reading": 8,
+        "doc-code-fidelity-grep": 8,
+        "validator-soundness": 12,
+        "instruction-surface-integrity": 10,
+        "cross-doc-consistency": 9,
+        "efficiency": 7
+      },
+      "corroborated": [
+        {
+          "finding": "Pattern 6 hardcoded count drift",
+          "lenses": [
+            "doc-code-fidelity-reading",
+            "instruction-surface-integrity",
+            "cross-doc-consistency"
+          ],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "Pattern 10 stale file:line citations \u2014 both individual instances AND a validator scope gap",
+          "lenses": [
+            "doc-code-fidelity-grep",
+            "validator-soundness"
+          ],
+          "severity": "HIGH"
+        },
+        {
+          "finding": "Trigger overlap between sibling helpers",
+          "lenses": [
+            "instruction-surface-integrity",
+            "efficiency"
+          ],
+          "severity": "LOW"
+        }
+      ],
+      "root_cause_clusters": [
+        {
+          "cluster": "A \u2014 Hardcoded count drift (Pattern 6)",
+          "findings": 10,
+          "candidate_intervention": "extend <!--count:--> HTML marker mechanism to GAMS set counts and module-count claims; refresh_aggregate_counts.py computes from sources"
+        },
+        {
+          "cluster": "B \u2014 Stale file:line citations (Pattern 10) + Check-17 scope gap",
+          "findings": "7 specific + 1 scope gap",
+          "candidate_intervention": "one-line scope extension in check_gams_citations_impl.py to cover all doc directories"
+        },
+        {
+          "cluster": "C \u2014 Default-realization discipline (Pattern 8 body-scope FN)",
+          "findings": 3,
+          "candidate_intervention": "complete M30 body rewrite (pending since R3); realize-scope M80; make Check 16 module-aware"
+        },
+        {
+          "cluster": "D \u2014 Sed-sweep collateral from feedback->audit rename",
+          "findings": 5,
+          "candidate_intervention": "targeted edits restoring 'feedback/' on LEFT side of historical '-> audit/' descriptions; post-execution correction note in magpie4_scaffolding_plan.md"
+        },
+        {
+          "cluster": "E \u2014 Validator infrastructure gaps",
+          "findings": 6,
+          "candidate_intervention": "fix Check 1 emptiness handling; make Check 16 module-aware; extend Check 17 scope; extend Check 21 to reference/; fix probe_dedup_check.py default; update Bug_Taxonomy.md Pattern 12+13 statuses"
+        },
+        {
+          "cluster": "F \u2014 magpie4_reference.md cross-ref table incomplete",
+          "findings": 2,
+          "candidate_intervention": "re-derive table from .cache/sources/magpie4/R/reportX.R contents"
+        },
+        {
+          "cluster": "G \u2014 Consumer/provider misattribution",
+          "findings": 2,
+          "candidate_intervention": "extend Check 22 to flag wrong-module attribution against declarations.gms"
+        },
+        {
+          "cluster": "H \u2014 Trigger keyword overlaps",
+          "findings": 2,
+          "candidate_intervention": "tighten realization_selection.md triggers"
+        },
+        {
+          "cluster": "I \u2014 Variable signature mismatches",
+          "findings": 3,
+          "candidate_intervention": "new check: verify dimension signatures in interface-variable doc tables against declarations.gms"
+        },
+        {
+          "cluster": "J \u2014 Validator fork-storms",
+          "findings": 2,
+          "candidate_intervention": "Python port of Check 7 and Check 13 (precedent: check_gams_variables.sh -> .py at 100x speedup)"
+        },
+        {
+          "cluster": "K \u2014 Archive material",
+          "findings": 1,
+          "candidate_intervention": "delete audit/archive/ OR add disclaimer README"
+        },
+        {
+          "cluster": "L \u2014 sync_magpie4_clone.py exit-code semantics",
+          "findings": 2,
+          "candidate_intervention": "distinct exit codes (0 aligned, 1 misaligned, 2 not cloned); refuse to write version_pins.json when resolution != 'sha' (or exit 1 on HEAD downgrade)"
+        }
+      ],
+      "recurring_classes_for_mechanization": [
+        "Pattern 6 hardcoded count drift -> extend HTML count markers",
+        "Pattern 10 stale file:line citations -> extend Check 17 scope (one-line fix)",
+        "Pattern 8 body-doc realization FN -> make Check 16 module-aware",
+        "Consumer/provider misattribution -> extend Check 22",
+        "Variable signature mismatch -> new dimension-verification check"
+      ],
+      "report_path": "audit/pipeline_audit_round5.md",
+      "guards_added": [],
+      "status": "triaged; fix + mechanize pending user review",
+      "notes": "R5 ran immediately after a high-change session (commits d44823f magpie4 scaffolding + 327116c /feedback removal + 1c7df77 feedback->audit rename + e7bbb39 G3/G4 regression questions). Lens 4 (instruction-surface) deliberately biased toward the new surface; AGENT.md / deployed copies / helper trigger sync all verified clean. The session's changes themselves introduced no CRITICAL bugs; the sed-sweep produced LOW-severity collateral in historical narrative (Cluster D). Most HIGH/MEDIUM findings predate this session (Pattern 6 count drift, Pattern 10 citations, M18 wrong consumer, M30 default realization deferred since R3). Highest-leverage intervention: one-line scope extension in check_gams_citations_impl.py (Cluster B) \u2014 closes the largest historical bug class outside its current modules/-only scope. Six lenses ran in parallel; total wall-clock ~13 minutes; ~6 Opus 4.7 subagents."
     }
   ]
 }
