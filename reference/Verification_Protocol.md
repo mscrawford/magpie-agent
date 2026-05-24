@@ -242,7 +242,7 @@ BII factors are loaded from input files.
 ### 1. Confusing Ecological Facts with Model Implementation
 
 ❌ **Wrong**: "Forests sequester atmospheric carbon through photosynthesis"
-✅ **Right**: "Carbon stocks are tracked via `pm_carbon_density(t,j,"forestry",c_pools)` with growth rates from `pm_timber_yield(t,j,ac,kforestry)` (presolve.gms:123)"
+✅ **Right**: "Carbon stocks are tracked via `pm_carbon_density(t,j,"forestry",c_pools)` with growth derived from `im_growing_stock(t,j,ac,land_timber)` (formerly *pm_timber_yield* before PR #869 rename on 2026-04-20)"
 
 ### 2. Assuming Features Exist
 

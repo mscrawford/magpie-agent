@@ -219,17 +219,18 @@ Layer 6: Optimization
 **Module Interaction Graph:**
 ```
 16_demand → 73_timber ←→ 32_forestry
-                ↑              ↑
+                ↑              ⇡  ← (conceptual, not direct interface)
           35_natveg      14_yields
                 ↑              ↑
           28_ageclass      13_tc
 ```
 
+The `14_yields ⇡ 32_forestry` link is shown with a dashed arrow (`⇡`) because it is conceptual only — M32 does not consume any M14 yield variable (verified R3 + R4). The shared dependency is climate/age-structure context, not a direct GAMS interface variable. The other arrows in this graph (`13_tc → 14_yields`, `28_ageclass → 35_natveg`, `35_natveg → 73_timber`, `vm_prod_forestry`, etc.) are real interface flows.
+
 **Key Variables:**
 - `vm_prod_forestry` (32 → 73): Plantation production
 - `vm_prod_natveg` (35 → 73): Natural forest harvest
 - `pm_demand_forestry` (73 → 32): Timber demand
-- *(R3: removed fabricated `pm_timber_yield` claim — M32 and M35 don't consume any M14 yield variable; the diagram arrow is conceptual / climate-input shared, not a direct interface flow.)*
 
 #### 5.3 Water System
 

@@ -80,7 +80,7 @@ cd "$AGENT_DIR"
 # ===========================
 # Check 1: Dependency Counts
 # ===========================
-print_section "1/23" "Checking dependency counts..."
+print_section "1/24" "Checking dependency counts..."
 
 # Check Module 10
 MODULE_10_REFS=$(grep -r "Module 10.*dependents\|10.*dependents" \
@@ -134,7 +134,7 @@ fi
 # =====================================
 # Check 2: Equation Parameter Counts
 # =====================================
-print_section "2/23" "Checking equation parameters..."
+print_section "2/24" "Checking equation parameters..."
 
 # Chapman-Richards parameters
 CR_PARAMS=$(grep -r "Chapman-Richards\|Chapman Richards" \
@@ -178,7 +178,7 @@ fi
 # ============================
 # Check 3: Cross-References
 # ============================
-print_section "3/23" "Checking cross-references..."
+print_section "3/24" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
@@ -246,7 +246,7 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/23" "Checking duplicate equations..."
+print_section "4/24" "Checking duplicate equations..."
 
 # Check for common equations mentioned in multiple places
 # q70_feed
@@ -271,7 +271,7 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 # Check 5: Entry Point Consistency
 # =================================
-print_section "5/23" "Checking entry point consistency..."
+print_section "5/24" "Checking entry point consistency..."
 
 # README should point to CURRENT_STATE.json for project work
 if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
@@ -311,7 +311,7 @@ fi
 # =======================
 # Check 6: File Counts
 # =======================
-print_section "6/23" "Checking file counts..."
+print_section "6/24" "Checking file counts..."
 
 # Count module docs
 MODULE_COUNT=$(ls -1 modules/module_*.md 2>/dev/null | grep -v "_notes" | wc -l | tr -d ' ')
@@ -348,7 +348,7 @@ fi
 # ==========================================
 # Check 7: Convention Linter (stale formats)
 # ==========================================
-print_section "7/23" "Checking naming conventions..."
+print_section "7/24" "Checking naming conventions..."
 
 # Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
 STALE_CMD_COUNT=0
@@ -428,7 +428,7 @@ fi
 # ==============================================
 # Check 8: Markdown Link Validator (key files)
 # ==============================================
-print_section "8/23" "Checking markdown link targets..."
+print_section "8/24" "Checking markdown link targets..."
 
 BROKEN_LINKS=0
 
@@ -481,7 +481,7 @@ fi
 # ==============================================
 # Check 9: Trigger Keyword Sync
 # ==============================================
-print_section "9/23" "Checking helper trigger keyword sync..."
+print_section "9/24" "Checking helper trigger keyword sync..."
 
 TRIGGER_ISSUES=0
 
@@ -529,7 +529,7 @@ fi
 # =============================================
 # Check 10: AGENT.md Deployment Freshness
 # =============================================
-print_section "10/23" "Checking AGENT.md deployment..."
+print_section "10/24" "Checking AGENT.md deployment..."
 
 DEPLOY_OK=0
 DEPLOY_FAIL=0
@@ -565,7 +565,7 @@ fi
 # =============================================
 # Check 11: Anti-Hardcoding Guard
 # =============================================
-print_section "11/23" "Checking for hardcoded values in mechanism files..."
+print_section "11/24" "Checking for hardcoded values in mechanism files..."
 
 HARDCODED_ISSUES=0
 
@@ -591,7 +591,7 @@ fi
 # ================================================
 # Check 12: Path prefix check (magpie-agent/)
 # ================================================
-print_section "12/23" "Checking for stale path prefixes..."
+print_section "12/24" "Checking for stale path prefixes..."
 
 # Files inside magpie-agent/ should not use magpie-agent/ as a path prefix
 # (since the working directory IS magpie-agent/, this creates double-nesting)
@@ -620,7 +620,7 @@ fi
 # ================================================
 # Check 13: Unclosed code blocks
 # ================================================
-print_section "13/23" "Checking for unclosed code blocks..."
+print_section "13/24" "Checking for unclosed code blocks..."
 
 UNCLOSED=0
 for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./feedback/archive/*"); do
@@ -639,7 +639,7 @@ fi
 
 # Check 14: GAMS Variable Name Verification
 # ==========================================
-print_section "14/23" "Checking GAMS variable names in docs..."
+print_section "14/24" "Checking GAMS variable names in docs..."
 
 GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.py"
 if [ -f "$GAMS_CHECK_SCRIPT" ]; then
@@ -667,49 +667,66 @@ fi
 
 # Check 15: GAMS Equation Name Verification
 # ==========================================
-print_section "15/23" "Checking GAMS equation names in docs..."
+print_section "15/24" "Checking GAMS equation names in docs..."
 
-EQ_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_equations.sh"
-if [ -x "$EQ_CHECK_SCRIPT" ]; then
-    if EQ_OUTPUT=$("$EQ_CHECK_SCRIPT" 2>&1); then EQ_EXIT=0; else EQ_EXIT=$?; fi
-    if [ $EQ_EXIT -eq 0 ]; then
-        EQ_ACCURACY=$(echo "$EQ_OUTPUT" | grep "Accuracy:" | head -1)
-        check_pass "GAMS equation names verified: $EQ_ACCURACY"
-    else
-        EQ_MISMATCH_COUNT=$(echo "$EQ_OUTPUT" | grep -oE "[0-9]+ mismatches" | grep -oE "[0-9]+")
-        check_error "GAMS equation name mismatches: $EQ_MISMATCH_COUNT equations in docs not found in code"
-        echo "$EQ_OUTPUT" | grep "^  " | while read -r line; do
-            log "    $line"
-        done
-    fi
+# C1: prefer Python version (40x faster); fall back to bash if missing.
+EQ_CHECK_PY="$AGENT_DIR/scripts/check_gams_equations.py"
+EQ_CHECK_SH="$AGENT_DIR/scripts/check_gams_equations.sh"
+if [ -f "$EQ_CHECK_PY" ]; then
+    if EQ_OUTPUT=$(python3 "$EQ_CHECK_PY" --summary-only 2>&1); then EQ_EXIT=0; else EQ_EXIT=$?; fi
+elif [ -x "$EQ_CHECK_SH" ]; then
+    if EQ_OUTPUT=$("$EQ_CHECK_SH" 2>&1); then EQ_EXIT=0; else EQ_EXIT=$?; fi
 else
-    check_warning "GAMS equation checker not found or not executable: $EQ_CHECK_SCRIPT"
+    EQ_OUTPUT=""
+    EQ_EXIT=127
+fi
+if [ "$EQ_EXIT" = "127" ]; then
+    check_warning "GAMS equation checker not found (looked for .py and .sh)"
+elif [ "$EQ_EXIT" -eq 0 ]; then
+    EQ_ACCURACY=$(echo "$EQ_OUTPUT" | grep "Accuracy:" | head -1)
+    check_pass "GAMS equation names verified: $EQ_ACCURACY"
+else
+    EQ_MISMATCH_COUNT=$(echo "$EQ_OUTPUT" | grep -oE "[0-9]+ mismatches" | grep -oE "[0-9]+" || true)
+    check_error "GAMS equation name mismatches: ${EQ_MISMATCH_COUNT:-?} equations in docs not found in code"
+    echo "$EQ_OUTPUT" | grep "^  " | while read -r line; do
+        log "    $line"
+    done
 fi
 
 # Check 16: GAMS Realization Name Verification
 # =============================================
-print_section "16/23" "Checking GAMS realization names in docs..."
+print_section "16/24" "Checking GAMS realization names in docs..."
 
-REAL_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_realizations.sh"
-if [ -x "$REAL_CHECK_SCRIPT" ]; then
-    if REAL_OUTPUT=$("$REAL_CHECK_SCRIPT" 2>&1); then REAL_EXIT=0; else REAL_EXIT=$?; fi
-    if [ $REAL_EXIT -eq 0 ]; then
-        REAL_ACCURACY=$(echo "$REAL_OUTPUT" | grep "Accuracy:" | head -1)
-        check_pass "GAMS realization names verified: $REAL_ACCURACY"
-    else
-        REAL_MISMATCH_COUNT=$(echo "$REAL_OUTPUT" | grep -oE "[0-9]+ mismatches" | grep -oE "[0-9]+")
-        check_error "GAMS realization name mismatches: $REAL_MISMATCH_COUNT names in docs not found as directories"
-        echo "$REAL_OUTPUT" | grep "^  " | while read -r line; do
-            log "    $line"
-        done
-    fi
+# C1: prefer Python version (10x faster); fall back to bash if missing.
+# (Note: this is Check 16's "GAMS realization names in docs" check — separate
+# from Check 19's check_module_realizations.py which validates header/footer
+# alignment against config/default.cfg.)
+REAL_CHECK_PY="$AGENT_DIR/scripts/check_gams_realizations.py"
+REAL_CHECK_SH="$AGENT_DIR/scripts/check_gams_realizations.sh"
+if [ -f "$REAL_CHECK_PY" ]; then
+    if REAL_OUTPUT=$(python3 "$REAL_CHECK_PY" --summary-only 2>&1); then REAL_EXIT=0; else REAL_EXIT=$?; fi
+elif [ -x "$REAL_CHECK_SH" ]; then
+    if REAL_OUTPUT=$("$REAL_CHECK_SH" 2>&1); then REAL_EXIT=0; else REAL_EXIT=$?; fi
 else
-    check_warning "GAMS realization checker not found or not executable: $REAL_CHECK_SCRIPT"
+    REAL_OUTPUT=""
+    REAL_EXIT=127
+fi
+if [ "$REAL_EXIT" = "127" ]; then
+    check_warning "GAMS realization checker not found (looked for .py and .sh)"
+elif [ "$REAL_EXIT" -eq 0 ]; then
+    REAL_ACCURACY=$(echo "$REAL_OUTPUT" | grep "Accuracy:" | head -1)
+    check_pass "GAMS realization names verified: $REAL_ACCURACY"
+else
+    REAL_MISMATCH_COUNT=$(echo "$REAL_OUTPUT" | grep -oE "[0-9]+ mismatches" | grep -oE "[0-9]+" || true)
+    check_error "GAMS realization name mismatches: ${REAL_MISMATCH_COUNT:-?} names in docs not found as directories"
+    echo "$REAL_OUTPUT" | grep "^  " | while read -r line; do
+        log "    $line"
+    done
 fi
 
 # Check 17: File:Line Citation Verification
 # ==========================================
-print_section "17/23" "Checking file:line citations in docs..."
+print_section "17/24" "Checking file:line citations in docs..."
 
 CIT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_citations.sh"
 if [ -x "$CIT_CHECK_SCRIPT" ]; then
@@ -730,7 +747,7 @@ fi
 
 # Check 18: Default Realization Cross-Reference
 # ==============================================
-print_section "18/23" "Checking default realization labels against config/default.cfg..."
+print_section "18/24" "Checking default realization labels against config/default.cfg..."
 
 DEFAULT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_default_realizations.py"
 if [ -f "$DEFAULT_CHECK_SCRIPT" ]; then
@@ -751,7 +768,7 @@ fi
 
 # Check 19: Realization-Validity (header + footer cross-reference)
 # =================================================================
-print_section "19/23" "Checking module-doc realization validity (header + Verified Against footer)..."
+print_section "19/24" "Checking module-doc realization validity (header + Verified Against footer)..."
 
 REAL_CHECK_SCRIPT="$AGENT_DIR/scripts/check_module_realizations.py"
 if [ -f "$REAL_CHECK_SCRIPT" ]; then
@@ -776,7 +793,7 @@ fi
 
 # Check 20: Parameter default values (Pattern 13)
 # ===============================================
-print_section "20/23" "Checking parameter default values against source (Pattern 13)..."
+print_section "20/24" "Checking parameter default values against source (Pattern 13)..."
 
 PARAM_DEFAULT_SCRIPT="$AGENT_DIR/scripts/check_param_defaults.py"
 if [ -f "$PARAM_DEFAULT_SCRIPT" ]; then
@@ -805,7 +822,7 @@ fi
 # Catches fabricated [vmps]\d*_<name> tokens in cross_module/ and core_docs/.
 # Complements Check 14 (which scans modules/module_*.md).
 # ===============================================
-print_section "21/23" "Checking identifier existence in cross-cutting docs..."
+print_section "21/24" "Checking identifier existence in cross-cutting docs..."
 
 DOC_VAR_EXIST_SCRIPT="$AGENT_DIR/scripts/check_doc_var_existence.py"
 if [ -f "$DOC_VAR_EXIST_SCRIPT" ]; then
@@ -835,7 +852,7 @@ fi
 # Module_Dependencies, and modification_safety_guide, recompute the actual
 # consumer count from .gms sources and flag mismatches. Advisory mode.
 # ===============================================
-print_section "22/23" "Checking consumer-count attribution against GAMS source..."
+print_section "22/24" "Checking consumer-count attribution against GAMS source..."
 
 CONSUMER_CHECK_SCRIPT="$AGENT_DIR/scripts/check_consumer_attribution.py"
 if [ -f "$CONSUMER_CHECK_SCRIPT" ]; then
@@ -866,7 +883,7 @@ fi
 # dimensions (set-alias normalized). Catches rename stragglers like the M14
 # pcm_tau h→j drift. Advisory mode (variants are usually legitimate context).
 # ===============================================
-print_section "23/23" "Checking multi-section dimension consistency..."
+print_section "23/24" "Checking multi-section dimension consistency..."
 
 CONSISTENCY_SCRIPT="$AGENT_DIR/scripts/check_multi_section_consistency.py"
 if [ -f "$CONSISTENCY_SCRIPT" ]; then
@@ -885,6 +902,38 @@ if [ -f "$CONSISTENCY_SCRIPT" ]; then
     fi
 else
     check_warning "Multi-section consistency checker not found: $CONSISTENCY_SCRIPT"
+fi
+
+# ===============================================
+# Check 24: Historical-rename references (I5)
+# Greps for old identifier names (from feedback/renames.json) in non-exempt
+# docs. Skips italicized historical refs (`*old*`) and allowlist marker lines
+# (which must name old names by design). Catches "doc references a name that
+# was renamed in MAgPIE before the doc was last edited" — the M14 pcm_tau
+# straggler class.
+# ===============================================
+print_section "24/24" "Checking historical-rename references..."
+
+RENAMES_CHECK_SCRIPT="$AGENT_DIR/scripts/check_renames.py"
+if [ -f "$RENAMES_CHECK_SCRIPT" ]; then
+    if RENAMES_OUTPUT=$(python3 "$RENAMES_CHECK_SCRIPT" --summary-only 2>&1); then RENAMES_EXIT=0; else RENAMES_EXIT=$?; fi
+    if echo "$RENAMES_OUTPUT" | grep -q "No references to historically-renamed"; then
+        TRACKED=$(echo "$RENAMES_OUTPUT" | grep "Renames tracked:" | grep -oE "[0-9]+" || true)
+        check_pass "Historical-rename references: 0 hits across ${TRACKED:-?} tracked renames"
+    elif [ $RENAMES_EXIT -eq 0 ]; then
+        HIT_COUNT=$(echo "$RENAMES_OUTPUT" | grep -oE "Found [0-9]+ reference" | grep -oE "[0-9]+" | head -1 || true)
+        check_warning "Historical-rename references: ${HIT_COUNT:-?} stale reference(s) to renamed identifiers"
+        echo "$RENAMES_OUTPUT" | grep "^  " | head -8 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Historical-rename checker failed (exit $RENAMES_EXIT)"
+        echo "$RENAMES_OUTPUT" | head -5 | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "Historical-rename checker not found: $RENAMES_CHECK_SCRIPT"
 fi
 
 # ============

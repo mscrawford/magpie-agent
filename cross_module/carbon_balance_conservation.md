@@ -123,8 +123,15 @@ Carbon densities (tC per ha) provided for all 7 land types:
 
 **Topsoil Equilibrium** (Module 59, `equations.gms:20-27`):
 ```
-SOM_equilibrium = Σ(crops) Area × C_ratio × Natural_density
+v59_som_target(j,"crop") = (
+    Σ(kcr,w) [ Area(j,kcr,w) × C_ratio(j,kcr,w) ]                              # 1. cropland base
+  + Σ(kcr,w) [ Area(j,kcr,w) × SCM_share(j) × C_ratio(j,kcr,w) × (SCM_factor(j) − 1) ]  # 2. soil-C management uplift
+  + Fallow(j)    × C_ratio_fallow(j)                                            # 3. fallow
+  + Treecover(j) × C_ratio_treecover                                            # 4. treecover
+) × Natural_density(j)
 ```
+
+The simplified `Σ(crops) Area × C_ratio × Natural_density` shorthand used in earlier versions of this doc omitted terms 2-4. Term 2 (SCM = dedicated soil-carbon management) is gated by `i59_scm_target` per scenario; terms 3-4 (fallow + treecover) are land-management categories distinct from cropping area. See `modules/module_59.md` for the full equation walk-through.
 
 **C_ratio Factors** (Module 59):
 - Land use: Cropland vs set-aside

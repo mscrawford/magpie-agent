@@ -166,9 +166,10 @@ vm_prod_reg(i,k) = sum(cell(i,j), vm_prod(j,k))
 
 **Global Trade Balance** (Module 21, `q21_trade_glo`):
 ```gams
-sum(i2, vm_prod_reg(i2,k_trade)) =g= sum(i2, vm_supply(i2,k_trade))
+sum(i2, vm_prod_reg(i2,k_trade)) =g=
+  sum(i2, vm_supply(i2,k_trade)) + sum(ct,f21_trade_balanceflow(ct,k_trade))
 ```
-Global production must meet or exceed global supply requirements. `vm_supply` (from M16) aggregates all demand streams (food, feed, processing, material, seed, waste).
+Global production must meet or exceed global supply requirements plus the historical trade balance flow `f21_trade_balanceflow` (residual to reproduce observed FAO trade in the base year; near zero outside base period). `vm_supply` (from M16) aggregates all demand streams (food, feed, processing, material, seed, waste). Source: `modules/21_trade/selfsuff_reduced/equations.gms:12-14`.
 
 <!-- check-gams-vars: allow vm_export, vm_import -->
 **Regional Balance** (Module 21, `q21_trade_reg`):

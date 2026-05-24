@@ -1,0 +1,35 @@
+{
+  "_schema": {
+    "purpose": "Historical identifier renames. Validator (scripts/check_renames.py, Check 24) greps for old names in non-exempt docs and warns when a stale reference is found. Add a new entry every time a MAgPIE-side rename lands in develop that affects something the AI docs may have already named.",
+    "fields": {
+      "old": "old identifier (regex-safe literal; word-boundary anchored by the checker)",
+      "new": "replacement identifier or 'REMOVED' if the old identifier was deleted without a 1:1 replacement",
+      "since": "ISO date of the rename (YYYY-MM-DD)",
+      "reason": "short why-string (PR#, commit, motivation)",
+      "exempt_paths": "list of glob patterns where the old name is allowed (archives, audit logs, commit messages, this file itself)"
+    }
+  },
+  "renames": [
+    {
+      "old": "pm_timber_yield",
+      "new": "im_growing_stock",
+      "since": "2026-04-20",
+      "reason": "PR #869 — pm_timber_yield (tDM/ha/yr flux) replaced by im_growing_stock (tDM/ha stock); consumers divide by m_timestep_length_forestry to recover annual flux",
+      "exempt_paths": ["feedback/", "modules/module_14.md", "modules/module_35.md", "modules/module_14_notes.md", "agent/commands/sync.md"]
+    },
+    {
+      "old": "vm_cost_trade",
+      "new": "vm_cost_trade_tariff | vm_cost_trade_margin | vm_cost_trade_feasibility",
+      "since": "2026-04-21",
+      "reason": "PR #866 — Module 21 trade-cost interface split into three components (tariff, margin, feasibility); single vm_cost_trade replaced by all three in q11_cost_reg",
+      "exempt_paths": ["feedback/", "modules/module_11.md", "modules/module_21.md"]
+    },
+    {
+      "old": "sm_cdr_target",
+      "new": "REMOVED",
+      "since": "2026-05-23",
+      "reason": "R3 audit found this was fabricated — no such scalar ever existed; M56 mechanism is price-driven CDR, not target-driven",
+      "exempt_paths": ["feedback/"]
+    }
+  ]
+}

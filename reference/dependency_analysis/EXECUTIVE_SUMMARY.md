@@ -177,7 +177,7 @@ The degradation system involves 6 key modules:
 - `vm_prod_forestry` - Plantation timber production (32 → 73)
 - `vm_prod_natveg` - Natural forest harvest (35 → 73)
 - `pm_demand_forestry` - Timber demand (73 → 32, 62_material)
-- `pm_timber_yield` - Forest productivity (14 → 32, 35)
+- `im_growing_stock` - Forest productivity (14 → 32, 35; renamed 2026-04-20 from *pm_timber_yield* in PR #869, with units shift from flux tDM/ha/yr to stock tDM/ha)
 - `im_timber_prod_cost` - Production costs (73 → 32)
 
 **Interactions:**
