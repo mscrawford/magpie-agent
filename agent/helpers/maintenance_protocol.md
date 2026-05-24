@@ -18,7 +18,7 @@ Documentation health is maintained through three complementary layers, each catc
 
 ### Layer 1 — Syntactic Validation (automated, every session)
 
-**What it does**: `scripts/validate_consistency.sh` runs <!--count:validator_main_checks-->21<!--/count--> top-level structural checks (<!--count:validator_sub_checks-->36<!--/count--> sub-checks) against the documentation.
+**What it does**: `scripts/validate_consistency.sh` runs <!--count:validator_main_checks-->25<!--/count--> top-level structural checks (<!--count:validator_sub_checks-->40<!--/count--> sub-checks) against the documentation.
 
 **What it catches**:
 - Broken cross-references and internal links
@@ -209,7 +209,7 @@ Documentation is considered **healthy** when all of these conditions are met:
 
 | Gate | Criteria | How to check |
 |---|---|---|
-| ✅ Validator | All <!--count:validator_sub_checks-->36<!--/count--> sub-checks pass | `/validate` |
+| ✅ Validator | All <!--count:validator_sub_checks-->40<!--/count--> sub-checks pass | `/validate` |
 | ✅ Sync | 🟢 badge (≤5 commits behind, <14 days) | Session startup check |
 | ✅ Semantic | Latest round mean ≥8.0/10 with 0 Critical bugs | `feedback/validation_rounds.json` |
 | ✅ Coverage | All modules have `module_XX.md` docs | `/validate` (includes coverage check) |

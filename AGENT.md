@@ -326,7 +326,7 @@ Before answering code-specific questions, verify documentation is current:
 
 ### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 
-**16 MANDATEs** that prevent recurring confabulation patterns identified across <!--count:total_rounds-->22<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->451<!--/count--> catalogued bugs, <!--count:total_bugs_fixed-->298<!--/count--> fixed; see `feedback/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
+**16 MANDATEs** that prevent recurring confabulation patterns identified across <!--count:total_rounds-->23<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->457<!--/count--> catalogued bugs, <!--count:total_bugs_fixed-->301<!--/count--> fixed; see `feedback/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
 
 **Why hoisted**: ~150 lines of binding rules don't belong in always-loaded AGENT.md context; auto-loading on relevant triggers saves tokens, and a dedicated MANDATE doc with binding language separates "must enforce" from "FYI".
 
@@ -615,7 +615,7 @@ Other IAMs may use different approaches:
 ### The Three Rules
 
 1. **NEVER FABRICATE** — Copy variable names, equation names, realization names, and line numbers directly from code. Never construct them from context. (`ls ../modules/XX_name/` to verify realization directories)
-2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (<!--count:validator_main_checks-->21<!--/count--> checks, <!--count:validator_sub_checks-->36<!--/count--> sub-checks). It catches wrong names, stale citations, and convention violations automatically.
+2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (<!--count:validator_main_checks-->25<!--/count--> checks, <!--count:validator_sub_checks-->40<!--/count--> sub-checks). It catches wrong names, stale citations, and convention violations automatically.
 3. **VERIFY BEFORE CITING** — If you haven't read a file THIS session, don't cite its line numbers. Line numbers drift as code evolves.
 
 ### Bug Distribution (where errors actually occur)
@@ -660,7 +660,7 @@ Syntactic audits (variable names, equation names, realization names, citations) 
 
 - **"MAgPIE accounts for..." / "The model considers..." / "MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA? Is this MECHANISTIC or PARAMETERIZED? See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix; apply the three-check verification (equation structure, parameter source, dynamic feedback).
 
-**After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (<!--count:validator_main_checks-->21<!--/count--> checks, <!--count:validator_sub_checks-->36<!--/count--> sub-checks). See `core_docs/Response_Guidelines.md` for the full response checklist.
+**After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (<!--count:validator_main_checks-->25<!--/count--> checks, <!--count:validator_sub_checks-->40<!--/count--> sub-checks). See `core_docs/Response_Guidelines.md` for the full response checklist.
 
 ---
 

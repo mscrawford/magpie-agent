@@ -284,7 +284,7 @@ NOT: Read Phase1 + Phase2 + Phase3 + module_XX.md (FOUR files, ~15,000 tokens)
 **If you can't check all boxes, your response needs more verification.**
 
 **After writing or editing module documentation:**
-- [ ] Run `bash scripts/validate_consistency.sh` — must show all <!--count:validator_main_checks-->21<!--/count--> checks passing
+- [ ] Run `bash scripts/validate_consistency.sh` — must show all <!--count:validator_main_checks-->25<!--/count--> checks passing
 - [ ] Validator catches: wrong variable names, equation names, realization names, stale file:line citations
 - [ ] See `core_docs/Bug_Taxonomy.md` for <!--count:bug_taxonomy_patterns-->14<!--/count--> known error patterns to avoid
 

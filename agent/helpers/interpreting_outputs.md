@@ -60,7 +60,7 @@ Every module writes outputs in its `postsolve.gms` using an auto-generated `R SE
 After all postsolve phases complete, `Execute_Unload "fulldata.gdx"` (`core/calculations.gms:92`) writes **everything** — all GAMS symbols in memory — into a single GDX. This happens inside the time loop, so fulldata.gdx is overwritten each timestep and only the final-timestep state is fully preserved. However, output parameters like `ov_land(t,j,land,type)` accumulate across all timesteps via the `t` dimension.
 
 ### Report Generation
-`scripts/output/rds_report.R` calls `magpie4::getReport(gdx)` which reads fulldata.gdx and produces standardized IAMC-format variables in `report.mif` and `report.rds`. Variables follow the format `"Name (unit)"` — the space before the parenthesis is required (`scripts/output/rds_report.R:40-45`).
+`scripts/output/rds_report.R` calls `magpie4::getReport(gdx)` (`scripts/output/rds_report.R:37`) which reads fulldata.gdx and produces standardized IAMC-format variables in `report.mif` and `report.rds`. Variable name construction (the `"Name (unit)"` format with a space before the parenthesis) is enforced inside `magpie4::getReport()` itself, not by `rds_report.R`. What `rds_report.R:40-45` actually does is validate that all variables required by the AR6/NAVIGATE/SHAPE/AR6_MAgPIE IAMC mappings are PRESENT in the report (via `expectVariablesPresent(report, getMappingVariables(mapping, "M"))`) — i.e. a presence/coverage check against the IAMC variable list, not a string-format check.
 
 ## Reading GDX Files in R
 
@@ -173,7 +173,7 @@ Rscript output.R output=comparison_validation outputdir=output/run1,output/run2
 
 7. **Dry matter vs. fresh weight**: All production in MAgPIE is in dry matter (`tDM`). Conversion factors are in `fm_attributes`. This is a common source of confusion when comparing with FAO statistics (which use fresh weight).
 
-8. **report.mif variable naming**: Variables MUST follow `"Name (unit)"` format with a space before the parenthesis. The `rds_report.R` script warns if this pattern is violated (`scripts/output/rds_report.R:40-45`).
+8. **report.mif variable naming**: Variables MUST follow `"Name (unit)"` format with a space before the parenthesis. The format itself is constructed by `magpie4::getReport()` (not enforced by a regex in `rds_report.R`). What `rds_report.R:40-45` does is an IAMC variable-presence check (`expectVariablesPresent(report, getMappingVariables(mapping, "M"))`) against the AR6/NAVIGATE/SHAPE/AR6_MAgPIE mappings — a coverage check, not a format check. A violated `"Name (unit)"` form would surface downstream where the IAMC string is parsed, not in `rds_report.R`.
 
 ## Module Cross-References
 

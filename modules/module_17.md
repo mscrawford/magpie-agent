@@ -28,11 +28,11 @@ Module 17 aggregates **cell-level production to regional-level production** for 
 
 **Equation declared over:** Full set `k` (28 primary commodities: crops, pasture, livestock, fish, wood, woodfuel) (`declarations.gms:9,11`)
 
-**Currently populates non-zero values for:** Crops (kcr) and pasture — 20 plant commodities. Cell-level production for livestock, fish, and forestry is not currently modeled at cell level (`realization.gms:8-14`).
+**Currently populates non-zero values for:** Crops (kcr) and pasture — 20 plant commodities — from Modules 30/31. Ruminant and monogastric livestock (`kli_rum`, `kli_mon`) are ALSO populated at cell level under the default M71 realization `foragebased_jul23`, which constrains `vm_prod(j, kli_rum)` via `q71_feed_forage` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:21-24`) and `vm_prod(j, kli_mon)` via `q71_prod_mon_liv` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:55-59`). Fish (`fish`) and wood products (`wood`, `woodfuel`) remain zero at cell level.
 
-**Does NOT apply to (current limitation):** Livestock, fish, wood products — as stated in `realization.gms`: "For the time being, this approach is not applied to livestock products."
+**Stale comment caveat:** `modules/17_production/flexreg_apr16/realization.gms:13-14` still says "For the time being, this approach is not applied to livestock products." That `@limitations` text predates the M71 `foragebased_jul23` realization (added 2023) and is out of date — the realization comment was not updated when M71's cell-level livestock constraints landed. **The current behavior is that `vm_prod_reg(i, kli_rum)` and `vm_prod_reg(i, kli_mon)` are non-zero** (aggregated from M71-constrained cell-level `vm_prod`).
 
-**Rationale:** Cell-level production modeling exists for crops (Module 30) and pasture (Module 31). Livestock production (Module 70) is modeled at regional level directly, so `vm_prod(j,k)` for livestock remains zero.
+**Rationale:** Cell-level production modeling originally existed only for crops (Module 30) and pasture (Module 31), but M71's `foragebased_jul23` extended cell-level constraints to ruminant and monogastric livestock. M17's `q17_prod_reg` aggregation is generic over `k` and now operates correctly for `kli` as well.
 
 ---
 
@@ -304,13 +304,14 @@ Following the "Code Truth" principle:
 - **DOES aggregate** production calculated by Module 30 and 31
 - All production logic (area × yield) is in Modules 30 and 31, not Module 17
 
-### 7.2 Livestock/Fish/Forestry — Current Limitation
+### 7.2 Livestock/Fish/Forestry — Updated Status (post-M71 foragebased_jul23)
 
 - **The equation `q17_prod_reg(i2,k)` IS declared** over the full set `k` (all primary commodities including livestock, fish, wood, woodfuel) — `declarations.gms:9,11`
-- **In current practice,** `vm_prod(j,k)` is only populated for plant commodities (crops and pasture from Modules 30/31), so `vm_prod_reg(i,livst_rum)` etc. sum to zero
-- This is an explicit current limitation stated in `realization.gms:13-14`: *"For the time being, this approach is not applied to livestock products"*
+- **In current practice (default config),** `vm_prod(j,k)` is populated for crops + pasture (M30/31) AND for ruminant/monogastric livestock under M71 `foragebased_jul23` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:21-24` for kli_rum, `:55-59` for kli_mon). So `vm_prod_reg(i, kli_rum)` and `vm_prod_reg(i, kli_mon)` are non-zero.
+- Fish (`fish`) and wood products (`wood`, `woodfuel`) remain zero at cell level — M17 aggregates them to zero.
+- The text in `modules/17_production/flexreg_apr16/realization.gms:13-14` (*"For the time being, this approach is not applied to livestock products"*) is a STALE `@limitations` comment that predates M71 `foragebased_jul23`. Treat it as out of date.
 
-**Rationale:** No cell-level livestock or fish production variables exist currently; Module 70 handles livestock at regional level. The equation architecture already supports these products — `vm_prod(j,k)` just has no non-zero values for them yet.
+**Rationale:** Cell-level livestock production was added by M71 `foragebased_jul23` (default since 2023). M17's `q17_prod_reg` was always declared over the full `k`; what changed is which subset of `k` actually has non-zero cell-level production. Module 70 still handles livestock cost/feed-basket logic at regional level, but the production variables are now disaggregated to cells by M71.
 
 ### 7.3 No Inter-Cell Trade
 
@@ -467,10 +468,11 @@ p17_ncells(i) = sum(cell(i,j), 1);
    * Expected: All major crops have production; minor crops may be zero
    ```
 
-2. **Check livestock production is NOT in Module 17:**
+2. **Check livestock production aggregation (post-M71 foragebased_jul23):**
    ```gams
-   * vm_prod_reg.l(i,"livst_rum") should be computed by Module 70, not Module 17
-   * Check Module 70 documentation for livestock regional production logic
+   * vm_prod_reg.l(i,"kli_rum") is aggregated by Module 17 from cell-level
+   * vm_prod(j,kli_rum), which is constrained by Module 71's q71_feed_forage.
+   * Expected: non-zero in default config (foragebased_jul23). Fish/wood remain zero.
    ```
 
 ---
@@ -537,17 +539,17 @@ p17_ncells(i) = sum(cell(i,j), 1);
 
 **Not a Module 17 issue:** Module 17 adapts automatically to new regionalization as long as `cell(i,j)` is correct.
 
-### 10.5 Livestock Production Missing from vm_prod_reg
+### 10.5 Livestock Production Missing from vm_prod_reg (post-M71 foragebased_jul23)
 
-**Symptom:** `vm_prod_reg.l(i,"livst_rum")` = 0 even though livestock exists.
+**Symptom:** `vm_prod_reg.l(i, "kli_rum")` = 0 in the default config.
 
 **Likely Cause:**
-- **Expected behavior:** Module 17 doesn't calculate livestock production
-- **Module 70 should directly assign livestock production to vm_prod_reg**
+- M71 disaggregation realization is set to `off` or to a non-default that doesn't constrain `vm_prod(j, kli)`.
+- Cell-level forage availability is binding tight, forcing `vm_prod(j, kli_rum)` to zero in all cells.
 
-**Solution:** Check Module 70 documentation. Verify Module 70 equations compute livestock production and assign to `vm_prod_reg(i,livestock)`.
+**Solution:** Check `cfg$gms$disagg_lvst` in `config/default.cfg` (expected: `foragebased_jul23`). Then verify M71 `q71_feed_forage` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:21-24`) and `q71_prod_mon_liv` (`:55-59`) are active and forage supply is positive in the affected cells.
 
-**Not a Module 17 issue:** Livestock aggregation is outside Module 17's scope (`realization.gms:14-15`).
+**Historical note:** Pre-2023 documentation (and the stale `realization.gms:13-14` `@limitations` text) said livestock production was outside M17's scope. With M71 `foragebased_jul23` as default, M17's `q17_prod_reg` now aggregates non-zero cell-level livestock production into regional totals.
 
 ---
 
