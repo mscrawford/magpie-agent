@@ -315,7 +315,16 @@ q73_cost_timber(i2)..
 
 **Cost Integration**: `vm_cost_timber` feeds into Module 11 (costs) for total objective function.
 
-**Cross-module coupling with Module 52**: The conversion from per-m3 prices to per-tDM costs (and from mio. m3 demand to mio. tDM demand in `pm_demand_forestry`) now uses `im_vol_conv(i)` — a regional basic wood density (tDM/m3) computed in M52's preloop from `f52_volumetric_conversion(clcl)` weighted by `pm_climate_class(j, clcl)`. This replaces the removed *f73_volumetric_conversion* input file.
+**Cross-module coupling with Module 52**: The conversion from per-m3 prices to per-tDM costs (and from mio. m3 demand to mio. tDM demand) is driven by `im_vol_conv(i)` — a regional basic wood density (tDM/m3) computed in M52's preloop from the M52 volumetric-conversion input weighted by the cell-level climate-class mapping. This replaces the removed *f73_volumetric_conversion* input file.
+
+**Other consumers of `pm_climate_class`** (outside M73):
+- Module 14 (Yields) — `modules/14_yields/managementcalib_aug19/presolve.gms:29`
+- Module 58 (Peatland) — `modules/58_peatland/v2/preloop.gms:36`
+- Module 59 (SOM) — `modules/59_som/cellpool_jan23/preloop.gms:16`
+
+**Consumers of `pm_demand_forestry`** (outside M73):
+- Module 32 (Forestry) — `modules/32_forestry/dynamic_may24/presolve.gms:186`
+- Module 62 (Material) — `modules/62_material/exo_flexreg_apr16/equations.gms:37`
 
 ---
 
@@ -517,7 +526,7 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 
 #### 9.3 Volumetric conversion — ⚠️ MOVED to Module 52
 
-**🔄 Changed 2026-04-20 (PR #869):** The former file *f73_volumetric_conversion.csv* (`kforestry` → tDM/m³) has been **removed**. Conversion now uses the regional wood density `im_vol_conv(i)` (tDM/m³) computed in Module 52's preloop from `f52_volumetric_conversion.csv` (climate-class-level basic wood density) weighted by `pm_climate_class(j, clcl)`.
+**🔄 Changed 2026-04-20 (PR #869):** The former file *f73_volumetric_conversion.csv* (`kforestry` → tDM/m³) has been **removed**. Conversion is now driven by the regional wood density `im_vol_conv(i)` (tDM/m³) computed in Module 52's preloop. See the cross-module-coupling note in section 5 above for inputs and downstream consumers.
 
 **Where used in M73**:
 - `preloop.gms:44-48`: convert `p73_timber_demand_gdp_pop` (mio. m³) → `pm_demand_forestry` (mio. tDM) using `im_vol_conv(i)`

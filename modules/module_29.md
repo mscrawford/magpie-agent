@@ -692,7 +692,7 @@ p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac(t,j,ac,
 | `vm_land` | Total land by type | (j,land) | Mio. ha | Module 10 (Land) |
 | `vm_area` | Harvested crop area | (j,kcr,w) | Mio. ha | Module 30 (Croparea) |
 | `vm_carbon_stock_croparea` | Croparea carbon stocks | (j,ag_pools) | Mio. tC | Module 30 (Croparea) |
-| `vm_lu_transitions` | Land use transitions | (j,land_from,land_to) | Mio. ha | Module 10 (Land) |
+| `vm_lu_transitions` | Land use transitions | (j,land_from,land_to) | Mio. ha | Module 10 (Land); also read by Module 35 (Natveg) (`modules/35_natveg/pot_forest_may24/presolve.gms:58`), Module 59 (SOM) (`modules/59_som/cellpool_jan23/equations.gms:51`) |
 | `pm_interest` | Regional interest rate | (t,i) | Dimensionless | Module 12 (Interest Rate) |
 | `pm_land_conservation` | Conservation land | (t,j,land,consv_type) | Mio. ha | Module 22 (Conservation) |
 | `fm_carbon_density` | Carbon density by land type | (t,j,land,ag_pools) | tC/ha | Core data |
@@ -868,7 +868,7 @@ Module 29 contributes to agricultural land that supports food production:
 
 Module 29 provides land use data that Module 50/51 use for nitrogen accounting:
 
-- **Cropland Nitrogen Demand**: Module 50 uses `vm_land(j,"crop")` for N fertilizer requirements
+- **Cropland Nitrogen Demand**: Module 50 uses `vm_land(j,"crop")` for N fertilizer requirements; `vm_land` is also read by Module 22 (Land Conservation) (`modules/22_land_conservation/area_based_apr22/presolve_ini.gms:86`), Module 30 (Croparea) (`modules/30_croparea/simple_apr24/equations.gms:23`), Module 31 (Pasture) (`modules/31_past/static/presolve.gms:11`), Module 32 (Forestry) (`modules/32_forestry/dynamic_may24/presolve.gms:19`), Module 34 (Urban) (`modules/34_urban/static/presolve.gms:9`), Module 35 (Natveg) (`modules/35_natveg/pot_forest_may24/presolve.gms:40`), Module 58 (Peatland) (`modules/58_peatland/v2/equations.gms:23`), Module 59 (SOM) (`modules/59_som/cellpool_jan23/equations.gms:33`)
 - **Soil Nitrogen Dynamics**: Cropland expansion/contraction affects soil N pools
 - **Tree Cover Impact**: Trees on cropland affect N cycling (via soil carbon Module 59)
 

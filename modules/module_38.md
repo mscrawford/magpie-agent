@@ -334,7 +334,7 @@ All three realizations expose the same interface variable to the rest of the mod
 
 - **Producer**: Module 38 (whichever realization is active)
 - **Consumers**:
-  - Module 11 (Costs) — summed in `q11_cost_reg` via `sum(factors, vm_cost_prod_crop(i2,factors))`
+  - Module 11 (Costs) — `vm_cost_prod_crop` read in `q11_cost_reg` via `sum(factors, vm_cost_prod_crop(i2,factors))` (`modules/11_costs/default/equations.gms:15`)
   - Module 36 (Employment) — `vm_cost_prod_crop(i2,"labor")` read in `q36_employment` (`modules/36_employment/exo_may22/equations.gms:23-25`) to compute agricultural employment from labor cost
 - **Citation**: see `modules/module_11.md` §3 for the M11 consumer-side description and `modules/module_36.md` for the M36 consumer-side description
 

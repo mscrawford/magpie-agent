@@ -1,7 +1,7 @@
 # Module 52: Carbon (normal_dec17)
 
 > **🔄 Major update 2026-04-20 (MAgPIE PR #869 "ipopt_part1", commit `75d7ee167`):**
-> Module 52 gained a **growing-stock calibration system** that tunes Chapman-Richards growth rates (`k`) per region via bisection to match **FAO FRA 2025** growing-stock targets. Calibrated `k` values overwrite `pm_carbon_density_secdforest_ac` and `pm_carbon_density_plantation_ac` (vegc pool only). Uncalibrated versions are preserved for afforestation and NDC use cases.
+> Module 52 gained a **growing-stock calibration system** that tunes Chapman-Richards growth rates (`k`) per region via bisection to match **FAO FRA 2025** growing-stock targets. Calibrated `k` values overwrite `pm_carbon_density_secdforest_ac` (consumed by Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:44` and Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:248`) and `pm_carbon_density_plantation_ac` (consumed by Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:26` and Module 32 `modules/32_forestry/dynamic_may24/presolve.gms:65`) (vegc pool only). Uncalibrated versions are preserved for afforestation and NDC use cases.
 > **New features**: preloop.gms (118 lines, previously absent), input file `f52_volumetric_conversion.csv`, interface parameter `im_vol_conv(i)` (used by Module 73 and shared with Module 14's growing-stock formula), scalar switch `s52_growingstock_calib` (default = 1 — **calibration is ON by default**), FRA target files `f52_fra_nrf_gs.cs4`, `f52_fra_pla_gs.cs4`.
 
 **Purpose**: Provides carbon density information for different land types and age classes, and calculates CO2 emissions from land-use change. **As of 2026-04-20, also calibrates Chapman-Richards `k` parameter to FRA 2025 growing stock targets.**
@@ -135,7 +135,7 @@ pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc") =
 - Asymptote: Secondary forest vegc from LPJmL
 - Growth: Natural vegetation k and m
 
-> **⚠️ As of 2026-04-20**: The vegc value computed here is **overwritten in preloop.gms** when `s52_growingstock_calib = 1` (default). The uncalibrated value is preserved in `pm_carbon_density_secdforest_ac_uncalib` and is still used downstream for afforestation/NDC use cases (Module 32's `af_ndc` realization logic, Module 29's tree cover). See Section 2.C below.
+> **⚠️ As of 2026-04-20**: The vegc value computed here is **overwritten in preloop.gms** when `s52_growingstock_calib = 1` (default). The uncalibrated value is preserved in `pm_carbon_density_secdforest_ac_uncalib` and is still used downstream for afforestation/NDC use cases (Module 32's `af_ndc` realization logic, Module 29's tree cover, Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:117`). See Section 2.C below.
 
 **Other land** (start.gms:48):
 ```
@@ -260,7 +260,16 @@ Bisection: if `GS_trial < f52_fra_nrf_gs(i)`, raise lower bound; else raise uppe
 After convergence, **overwrite** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` with calibrated growth curve (`preloop.gms:71-73`).
 
 **Step 4 — Plantation `k` calibration** (`preloop.gms:84-116`):
-Analogous, but using plantation age distribution `pm_land_plantation(j,ac)` (from Module 32) and target `f52_fra_pla_gs(i)`. Note: the asymptote for the plantation bisection's trial formula uses `fm_carbon_density("y2025",j,"secdforest","vegc")` — the same LPJmL secondary-forest C_max as used for the secdforest bisection. Only the shape parameter `m` differs (`i52_m_avg_plant(i)`). Plantation vegc is overwritten at `preloop.gms:114-116`.
+Analogous to Step 3, with these differences. The age distribution comes from Module 32 (forestry) plantation pools; the target value is the FRA plantation growing stock; the LPJmL asymptote is the secondary-forest C_max (reused, not a separate input); and only the shape parameter `m` differs (it uses the plantation-specific average). Plantation vegc is overwritten at `preloop.gms:114-116`.
+
+**Consumers of `fm_carbon_density`** (broadly used outside M52):
+- Module 14 (Yields) — `modules/14_yields/managementcalib_aug19/presolve.gms:35`
+- Module 29 (Cropland) — `modules/29_cropland/detail_apr24/equations.gms:41`
+- Module 30 (Croparea) — `modules/30_croparea/simple_apr24/equations.gms:51`
+- Module 31 (Past) — `modules/31_past/static/presolve.gms:16`
+- Module 35 (Natveg) — `modules/35_natveg/pot_forest_may24/equations.gms:44`
+- Module 56 (GHG Policy) — `modules/56_ghg_policy/price_aug22/preloop.gms:10`
+- Module 59 (SOM) — `modules/59_som/cellpool_jan23/preloop.gms:12`
 
 **Step 5 — Diagnostic logging** (`preloop.gms:108-113`):
 Writes a per-region table of `(FRA target NRF, achieved NRF, FRA target plantation, achieved plantation)` to the GAMS log.
@@ -272,14 +281,14 @@ Writes a per-region table of `(FRA target NRF, achieved NRF, FRA target plantati
 **Rationale**: Uncalibrated curves represent the potential Chapman-Richards growth from bare land toward the LPJmL asymptote — appropriate for new establishment scenarios (afforestation, NDC forest commitments, tree cover on cropland). Calibrated curves represent *existing* forests where realized growing stock is already below potential; applying that suppressed growth rate to newly-planted trees would underestimate their accumulation trajectory.
 
 **Cross-module read/write**:
-- **Reads** `im_forest_ageclass(j,ac)` from Module 28 (GFAD age distribution; weights secdforest bisection)
+- **Reads** `im_forest_ageclass(j,ac)` from Module 28 (GFAD age distribution; weights secdforest bisection; also consumed by Module 35 `modules/35_natveg/pot_forest_may24/preloop.gms:20`)
 - **Reads** `pm_land_plantation(j,ac)` from Module 32 (new interface parameter added by PR #869; weights plantation bisection)
 - **Reads** `fm_ipcc_bef(clcl)` and `fm_aboveground_fraction(land_timber)` from Module 14 (interface parameters)
 - **Reads** `sm_carbon_fraction` (shared/interface scalar declared in Module 14's `input.gms:22`, value 0.5 tC/tDM)
 - **Writes** `im_vol_conv(i)` (consumed by Module 73)
-- **Writes** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Module 14's `im_growing_stock` presolve, then flows to Modules 32, 35)
-- **Writes** `pm_carbon_density_plantation_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Module 14)
-- **Writes** `pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib` (preserved for new-establishment contexts; consumed by Module 32 afforestation+NDC and Module 29 tree cover)
+- **Writes** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:44` and Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:248`)
+- **Writes** `pm_carbon_density_plantation_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:26` and Module 32 `modules/32_forestry/dynamic_may24/presolve.gms:65`)
+- **Writes** `pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib` (preserved for new-establishment contexts; consumed by Module 32 afforestation+NDC and Module 29 tree cover; `pm_carbon_density_secdforest_ac_uncalib` also consumed by Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:117`)
 
 **Known caveat** (per `realization.gms:20`): LPJmL potential-vegetation asymptote `A` may exceed observed FRA growing stock in degraded tropical forests. Calibration adjusts `k` but cannot fix an over-estimated asymptote.
 
@@ -712,7 +721,7 @@ Module 52 **provides to** these modules:
 
 **1. Module 14 (Yields) [NEW consumer as of 2026-04-20]**:
 - `pm_carbon_density_secdforest_ac`, `pm_carbon_density_plantation_ac`, `pm_carbon_density_other_ac` — calibrated (when switch on) vegc densities
-- Module 14 uses these to compute `im_growing_stock(t,j,ac,land_timber)` in presolve
+- Module 14 uses these to compute `im_growing_stock(t,j,ac,land_timber)` in presolve; `im_growing_stock` is subsequently consumed by Module 32 `modules/32_forestry/dynamic_may24/presolve.gms:181` and Module 35 `modules/35_natveg/pot_forest_may24/equations.gms:147`
 
 **2. Module 29 (Cropland) [NEW consumer as of 2026-04-20]**:
 - `pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib` — uncalibrated versions

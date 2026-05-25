@@ -339,7 +339,7 @@ v36_employment_maccs(i) =
 
 **Variables**:
 - **Determined**: `v36_employment_maccs(i)` (mio. people)
-- **Uses**: `vm_maccs_costs` from Module 57
+- **Uses**: `vm_maccs_costs` from Module 57; consumed by Module 11 (`modules/11_costs/default/equations.gms:28`)
 
 **Purpose**: Track additional employment from climate mitigation activities
 
@@ -1047,7 +1047,8 @@ plot(ag_employment_share, main="Agricultural Employment as % of Population")
 
 **Next Modules**:
 - Module 38 (Factor Costs) - uses `pm_hourly_costs` to calculate labor costs
-- Module 70 (Livestock) - uses wages for livestock labor costs
+- Module 57 (MACCS) - uses `pm_hourly_costs` (`modules/57_maccs/on_aug22/equations.gms:43`)
+- Module 70 (Livestock) - uses `pm_hourly_costs` for livestock labor costs (`modules/70_livestock/fbask_jan16/equations.gms:62`)
 
 ---
 

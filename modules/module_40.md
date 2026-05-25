@@ -50,7 +50,7 @@ q40_cost_transport(j2,k) ..
 
 **Variables**:
 - `vm_cost_transp(j2,k)`: Transportation costs (output variable) - `declarations.gms:13`
-- `vm_prod(j2,k)`: Cell-level production from Module 17 (read from upstream) - `equations.gms:12`
+- `vm_prod(j2,k)`: Cell-level production from Module 17 (read from upstream) - `equations.gms:12`; also consumed by Module 18 (residues) - `modules/18_residues/flexcluster_jul23/equations.gms:18`, Module 30 (croparea) - `modules/30_croparea/simple_apr24/equations.gms:15`, Module 31 (past) - `modules/31_past/endo_jun13/equations.gms:17`, Module 38 (factor_costs) - `modules/38_factor_costs/sticky_feb18/equations.gms:35`, Module 42 (water_demand) - `modules/42_water_demand/all_sectors_aug13/equations.gms:14`, Module 71 (disagg_lvst) - `modules/71_disagg_lvst/foragebased_jul23/equations.gms:15`, Module 73 (timber) - `modules/73_timber/default/equations.gms:26`
 
 **Parameters**:
 - `f40_distance(j2)`: Travel time from cell to nearest urban center (minutes) - `input.gms:15-21`

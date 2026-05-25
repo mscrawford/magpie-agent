@@ -8,7 +8,7 @@
 
 ### `vm_costs_additional_mon` is in M71, NOT M70
 
-Common attribution error: `vm_costs_additional_mon` (1-dimensional cost variable) is declared in **Module 71 (livestock disaggregation)**, not M70. Specifically in `modules/71_disagg_lvst/foragebased_jul23/declarations.gms`. M70 reads it.
+Common attribution error: `vm_costs_additional_mon` (1-dimensional cost variable) is declared in **Module 71 (livestock disaggregation)**, not M70. Specifically in `modules/71_disagg_lvst/foragebased_jul23/declarations.gms`. M70 reads it. It is also consumed by **Module 11 (costs)** (`modules/11_costs/default/equations.gms:40`).
 
 "Additional mon" means **additional monogastric** (a calibration adjustment for pig/poultry feed), NOT "monitoring" or "month".
 

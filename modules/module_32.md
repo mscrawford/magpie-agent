@@ -455,7 +455,7 @@ q32_bv_ndc(j2,potnatveg) .. vm_bv(j2,"aff_ndc",potnatveg)
           p32_bii_coeff("ndc",bii_class_secd,potnatveg)) * fm_luh2_side_layers(j2,potnatveg);
 ```
 
-**Translation**: Biodiversity value of NPI/NDC afforestation. Same structure as `q32_bv_aff` but uses `ndc` land pools and `ndc`-specific BII coefficients. Reports to `vm_bv(j,"aff_ndc",potnatveg)` for Module 44.
+**Translation**: Biodiversity value of NPI/NDC afforestation. Same structure as `q32_bv_aff` but uses `ndc` land pools and `ndc`-specific BII coefficients. Reports to `vm_bv(j,"aff_ndc",potnatveg)` for Module 44. Additional consumers of `vm_bv`: Module 29 (`modules/29_cropland/simple_apr24/preloop.gms:11`), Module 30 (`modules/30_croparea/simple_apr24/equations.gms:57`), Module 31 (`modules/31_past/static/presolve.gms:20`), Module 34 (`modules/34_urban/static/presolve.gms:12`), Module 35 (`modules/35_natveg/pot_forest_may24/presolve.gms:285`).
 
 **q32_bv_plant** (`equations.gms:138-141`):
 ```gams

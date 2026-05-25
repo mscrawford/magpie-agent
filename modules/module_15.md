@@ -761,16 +761,24 @@ $include "./modules/15_food/input/f15_supply2intake_ratio_FAO_iso.cs3"
 
 ---
 
-#### **PROVIDES TO (1 module)** - **MOST CRITICAL OUTPUT**:
+#### **PROVIDES TO (3 modules)** - **MOST CRITICAL OUTPUT**:
 
-**1. Module 16 (Demand)** - **THE ONLY CONSUMER**:
+**1. Module 16 (Demand)**:
    - **Variable provided**:
-     - `vm_dem_food(i,kfo)`: Food demand (mio. tDM/yr)
+     - `vm_dem_food(i,kfo)`: Food demand (mio. tDM/yr) — `modules/16_demand/sector_may15/equations.gms:21`
      - `pm_kcal_pc_initial(t,i,kfo)`: Initial per capita demand (kcal/cap/day)
      - `fm_nutrition_attributes(t,kfo,nutrition)`: Nutrition content
-   - **Purpose**: Module 16 uses `vm_dem_food` as a **constraint** in MAgPIE optimization
+   - **Purpose**: Module 16 uses `vm_dem_food` as a **constraint** in MAgPIE optimization; also consumed by Module 20 (`modules/20_processing/substitution_may21/equations.gms:33`) and Module 62 (`modules/62_material/exo_flexreg_apr16/presolve.gms:22`)
    - **Equation**: `q15_food_demand` enforces that supply ≥ demand
    - **Impact**: This is the PRIMARY DRIVER of agricultural production in MAgPIE
+
+**2. Module 20 (Processing)**:
+   - **Variable provided**:
+     - `vm_dem_food(i,kfo)`: Food demand (mio. tDM/yr) — `modules/20_processing/substitution_may21/equations.gms:33`
+
+**3. Module 62 (Material)**:
+   - **Variable provided**:
+     - `vm_dem_food(i,kfo)`: Food demand (mio. tDM/yr) — `modules/62_material/exo_flexreg_apr16/presolve.gms:22`
 
 **Interface Mechanism** (`equations.gms:10-14`):
 ```
@@ -881,7 +889,7 @@ Module 15 has **NO circular dependencies** because:
 - Example: If production fails, demand doesn't automatically drop (unless prices rise)
 
 ❌ **4. Does NOT Include Non-Food Uses**
-- Module 15 only estimates **food use** (`vm_dem_food`)
+- Module 15 only estimates **food use** (`vm_dem_food`); consumers of this variable: Module 16 (`modules/16_demand/sector_may15/equations.gms:21`), Module 20 (`modules/20_processing/substitution_may21/equations.gms:33`), Module 62 (`modules/62_material/exo_flexreg_apr16/presolve.gms:22`)
 - Feed, material, seed, bioenergy demands calculated in Module 16
 - Example: Corn for ethanol not in Module 15
 

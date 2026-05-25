@@ -122,7 +122,9 @@ p35_maturesecdf(t,j,ac)$(not sameas(ac,"acx")) =
 - Above 20 tC/ha: Land graduates to "secondary forest" status
 - Threshold applies to vegetation carbon only (not soil carbon)
 
-> **🔄 Changed 2026-04-20 (commit `c7731e234`)**: The maturation test now uses `pm_carbon_density_secdforest_ac_uncalib` (the *uncalibrated* natveg curve), not the FRA-calibrated `pm_carbon_density_secdforest_ac`. Rationale (per `presolve.gms:113-115` comment): natural succession from abandoned cropland should mature at realistic rates, independent of the FRA 2025 calibration applied in Module 52. Freshly matured youngsecdf is recorded as natural-origin area (`p35_secdforest_natural`).
+> **🔄 Changed 2026-04-20 (commit `c7731e234`)**: The maturation test now applies `pm_carbon_density_secdforest_ac_uncalib` (the *uncalibrated* natveg curve), not the FRA-calibrated `pm_carbon_density_secdforest_ac`. Rationale (per `presolve.gms:113-115` comment): natural succession from abandoned cropland should mature at realistic rates, independent of the FRA 2025 calibration applied in Module 52. Freshly matured youngsecdf is recorded as natural-origin area (`p35_secdforest_natural`).
+> - `pm_carbon_density_secdforest_ac` is consumed by Module 14 (`modules/14_yields/managementcalib_aug19/presolve.gms:44`)
+> - `pm_carbon_density_secdforest_ac_uncalib` is consumed by Module 29 (`modules/29_cropland/detail_apr24/preloop.gms:46`), Module 32 (`modules/32_forestry/dynamic_may24/presolve.gms:59`)
 
 ---
 
@@ -405,7 +407,9 @@ p35_land_restoration(j2,"secdforest");
 ```
 
 **Purpose**: Ensures that transitions from agricultural land and forestry into secondary forest meet the restoration target set for secondary forest. The constraint includes both agricultural-to-secdforest and forestry-to-secdforest transitions.
-**Key variables**: `vm_lu_transitions` (land use transitions from Module 10), `p35_land_restoration` (restoration target, computed in presolve)
+**Key variables**:
+- `vm_lu_transitions` (land use transitions from Module 10; also consumed by Module 29 `modules/29_cropland/simple_apr24/equations.gms:49`, Module 59 `modules/59_som/cellpool_jan23/equations.gms:51`)
+- `p35_land_restoration` (restoration target, computed in presolve)
 
 **q35_other_restoration** (`equations.gms:30-33`):
 ```gams

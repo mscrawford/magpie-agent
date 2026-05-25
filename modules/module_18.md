@@ -220,7 +220,7 @@ q18_prod_res_reg(i2,kres) ..
 
 **Purpose**: Distributes the regional homogeneous-group residue production across clusters for spatial reporting. The cluster allocation is flexible (no upper bound at cluster level); only the regional sum is constrained.
 
-**Interface variable**: `vm_prod_reg(i,kres)` is consumed by Module 21 (Trade) and Module 16 (Demand). Note: `kres` is a subset of `kall`, so `vm_prod_reg` is the same name reused for residue groups.
+**Interface variable**: `vm_prod_reg(i,kres)` is consumed by Module 21 (Trade) and Module 16 (Demand), Module 20 (Processing; `modules/20_processing/substitution_may21/equations.gms:41`), Module 38 (Factor Costs; `modules/38_factor_costs/sticky_feb18/equations.gms:16`), Module 50 (Nr Soil Budget; `modules/50_nr_soil_budget/macceff_aug22/equations.gms:39`), Module 70 (Livestock; `modules/70_livestock/fbask_jan16/equations.gms:18`), Module 71 (Disagg Lvst; `modules/71_disagg_lvst/foragebased_jul23/equations.gms:37`). Note: `kres` is a subset of `kall`, so `vm_prod_reg` is the same name reused for residue groups.
 
 ---
 
@@ -403,11 +403,11 @@ v18_res_ag_removal.fx(i,nonused18,attributes) = 0;
 | `vm_res_ag_burn` | Burned AG residues | (i, kcr, attributes) | Mio. tX/yr | Module 51 (nitrogen emissions from burned residues), Module 53 (CH4 from burning) — verified 2026-05-24 R5 |
 | `vm_res_recycling` | Recycled nutrients | (i, npk) | Mio. tX/yr | Module 50 (nitrogen and P/K budgets) |
 | `vm_cost_prod_kres` | Residue harvest costs | (i, kres) | Mio. USD17MER/yr | Module 11 (Costs) |
-| `vm_prod_reg` | Regional residue production (kres slice) | (i, kres) | Mio. tDM/yr | Module 21 (Trade), Module 16 (Demand) |
+| `vm_prod_reg` | Regional residue production (kres slice) | (i, kres) | Mio. tDM/yr | Module 21 (Trade), Module 16 (Demand), Module 20 (Processing; `modules/20_processing/substitution_may21/equations.gms:41`), Module 38 (Factor Costs; `modules/38_factor_costs/sticky_feb18/equations.gms:16`), Module 50 (Nr Soil Budget; `modules/50_nr_soil_budget/macceff_aug22/equations.gms:39`), Module 70 (Livestock; `modules/70_livestock/fbask_jan16/equations.gms:18`), Module 71 (Disagg Lvst; `modules/71_disagg_lvst/foragebased_jul23/equations.gms:37`) |
 
 **Source**: `flexreg_apr16/declarations.gms:9-18`.
 
-**Note**: `vm_prod_reg` is also declared in Module 17 (for crops); the residue module uses the `kres` slice. Both modules share the same variable.
+**Note**: the residue module shares the `vm_prod_reg` symbol with the production module (`module_17.md`) — that module handles the `kcr` (crop) slice while this module handles the `kres` (residue) slice.
 
 ### Used by Module 18
 

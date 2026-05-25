@@ -327,7 +327,9 @@ Only 2-3 connections per module, minimal integration with core system.
 - Land (10) - 18 consumers (union across `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`, `pcm_land`, etc.)
 - Production (17) - 13 consumers (union across `vm_prod`, `vm_prod_reg`)
 - GHG policy (56) - 13 consumers
-- Yields (14) - 3 consumers (`vm_yld`, `pm_yields_semi_calib` consumed by 17, 30, 31) + circular deps
+- Yields (14) - 3 consumers + circular deps:
+  - `vm_yld`: consumed by croparea (30) (`modules/30_croparea/simple_apr24/equations.gms:15`), past (31) (`modules/31_past/endo_jun13/equations.gms:18`)
+  - `pm_yields_semi_calib`: consumed by production (17) (`modules/17_production/flexreg_apr16/presolve.gms:10`)
 
 ### 8. Recommendations
 

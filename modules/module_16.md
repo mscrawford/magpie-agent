@@ -565,7 +565,7 @@ Hypothetical cell with balance flow problem:
 - **Module 21** (Trade): `vm_supply` - regional supply/demand for trade flow calculation (PRIMARY CONNECTION)
 - **Module 60** (Bioenergy): `vm_dem_seed` - seed demand (constraints on bioenergy crops)
 - **Module 20** (Processing): `vm_supply` - total supply available for processing
-- **Module 18** (Residues): `vm_supply` - residue supply for various uses
+- **Module 18** (Residues): `vm_supply` - residue supply for various uses; **Module 21** (Trade): `modules/21_trade/selfsuff_reduced/equations.gms:14`
 - **Module 55** (AWMS): `vm_dem_food`, `vm_supply` - food system flows for nutrient accounting
 - **Module 50** (Nitrogen): `vm_supply`, `vm_dem_seed` - commodity flows for nitrogen budgets
 - **Module 32** (Forestry): `vm_supply` - forestry product demand

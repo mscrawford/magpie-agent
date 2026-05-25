@@ -74,7 +74,7 @@ q30_prod(j2,kcr) ..
 - `w`: Water management (rainfed, irrigated)
 
 **Interface**:
-- **Uses**: `vm_yld(j,kcr,w)` from Module 14 (Yields)
+- **Uses**: `vm_yld(j,kcr,w)` from Module 14 (Yields); also used by Module 31 (Pasture) (`modules/31_past/endo_jun13/equations.gms:18`)
 - **Provides**: `vm_prod(j,kcr)` to Module 17 (Production), Module 18 (Residues)
 
 **Description**: This is the fundamental production identity. It sums rainfed and irrigated production for each crop in each cell. The yield data comes from Module 14's calibration system (LPJmL → FAO).
