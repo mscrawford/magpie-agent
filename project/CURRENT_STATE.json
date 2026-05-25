@@ -1,7 +1,10 @@
 {
-  "_comment": "\ud83d\udea8 THIS IS THE SINGLE SOURCE OF TRUTH FOR ALL PROJECT STATUS \ud83d\udea8",
-  "_instructions": "Update this file after completing work. Do NOT update README.md or modules/README.md with status information.",
+  "_status": "FROZEN v1.0 SNAPSHOT \u2014 NOT current state",
+  "_comment": "This file was the SSOT through 2026-03-07 (v1.0 release). The SSOT convention is retired as of 2026-05-25 (R6 audit Cluster A). For current state, see: audit/validation_rounds.json (24+ semantic validation rounds), audit/pipeline_audit_rounds.json (6+ structural pipeline audits), project/sync_log.json (MAgPIE sync state), audit/global/agent_lessons.md (system-wide lessons), and the git commit log. This file is kept in place as a historical v1.0 marker; the numbers below (10 helpers, 6 commands, 13-round flywheel, etc.) reflect 2026-03-07 reality and have since grown substantially.",
+  "_instructions": "Do NOT update this file. It is a frozen v1.0 snapshot. Edit live state via the audit/ artifacts listed in _comment.",
   "project": "MAgPIE AI Documentation",
+  "snapshot_date": "2026-03-07",
+  "snapshot_version": "1.0",
   "last_updated": "2026-03-07",
   "version": "4.0",
   "current_phase": {

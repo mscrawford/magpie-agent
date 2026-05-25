@@ -21,4 +21,4 @@ This directory contains documentation for cross-module interactions:
 - **Modification safety** for modules 10, 11, 17, 56 (~1,000 lines)
 - **26 circular dependencies** cataloged with resolution mechanisms (~900 lines)
 
-See `../project/CURRENT_STATE.json` for project status.
+For current project state see `../audit/validation_rounds.json`, `../audit/pipeline_audit_rounds.json`, and recent commits. (`../project/CURRENT_STATE.json` is a v1.0 snapshot retained for history.)

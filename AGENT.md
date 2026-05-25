@@ -107,14 +107,14 @@ I'm your AI assistant for the MAgPIE land-use model. I have curated documentatio
 ```
 
 **If working on the MAgPIE AI Documentation Project:**
-1. Read: `README.md` (orientation and session protocol)
-2. Read: `project/CURRENT_STATE.json` (SINGLE source of truth for status, plans, history)
+1. Read: `README.md` (project orientation — note: this is for documentation-project work only, not MAgPIE Q&A)
+2. Read live state from: `audit/validation_rounds.json` (semantic flywheel), `audit/pipeline_audit_rounds.json` (structural audits), `audit/next_session_plan.md` / `audit/get_under_control_plan.md` (open plans), `project/sync_log.json` (MAgPIE sync state), `audit/global/agent_lessons.md` (system-wide lessons), recent commits. (`project/CURRENT_STATE.json` is a v1.0 snapshot, frozen 2026-03-07; not current.)
 3. Ask user: "What should I work on?"
 
 **If answering MAgPIE questions:** Follow the workflow below.
 
-**📍 CRITICAL - Documentation Project Rule:**
-When working on the documentation project, update ONLY `project/CURRENT_STATE.json` (all status, plans, progress). Do NOT update README.md, project/README.md, or modules/README.md (static reference docs).
+**📍 CRITICAL - Git Workflow for AGENT.md:**
+All AI documentation lives in the `magpie-agent/` repo. Edit AGENT.md here (the source), then deploy via `cp AGENT.md ../AGENT.md`. Never commit AI docs from the parent MAgPIE repo.
 
 **📍 CRITICAL - Git Workflow for AGENT.md:**
 All AI documentation lives in the `magpie-agent/` repo. Edit AGENT.md here (the source), then deploy via `cp AGENT.md ../AGENT.md`. Never commit AI docs from the parent MAgPIE repo.

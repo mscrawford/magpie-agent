@@ -1,62 +1,18 @@
 # Module Documentation
 
-**⚠️ FOR CURRENT STATUS: See `../project/CURRENT_STATE.json` ⚠️**
-
-**⚠️ THIS IS A STATIC REFERENCE DOCUMENT - DO NOT UPDATE STATUS HERE ⚠️**
-
----
-
-## Overview
-
-**🎉 PHASE 1 COMPLETE: All 46 MAgPIE modules are now fully documented and verified!**
-
 This directory contains comprehensive documentation for MAgPIE's 46 modules. All documentation follows the "Code Truth" principle: describing ONLY what IS implemented in the code, verified against source files.
 
-**Completion Status**: 46/46 modules (100%) - All fully verified ✅
-**Current Phase**: See `../project/CURRENT_STATE.json` for current status
-
-**For current project status**, see: `../project/CURRENT_STATE.json`
+For current state of the agent and ongoing work, see `../audit/validation_rounds.json`, `../audit/pipeline_audit_rounds.json`, and the git commit log. (`../project/CURRENT_STATE.json` is a v1.0 snapshot retained for history.)
 
 ---
 
-## Module Status
+## Coverage
 
-**✅ ALL 46 MODULES COMPLETE AND FULLY VERIFIED**
+**46/46 modules documented and verified.**
 
-**👉 For detailed module information and project status, see `../project/CURRENT_STATE.json` 👈**
-
-Achievements:
-- ✅ 46/46 modules documented (100%)
-- ✅ All modules fully verified (every equation checked)
-- ✅ Zero errors or rejected modules
-- ✅ 100% Code Truth compliance
-- ✅ Archived to: `../project/CURRENT_STATE.json`
-
----
-
-## Verification Levels Explained
-
-**Current Status**: ALL 46 modules are **Fully Verified** ✅
-
-### Fully Verified (All Current Modules)
-- ✅ Every equation formula checked against source
-- ✅ All parameters verified in declarations and input files
-- ✅ All interface variables confirmed
-- ✅ Complete parameter flow traced
-- ✅ Limitations explicitly stated
-- **Time invested**: 1-2 hours per module
-- **Confidence**: Highest - ready for production use
-
-### Historical Reference: Verification Levels Used During Development
-
-**Spot-Verified** (no longer applicable - all upgraded to full):
-- Quick quality check method (5-30 minutes)
-- Used during recovery phase
-- All spot-verified modules have been upgraded to fully verified
-
-**Not Started** (no longer applicable - all complete):
-- Used for tracking undocumented modules
-- All 46 modules now complete
+Each module has:
+- `module_XX.md` — the main documentation (purpose, equations, parameters, dependencies, limitations)
+- `module_XX_notes.md` — sidecar for user-feedback warnings/lessons/examples (only created for modules where notes exist; absence is the correct signal)
 
 ---
 
@@ -64,105 +20,74 @@ Achievements:
 
 Each module documentation includes:
 
-1. **Purpose & Overview** - What the module does
-2. **Mechanisms & Equations** - How it works (with file:line citations)
-3. **Parameters & Data** - Input data and defaults
-4. **Dependencies** - Interface variables (cross-referenced with Phase 2)
-5. **Code Truth: What Module DOES** - Actual implementation
-6. **Code Truth: What Module Does NOT** - Explicit limitations
-7. **Common Modifications** - How to modify behavior
-8. **Testing & Validation** - Verification approaches
-9. **Summary** - Quick reference
-10. **AI Agent Response Patterns** - Query routing
+1. **Purpose & Overview** — What the module does
+2. **Mechanisms & Equations** — How it works (with file:line citations)
+3. **Parameters & Data** — Input data and defaults
+4. **Dependencies** — Interface variables (cross-referenced with `../core_docs/Module_Dependencies.md`)
+5. **Code Truth: What Module DOES** — Actual implementation
+6. **Code Truth: What Module Does NOT** — Explicit limitations
+7. **Common Modifications** — How to modify behavior
+8. **Testing & Validation** — Verification approaches
+9. **Summary** — Quick reference
+10. **AI Agent Response Patterns** — Query routing
 
----
-
-## Quality Metrics
-
-**All 46 Modules - Fully Verified**:
-- Total documentation: ~50,000+ lines
-- Average per module: ~1,100 lines, 60+ citations
-- All equations verified against source code
-- Zero invented features or speculation
-- 100% Code Truth compliance
-- Every module cites specific file:line references
-- All limitations explicitly documented
+Doc-vs-code accuracy is mechanically guarded by `scripts/validate_consistency.sh` (40 checks across naming, citations, realizations, variables, equations, dependencies). The semantic-flywheel rounds (`../audit/validation_rounds.json`) probe doc accuracy from the answer side.
 
 ---
 
 ## How to Use This Documentation
 
-### For Understanding Modules
-1. Read module documentation file
-2. Check verification status (fully vs. spot)
-3. Note limitations in "Code Truth: What Module Does NOT" section
+### For understanding modules
+1. Read `module_XX.md`.
+2. Also read `module_XX_notes.md` if it exists (it carries user-feedback warnings).
+3. Note limitations in the "Code Truth: What Module Does NOT" section.
 
-### For Modifying Code
-1. Read module documentation
-2. Check `../core_docs/Module_Dependencies.md` for dependencies
-3. Verify interface variables in source code
-4. Use "Common Modifications" section as starting point
+### For modifying code
+1. Read `module_XX.md`.
+2. Check `../core_docs/Module_Dependencies.md` for downstream consumers.
+3. Check `../cross_module/modification_safety_guide.md` for high-centrality modules.
+4. Verify interface variables in source code.
+5. Use "Common Modifications" as a starting point.
 
-### For AI Agents
-- Use `AGENT.md` for query routing
-- Check verification status before citing module details
-- Always cite file:line from module documentation
+### For AI agents
+- Follow `AGENT.md` workflow.
+- Always cite `file:line` from the underlying GAMS source for high-stakes claims (not just from the doc, which can drift).
+- Check the active realization before answering about modules with multiple realizations (`AGENT.md` Step 1c).
 
 ---
 
 ## Module Categories (Reference)
 
-**Category Organization** (for reference only, see `../project/CURRENT_STATE.json` for completion status):
+- **Drivers & Land**: 09, 10
+- **Economics**: 11, 12, 36, 37, 38, 39
+- **Food**: 15, 16
+- **Environmental**: 22, 35, 50, 58, 59
+- **Forestry**: 32, 73
+- **Core Hubs**: 11, 17, 56
+- **Water Cluster**: 40, 41, 42, 43, 44
+- **Emissions**: 51-57
+- **Other**: 13, 14, 18, 20, 21, 28-31, 34, 60, 62, 70-71, 80
 
-- **Drivers & Land**: Modules 09, 10
-- **Economics**: Modules 12, 36, 37, 38, 39
-- **Food**: Module 15
-- **Environmental**: Modules 22, 35, 50, 58, 59
-- **Forestry**: Module 73
-- **Core Hubs**: Modules 11, 17, 56
-- **Water Cluster**: Modules 40, 41, 42, 43, 44
-- **Emissions**: Modules 51-57
-- **Other**: Modules 13, 14, 16, 18, 20, 21, 28-32, 34, 60, 62, 70-71, 80
+(Full canonical list with descriptions in `../core_docs/Core_Architecture.md` §4.2.)
 
 ---
 
 ## Quick Commands
 
 ```bash
-# Count verified modules
-ls -1 module_*.md | wc -l
+# Count module files
+ls -1 module_*.md | wc -l   # 46 plus _notes.md sidecars
 
 # List all modules
 ls -1 module_*.md
 
-# Check module status
-cat ../project/CURRENT_STATE.json | grep -A 10 "\"XX\""
-
 # Verify equation count for module XX
 grep "^[ ]*qXX_" ../../modules/XX_*/*/declarations.gms | wc -l
+
+# Run the consistency validator
+bash ../scripts/validate_consistency.sh
 ```
 
 ---
 
-## Next Steps
-
-**Phase 1 Complete!** All modules are documented and verified.
-
-**Current Focus**: Phase 2 - Cross-Module Analysis
-- Conservation laws (land, water, carbon, nitrogen, food)
-- Common workflows (add crop, modify yields, implement policies)
-- Dependency analysis (circular dependencies, cascade effects)
-- Emergent behaviors (solver patterns, constraint binding)
-
-**For New Sessions**:
-1. **Check `../project/CURRENT_STATE.json` for priorities** ← Start here!
-2. Read `AGENT.md` for agent behavior
-3. Work on tasks from `CURRENT_STATE.json`
-
-**All priorities and next steps are tracked in `../project/CURRENT_STATE.json` (not in this file)**
-
----
-
-**Quality Standard**: "Code Truth" - Describe only what IS implemented in the code
-
-**This is a STATIC reference document. For current project status, module counts, and priorities, see `../project/CURRENT_STATE.json`**
+**Quality Standard**: "Code Truth" — describe only what IS implemented in the code, verified by `file:line` against the GAMS source.
