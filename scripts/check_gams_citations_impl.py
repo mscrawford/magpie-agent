@@ -244,20 +244,45 @@ def main():
                         f"  LINE: {gms_hint}:{line_num} (file has {total_lines} lines, +{delta}, range-{label}) in {doc_short}"
                     )
 
-        # Content-match check (Pattern 12)
+        # Content-match check (Pattern 12 + R6 Phase 1 1d fingerprint hardening)
         if start <= total_lines and nearby_ids:
-            # Window: cited start line ±5 (or start..end for ranges)
-            check_start = max(1, start - 5)
-            check_end = min(total_lines, (end if end else start) + 5)
-            window_text = "\n".join(lines[check_start - 1:check_end])
+            # Tight window: cited start line ±5 (or start..end for ranges).
+            # If a backticked identifier is NOT in this window, scan wider
+            # (±50 lines) and report where it actually lives so the reviewer
+            # can update the citation. Turns "advisory warn" into "warn with
+            # suggested fix".
+            tight_start = max(1, start - 5)
+            tight_end = min(total_lines, (end if end else start) + 5)
+            tight_text = "\n".join(lines[tight_start - 1:tight_end])
             for gid in nearby_ids:
-                if gid not in window_text:
-                    # Only WARN — false positives possible (identifier referenced
-                    # by name in prose but not in the cited equation block)
-                    content_miss += 1
+                if gid in tight_text:
+                    continue
+                # Wider scan ±50 lines for the actual location of `gid`
+                wide_start = max(1, start - 50)
+                wide_end = min(total_lines, (end if end else start) + 50)
+                actual_lines = []
+                for i in range(wide_start, wide_end + 1):
+                    if i - 1 < len(lines) and re.search(rf"\b{re.escape(gid)}\b", lines[i - 1]):
+                        actual_lines.append(i)
+                content_miss += 1
+                if actual_lines:
+                    # Report the closest occurrence + delta
+                    closest = min(actual_lines, key=lambda x: abs(x - start))
+                    delta = closest - start
+                    sign = "+" if delta > 0 else ""
                     warnings.append(
-                        f"  CONTENT: `{gid}` not found within {gms_hint}:{check_start}-{check_end} "
-                        f"(cited from {doc_short}). Possible Pattern 12 citation mismatch."
+                        f"  CONTENT: `{gid}` not found within {gms_hint}:{tight_start}-{tight_end} "
+                        f"(cited from {doc_short}); actual occurrence(s) at line(s) "
+                        f"{actual_lines[:3]}{'...' if len(actual_lines) > 3 else ''} "
+                        f"(closest delta {sign}{delta} from cited start). "
+                        f"Likely Pattern 10/12 citation drift — update citation to ~:{closest}."
+                    )
+                else:
+                    warnings.append(
+                        f"  CONTENT: `{gid}` not found within {gms_hint}:{tight_start}-{tight_end} "
+                        f"(cited from {doc_short}); also absent ±50 lines around start. "
+                        f"Possible identifier rename, file restructure, or false-positive "
+                        f"(identifier referenced by name in prose, not in cited block)."
                     )
 
         if start <= total_lines and (not end or end <= total_lines):
