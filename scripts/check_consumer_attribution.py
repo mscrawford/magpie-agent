@@ -84,6 +84,30 @@ CRITICAL_CONSUMERS_RE = re.compile(
     r"\s*\((?P<count>\d+)\s*modules?\s+total\)"
 )
 
+# Pattern D (R6 Phase 1 1b): inline-prose consumer attribution with parenthesized
+# module numbers. Examples this catches:
+#   "consumed by 7 downstream modules: cropland (29), residues (18), ..."
+#   "Upstream: Emission modules (51-55), Forestry CDR (32), ..."
+# The key signal: a backticked vm_*/pm_*/etc identifier in the same paragraph
+# followed by one or more "Name (NN)" patterns where NN is a module number.
+#
+# We extract:
+#   - The identifier (variable in the discussion)
+#   - Each (module_label, module_num) pair from the surrounding prose
+# Then verify each module_num against the grep-derived consumer set.
+# Accept both Title Case ("Land (10)") and lowercase ("cropland (29)") labels
+# preceding a parenthesized 2-digit module number. The lookbehind requires a
+# word boundary or comma/colon (so "shifted by 5 (loss)" doesn't false-match).
+PROSE_MODULE_NUM_RE = re.compile(
+    r"(?:^|[,:;]\s*|\b)([A-Za-z][A-Za-z _]{2,30}?)\s*\((\d{2})(?:-\d{2})?\)"
+)
+# Triggering language that indicates we're in a consumer-attribution sentence
+# (not just any list of (NN) parentheticals). Conservative to avoid FP.
+PROSE_TRIGGER_RE = re.compile(
+    r"\b(consumed by|reads?|consumes?|uses?|fed (?:by|into)|provided to|provides to|downstream|upstream|critical for|aggregated from|combined from|sourced from)\b",
+    re.IGNORECASE,
+)
+
 # Declarations.gms variable-declaration line. Leading whitespace optional
 # (some modules indent, some don't — e.g. 17_production/flexreg_apr16). The
 # description token after the dims is required so plain variable references
@@ -279,6 +303,99 @@ def scan_critical_consumers(
     return findings
 
 
+def scan_prose_attribution(
+    text: str,
+    rel_path: str,
+    producers: dict[str, str],
+    consumers: dict[str, set[str]],
+) -> list[tuple[str, int, str, str, str]]:
+    """Pattern D — LINE-level attribution (R6 Phase 1 1b).
+
+    Goal: catch the R24 Q4-B4 pattern where prose lists module names with
+    parenthesized module numbers as consumers of a backticked variable, and
+    one or more of those modules don't actually grep-hit the variable.
+
+    Anchored to LINE level (not paragraph) to avoid producer-centric
+    "Land (10) — 18 consumers across `vm_land`..." false positives. The
+    required pattern on a single line:
+      (a) a backtick-quoted interface variable
+      (b) a CONSUMER-direction trigger word ("consumed by", "reads", etc.)
+      (c) one or more "Name (NN)" parenthesized module-number patterns
+
+    Also: skips the module whose number matches the variable's producer
+    (a producer appearing in its own attribution list is correct).
+
+    Returns: (file, lineno, var_token, module_label, module_num_str).
+    """
+    # CONSUMER-direction triggers only. Bi-directional words like "downstream"
+    # and "critical for" go in both directions and create FPs in producer-centric
+    # tables. Keep only words that unambiguously claim consumption.
+    consumer_direction = re.compile(
+        r"\b(consumed by|reads?|consumes?|uses?|fed (?:by|into)|sourced from)\b",
+        re.IGNORECASE,
+    )
+    findings: list[tuple[str, int, str, str, str]] = []
+    # Build a module_num -> module_dir lookup
+    consumer_module_dirs: set[str] = set()
+    for dirs in consumers.values():
+        consumer_module_dirs.update(dirs)
+    for d in producers.values():
+        if d:
+            consumer_module_dirs.add(d)
+    num_to_dir: dict[str, str] = {}
+    for d in consumer_module_dirs:
+        if "_" in d:
+            num = d.split("_", 1)[0]
+            if num.isdigit():
+                num_to_dir[num] = d
+
+    # Phrases that mark historical-reference text (R24-fix explanations,
+    # changelog entries, etc.). When present in the line we skip — the bug
+    # is being described, not committed.
+    historical_marker = re.compile(
+        r"\b(earlier wording|previously listed|prior wording|before fix|stale wording|correction|misattributed|R\d+ audit|R\d+ correction|removed in R\d+)\b",
+        re.IGNORECASE,
+    )
+
+    for lineno, line in enumerate(text.splitlines(), 1):
+        if not consumer_direction.search(line):
+            continue
+        if historical_marker.search(line):
+            continue
+        # Find backtick-quoted identifiers in this LINE
+        idents = []
+        for m in re.finditer(r"`([a-z][\w]+(?:\([^)]*\))?)`", line):
+            base = strip_dims(m.group(1))
+            if is_interface_var(base):
+                idents.append(base)
+        if not idents:
+            continue
+        # Find Name (NN) patterns on the SAME line
+        nn_pairs = []
+        for m in PROSE_MODULE_NUM_RE.finditer(line):
+            label = m.group(1).strip()
+            num = m.group(2)
+            if len(label) < 3:
+                continue
+            nn_pairs.append((label, num))
+        if not nn_pairs:
+            continue
+        for var in set(idents):
+            actual_consumers_dirs = consumers.get(var, set())
+            actual_consumer_nums = {d.split("_", 1)[0] for d in actual_consumers_dirs if "_" in d}
+            producer_dir = producers.get(var, "")
+            producer_num = producer_dir.split("_", 1)[0] if "_" in producer_dir else ""
+            for label, num in nn_pairs:
+                if num not in num_to_dir:
+                    continue
+                # Allow producer to be mentioned in its own attribution list
+                if num == producer_num:
+                    continue
+                if num not in actual_consumer_nums:
+                    findings.append((rel_path, lineno, var, label, num))
+    return findings
+
+
 def main() -> int:
     args = sys.argv[1:]
     summary_only = "--summary-only" in args
@@ -319,6 +436,17 @@ def main() -> int:
 
         for path, lineno, var, claimed, expected in scan_critical_consumers(text, rel, producers, consumers):
             all_findings.append((path, lineno, var, claimed, expected, "critical_consumers"))
+
+    # Pattern D — prose attribution (R6 Phase 1 1b). Collect into a SEPARATE list
+    # since its output shape is different (no claimed/expected count — instead
+    # per-module-attribution findings).
+    prose_findings: list[tuple[str, int, str, str, str]] = []
+    for doc in scopes:
+        if not doc.is_file():
+            continue
+        text = doc.read_text(encoding="utf-8", errors="ignore")
+        rel = str(doc.relative_to(AGENT_DIR))
+        prose_findings.extend(scan_prose_attribution(text, rel, producers, consumers))
 
     # Triage findings
     mismatches: list[tuple[str, int, str, int, int, str]] = []  # expected non-None and != claimed
@@ -372,6 +500,23 @@ def main() -> int:
             print(f"  {path}:{lineno}  `{var}` claims {claimed} [{kind}]")
         if len(ambiguous) > 20:
             print(f"  ... and {len(ambiguous) - 20} more")
+
+    # Pattern D output
+    print()
+    if prose_findings:
+        print(f"⚠️  Pattern D prose attribution: {len(prose_findings)} module(s) listed but NOT direct consumers:")
+        if summary_only:
+            from collections import Counter
+            counts = Counter(f[0] for f in prose_findings)
+            for doc, n in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:10]:
+                print(f"  {doc}: {n}")
+        else:
+            for path, lineno, var, label, num in sorted(prose_findings)[:30]:
+                print(f"  {path}:{lineno}  `{var}` lists M{num} ({label}) but M{num}_* has no grep-hit")
+            if len(prose_findings) > 30:
+                print(f"  ... and {len(prose_findings) - 30} more")
+    else:
+        print("✅ Pattern D prose attribution: all listed modules grep-verify")
 
     # Advisory exit: always 0. Mismatches surface via output text.
     return 0
