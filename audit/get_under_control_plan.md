@@ -1,7 +1,7 @@
 # Plan: get the bomb rate under control + clean up the doc surface
 
 **Created**: 2026-05-24 (post-R24 conversation)
-**Status**: ☑ Phase 0 (2026-05-25)  ☐ Phase 1  ☐ Phase 2  ☐ Phase 3  ☐ Phase 4
+**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☐ Phase 2  ☐ Phase 3  ☐ Phase 4
 **Target completion (Phases 0-3)**: ~3-4 focused sessions over 1-2 weeks
 
 ## Executive summary
@@ -192,3 +192,22 @@ Effort: actual ~10-12h compute (vs synthesis estimate 15-17h). Below estimate be
 - C2-extension: M11/M17/M21/M32/M52 backfill from validation rounds — per synthesis recommendation, these stay deleted unless future use surfaces warnings worth recording.
 
 **Next**: Phase 1 (mechanize uncovered semantic bug classes — units check, prose consumer attribution, one-hop reads, citation content fingerprint). Awaits user direction on when to start.
+
+**Session 2 — 2026-05-25 — Phase 1 (mechanize uncovered semantic bug classes) — COMPLETE**
+
+- 1c (MANDATE 17 one-hop reads): added to verifiers.md + AGENT.md Step 1d short-index. Catches the R24 Q4-B3 class where consumption is attributed to a module that reads only an aggregate (e.g., M30 -> M29 aggregate -> M52/M56, NOT M30 -> M52/M56 direct). Commit 2df4520.
+
+- 1a (check_units.py NEW): scans declarations.gms for canonical `(unit)` parentheticals, cross-references module_XX.md prose unit claims. Catches R24 Q1-B3 class (Tg vs Mg, USD17MER vs USD, etc.). 1301 canonical identifiers indexed; 40 doc claims scanned per run; ~5 advisory mismatches surfaced initially (some legitimate abbreviations, some worth tightening). Wired as advisory Check 26/26 in validate_consistency.sh. Commit e5d4aaa.
+
+- 1b (check_consumer_attribution.py EXTENDED with Pattern D): line-level prose attribution checker. Catches R24 Q4-B4 class ("vm_X consumed by: name (NN), ..." where one of the NN doesn't grep-hit). Filters: consumer-direction trigger words only (excludes "downstream"/"critical for"), historical-marker skip ("R24 correction"/"earlier wording"), producer exclusion. Verified: catches synthesized pre-fix R24 bug; 0 FPs on current corpus. Commit 9b8260a.
+
+- 1d (check_gams_citations_impl.py HARDENED with fingerprint): when a backticked identifier is not within the cited ±5 window, scans ±50 lines, reports actual location + delta, suggests update target. Turned "warn-only" into "warn + suggested fix". Surfaced 4 advisory findings: 2 real drifts (module_52.md s32_aff_plantation off-by-1 in 3 citations — fixed in commit 6f734a4; module_14.md vm_tau contrastive-phrase FP), 2 pedagogical FPs in Bug_Taxonomy.md. Commit 957ef9c.
+
+Phase 1 takeaway: 4 new mechanizations (3 script extensions + 1 MANDATE doc), 1 real doc-drift bug surfaced and fixed (M52 citation off-by-1), validator count 25 -> 26 main checks. The flywheel pattern continues to work — Phase 0 audit findings → Phase 1 mechanizations → ongoing prospective coverage.
+
+**Deferred / open**:
+- check_units.py FP rate (~40% on initial run) — could tighten further by adding contrastive-phrase filter or a unit-token denylist. Acceptable for advisory tier.
+- Pattern D multi-cite cross-pollination (one citation in a multi-cite line picks up nearby backticked ids meant for sibling cites). Structural limit of the line-level heuristic.
+- M14 vm_tau contrastive-phrase finding (acknowledged false positive).
+
+**Next**: Phase 2 (sweep M30/M80/M11 known-fragile docs — pre-sweep with Phase 1 validators first per plan). Awaits user direction.
