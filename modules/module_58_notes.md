@@ -1,6 +1,5 @@
 # Module 58 (Peatland) — User Notes & Warnings
 
-**Last updated**: 2026-03-06
 **Source**: Deep validation session + comprehensive scalar analysis
 
 ---

@@ -1,7 +1,6 @@
 # Helper: Interpreting MAgPIE Outputs
 
 **Auto-load triggers**: "model output", "run results", "fulldata.gdx", "postsolve", "report.mif", "understand results"
-**Last updated**: 2026-03-06
 **Lessons count**: 1 entries
 
 ---

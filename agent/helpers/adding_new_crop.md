@@ -1,7 +1,6 @@
 # Helper: Adding a New Crop to MAgPIE
 
 **Auto-load triggers**: "add crop", "new crop type", "add commodity", "extend crop set", "new product", "crop type"
-**Last updated**: 2026-03-06
 **Lessons count**: 1 entries
 
 ---

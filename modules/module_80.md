@@ -3,7 +3,6 @@
 **Status**: Fully Verified
 **Realization**: nlp_apr17 (default), lp_nlp_apr17, nlp_ipopt, nlp_par
 **Equations**: 0 (pure solver module, no model equations defined)
-**Last Updated**: 2026-05-16
 
 ---
 

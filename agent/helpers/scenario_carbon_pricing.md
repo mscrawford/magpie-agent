@@ -1,7 +1,6 @@
 # Helper: Setting Up Carbon Pricing Scenarios
 
 **Auto-load triggers**: "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget"
-**Last updated**: 2026-03-06
 **Lessons count**: 2 entries
 
 ---

@@ -1,7 +1,6 @@
 # Helper: Documentation Maintenance Protocol
 
 **Auto-load triggers**: "maintenance", "keep docs current", "docs outdated", "documentation drift", "update docs", "stale documentation", "doc maintenance"
-**Last updated**: 2026-03-07
 **Lessons count**: 0 entries
 
 ---

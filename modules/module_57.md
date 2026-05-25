@@ -801,7 +801,6 @@ Module 57 is a **cost bridge** between GHG policy and emission modules:
 ---
 
 **Documentation Complete**: Module 57 (MACCs) — 100% verified, zero errors
-**Last Updated**: 2025-10-12
 ---
 
 

@@ -8,7 +8,6 @@
 > of the AVAILABLE realizations to use (the comparison/selection task), not
 > identifying-what-is-default. R5 audit 2026-05-24 separation.
 
-**Last updated**: 2026-05-24
 **Lessons count**: 1 entries
 
 ---

@@ -794,7 +794,6 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 
 ---
 
-**Last Updated**: 2026-05-16 (PR #866 sync — split of *vm_cost_trade* into three interface variables; bilateral22 rewrite)
 **Verified Against**:
 - `../modules/21_trade/selfsuff_reduced/{declarations,equations,preloop,presolve,postsolve,sets,input,scaling}.gms`
 - `../modules/21_trade/exo/{declarations,equations,presolve,postsolve,realization,sets,input}.gms`

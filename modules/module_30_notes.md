@@ -1,6 +1,5 @@
 # Module 30 (Croparea) — User Notes & Warnings
 
-**Last updated**: 2026-03-06
 **Source**: Deep validation session
 
 ---

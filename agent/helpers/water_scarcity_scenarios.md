@@ -1,7 +1,6 @@
 # Helper: Water Scarcity Scenarios
 
 **Auto-load triggers**: "water", "water scarcity", "irrigation", "water availability", "water demand", "water constraint", "groundwater", "environmental flow"
-**Last updated**: 2025-07-18
 **Lessons count**: 0 entries
 
 ---

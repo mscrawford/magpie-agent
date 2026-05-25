@@ -974,4 +974,4 @@ lossrate = 1 - 0.85^years
 **Document Status**: ✅ Complete
 **Verified Against**: MAgPIE 4.x source code and module documentation
 **Created**: 2025-10-22
-**Last Updated**: 2025-10-22
+_Conservation-law structure verified against MAgPIE 4.x architecture; underlying module equations re-verified as of last GAMS sync (see `../project/sync_log.json`)._

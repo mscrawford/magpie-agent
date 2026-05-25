@@ -1,7 +1,6 @@
 # Helper: Comparing MAgPIE Model Runs
 
 **Auto-load triggers**: "compare runs", "compare scenarios", "model comparison", "output comparison", "multiple runs", "scenario comparison", "diff runs"
-**Last updated**: 2025-07-18
 **Lessons count**: 0 entries
 
 ---

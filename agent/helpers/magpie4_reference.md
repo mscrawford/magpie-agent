@@ -1,7 +1,6 @@
 # Helper: magpie4 Reference (R post-processing package)
 
 **Auto-load triggers**: "magpie4", "getReport", "magpie4::", "report.mif variable", "IAMC variable", "which magpie4 function", "magpie4 R function", any concrete `report<X>` function name (e.g., "reportEmissions", "reportLandUse", "reportCosts", ...), or an IAMC-style pipe-delimited variable name (e.g., `Emissions|N2O|Land`, `Land Cover|Cropland`)
-**Last updated**: 2026-05-24
 **Lessons count**: 0 entries
 
 ---

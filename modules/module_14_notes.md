@@ -1,6 +1,5 @@
 # Module 14 (Yields) — User Notes & Warnings
 
-**Last updated**: 2026-05-17
 **Source**: Deep validation session; 2026-05-17 LPJmL-yields audit
 
 ---

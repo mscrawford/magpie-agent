@@ -40,7 +40,6 @@ Every helper follows this structure:
 # Helper: [Title]
 
 **Auto-load triggers**: [keyword list]
-**Last updated**: [date]
 **Lessons count**: [N entries]
 
 ---

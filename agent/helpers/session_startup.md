@@ -1,7 +1,6 @@
 # Helper: Session Startup Context
 
 **Auto-load triggers**: ALWAYS — load at every session start (not keyword-triggered)
-**Last updated**: 2026-03-06
 **Lessons count**: 0 entries
 
 ---

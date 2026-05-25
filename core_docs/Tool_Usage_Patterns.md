@@ -2,7 +2,6 @@
 
 **Purpose**: Best practices for using AI assistant tools effectively and reliably when working with MAgPIE
 
-**Last Updated**: 2025-11-29
 
 ---
 

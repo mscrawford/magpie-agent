@@ -1100,7 +1100,6 @@ Module 29 (Cropland) ──→ vm_treecover(j) ──→ Module 59 (SOM)
 
 ---
 
-**Last Updated**: 2025-10-12
 **Lines Analyzed**: 124 (equations.gms) + 103 (input.gms) + 17 (sets.gms) + 131 (presolve.gms) + 69 (preloop.gms) = 444 lines
 **Verification Status**: 100% verified
 

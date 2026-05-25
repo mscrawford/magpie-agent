@@ -1,6 +1,5 @@
 # Module 29 (Cropland) — User Notes & Warnings
 
-**Last updated**: 2026-04-20
 **Source**: Deep validation session; 2026-04-20 sync with MAgPIE develop (PR #869)
 
 ---

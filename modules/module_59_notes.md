@@ -1,6 +1,5 @@
 # Module 59 (Soil Organic Matter) — User Notes & Warnings
 
-**Last updated**: 2026-03-06
 **Source**: Deep validation session
 
 ---

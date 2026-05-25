@@ -1,7 +1,6 @@
 # Helper: Setting Up Diet Change Scenarios
 
 **Auto-load triggers**: "diet", "EAT-Lancet", "food demand", "livestock reduction", "food waste", "dietary change", "BMI", "food scenario"
-**Last updated**: 2026-03-06
 **Lessons count**: 1 entries
 
 ---

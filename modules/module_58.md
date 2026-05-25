@@ -6,7 +6,6 @@
 **Lines of Code**: 608 (v2 realization)
 **Authors**: Florian Humpenöder, Debbora Leip
 **Documentation Status**: ✅ Verified against source code
-**Last Updated**: October 12, 2025
 
 ---
 

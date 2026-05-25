@@ -2,7 +2,6 @@
 
 **Status**: 100% Verified
 **Version**: `simple_apr24` (default) | `detail_apr24` (alternative)
-**Last Updated**: 2025-10-12
 **Lines of Code**: ~650 (detail_apr24 realization)
 **Equations**: 9 (simple_apr24 default) | 12 (detail_apr24); 13 unique equation names across both realizations
 

@@ -1,7 +1,6 @@
 # Helper: Modification Impact Analysis
 
 **Auto-load triggers**: "modify", "change module", "what breaks", "impact of changing", "safe to modify", "can I change", "extend", "add to module"
-**Last updated**: 2026-03-06
 **Lessons count**: 2 entries
 
 ---
