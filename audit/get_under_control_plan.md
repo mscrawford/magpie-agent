@@ -1,7 +1,7 @@
 # Plan: get the bomb rate under control + clean up the doc surface
 
 **Created**: 2026-05-24 (post-R24 conversation)
-**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☐ Phase 2  ☐ Phase 3  ☐ Phase 4
+**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☑ Phase 2 (2026-05-25)  ☐ Phase 3  ☐ Phase 4
 **Target completion (Phases 0-3)**: ~3-4 focused sessions over 1-2 weeks
 
 ## Executive summary
@@ -211,3 +211,15 @@ Phase 1 takeaway: 4 new mechanizations (3 script extensions + 1 MANDATE doc), 1 
 - M14 vm_tau contrastive-phrase finding (acknowledged false positive).
 
 **Next**: Phase 2 (sweep M30/M80/M11 known-fragile docs — pre-sweep with Phase 1 validators first per plan). Awaits user direction.
+
+**Session 3 — 2026-05-25 — Phase 2 (sweep known-fragile backlog) — COMPLETE**
+
+- 2a (M30 simple_apr24 awareness): pre-sweep with Phase 1 validators revealed the scope was smaller than R3 feared — §§1-2 cite line numbers that happen to match BOTH realizations (q30_prod L14-15, q30_betr_missing L21-23), §§6-8 had no cited line numbers, only §§3-5 (rotational constraints) needed realization-explicit attribution. Minimal-disruption rewrite: dropped R3 warning header; replaced "Core Equations (12 Total)" with "9 in simple_apr24 default / 12 in detail_apr24 alternative"; prefixed §§3-5 Locations with `detail_apr24/`; added realization callouts to §3 (detail-only with reference to §10 for simple_apr24 form), §4 (penalty-based detail-only), §5 (irrigated detail-only); labeled §§6-8 as "(both realizations; different line numbers)". Commit 3fe8b68.
+
+- 2b (M80 nlp_apr17 Parameters table): added missing Parameters subsection between §lp_nlp_apr17 and §nlp_apr17 (between "Key Differences" and the nlp_ipopt section). Tables: 2 declarations + 2 scalars + 4 input scalars all verified against `../modules/80_optimization/nlp_apr17/declarations.gms` + `input.gms`. Comparison-with-lp_nlp_apr17 footer notes the 2+4 vs 4+4 difference reflects no-LP-warmstart simplification. Commit 208c001.
+
+- 2c (M11 §17.2 deep sweep): pre-sweep with Phase 1 validators (`check_units`, `check_consumer_attribution`, `check_doc_var_existence`, `check_gams_citations_impl`) returned 0 findings on M11. Spot-checks of §3 cost-component table citations (vm_cost_prod_crop:15, vm_cost_prod_kres:16, vm_cost_prod_past:17, vm_cost_prod_fish:18, vm_cost_prod_livst:19, vm_cost_fore:33, vm_cost_timber:34, vm_cost_hvarea_natveg:35) all match q11_cost_reg L15-47 directly. §17.2 table re-counted: 32 terms in equation = 31 costs + 1 reward; 27 source modules — exact match to doc's claim. The R3 fix held; no further edits needed. (No commit — verification only.)
+
+Phase 2 takeaway: deferred-since-R3 work closed in a single session. The Phase 1 mechanizations did exactly their job — pre-sweeping with validators scoped the manual work down to what was actually broken, instead of forcing a full re-derivation.
+
+**Next**: Phase 3 (R25 + R26 semantic-flywheel re-measure to confirm bomb rate dropped). Awaits user direction on when to start. Phase 3 will use the existing `/validate-semantic` flow; expected effort ~3h per round.
