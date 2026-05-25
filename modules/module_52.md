@@ -266,7 +266,7 @@ Analogous, but using plantation age distribution `pm_land_plantation(j,ac)` (fro
 Writes a per-region table of `(FRA target NRF, achieved NRF, FRA target plantation, achieved plantation)` to the GAMS log.
 
 **Uncalibrated copies**: `start.gms:43-44` saves `pm_carbon_density_secdforest_ac_uncalib` and `pm_carbon_density_plantation_ac_uncalib` BEFORE preloop overwrites the primary parameters. The copies capture the FULL start-phase state (both `vegc` and `litc` pools, since the assignment indexes on `ag_pools`). These uncalibrated versions are read by:
-- **Module 32 (Forestry)** for afforestation and NDC sub-types: `modules/32_forestry/dynamic_may24/presolve.gms:59,61` (type `"aff"` — `v32_cost_establishment` uses either secdforest or plantation uncalib depending on `s32_aff_plantation`) and `modules/32_forestry/dynamic_may24/presolve.gms:68` (type `"ndc"` — secdforest uncalib)
+- **Module 32 (Forestry)** for afforestation and NDC sub-types: `modules/32_forestry/dynamic_may24/presolve.gms:58,60` (type `"aff"` — `v32_cost_establishment` uses either secdforest or plantation uncalib depending on `s32_aff_plantation`) and `modules/32_forestry/dynamic_may24/presolve.gms:69` (type `"ndc"` — secdforest uncalib)
 - **Module 29 (Cropland)** for tree cover: `modules/29_cropland/detail_apr24/preloop.gms:46,48` — either secdforest or plantation uncalib depending on `s29_treecover_plantation`
 
 **Rationale**: Uncalibrated curves represent the potential Chapman-Richards growth from bare land toward the LPJmL asymptote — appropriate for new establishment scenarios (afforestation, NDC forest commitments, tree cover on cropland). Calibrated curves represent *existing* forests where realized growing stock is already below potential; applying that suppressed growth rate to newly-planted trees would underestimate their accumulation trajectory.
@@ -445,7 +445,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Description**: Uncalibrated secondary forest carbon density (preserved from start.gms before preloop overwrite — captures both vegc and litc pools)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
 - **Calculation**: `start.gms:43` copies the uncalibrated start.gms value
-- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:59` and NDC forest `"ndc"` at `modules/32_forestry/dynamic_may24/presolve.gms:68`), Module 29 (tree cover on cropland at `modules/29_cropland/detail_apr24/preloop.gms:46`). All three use cases represent *new establishment* rather than existing managed forest.
+- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:58` and NDC forest `"ndc"` at `modules/32_forestry/dynamic_may24/presolve.gms:69`), Module 29 (tree cover on cropland at `modules/29_cropland/detail_apr24/preloop.gms:46`). All three use cases represent *new establishment* rather than existing managed forest.
 
 **2. pm_carbon_density_other_ac** (declarations.gms:12)
 - **Description**: Vegetation other land carbon density by age class (tC per ha)
@@ -465,7 +465,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Description**: Uncalibrated plantation carbon density (preserved from start.gms before preloop overwrite — captures both vegc and litc pools)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
 - **Calculation**: `start.gms:44` copies the uncalibrated start.gms value
-- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:61`), Module 29 (tree cover on cropland with plantation growth curve, `modules/29_cropland/detail_apr24/preloop.gms:48` when `s29_treecover_plantation = 1`)
+- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:60`), Module 29 (tree cover on cropland with plantation growth curve, `modules/29_cropland/detail_apr24/preloop.gms:48` when `s29_treecover_plantation = 1`)
 
 **4. fm_carbon_density** (input.gms:16)
 - **Description**: LPJmL carbon density for all land types and carbon pools (tC per ha)
