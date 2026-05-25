@@ -178,6 +178,16 @@ After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic 
 
 This file allows future agents to compute trends: score over time, confabulation rate, calibration-anchor drift, which modules are reliable vs fragile.
 
+### Step 5c: Update probe-dedup ledger (R6 H3)
+
+After Step 5b records the round, run the dedup-check to append new probe names to `audit/probe_dedup_ledger.json` and increment `retirement_eligible_after` per the ledger's `rotation_policy`. This was previously dead — the policy said "next round R22" while actual was R24, meaning R22-R24 names never entered the ledger.
+
+```bash
+python3 scripts/probe_dedup_check.py
+```
+
+The script reads the last round in `validation_rounds.json`, extracts probe names that should enter the ledger, appends them with `retirement_eligible_after = current_round + 3` per policy. If new probes added: commit the ledger update with the round commit.
+
 ### Step 6: Expand Coverage
 
 Update the coverage matrix and design next round's questions to fill gaps:

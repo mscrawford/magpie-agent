@@ -153,6 +153,24 @@ for pkg in ['magpie4', 'gms', 'magclass', 'madrat']:
 grep -E "^cfg\$gms\$c56_pollutant_prices|^cfg\$gms\$c15_food_scenario|^cfg\$gms\$c21_trade_liberalization" ../config/default.cfg 2>/dev/null | head -5
 ```
 
+### Step 5b: Run Syntactic Validator (Layer 1, automated)
+
+Per `agent/helpers/maintenance_protocol.md` Layer 1 — actually run the validator at session start:
+
+```bash
+bash scripts/validate_consistency.sh 2>&1 | tail -3
+```
+
+Wall-time ~2-5 seconds. Three outcomes:
+
+| Result | What to record | Action |
+|---|---|---|
+| `Errors: 0`, `Warnings: 0` | ✅ for the table below | Continue |
+| `Errors: 0`, `Warnings: N` | ✅ (with warning count) | Note in greeting if surfacing maintenance |
+| `Errors: N` (N>0) | ❌ for the table below | **Surface immediately** — investigate before answering MAgPIE questions |
+
+This wires the "Layer 1 (automated, every session)" claim from `maintenance_protocol.md` to an actual execution (closing R6 H1 — previously a dead-convention claim).
+
 ### Step 6: Maintenance Status Summary
 
 Combine all checks into a maintenance health assessment:
@@ -160,7 +178,7 @@ Combine all checks into a maintenance health assessment:
 | Check | Status | Action if Yellow/Red |
 |-------|--------|---------------------|
 | Code sync | 🟢/🟡/🔴 | Run `/sync` |
-| Syntactic validator | ✅/❌ | Run `/validate` |
+| Syntactic validator | ✅/❌ | From Step 5b above; if ❌ run `/validate` for full report |
 | Semantic validation | 🟢/🟡/🔴 | Run `/validate-semantic` |
 | AGENT.md deployment | ✅/❌ | `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md` |
 
