@@ -196,7 +196,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/validate` | Check documentation consistency (syntactic) | Maintainers |
 | `/validate-module` | Validate specific module docs | Maintainers |
 | `/validate-semantic` | Run adversarial semantic accuracy flywheel (scoring spec: `audit/flywheel_rubric.md`) | Maintainers |
-| `/pipeline-audit` | Multi-lens structural audit of the agent's own machinery (6 parallel Opus agents) | Maintainers |
+| `/pipeline-audit` | Multi-lens structural audit of the agent's own machinery (typically 6 parallel Opus agents; per-round lens design may vary — see `audit/pipeline_audit_round{N}_design.md` for the specific round's lens set) | Maintainers |
 
 **Note**: Agent auto-update and AGENT.md deployment happen automatically at session start (see session_startup.md Step 0). Use `/update` when you want to also sync docs with MAgPIE develop and run semantic freshness validation on affected modules.
 
@@ -317,8 +317,17 @@ Before answering code-specific questions, verify documentation is current:
    ```
    Example: `s15_exo_diet = 1` completely changes food demand behavior. If a non-default switch is active, mention it.
 
-**Modules with multiple realizations** (check these before answering):
-13, 18, 21, 29, 30, 31, 34, 37, 38, 40, 41, 42, 44, 51, 53, 55, 58, 59, 60, 70, 71, 80
+**Modules with multiple realizations** (check before answering — dynamic, since the previous static list omitted half the cases including hubs M10/M14/M52/M56):
+
+```bash
+# Run this to see which modules have >1 realization (currently ~40 of 46):
+for m in ../modules/*/; do
+  count=$(ls -d ${m}*/ 2>/dev/null | wc -l)
+  [ "$count" -gt 1 ] && basename "$m" | cut -d_ -f1
+done | tr '\n' ', '
+```
+
+If the user's module appears in that list, run Step 1c. If not (single realization), skip 1c.
 
 ### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 

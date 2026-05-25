@@ -107,4 +107,4 @@ test -f ../AGENT.md && echo "✅ AGENT.md deployed" || echo "❌ AGENT.md missin
 ls agent/commands/*.md | wc -l
 ```
 
-Expected: AGENT.md deployed, 6 command files present
+Expected: AGENT.md deployed, <!--count:n_commands-->10<!--/count--> command files present

@@ -167,7 +167,7 @@ After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic 
 
 ### Step 5b: Record Results
 
-**MANDATORY**: Append results to `audit/validation_rounds.json` (schema v1.1 as of 2026-05-23). This is the persistent record for tracking quality over time. Include:
+**MANDATORY**: Append results to `audit/validation_rounds.json` (schema v<!--count:validation_schema_version-->1.2<!--/count-->; latest entries describe G3/G4 magpie4 regression questions). This is the persistent record for tracking quality over time. Include:
 - Round number, date, commit hashes (before/after)
 - Per-question: topic, modules tested, score, bug counts by severity
 - **Regression questions section**: score the round's regression questions (rotate across G1-G4 per `regression_questions` top-level array; minimum 1 per round). Set `drift_observed=true` if any answer drifted from the expected_answer_summary. Append round number to `used_in_rounds` for each used. For G3 (magpie4 version pin), the auditor must read `project/version_pins.json` directly to compute the expected version/SHA — do NOT score against a hardcoded version, the pin advances when upstream renv.lock updates.

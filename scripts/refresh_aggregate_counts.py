@@ -43,13 +43,19 @@ BUG_TAXONOMY_MD = AGENT_DIR / "core_docs" / "Bug_Taxonomy.md"
 # spread; absence of markers in a listed file is harmless.
 TARGET_FILES = [
     AGENT_DIR / "AGENT.md",
+    AGENT_DIR / "README.md",                                              # R6 E2
     AGENT_DIR / "agent" / "commands" / "validate-semantic.md",
     AGENT_DIR / "agent" / "commands" / "validate.md",
     AGENT_DIR / "agent" / "commands" / "validate-module.md",
     AGENT_DIR / "agent" / "commands" / "pipeline-audit.md",
+    AGENT_DIR / "agent" / "commands" / "bootstrap.md",                    # R6 E2
+    AGENT_DIR / "agent" / "commands" / "guide.md",                        # R6 E2
     AGENT_DIR / "agent" / "helpers" / "verifiers.md",
     AGENT_DIR / "agent" / "helpers" / "maintenance_protocol.md",
+    AGENT_DIR / "agent" / "helpers" / "realization_selection.md",         # R6 E2
+    AGENT_DIR / "agent" / "helpers" / "README.md",                        # R6 E2
     AGENT_DIR / "core_docs" / "Response_Guidelines.md",
+    AGENT_DIR / "cross_module" / "circular_dependency_resolution.md",     # R6 E2
 ]
 
 MARKER_RE = re.compile(r"<!--count:([a-z_]+)-->(.*?)<!--/count-->", re.DOTALL)
@@ -101,6 +107,73 @@ def load_canonical_counts() -> dict[str, str]:
     # supported; parse stdout). Wrapped in try/except so a broken script does
     # not corrupt the whole refresh run.
     counts.update(run_live_counts())
+
+    # 5. R6 E1 — file-system-derived counts that don't need a separate check script.
+
+    # Slash command count
+    cmd_dir = AGENT_DIR / "agent" / "commands"
+    if cmd_dir.is_dir():
+        counts["n_commands"] = str(len(list(cmd_dir.glob("*.md"))))
+
+    # Helper count (excluding README.md)
+    helper_dir = AGENT_DIR / "agent" / "helpers"
+    if helper_dir.is_dir():
+        helpers = [p for p in helper_dir.glob("*.md") if p.name != "README.md"]
+        counts["n_helpers"] = str(len(helpers))
+
+    # Number of modules with multiple realizations (drives Step 1c trigger list)
+    # MAgPIE source is at ../modules/ relative to AGENT_DIR
+    modules_dir = AGENT_DIR.parent / "modules"
+    if modules_dir.is_dir():
+        n_multi = 0
+        for m in sorted(modules_dir.iterdir()):
+            if not m.is_dir() or not m.name[0].isdigit():
+                continue
+            realizations = [r for r in m.iterdir() if r.is_dir() and r.name != "include"]
+            if len(realizations) > 1:
+                n_multi += 1
+        counts["n_modules_multi_realization"] = str(n_multi)
+
+    # validation_rounds.json schema version
+    if VALIDATION_JSON.is_file():
+        with VALIDATION_JSON.open() as f:
+            data = json.load(f)
+        sv = data.get("metadata", {}).get("schema_version")
+        if sv:
+            counts["validation_schema_version"] = str(sv)
+
+    # Aggregate doc word/line totals (excluding archive/cache)
+    DOC_DIRS = [
+        AGENT_DIR / "modules",
+        AGENT_DIR / "core_docs",
+        AGENT_DIR / "cross_module",
+        AGENT_DIR / "reference",
+        AGENT_DIR / "agent",
+    ]
+    total_words = 0
+    total_lines = 0
+    for d in DOC_DIRS:
+        if not d.is_dir():
+            continue
+        for p in d.rglob("*.md"):
+            if "archive" in p.parts:
+                continue
+            try:
+                text = p.read_text()
+            except Exception:
+                continue
+            total_words += len(text.split())
+            total_lines += text.count("\n")
+    # Round to nearest 1000 for stability — small edits shouldn't flap the marker
+    counts["total_doc_words"] = f"~{round(total_words, -3):,}"
+    counts["total_doc_lines"] = f"~{round(total_lines, -3):,}"
+
+    # Number of pipeline-audit rounds run (for /pipeline-audit context)
+    PIPELINE_JSON = AGENT_DIR / "audit" / "pipeline_audit_rounds.json"
+    if PIPELINE_JSON.is_file():
+        with PIPELINE_JSON.open() as f:
+            data = json.load(f)
+        counts["n_pipeline_audit_rounds"] = str(len(data.get("rounds", [])))
 
     return counts
 

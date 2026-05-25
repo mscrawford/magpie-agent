@@ -4,7 +4,9 @@
 
 **Trigger phrases**: "/pipeline-audit", "audit the pipeline", "pipeline audit", "audit the agent's machinery", "structural audit".
 
-**Cost**: 6 parallel Opus sub-agents, one per lens. Substantial — a deep audit, heavier than `/validate-semantic`. Reserve for periodic hardening rounds.
+**Cost**: typically 6 parallel Opus sub-agents, one per lens. Substantial — a deep audit, heavier than `/validate-semantic`. Reserve for periodic hardening rounds.
+
+**Per-round overrides**: the lens set is the typical doc↔code-drift focus described below. Specific rounds may use a different lens design (e.g., R6 used 7 lenses for "Stale-and-Remnant" doc-surface drift — see `audit/pipeline_audit_round6_design.md`). When a round overrides the default, the round design doc explicitly states the lens set and rationale.
 
 **Out of scope**: behavioral answer-quality — that is the semantic flywheel (`audit/validation_rounds.json` + `/validate-semantic`). This audits the *machinery*, not the *answers*.
 
