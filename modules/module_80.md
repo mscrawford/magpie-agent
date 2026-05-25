@@ -302,6 +302,32 @@ Failure (modelstat > 2 and ≠ 7):
 | Land difference minimization | ✅ Yes (after LP and NLP) | ❌ No |
 | Typical use case | Large models (e.g., 200 cells) | Small/medium models or when LP doesn't help |
 
+### Parameters (nlp_apr17)
+
+`nlp_apr17` is the minimal-state realization: just enough scratch parameters to drive the retry loop. No LP-related state, no land-difference accumulator (consistent with the "no LP warmstart, no land-diff minimization" simplifications above).
+
+**Declarations** (`nlp_apr17/declarations.gms:8-13`):
+
+| Parameter | Dimensions | Unit | Description | Reference |
+|-----------|------------|------|-------------|-----------|
+| `p80_modelstat(t)` | time | (1) | Modelstat indicator (1=optimal, 2=locally optimal, >2=infeasible/error) | `nlp_apr17/declarations.gms:9` |
+| `p80_num_nonopt(t)` | time | (1) | Number of non-optimal variables (numNOpt) | `nlp_apr17/declarations.gms:10` |
+| `s80_counter` | scalar | (1) | Iteration counter for retry loop | `nlp_apr17/declarations.gms:13` |
+| `s80_resolve_option` | scalar | (1) | Option for resolve (cycles 1-4 across the 4-config fallback strategy) | `nlp_apr17/declarations.gms:14` |
+
+**Inputs** (`nlp_apr17/input.gms:8-13`):
+
+| Scalar | Default | Unit | Description | Reference |
+|--------|---------|------|-------------|-----------|
+| `s80_maxiter` | 30 | (1) | Maximum solve iterations if modelstat > 2 | `nlp_apr17/input.gms:9` |
+| `s80_optfile` | 1 | (1) | Switch to use specified solver settings (0=default, 1=custom) | `nlp_apr17/input.gms:10` |
+| `s80_secondsolve` | 0 | binary | Enable second solve statement (0=off, 1=on) | `nlp_apr17/input.gms:11` |
+| `s80_toloptimal` | 1e-08 | (1) | CONOPT4 optimality tolerance | `nlp_apr17/input.gms:12` |
+
+**Configuration switches** — `nlp_apr17` is solver-agnostic in the sense that it uses CONOPT4 with the `s80_resolve_option`-driven retry cycle; no separate `c80_nlp_solver` switch (that's lp_nlp_apr17-specific).
+
+**Compared with lp_nlp_apr17**: nlp_apr17 has 2 declarations + 4 inputs vs. lp_nlp_apr17's 4 declarations + 4 inputs. The missing 2 parameters (`s80_obj_linear`, plus the LP-warmstart-specific bookkeeping) reflect nlp_apr17's no-LP-warmstart simplification.
+
 ---
 
 ## Realization: nlp_ipopt (Alternative - Direct NLP with the Ipopt Solver)
