@@ -121,10 +121,12 @@ def add_or_update_timestamp(module_file):
 def main():
     """Process all module files."""
 
-    modules_dir = Path('modules')
+    # Anchor relative to this script's location, not the caller's CWD.
+    # Script lives in scripts/, so modules/ is the parent's modules/ subdir.
+    modules_dir = Path(__file__).resolve().parent.parent / 'modules'
 
     if not modules_dir.exists():
-        print("❌ modules/ directory not found. Run from magpie-agent root.")
+        print(f"❌ modules/ directory not found at {modules_dir}.")
         return
 
     # Get all module_XX.md files (exclude module_XX_notes.md)
