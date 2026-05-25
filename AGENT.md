@@ -2,9 +2,9 @@
 
 **📍 FILE LOCATION NOTE**: You are reading the SOURCE file in `/magpie/magpie-agent/AGENT.md`
 - ✅ **THIS IS THE CORRECT FILE TO EDIT** for AI documentation updates
-- ⚠️ Two deployed copies exist in parent: `../AGENT.md` AND `../CLAUDE.md` — DO NOT EDIT those
-- 🔄 After editing, sync ALL copies: `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md`
-- ⚠️ **CLAUDE.md is critical** — it's what gets loaded into Claude's system prompt!
+- ⚠️ Deployed copies exist in parent: `../AGENT.md` (canonical, tool-agnostic) AND `../CLAUDE.md` (Claude Code's conventional name) — DO NOT EDIT those
+- 🔄 After editing, sync both copies: `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md`
+- ⚠️ **AGENT.md is the canonical name; CLAUDE.md is one deployment target** — Claude Code auto-loads `CLAUDE.md`, but the file content is identical. Other tools (Cursor → `.cursorrules`, Aider → `CONVENTIONS.md`, etc.) can point at `../AGENT.md` directly. Drift between source and ANY deployed copy is a Check-10 validator failure.
 - 📝 Always commit changes to the magpie-agent repo, not the main MAgPIE repo
 
 ---
@@ -24,7 +24,7 @@ When loading `PREPROC_AGENT.md`, follow its session startup instructions (check 
 
 ## ⚠️ Twin-agent disambiguation (READ FIRST when terms below appear)
 
-Two independent agents share this workspace, each with its own flywheel and `audit/validation_rounds.json`. This file (magpie-agent's CLAUDE.md) auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT. Counter that asymmetric prior.
+Two independent agents share this workspace, each with its own flywheel and `audit/validation_rounds.json`. This file (magpie-agent's AGENT.md / CLAUDE.md) auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT. Counter that asymmetric prior.
 
 **Ambiguous terms** — `flywheel`, `round`, `round N`, `validation round`, `verification round`, `validation_rounds.json`, generic `validate` / `validation` without "consistency" or a specific module:
 → **ASK which agent before acting**. Cost of a wrong run is ~1 hour of compute and a polluted validation_rounds.json.
@@ -168,7 +168,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 The two most-confused distinctions:
 
 - `modules/` in current dir = **AI documentation** (markdown, `module_XX.md`) | `../modules/` in parent dir = **MAgPIE GAMS code** (`XX_name/realization/*.gms`). Same word, different meaning.
-- `AGENT.md` in current dir = **SOURCE** (edit this) | `../AGENT.md` and `../CLAUDE.md` in parent dir = **DEPLOYED COPIES** (auto-deployed; `../CLAUDE.md` is what Claude actually reads — drift between source and copies is a Check-23 validator failure).
+- `AGENT.md` in current dir = **SOURCE** (edit this) | `../AGENT.md` and `../CLAUDE.md` in parent dir = **DEPLOYED COPIES** (auto-deployed; the deployed file your AI tool actually loads depends on the tool — Claude Code reads `../CLAUDE.md`, others typically read `../AGENT.md`. Drift between source and any deployed copy is a Check-10 validator failure).
 
 For the full layout tree and path-resolution rules, see `agent/helpers/directory_structure.md` (auto-loaded on path-confusion triggers).
 

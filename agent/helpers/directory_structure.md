@@ -18,7 +18,7 @@ The agent's working directory is the "magpie-agent" subdirectory (relative to th
 ```
 /magpie/                          ← Parent: Main MAgPIE project (git repo #1)
 ├── AGENT.md                      ← DEPLOYED copy (auto-updated, do NOT edit)
-├── CLAUDE.md                     ← DEPLOYED copy (auto-updated, do NOT edit) — Claude reads this!
+├── CLAUDE.md                     ← DEPLOYED copy (auto-updated, do NOT edit) — Claude Code's load target; identical to ../AGENT.md
 ├── modules/                      ← GAMS modules (actual MAgPIE code)
 │   ├── 14_yields/
 │   ├── 70_livestock/
@@ -62,8 +62,8 @@ NOT: "modules/14_yields/..." ❌ (that's the AI-docs path, not GAMS!)
 | `modules/` in current dir | AI documentation (markdown — 46 modules + `_notes` sidecars) |
 | `../modules/` in parent dir | MAgPIE GAMS code |
 | `AGENT.md` in current dir | SOURCE (edit this) |
-| `../AGENT.md` in parent dir | DEPLOYED copy (auto-copied by session_startup or after edits) |
-| `../CLAUDE.md` in parent dir | DEPLOYED copy (auto-copied) — Claude Code reads this at session start |
+| `../AGENT.md` in parent dir | DEPLOYED copy (auto-copied by session_startup or after edits). Canonical, tool-agnostic name. Cursor / Aider / generic users point their tool at this. |
+| `../CLAUDE.md` in parent dir | DEPLOYED copy (auto-copied). Identical content to `../AGENT.md`; exists because Claude Code auto-loads `CLAUDE.md` by convention. |
 
 ### 4. Git operations
 

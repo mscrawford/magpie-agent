@@ -43,6 +43,23 @@ cd "$MAGPIE_DIR" && git fetch origin develop --quiet 2>/dev/null
 
 **Note**: The script handles both possible working directories (magpie/ or magpie-agent/) since the AI tool may start in either location.
 
+### 0b. Ensure SHA-pinned external clones are populated
+
+The magpie4 R-reporting package is read on demand for `report.mif` / IAMC variable questions. It lives at `.cache/sources/magpie4/` (gitignored) and must be SHA-pinned to whatever `magpie/input/renv.lock` specifies. Run the sync script — it's idempotent (no-op if the clone is already at the pinned SHA):
+
+```bash
+cd "$AGENT_DIR" && python3 scripts/sync_magpie4_clone.py 2>&1 | tail -3
+```
+
+**Outcomes**:
+| Result | What it means | Action |
+|---|---|---|
+| `already at <SHA> — no-op` | Clone is current vs renv.lock | Silent — proceed |
+| `magpie4 v<X> @ <SHA> cached at .cache/sources/magpie4/` | First-run clone or SHA advanced | Surface briefly: `🔬 magpie4 v<X> cached for routing` |
+| Error (renv.lock missing, network down, etc.) | Won't be able to answer magpie4 questions | Surface immediately; suggest manual run when network returns |
+
+**Why this is Step 0b, not deferred to first magpie4 question**: a colleague who clones magpie-agent fresh has an empty `.cache/`. If their first question routes through the magpie4 helper, they'd hit a blank clone and either (a) get a degraded answer or (b) be told to run a setup step they didn't know about. Running it at session start makes the helper's promise unconditional. Cost: ~1 second on cache-hit, ~30 seconds on first clone.
+
 ### 1. MAgPIE Version & Branch
 
 **Note**: Steps 1-5 assume the agent's working directory is `magpie-agent/` (as stated in AGENT.md). All `../` paths point to the parent MAgPIE directory.

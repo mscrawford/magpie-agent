@@ -48,7 +48,12 @@ ls -lh ../AGENT.md
 # 3. Verify documentation structure exists
 ls -d modules/ core_docs/ cross_module/ reference/ agent/commands/
 
-# 4. Report success
+# 4. Populate the SHA-pinned magpie4 R-package clone for report.mif / IAMC
+#    variable questions. Reads magpie/input/renv.lock for the pinned version,
+#    clones if missing, no-op if already current. ~30s on first run.
+python3 scripts/sync_magpie4_clone.py
+
+# 5. Report success
 echo "✅ Bootstrap complete!"
 ```
 
@@ -81,6 +86,7 @@ If the user prefers to do it manually:
 ```bash
 # From magpie-agent directory
 cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md
+python3 scripts/sync_magpie4_clone.py
 ```
 
 ---

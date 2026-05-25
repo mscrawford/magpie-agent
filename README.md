@@ -19,14 +19,17 @@ git clone git@github.com:mscrawford/magpie-agent.git magpie-agent
 
 ### 2. Deploy AGENT.md to MAgPIE root
 
-Your AI assistant needs `AGENT.md` in the working directory (the MAgPIE root):
+Your AI assistant needs `AGENT.md` in the working directory (the MAgPIE root). The file is tool-agnostic; the deployment step is to put a copy where your tool will find it:
 
 ```bash
 cd /path/to/your/magpie/
-cp magpie-agent/AGENT.md AGENT.md
+cp magpie-agent/AGENT.md AGENT.md          # canonical, tool-agnostic
+cp magpie-agent/AGENT.md CLAUDE.md         # Claude Code auto-loads CLAUDE.md
+# cp magpie-agent/AGENT.md .cursorrules    # Cursor convention (if using Cursor)
+# cp magpie-agent/AGENT.md CONVENTIONS.md  # Aider convention (if using Aider)
 ```
 
-(For Claude Code specifically, also `cp magpie-agent/AGENT.md CLAUDE.md` — Claude Code reads `CLAUDE.md` from project root.)
+Same content, different filenames per tool's auto-load convention. If your tool doesn't auto-load any project file, point it at `AGENT.md` manually. Subsequent updates flow through `magpie-agent/agent/helpers/session_startup.md` which keeps `../AGENT.md` and `../CLAUDE.md` in sync; if you use a third filename, you'll need to add the copy manually after agent updates.
 
 ### 3. Add agent infrastructure to parent `.gitignore`
 
