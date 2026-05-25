@@ -1,7 +1,7 @@
 # Plan: get the bomb rate under control + clean up the doc surface
 
 **Created**: 2026-05-24 (post-R24 conversation)
-**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☑ Phase 2 (2026-05-25)  ◐ Phase 3 (R25 done, R26 pending)  ☐ Phase 4
+**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☑ Phase 2 (2026-05-25)  ◐ Phase 3 (R25 done, R26 pending)  ⏸ Phase 4 (deep-shelf as of 2026-05-25)
 **Target completion (Phases 0-3)**: ~3-4 focused sessions over 1-2 weeks
 
 ## Executive summary
@@ -159,14 +159,23 @@ The R6 / Phase 0-2 work was structural; Phase 3 is the empirical test. R25 needs
 - Mean 8.0-8.4 → Recovery achieved; Phase 2's swept modules should be probed in R26 to confirm
 - Mean ≥8.5 → Recovery + improvement; proceed to Phase 4 design
 
-## Phase 4 — Prospective prevention (1-2 weeks, separate initiative)
+## Phase 4 — Prospective prevention (1-2 weeks, separate initiative) — ⏸ DEEP SHELF
+
+**Status (2026-05-25)**: Deep-shelved per user direction. Reactivate when:
+  - Manual sync cadence becomes a bottleneck (currently fine — `/sync` handles it on demand)
+  - The cost of a missed drift exceeds the cost of CI infrastructure (currently the semantic flywheel catches drifts within a round, which is acceptable)
+  - Phase 3 R26 confirms post-R25 stability and a routine PR-time gate becomes the natural next layer
 
 **Goal**: catch drift at PR-merge time, not at flywheel-round time.
 
-| Step | Effort |
-|------|--------|
-| **4a. Extend 5c past `identifier_added`-only MVP** to handle `identifier_removed` and `new_realization` | 4-6h each |
-| **4b. Deploy 5c on every MAgPIE PR merge** | Design Qs from `next_session_plan`: GitHub Actions CI vs. local pre-merge hook; auto-PR-create vs. comment-only |
+| Step | Effort | Status |
+|------|--------|--------|
+| **4a. Extend 5c past `identifier_added`-only MVP** to handle `identifier_removed` and `new_realization` | 4-6h each | ⏸ Deferred |
+| **4b. Deploy 5c on every MAgPIE PR merge** | GitHub Actions CI vs. local pre-merge hook; auto-PR-create vs. comment-only | ⏸ Deferred |
+
+**What stays in tree but is not maintained**: the partial scaffolds `scripts/pr_doc_impact.py`, `scripts/pr_mechanical_update.py`, `scripts/pr_semantic_update.py` remain in place but are NOT wired into any workflow. They are starting points if/when Phase 4 reactivates; don't treat them as supported infrastructure.
+
+**Reactivation gate**: before Phase 4 design resumes, verify the failure-mode rationale (missed-drift cost > CI cost) is still operative; the answer may be different once magpie-agent has more users or higher trust requirements.
 
 ## Effort summary
 

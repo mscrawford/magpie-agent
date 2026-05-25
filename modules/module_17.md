@@ -994,7 +994,7 @@ Production affects demand via prices (if endogenous demand) → **BACK TO START*
 **Citation Density:** 30+ file:line references
 **Session Complete:** 4 modules documented today (32, 14, 11, 17) — 3,732 lines total
 
-**Next Steps:** Update CURRENT_STATE.json with progress (16 modules now documented, 30 remaining)
+**Next Steps:** (Historical artifact from v1.0 session logging; project tracking now lives in `audit/validation_rounds.json` and `audit/pipeline_audit_rounds.json`.)
 
 ---
 

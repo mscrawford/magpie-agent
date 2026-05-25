@@ -31,6 +31,44 @@ CITATION_RE = re.compile(r'((?:core/|modules/[\w/]+/)?[\w/]+\.gms):(\d+)(?:-(\d+
 # GAMS identifier classes (used by Pattern 12 content check)
 GAMS_ID_RE = re.compile(r'`((?:vm|pm|v|p|i|f|s|c|cm|sm|im|fm|pcm|ic|ov|oq|q)\d*_[a-zA-Z][\w]*)`')
 
+# Contrastive-phrase patterns: when a backticked identifier is preceded by
+# language like "instead of", "not", "differs from", "unlike", "rather than",
+# or "vs", the identifier is being mentioned as a CONTRAST (what the cited
+# content is NOT) rather than as the subject of the cite. Suppress pairings
+# where the identifier is preceded by one of these phrases within ~30 chars.
+# R25 follow-up: caught vm_tau-in-module_14, s32_aff_plantation-in-module_52,
+# s80_obj_linear-in-module_80.
+CONTRASTIVE_PHRASE_RE = re.compile(
+    r"\b(?:instead of|rather than|not(?:\s+from)?|differs? from|unlike|"
+    r"compared (?:to|with)|vs\.?|versus|opposite of|in contrast(?:\s+to)?|"
+    r"as opposed to|whereas|while)\s*$",
+    re.IGNORECASE,
+)
+
+# Subject-boundary pattern: text like `) and `, `) or `, `) while `, `; and `
+# between an identifier and a citation signals that the identifier was in a
+# PRIOR clause and the citation belongs to a DIFFERENT subject. Used to
+# suppress pairings across clause boundaries on the same line. R25 follow-up:
+# caught s32_aff_plantation-in-module_52 multi-cite line.
+SUBJECT_BOUNDARY_RE = re.compile(
+    r"\)\s*(?:and|or|while|whereas|but)\s+",
+    re.IGNORECASE,
+)
+
+# Path-based exclusions: certain docs are PEDAGOGICAL — they cite identifiers
+# that intentionally illustrate bug patterns, drift cases, or hypothetical
+# scenarios. Suppressing them from the content check avoids chronic FPs.
+# Bug_Taxonomy.md is the canonical example (it teaches what doc bugs LOOK
+# like by showing intentionally-broken cites).
+PEDAGOGICAL_DOCS = {"Bug_Taxonomy.md"}
+
+# Scaffolding files: realization.gms is typically just $include directives
+# pulling in declarations.gms / equations.gms / etc. — it rarely contains
+# variable or equation definitions. Citations pointing at realization.gms
+# usually reference the module's CONFIGURATION not its variable definitions,
+# so identifier-content checks generate FPs.
+SCAFFOLDING_BASENAMES = {"realization.gms", "module.gms"}
+
 # Structured-section labels used for cross-line lookback (R25 Phase 1 follow-up).
 # When a doc presents:
 #     **Variable:** `vm_foo`
@@ -155,7 +193,29 @@ def main():
                 window_start = max(prev_end, cit_match.start() - 40)
             window_end = min(len(context), cit_match.end() + 10)
             window = context[window_start:window_end]
-            nearby_ids = set(GAMS_ID_RE.findall(window))
+            # The cite's offset within the window (used by the subject-boundary
+            # check to know what's "between identifier and cite")
+            cite_offset_in_window = cit_match.start() - window_start
+            # Extract all identifier matches with positions so we can apply
+            # the contrastive-phrase and subject-boundary filters per match.
+            id_matches = list(GAMS_ID_RE.finditer(window))
+            nearby_ids = set()
+            for im in id_matches:
+                # CONTRASTIVE PHRASE: look at the 30 chars immediately preceding
+                # this identifier within the window. Skip if a contrastive
+                # phrase ends right before the identifier.
+                preceding = window[max(0, im.start() - 30):im.start()]
+                if CONTRASTIVE_PHRASE_RE.search(preceding):
+                    continue
+                # SUBJECT BOUNDARY: if the text between this identifier's end
+                # and the cite's start contains a clause-boundary pattern
+                # (`) and `, `) or `, etc.), the identifier was in a different
+                # clause. Skip.
+                if im.end() < cite_offset_in_window:
+                    between = window[im.end():cite_offset_in_window]
+                    if SUBJECT_BOUNDARY_RE.search(between):
+                        continue
+                nearby_ids.add(im.group(1))
 
             # CROSS-LINE LOOKBACK (R25 Phase 1 follow-up):
             # If no identifier found in the same-line window, look back up to
@@ -321,6 +381,18 @@ def main():
                         f"  LINE: {gms_hint}:{line_num} (file has {total_lines} lines, +{delta}, range-{label}) in {doc_short}"
                     )
 
+        # Skip content checks on pedagogical docs (Bug_Taxonomy etc.) and
+        # scaffolding-file cites (realization.gms / module.gms which are
+        # $include directives, not variable-definition sources).
+        if doc_short in PEDAGOGICAL_DOCS:
+            if start <= total_lines and (not end or end <= total_lines):
+                valid += 1
+            continue
+        if os.path.basename(actual) in SCAFFOLDING_BASENAMES:
+            if start <= total_lines and (not end or end <= total_lines):
+                valid += 1
+            continue
+
         # Content-match check (Pattern 12 + R6 Phase 1 1d fingerprint hardening)
         if start <= total_lines and nearby_ids:
             # Tight window: cited start line ±5 (or start..end for ranges).
@@ -331,6 +403,50 @@ def main():
             tight_start = max(1, start - 5)
             tight_end = min(total_lines, (end if end else start) + 5)
             tight_text = "\n".join(lines[tight_start - 1:tight_end])
+
+            # STRICT-LINE check (R25 Phase 1 follow-up): for declarations.gms
+            # and input.gms files, the identifier should be at EXACTLY the
+            # cited line (these files are one-identifier-per-line by convention).
+            # Catches the off-by-1/2 drifts that fall within the ±5 fingerprint
+            # window — R25 Q2-B1/B2 class (s80_counter, s80_resolve_option).
+            # Gated to:
+            #   - single-line cites (range cites span multiple identifiers
+            #     legitimately)
+            #   - cites with at least realization-level path specificity
+            #     (any "/" in gms_hint, e.g. "modules/X/Y/declarations.gms"
+            #     or "nlp_apr17/declarations.gms"). Bare-basename cites
+            #     ("declarations.gms" alone) can be rescued to the wrong
+            #     realization (e.g. nlp_par when the doc means nlp_apr17),
+            #     so we skip STRICT to avoid FPs from rescue ambiguity.
+            basename = os.path.basename(actual)
+            is_strict_target = basename in ('declarations.gms', 'input.gms')
+            is_single_line = end is None
+            is_path_specific = '/' in gms_hint
+            if is_strict_target and is_single_line and is_path_specific and start <= total_lines:
+                cited_line_text = lines[start - 1] if start - 1 < len(lines) else ""
+                for gid in nearby_ids:
+                    if not re.search(rf"\b{re.escape(gid)}\b", cited_line_text):
+                        # Identifier missing from cited line. Find where it
+                        # actually lives (within wider window so we suggest
+                        # a fix even when fingerprint would also flag it).
+                        scan_start = max(1, start - 5)
+                        scan_end = min(total_lines, start + 5)
+                        actual_lines = [
+                            i for i in range(scan_start, scan_end + 1)
+                            if i - 1 < len(lines)
+                            and re.search(rf"\b{re.escape(gid)}\b", lines[i - 1])
+                        ]
+                        if actual_lines:
+                            closest = min(actual_lines, key=lambda x: abs(x - start))
+                            delta = closest - start
+                            sign = "+" if delta > 0 else ""
+                            content_miss += 1
+                            warnings.append(
+                                f"  STRICT: `{gid}` cited at {gms_hint}:{start} but "
+                                f"identifier is at line {closest} ({sign}{delta}). "
+                                f"Strict-line check for {basename} — update citation to ~:{closest}."
+                            )
+
             for gid in nearby_ids:
                 if gid in tight_text:
                     continue

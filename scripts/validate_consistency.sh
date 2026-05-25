@@ -294,11 +294,12 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 print_section "5/24" "Checking entry point consistency..."
 
-# README should point to CURRENT_STATE.json for project work
-if grep -q "CURRENT_STATE.json" README.md 2>/dev/null; then
-    check_pass "README.md points to CURRENT_STATE.json"
+# README should point to the live audit-state files (was CURRENT_STATE.json
+# pre-R6; that file was retired and relocated to project/archive/ by R25).
+if grep -q "audit/validation_rounds.json" README.md 2>/dev/null; then
+    check_pass "README.md points to audit/validation_rounds.json (live state)"
 else
-    check_warning "README.md doesn't reference CURRENT_STATE.json"
+    check_warning "README.md doesn't reference audit/validation_rounds.json (live state file)"
 fi
 
 # README should point to AGENT.md for AI setup

@@ -149,11 +149,12 @@
         "round_result"
       ],
       "source_files": [
-        "R20 Q1, Q3 (cropland tree cover)"
+        "R20 Q1, Q3 (cropland tree cover)",
+        "R25 (auto-appended)"
       ],
       "first_named_at": "2026-04-20",
       "first_named_round": 20,
-      "retirement_eligible_after": 23
+      "retirement_eligible_after": 28
     },
     {
       "name": "module_80",
@@ -245,11 +246,12 @@
         "round_result"
       ],
       "source_files": [
-        "land balance questions"
+        "land balance questions",
+        "R25 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 22
+      "retirement_eligible_after": 28
     },
     {
       "name": "module_41",

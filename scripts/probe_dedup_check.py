@@ -23,6 +23,7 @@ Exit code 0 always (warn-only signal; designer judges and may override
 by explicitly classifying the question as a `regression_anchor`).
 """
 import argparse
+import datetime
 import json
 import re
 import sys
@@ -99,6 +100,94 @@ def scan(text, off_limits, metadata):
     return hits
 
 
+def collect_probe_names_from_round(round_data):
+    """Extract names that should enter the dedup ledger from a round entry.
+
+    Rules (R25 follow-up implementation of validate-semantic.md Step 5c):
+      - Skip regression-anchor questions (archetype=='regression_anchor' OR
+        id matches *-G\\d). Their repetition is the test.
+      - From each remaining question's modules_tested list:
+          - int N      -> 'module_{N:02d}'  (canonical short form)
+          - string s   -> slug of s (e.g. 'magpie4 helper' -> 'magpie4_helper')
+      - Return de-duplicated set.
+    """
+    names = set()
+    for q in round_data.get("questions", []):
+        if q.get("archetype") == "regression_anchor":
+            continue
+        if re.match(r".*-G\d+$", q.get("id", "")):
+            continue
+        for m in q.get("modules_tested", []) or []:
+            if isinstance(m, int):
+                names.add(f"module_{m:02d}")
+            elif isinstance(m, str):
+                slug = re.sub(r"\W+", "_", m.strip().lower()).strip("_")
+                if slug:
+                    names.add(slug)
+    return names
+
+
+def append_round_to_ledger(round_num, names, ledger_path):
+    """Append new probe names to the ledger and advance existing entries.
+
+    For each name:
+      - if in calibration_exempt -> skip
+      - if absent from off_limits -> new entry, retirement_eligible_after = round_num + 3
+      - if present with numeric retirement_eligible_after < round_num + 3 -> advance
+      - if present with 'calibration-exempt' -> skip
+      - if present with retirement_eligible_after >= round_num + 3 -> no-op
+
+    Returns (added: list[str], updated: list[tuple[str, int, int]]).
+    """
+    if not ledger_path.exists():
+        print(f"WARN — ledger missing at {ledger_path}; cannot append.", file=sys.stderr)
+        return [], []
+    d = json.loads(ledger_path.read_text())
+    name_to_idx = {e["name"]: i for i, e in enumerate(d["off_limits"])}
+    # calibration_exempt entries are like "module_14 (G1 anchor)" — take leading slug
+    exempt = set()
+    for label in d.get("calibration_exempt", []):
+        slug = label.split(" ", 1)[0].strip()
+        if slug:
+            exempt.add(slug)
+
+    added: list[str] = []
+    updated: list[tuple[str, int, int]] = []
+    today = datetime.date.today().isoformat()
+    retire_after = round_num + 3
+
+    for name in sorted(names):
+        if name in exempt:
+            continue
+        if name in name_to_idx:
+            entry = d["off_limits"][name_to_idx[name]]
+            cur = entry.get("retirement_eligible_after")
+            if cur == "calibration-exempt":
+                continue
+            if isinstance(cur, int) and cur < retire_after:
+                entry["retirement_eligible_after"] = retire_after
+                sf = entry.get("source_files", [])
+                sf.append(f"R{round_num} (auto-appended)")
+                entry["source_files"] = sf
+                updated.append((name, cur, retire_after))
+        else:
+            entry = {
+                "name": name,
+                "type": "module" if name.startswith("module_") else "resource",
+                "named_in": ["round_result"],
+                "source_files": [f"R{round_num} (auto-appended)"],
+                "first_named_at": today,
+                "first_named_round": round_num,
+                "retirement_eligible_after": retire_after,
+            }
+            d["off_limits"].append(entry)
+            added.append(name)
+
+    d["captured_at"] = today
+    ledger_path.write_text(json.dumps(d, indent=2) + "\n")
+    return added, updated
+
+
 def auto_detect_next_round():
     """Read validation_rounds.json to find the next round number.
 
@@ -134,7 +223,53 @@ def main():
     )
     ap.add_argument("--dry-run", action="store_true",
                     help="Just verify the script and ledger load correctly")
+    ap.add_argument(
+        "--append-from-round", type=int, metavar="N", default=None,
+        help="Append probe names from round N (in validation_rounds.json) to "
+             "the off-limits ledger. Sets retirement_eligible_after = N + 3 "
+             "for new entries; advances existing entries' retirement_eligible_after "
+             "if currently < N + 3. Skips calibration-exempt entries and regression-"
+             "anchor questions (their repetition is the test). Default: pass an "
+             "explicit N. Implements validate-semantic.md Step 5c (was previously "
+             "warn-only).",
+    )
     args = ap.parse_args()
+
+    # --append-from-round runs without input/stdin; do that path first
+    if args.append_from_round is not None:
+        val_path = Path(__file__).parent.parent / "audit" / "validation_rounds.json"
+        if not val_path.exists():
+            print(f"ERROR — validation_rounds.json missing at {val_path}", file=sys.stderr)
+            sys.exit(1)
+        data = json.loads(val_path.read_text())
+        target_round = next(
+            (r for r in data.get("rounds", []) if r.get("round") == args.append_from_round),
+            None,
+        )
+        if target_round is None:
+            print(
+                f"ERROR — round {args.append_from_round} not in validation_rounds.json",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        names = collect_probe_names_from_round(target_round)
+        if not names:
+            print(
+                f"OK — round {args.append_from_round} has no non-regression probe names to append.",
+                file=sys.stderr,
+            )
+            sys.exit(0)
+        added, updated = append_round_to_ledger(args.append_from_round, names, LEDGER)
+        print(
+            f"R{args.append_from_round} ledger update: {len(added)} added, {len(updated)} retire-after advanced.",
+            file=sys.stderr,
+        )
+        if added:
+            print(f"  Added: {added}", file=sys.stderr)
+        if updated:
+            for n, old, new in updated:
+                print(f"  Advanced: {n} {old} -> {new}", file=sys.stderr)
+        sys.exit(0)
 
     if args.round is None:
         args.round = auto_detect_next_round()

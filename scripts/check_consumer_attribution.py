@@ -446,8 +446,13 @@ def scan_prose_omissions(
 
     Returns: (file, lineno, var, omitted_module_num, omitted_module_label, omitted_module_dir).
     """
+    # Consumer-direction trigger. Tightened (R25 follow-up) to exclude
+    # hyphen-compound noun forms — `\buse\b` would otherwise match "use"
+    # inside "land-use", "water-use", "end-use", which is a common pattern
+    # in MAgPIE docs that has nothing to do with consumer attribution.
     consumer_direction = re.compile(
-        r"\b(consumed by|reads?|consumes?|uses?|fed (?:by|into)|sourced from)\b",
+        r"\b(?:consumed by|reads?|consumes?|fed (?:by|into)|sourced from"
+        r"|(?<!-)uses?(?!-))\b",
         re.IGNORECASE,
     )
     historical_marker = re.compile(
@@ -457,7 +462,8 @@ def scan_prose_omissions(
     # Hedges that signal the doc is intentionally listing a subset, not all
     # consumers. If present, skip the line — the omission is by design.
     partial_list_hedge = re.compile(
-        r"\b(primary|main|most important|key consumer|principal|e\.?g\.|such as|etc\b|among others|including but not limited to)\b",
+        r"\b(primary|main|most important|key consumer|principal|e\.?g\.|such as|etc\b|among others|including but not limited to"
+        r"|may be affected|broader|wider|touched by|set of)\b",
         re.IGNORECASE,
     )
 
@@ -498,6 +504,14 @@ def scan_prose_omissions(
 
     # Helper: bullet-list prefix (whitespace + `-` or `*` followed by space)
     bullet_prefix_re = re.compile(r"^(\s*[-*]\s+)")
+
+    # If this doc is a per-module doc (modules/module_NN.md), the doc's own
+    # module is implicitly the "subject" — readers don't expect it to list
+    # itself as a consumer. Excluding it from omission candidates eliminates
+    # the structural FP class where a producer-side description happens to
+    # appear in the consumer's own doc.
+    mod_m = re.search(r"module_(\d{2})", rel_path)
+    current_doc_num = mod_m.group(1) if mod_m else None
 
     lines = text.splitlines()
     for lineno, line in enumerate(lines, 1):
@@ -565,8 +579,15 @@ def scan_prose_omissions(
             actual_consumer_nums = {d.split("_", 1)[0] for d in actual_consumers_dirs if "_" in d}
             producer_dir = producers.get(var, "")
             producer_num = producer_dir.split("_", 1)[0] if "_" in producer_dir else ""
-            # Compute omitted = (actual - listed - {producer})
-            omitted = actual_consumer_nums - listed_nums - ({producer_num} if producer_num else set())
+            # Exclude: (a) producer module (already its own attribution if
+            # mentioned), (b) the CURRENT DOC's module (self-reference; the
+            # doc is about this module and wouldn't list itself).
+            exclude_nums: set[str] = set()
+            if producer_num:
+                exclude_nums.add(producer_num)
+            if current_doc_num:
+                exclude_nums.add(current_doc_num)
+            omitted = actual_consumer_nums - listed_nums - exclude_nums
             for num in sorted(omitted):
                 if num not in num_to_dir:
                     continue

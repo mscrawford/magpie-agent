@@ -346,12 +346,20 @@ User asks MAgPIE question
 ```
 New documentation project session
   → README.md (orientation and session protocol)
-  → project/CURRENT_STATE.json (SINGLE SOURCE OF TRUTH - status, plans, history)
+  → audit/validation_rounds.json (semantic flywheel record)
+  → audit/pipeline_audit_rounds.json (structural audit record)
+  → audit/get_under_control_plan.md or audit/next_session_plan.md (open plans)
+  → project/sync_log.json (MAgPIE sync state)
   → Ask user: "What should I work on?"
 ```
 
-**Update ONLY:**
-- ✅ project/CURRENT_STATE.json (project status)
+(Note: `project/CURRENT_STATE.json` was the SSOT through v1.0 but is frozen at 2026-03-07. Retired by R6 audit Cluster A. Read for historical context only; live state lives in the audit/ JSON files above.)
+
+**Update by file role:**
+- ✅ audit/validation_rounds.json (after each semantic-flywheel round)
+- ✅ audit/pipeline_audit_rounds.json (after each structural pipeline audit)
+- ✅ audit/global/agent_lessons.md (when a session-wide lesson is learned)
+- ❌ NOT project/CURRENT_STATE.json (frozen snapshot)
 - ❌ NOT README.md (STATIC reference document)
 - ❌ NOT modules/README.md (STATIC reference)
 

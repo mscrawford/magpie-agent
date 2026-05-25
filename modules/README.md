@@ -2,7 +2,7 @@
 
 This directory contains comprehensive documentation for MAgPIE's 46 modules. All documentation follows the "Code Truth" principle: describing ONLY what IS implemented in the code, verified against source files.
 
-For current state of the agent and ongoing work, see `../audit/validation_rounds.json`, `../audit/pipeline_audit_rounds.json`, and the git commit log. (`../project/CURRENT_STATE.json` is a v1.0 snapshot retained for history.)
+For current state of the agent and ongoing work, see `../audit/validation_rounds.json`, `../audit/pipeline_audit_rounds.json`, and the git commit log. (Historical v1.0 snapshot at `../project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
 
 ---
 

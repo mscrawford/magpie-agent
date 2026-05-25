@@ -4,7 +4,7 @@
 
 Comprehensive, AI-optimized documentation for the MAgPIE land-use model. Works with any AI assistant (Claude Code, Cursor, Copilot, etc.).
 
-For current state of the project, see `audit/validation_rounds.json`, `audit/pipeline_audit_rounds.json`, `audit/next_session_plan.md` / `audit/get_under_control_plan.md`, and the git commit log. (`project/CURRENT_STATE.json` is a v1.0 snapshot, frozen 2026-03-07.)
+For current state of the project, see `audit/validation_rounds.json`, `audit/pipeline_audit_rounds.json`, `audit/next_session_plan.md` / `audit/get_under_control_plan.md`, and the git commit log. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
 
 ---
 

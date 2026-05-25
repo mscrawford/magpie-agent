@@ -1,6 +1,8 @@
 # MAgPIE Module Dependency Analysis - Executive Summary
 
-**Analysis Date:** 2025-10-10
+> ⏸ **SNAPSHOT — NOT LIVE.** This document is the 2025-10-10 dependency-graph snapshot. It is not regenerated. For current-state dependency claims, read `core_docs/Module_Dependencies.md` and `cross_module/circular_dependency_resolution.md`. See `reference/dependency_analysis/README.md` for the full snapshot caveat.
+
+**Analysis Date:** 2025-10-10 (frozen)
 **MAgPIE Version:** develop branch (commit beb125fe0)
 **Total Modules Analyzed:** 45
 

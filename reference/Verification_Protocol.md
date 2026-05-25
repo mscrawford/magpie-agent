@@ -319,21 +319,13 @@ Any additional observations...
 
 ## After Verification
 
-1. ✅ Update `CURRENT_STATE.json`:
-   - Module status: `fully_verified` or `spot_verified`
-   - Verification date
-   - Any notes
+(R6 2026-05-25: CURRENT_STATE.json was retired as SSOT — use the live audit trail instead.)
 
-2. ✅ Update `modules/README.md`:
-   - Add module to appropriate section
-
-3. ✅ If errors found:
-   - Create error log in `archive/MODULE_XX_ERRORS_FOUND.md`
-   - Mark as `rejected` in `CURRENT_STATE.json`
-
-4. ✅ If approved:
-   - Move to `modules/` directory
-   - Archive verification log
+1. ✅ Update `modules/module_XX.md` header (Realization, Verified Against footer)
+2. ✅ Append the verification result to `audit/validation_rounds.json` if it happened as part of a semantic-flywheel round (otherwise it can be noted in the per-module notes file)
+3. ✅ Update `modules/module_XX_notes.md` with any lessons learned
+4. ✅ If errors found: append to `audit/global/agent_lessons.md` (system-wide) or `modules/module_XX_notes.md` (module-specific); commit with `fix(...)` prefix
+5. ✅ If verification was part of a sync: update `project/sync_log.json` entry
 
 ---
 

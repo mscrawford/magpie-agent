@@ -193,16 +193,16 @@ Failure (modelstat > 2 and ≠ 7):
 
 ### Parameters (lp_nlp_apr17)
 
-**Declarations** (declarations.gms:8-16):
+**Declarations** (`lp_nlp_apr17/declarations.gms:8-16`):
 
 | Parameter | Dimensions | Unit | Description | Reference |
 |-----------|------------|------|-------------|-----------|
-| `p80_modelstat(t)` | time | (1) | Modelstat indicator (1=optimal, 2=locally optimal, >2=infeasible/error) | declarations.gms:9 |
-| `p80_num_nonopt(t)` | time | (1) | Number of non-optimal variables (numNOpt) | declarations.gms:10 |
-| `s80_counter` | scalar | (1) | Iteration counter for retry loop | declarations.gms:14 |
-| `s80_obj_linear` | scalar | 10⁶ USD17MER/yr | Linear solve objective value | declarations.gms:15 |
+| `p80_modelstat(t)` | time | (1) | Modelstat indicator (1=optimal, 2=locally optimal, >2=infeasible/error) | `lp_nlp_apr17/declarations.gms:9` |
+| `p80_num_nonopt(t)` | time | (1) | Number of non-optimal variables (numNOpt) | `lp_nlp_apr17/declarations.gms:10` |
+| `s80_counter` | scalar | (1) | Iteration counter for retry loop | `lp_nlp_apr17/declarations.gms:14` |
+| `s80_obj_linear` | scalar | 10⁶ USD17MER/yr | Linear solve objective value | `lp_nlp_apr17/declarations.gms:15` |
 
-**Inputs** (input.gms:8-13):
+**Inputs** (`lp_nlp_apr17/input.gms:8-13`):
 
 | Scalar | Default | Unit | Description | Reference |
 |--------|---------|------|-------------|-----------|
