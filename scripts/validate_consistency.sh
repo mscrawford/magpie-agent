@@ -619,13 +619,15 @@ print_section "12/24" "Checking for stale path prefixes..."
 # (since the working directory IS magpie-agent/, this creates double-nesting)
 PREFIX_ISSUES=0
 # Exclude: README.md/AGENT.md (may mention it in prose), Tool_Usage_Patterns (teaching examples),
-# archive dirs, audit/integrated (historical records), session_startup.md (handles both dirs)
+# archive dirs, audit/integrated (historical records), audit/round*_answers/ and audit/round*_audits/
+# (immutable captured agent outputs — not authoritative docs), session_startup.md (handles both dirs)
 PREFIX_HITS=$(grep -rn 'magpie-agent/' --include="*.md" . 2>/dev/null | \
     grep -v ".git" | \
     grep -v "archive/" | \
     grep -v "README.md\|AGENT.md\|Tool_Usage_Patterns\|session_startup.md" | \
     grep -v "github\|http\|repo\|git@\|clone\|remote" | \
     grep -v "audit/integrated/" | \
+    grep -vE 'audit/round[0-9]+_(answers|audits)/' | \
     grep -v "# From magpie-agent\|in magpie-agent\|is magpie-agent\|or magpie-agent\|the magpie-agent" | \
     grep '`[^`]*magpie-agent/[^`]*`' || true)
 

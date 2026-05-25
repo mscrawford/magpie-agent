@@ -1,7 +1,7 @@
 # Plan: get the bomb rate under control + clean up the doc surface
 
 **Created**: 2026-05-24 (post-R24 conversation)
-**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☑ Phase 2 (2026-05-25)  ☐ Phase 3  ☐ Phase 4
+**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☑ Phase 2 (2026-05-25)  ◐ Phase 3 (R25 done, R26 pending)  ☐ Phase 4
 **Target completion (Phases 0-3)**: ~3-4 focused sessions over 1-2 weeks
 
 ## Executive summary
@@ -267,3 +267,29 @@ Phase 1 takeaway: 4 new mechanizations (3 script extensions + 1 MANDATE doc), 1 
 Phase 2 takeaway: deferred-since-R3 work closed in a single session. The Phase 1 mechanizations did exactly their job — pre-sweeping with validators scoped the manual work down to what was actually broken, instead of forcing a full re-derivation.
 
 **Next**: Phase 3 (R25 + R26 semantic-flywheel re-measure to confirm bomb rate dropped). Awaits user direction on when to start. Phase 3 will use the existing `/validate-semantic` flow; expected effort ~3h per round.
+
+**Session 4 — 2026-05-25 — Phase 3 R25 (re-measure) — COMPLETE**
+
+- Pre-launch baseline: `scripts/validate_consistency.sh` 39/41 + 2 advisory warnings; `check_units.py` 5 advisory; `check_consumer_attribution.py` 0 mismatches + Pattern D clean. magpie4 clone synced (v2.70.0 @ a360d8c9ec).
+- R25 design (`audit/round25_design.md`): 5 new probes (Q1 M30 rotation, Q2 M80 solver, Q3 M57 N-MACC chain, Q4 M38 consumer attribution, Q5 magpie4 N2O AWMS provenance) + 2 regression (G1 M14 yields, G2 vm_carbon_stock).
+- Answers (`audit/round25_answers/`): 7 parallel Sonnet 4.6 magpie-helper agents, doc-only (Q5 also allowed magpie4 pinned clone). All wrote answer files.
+- Audits (`audit/round25_audits/`): 7 parallel Opus 4.6 general-purpose agents, scored per `flywheel_rubric.md`.
+- Synthesis (`audit/round25_synthesis.md`): mean **8.93/10** (vs R24 7.5; +1.43 recovery). 0 CRITICAL, 2 Major, 5 Minor, 4 Info. Both regression anchors G1, G2 scored 10/10 with drift=false. Per plan: mean ≥8.5 → "Recovery + improvement; proceed to Phase 4 design."
+- Bug fixes (8 doc edits + 1 infra):
+  - `modules/module_30.md:522` c30_rotation_constraints input.gms `:24` → `:14`
+  - `modules/module_80.md` Parameters table: `:8-13` → `:8-15` range; `s80_counter :13`→`:14`; `s80_resolve_option :14`→`:15`
+  - `modules/module_11.md:442` vm_reward_cdr_aff comment `:57` → `:59`; `:452` vm_maccs_costs comment `:58` → `:60`
+  - `modules/module_38.md` (5 locations: L33, L121, L336, L357, L617): added M36 (employment, `exo_may22/equations.gms:23-25`) as second consumer of `vm_cost_prod_crop` (labor slice). Asymmetric drift — `module_36.md` already documented M36→M38 from consumer side.
+  - `scripts/validate_consistency.sh`: exclude `audit/round*_answers/` and `audit/round*_audits/` from stale-prefix check (immutable captured agent outputs, not authoritative docs)
+- Validator gaps surfaced (queued for Phase 1 follow-up / Phase 4):
+  - **Pattern D negative-evidence**: `check_consumer_attribution.py` missed the M36 omission. Needs to grep for modules that read a variable and flag those NOT in producer-doc consumer list (currently only checks listed-consumers-grep-positive direction).
+  - **Citation fingerprint sensitivity**: `check_gams_citations_impl.py` didn't pre-flag 5 adjacent-line drifts. Heuristic may be too tolerant of similar-content neighbors.
+  - **probe_dedup_check.py append-on-completion**: spec (validate-semantic.md Step 5c) says script appends new probe names to ledger; current implementation only warns. Ledger updated manually for R25.
+- JSON record: appended R25 entry to `audit/validation_rounds.json` (schema v1.2). Trend now `…7.5→8.93`. G1/G2 `used_in_rounds` advanced to `[22, 23, 25]`.
+- Probe-dedup ledger: M11, M30, M36, M51, M55, M57, magpie4_helper added; M38, M51, M80 retire-after advanced to 28.
+
+Effort: ~50 min wall (7 parallel Sonnet ≈ 1-2 min, 7 parallel Opus ≈ 4-7 min, synthesis + fixes ≈ 15-20 min).
+
+**Phase 2 sweep retrospective**: the Phase 2a/2b sweeps were content-correct but had embedded citation-line drift (sweeps added structure without grep-confirming citations). The Phase 3 round caught the drifts within hours. Suggests Phase 2-style sweeps should always be followed by `check_gams_citations_impl.py` on the touched docs before considering the sweep closed.
+
+**Next**: R26 — Re-probe Phase 2 swept modules (M30, M80, M11) to confirm post-fix stability. Awaits user direction. Lower-priority compared to Phase 4 design since R25 already showed strong recovery; but R26 closes the "did the line-fix corrections themselves introduce any regressions" question.

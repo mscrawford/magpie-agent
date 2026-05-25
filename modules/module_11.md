@@ -439,7 +439,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Description:** **Revenue** (negative cost) from carbon dioxide removal via afforestation
 **Dimensions:** i (regions)
 **Note:** Has **negative sign** in cost equation (rewards reduce costs)
-**Citation:** `equations.gms:27`, documented in `equations.gms:57`
+**Citation:** `equations.gms:27`, documented in `equations.gms:59`
 
 ---
 
@@ -449,7 +449,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 57 (MACCS - Marginal Abatement Cost Curves)
 **Description:** Costs for implementing emission abatement measures (beyond baseline)
 **Dimensions:** i (regions), factors (different abatement options)
-**Citation:** `equations.gms:28`, documented in `equations.gms:58`
+**Citation:** `equations.gms:28`, documented in `equations.gms:60`
 
 ---
 

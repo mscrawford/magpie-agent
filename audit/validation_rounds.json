@@ -39,7 +39,8 @@
       "first_used_round": 22,
       "used_in_rounds": [
         22,
-        23
+        23,
+        25
       ],
       "drift_observed": false
     },
@@ -59,7 +60,8 @@
       "first_used_round": 22,
       "used_in_rounds": [
         22,
-        23
+        23,
+        25
       ],
       "drift_observed": false
     },
@@ -3235,22 +3237,242 @@
           "notes": "G4-B1 (Major, answerer): Sonnet's regex [a-zA-Z_]* excluded digits, missing reportSDG1/2/3/6/12/15. Sonnet claimed 100 unique; actual is 106 per helper (which IS correct). No doc fix. Helper and rubric are both confirmed accurate against the SHA-pinned source."
         }
       ]
+    },
+    {
+      "round": 25,
+      "date": "2026-05-25",
+      "commit_before": "c09c55e",
+      "commit_after": "pending (R25 fixes recorded together with this round entry)",
+      "answerer_model": "claude-sonnet-4-6",
+      "auditor_model": "claude-opus-4-7",
+      "type": "full",
+      "scope": "Phase 3 re-measure per get_under_control_plan.md. Tests whether Phase 0-2 (R6 stale-and-remnant audit + Phase 1 mechanizations + Phase 2 module sweeps) dropped the bomb rate from R24's 7.5 mean. 5 new probes target the Phase 2 sweep modules (M30 simple_apr24 rotation, M80 nlp_apr17 solver scalars, M11 \u00a717.2 N-MACC chain, M38 factor-cost consumer attribution) + 1 magpie4 R-to-GAMS provenance test (Q5 N2O AWMS) for organic helper routing. Regression rotated back to G1+G2 (G3+G4 used in R24).",
+      "summary": {
+        "total_bugs_reported_by_auditors": 11,
+        "auditor_false_positives_withdrawn": 0,
+        "total_bugs_net": 11,
+        "bugs_by_severity": {
+          "critical": 0,
+          "major": 2,
+          "minor": 5,
+          "informational": 4
+        },
+        "bugs_by_root_cause": {
+          "doc_error": 5,
+          "answerer_confabulation": 2,
+          "answerer_style_or_framing": 3,
+          "process_gap": 1
+        },
+        "mean_score": 8.93,
+        "score_range": [
+          8.0,
+          10.0
+        ],
+        "regression_anchors": {
+          "G1": {
+            "score": 10.0,
+            "drift_observed": false,
+            "trend": "stable across R22 (10.0), R23 (10.0), R25 (10.0). The AGENT.md trim (846 -> 724 lines in Phase 0) did NOT degrade the M14 yields anchor."
+          },
+          "G2": {
+            "score": 10.0,
+            "drift_observed": false,
+            "trend": "R22 fix holds (vm_carbon_stock declared in M56 not M52). Sonnet proactively flagged the historical trap. AGENT.md trim non-degrading on this anchor."
+          }
+        },
+        "phase3_gate_summary": "PASS. Mean 8.93 (>=8.5 'recovery + improvement' gate per plan). 0 CRITICAL. 2 Major. Both regression anchors stable. magpie4 organic routing worked (Q5 used .cache/sources/magpie4/ correctly without explicit G3/G4 priming).",
+        "phase2_sweep_results": {
+          "M30 (Phase 2a)": "Structurally intact (realization-scoped citations correct); 1 line-citation drift surfaced (module_30.md:522 input.gms:24 -> :14 for c30_rotation_constraints). FIXED.",
+          "M80 (Phase 2b)": "Parameters table structurally correct, but 2 cited line numbers in the newly-added table drifted (s80_counter :13->:14; s80_resolve_option :14->:15). FIXED. Pattern: sweep added structure without grep-confirming citations.",
+          "M11 (Phase 2c)": "PASSED cleanly. 32-term/27-source-module structure verified accurate by Q3. 1 minor adjacent comment-line drift independent of \u00a717.2 (vm_maccs_costs comment :58 -> :60, parallel vm_reward_cdr_aff :57 -> :59). FIXED."
+        },
+        "phase1_mechanization_results": {
+          "1c MANDATE 17 (one-hop reads)": "PASSED. Q3 correctly disambiguated M51's transitive role (provides emission quantities to M57 via vm_emissions_reg) from a direct cost-conduit role. Exact class MANDATE 17 was designed to catch.",
+          "1b check_consumer_attribution.py (Pattern D)": "GAP SURFACED. Pre-launch baseline reported 0 mismatches, but Q4 surfaced that module_38.md omits M36 (employment) as a real consumer of vm_cost_prod_crop. The validator likely checks listed-consumers-grep-positive but does NOT check the inverse (consumer modules grep-positive but absent from producer-doc list). Negative-evidence check needed.",
+          "1d check_gams_citations_impl.py fingerprint": "GAP SURFACED. 5 line-citation drifts surfaced in R25 (Q1, Q2x2, Q3, Q5) were not pre-flagged by the fingerprint check. Either fingerprint heuristic is too tolerant of adjacent-line content similarity, or the check didn't re-scan post-Phase-2 docs.",
+          "1a check_units.py": "No unit-class bugs surfaced in R25; cannot disambiguate from no-test. Advisory baseline (5 mismatches) unchanged."
+        },
+        "latent_doc_bugs_surfaced": [
+          "Q1-B1 (Major, doc_error): module_30.md:522 cited simple_apr24/input.gms:24 for c30_rotation_constraints; actual :14. Line :24 is the unrelated s30_betr_target scalar. Phase 2a sweep added simple_apr24/ prefix correctly but didn't grep-verify the line number. FIXED.",
+          "Q2-B1 (Minor, doc_error): module_80.md:316 cited s80_resolve_option declarations.gms:14; actual :15. The Phase 2b Parameters table itself had drift. FIXED.",
+          "Q2-B2 (Minor, doc_error): module_80.md:315 cited s80_counter declarations.gms:13; actual :14. Parallel to Q2-B1. FIXED.",
+          "Q3-B1 (Minor, doc_error): module_11.md:452 cited equations.gms:58 for vm_maccs_costs documentation comment; actual :60. Same drift pattern at L442 for vm_reward_cdr_aff (:57 -> :59). FIXED both.",
+          "Q4-B1 (Major, doc_error): module_38.md (5 locations: L33, L121, L336, L357, L617) attributes vm_cost_prod_crop consumption exclusively to M11; M36 (employment, exo_may22/equations.gms:23-25) is also a real consumer of the labor slice. Asymmetric drift: module_36.md correctly documents the M36->M38 dependency from the consumer side. FIXED all 5 producer-doc locations."
+        ],
+        "bugs_fixed_this_session": [
+          "module_30.md:522 c30_rotation_constraints citation simple_apr24/input.gms:24 -> :14",
+          "module_80.md:309 declarations range :8-13 -> :8-15 (header update)",
+          "module_80.md:315 s80_counter declarations.gms:13 -> :14",
+          "module_80.md:316 s80_resolve_option declarations.gms:14 -> :15",
+          "module_11.md:442 vm_reward_cdr_aff documentation comment equations.gms:57 -> :59",
+          "module_11.md:452 vm_maccs_costs documentation comment equations.gms:58 -> :60",
+          "module_38.md 5 locations (L33, L121, L336, L357, L617): added M36 (employment) as second consumer of vm_cost_prod_crop with citation to modules/36_employment/exo_may22/equations.gms:23-25",
+          "scripts/validate_consistency.sh: exclude audit/round*_answers/ and audit/round*_audits/ from the stale-prefix check (they are immutable captured agent outputs, not authoritative docs)"
+        ],
+        "bugs_deferred": [
+          "Q2-B3 (Minor, answerer_confabulation): Sonnet described s80_secondsolve as having '2 injection points' in lp_nlp_apr17 (LP + NLP); actual 8 sites (LP, LP-landdiff, main NLP, 3 NLP retries, 2 CPLEX add-solves). No doc fix; answerer compression error.",
+          "Q5-B1 (Minor, answerer_confabulation): Sonnet cited vm_manure_confinement at declarations.gms:21; actual :22 (adjacent to vm_manure_recycling at :21). The helper's protocol of re-reading before citing would have caught this; module_55.md was not the source. No doc fix.",
+          "Q1-B2/B3 (Info, answerer): off-by-one count framing 'four respects' enumerated as 5; rotamax/rotamax_red30 simplification. No fixes.",
+          "Q2-B4 (Info, scope): Sonnet omitted s80_add_cplex/s80_add_conopt3 from solver-scalar enumeration; not strictly required by question. No fix.",
+          "Q4-B2 (Info, process gap): Sonnet self-flagged LOW confidence on per_ton_fao_may22 declarations.gms line; a Read tool call would have produced verification. Process gap, no doc fix."
+        ],
+        "validator_gaps_surfaced": [
+          "Pattern D negative-evidence: check_consumer_attribution.py needs to grep for modules that read a variable and flag those NOT listed in producer-doc consumer list. Current check only verifies listed-consumers-grep-positive direction (false negative for omissions).",
+          "Citation fingerprint sensitivity: check_gams_citations_impl.py missed 5 adjacent-line drifts in this round. The fingerprint heuristic may be too tolerant when nearby lines contain similar content (e.g., scalar declarations near each other), or check ran before Phase-2 docs were written."
+        ],
+        "highlights": [
+          "Mean 8.93 vs R24 7.5 = +1.43 score recovery. Crosses both the 8.0 ('recovery') and 8.5 ('improvement') gates per plan.",
+          "0 CRITICAL bugs, 0 auditor false-positives (R24 had 1).",
+          "Both regression anchors stable (G1, G2 both 10/10): the AGENT.md trim from Phase 0 (846 -> 724 lines) did NOT degrade load-bearing context coverage.",
+          "Q5 confirms the magpie4 scaffolding (commit d44823f) works under organic question framing: Sonnet routed to magpie4_reference.md, cited .cache/sources/magpie4/ paths, respected version-pin v2.70.0 @ a360d8c9ec.",
+          "Phase 2 sweeps were structurally complete (correct realization scoping, correct new tables/sections), but had embedded citation-line drift. The sweeps added/edited content without grep-confirming cited line numbers post-edit. 6 line citations fixed this session.",
+          "Pattern D validator (Phase 1 1b) blind spot: Q4 caught a real M38 consumer omission (M36 employment) that the pre-launch baseline missed. Validator needs a negative-evidence pass.",
+          "Per plan failure-mode response: mean >=8.5 -> 'Recovery + improvement; proceed to Phase 4 design.' Phase 2 swept modules also warrant R26 re-probe to confirm post-fix stability after line-citation corrections."
+        ],
+        "r25_design_correction": "R25-Q4 question text incorrectly specified 'per_ton_fao_may22' as the default M38 realization; actual default is sticky_feb18. Sonnet correctly flagged this in its preamble. The (vm_cost_prod_crop, consumer) attribution finding is realization-independent (interface variable shared across realizations), so the bug discovery is unaffected. Note added so future round designers verify default-realization assertions against config/default.cfg."
+      },
+      "questions": [
+        {
+          "id": "R25-Q1",
+          "archetype": "default vs. switch + cross-module causal chain",
+          "modules_tested": [
+            30,
+            29,
+            10
+          ],
+          "question": "In MAgPIE's default configuration, what rotational constraints apply to cropland allocation in Module 30? Name the active realization, the equation(s) implementing the constraint(s), and the file:line where they are declared. Then say how the alternative realization differs in mechanism (not just file name).",
+          "score": 8.5,
+          "bugs_found": 3,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 0,
+          "bugs_informational": 2,
+          "phase_gate": "Phase 2a partial spirit-failure: realization scoping correct (no detail_apr24 lines as default), but module_30.md:522 had c30_rotation_constraints line drift (input.gms:24 -> :14). Sweep added simple_apr24/ prefix without verifying line.",
+          "notes": "Q1-B1 Major doc_error fixed. Q1-B2/B3 Info (count enumeration off-by-one, rotamax simplification) \u2014 answerer style."
+        },
+        {
+          "id": "R25-Q2",
+          "archetype": "quantitative + default vs. switch",
+          "modules_tested": [
+            80
+          ],
+          "question": "List the scalars in MAgPIE's default optimization realization that control solver behavior (re-solve attempts, max iterations, optfile selection, NLP relaxation), with each scalar's default value and source file:line. Name the active realization explicitly, and contrast 2-3 scalars against the alternative realization where the defaults differ.",
+          "score": 8.0,
+          "bugs_found": 4,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 3,
+          "bugs_informational": 1,
+          "phase_gate": "Phase 2b partial spirit-failure: Parameters table was added (correct structure) but 2 cited line numbers within the new table drifted. FIXED. Pattern: sweep added structure without grep-verifying citations.",
+          "notes": "Q2-B1/B2 Minor doc_errors fixed. Q2-B3 Minor answerer compression (2 -> 8 lp_nlp_apr17 secondsolve sites). Q2-B4 Info scope choice."
+        },
+        {
+          "id": "R25-Q3",
+          "archetype": "cross-module causal chain (>=3 modules) + quantitative",
+          "modules_tested": [
+            57,
+            51,
+            11
+          ],
+          "question": "Trace how nitrogen-MACC costs from Module 57 enter MAgPIE's objective function. Name (a) the cost variable Module 57 produces, (b) any intermediary variable in Module 51 (nitrogen emissions) it flows through, and (c) the term in q11_cost_reg (Module 11 default realization) that incorporates it. Cite the producer-module attribution per cost variable in the chain.",
+          "score": 9.0,
+          "bugs_found": 1,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 1,
+          "bugs_informational": 0,
+          "phase_gate": "Phase 2c PASSED. M11 \u00a717.2 cost-aggregator structure verified clean. MANDATE 17 (one-hop reads) PASSED: M51 correctly identified as upstream of M57 via emission quantities, NOT as a cost intermediary.",
+          "notes": "Q3-B1 Minor doc_error: module_11.md:452 vm_maccs_costs comment line :58 -> :60 (parallel fix at :442 for vm_reward_cdr_aff :57 -> :59). FIXED."
+        },
+        {
+          "id": "R25-Q4",
+          "archetype": "default vs. switch + consumer attribution (Pattern D test)",
+          "modules_tested": [
+            38,
+            11,
+            36
+          ],
+          "question": "Module 38 (factor_costs) supplies per-unit production costs in the default `per_ton_fao_may22` realization. Name each cost variable Module 38 declares as an interface (vm_cost_*), identify the consuming module(s) for each, and quote (file:line) the consumer equation that reads it.",
+          "score": 8.0,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 0,
+          "bugs_informational": 1,
+          "phase_gate": "Pattern D (Phase 1 1b) MISSED in pre-launch baseline. Q4 surfaced M36 omission from module_38.md consumer list (5 locations). Validator's negative-evidence check needs hardening. Completeness gate (only vm_cost_prod_crop declared in M38) PASSED.",
+          "notes": "Q4-B1 Major doc_error fixed across 5 module_38.md locations. Q4-B2 Info process gap (Sonnet didn't separately verify per_ton_fao_may22/declarations.gms line). Design note: question text incorrectly stated per_ton_fao_may22 is default (actual: sticky_feb18); Sonnet flagged the error; consumer attribution finding still valid because vm_cost_prod_crop is interface variable shared across realizations."
+        },
+        {
+          "id": "R25-Q5",
+          "archetype": "R-to-GAMS provenance via magpie4",
+          "modules_tested": [
+            "magpie4 helper",
+            51,
+            55,
+            56
+          ],
+          "question": "The IAMC variable `Emissions|N2O|Land|Agriculture|+|Animal Waste Management` appears in report.mif. Trace its origin: which magpie4 function produces it (cite the version-pinned path under .cache/sources/magpie4/...), which GAMS variable does that function read from the GDX, and which GAMS module/equation populates that variable?",
+          "score": 9.0,
+          "bugs_found": 1,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 1,
+          "bugs_informational": 0,
+          "phase_gate": "Organic magpie4 routing test PASSED. Sonnet loaded magpie4_reference.md auto-trigger, cited .cache/sources/magpie4/ exclusively (not workspace clone), reported version pin v2.70.0 @ a360d8c9ec. Full chain traced correctly: getReport -> reportEmissions -> .generateNitrogenReport -> ov_emissions_reg <- vm_emissions_reg.l (M56 postsolve) <- q51_emissionbal_awms <- vm_manure_confinement <- q55_manure_confinement.",
+          "notes": "Q5-B1 Minor answerer_confabulation: vm_manure_confinement cited at declarations.gms:21 (actual :22, adjacent to vm_manure_recycling). Memory drift; no doc fix needed."
+        },
+        {
+          "id": "R25-G1",
+          "archetype": "regression_anchor",
+          "regression_id": "G1",
+          "modules_tested": [
+            14
+          ],
+          "question": "What is the default realization of module 14 (yields)? List the equations defined in its equations.gms.",
+          "score": 10.0,
+          "drift_observed": false,
+          "bugs_found": 0,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0,
+          "bugs_informational": 0,
+          "notes": "Stable across R22, R23, R25 \u2014 all 10.0. Sonnet correctly identified managementcalib_aug19 as default + only realization, listed exactly 2 equations (q14_yield_crop at :14, q14_yield_past at :35), avoided the historical q14_yieldcalib trap. Calibration anchor remains stable; the AGENT.md trim (Phase 0) did not degrade this surface."
+        },
+        {
+          "id": "R25-G2",
+          "archetype": "regression_anchor",
+          "regression_id": "G2",
+          "modules_tested": [
+            52,
+            56
+          ],
+          "question": "Walk through how vm_carbon_stock is computed in Module 52 and where it enters the GHG-policy cost in Module 56. Cite the relevant equations and file:line locations.",
+          "score": 10.0,
+          "drift_observed": false,
+          "bugs_found": 0,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0,
+          "bugs_informational": 0,
+          "notes": "R22 fix holds. Sonnet correctly attributed declaration to M56 (price_aug22/declarations.gms:34), NOT M52. Proactively named the historical trap in a top-of-answer 'Framing Correction.' All M56 chain citations verified exact. Default c56_carbon_stock_pricing=actualNoAcEst verified."
+        }
+      ]
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 24,
+    "total_rounds": 25,
     "total_docs_validated": 85,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 474,
-    "total_bugs_fixed": 314,
+    "total_bugs_found": 485,
+    "total_bugs_fixed": 322,
     "validator_checks": 25,
     "validator_sub_checks": 40,
     "gams_variables_verified": 953,
     "gams_equations_verified": 139,
     "gams_realizations_verified": 75,
     "file_line_citations_verified": 2598,
-    "last_validation_date": "2026-05-24",
-    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5"
+    "last_validation_date": "2026-05-25",
+    "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93"
   }
 }

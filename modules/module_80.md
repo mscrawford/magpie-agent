@@ -306,14 +306,14 @@ Failure (modelstat > 2 and ≠ 7):
 
 `nlp_apr17` is the minimal-state realization: just enough scratch parameters to drive the retry loop. No LP-related state, no land-difference accumulator (consistent with the "no LP warmstart, no land-diff minimization" simplifications above).
 
-**Declarations** (`nlp_apr17/declarations.gms:8-13`):
+**Declarations** (`nlp_apr17/declarations.gms:8-15`):
 
 | Parameter | Dimensions | Unit | Description | Reference |
 |-----------|------------|------|-------------|-----------|
 | `p80_modelstat(t)` | time | (1) | Modelstat indicator (1=optimal, 2=locally optimal, >2=infeasible/error) | `nlp_apr17/declarations.gms:9` |
 | `p80_num_nonopt(t)` | time | (1) | Number of non-optimal variables (numNOpt) | `nlp_apr17/declarations.gms:10` |
-| `s80_counter` | scalar | (1) | Iteration counter for retry loop | `nlp_apr17/declarations.gms:13` |
-| `s80_resolve_option` | scalar | (1) | Option for resolve (cycles 1-4 across the 4-config fallback strategy) | `nlp_apr17/declarations.gms:14` |
+| `s80_counter` | scalar | (1) | Iteration counter for retry loop | `nlp_apr17/declarations.gms:14` |
+| `s80_resolve_option` | scalar | (1) | Option for resolve (cycles 1-4 across the 4-config fallback strategy) | `nlp_apr17/declarations.gms:15` |
 
 **Inputs** (`nlp_apr17/input.gms:8-13`):
 

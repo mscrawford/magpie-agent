@@ -30,7 +30,7 @@ Module 38 calculates the costs of production factors (labor and capital) in crop
 - Chemical fertilizer costs (calculated in Module 50)
 - Seeds and agricultural inputs (would double-count intermediate products)
 
-**Output Variable**: `vm_cost_prod_crop(i,factors)` (mio USD17MER/yr) where `factors = {labor, capital}`. Aggregated by Module 11 into the global objective.
+**Output Variable**: `vm_cost_prod_crop(i,factors)` (mio USD17MER/yr) where `factors = {labor, capital}`. Aggregated by Module 11 into the global objective; the `"labor"` slice is also read by Module 36 (employment) to compute agricultural employment.
 
 ---
 
@@ -118,7 +118,7 @@ q38_investment_mobile(j2) ..
 ### 2.2 Variables
 
 **Interface (output)**:
-- `vm_cost_prod_crop(i,factors)` (mio USD17MER/yr; `modules/38_factor_costs/sticky_feb18/declarations.gms:16`) — consumed by Module 11 via `q11_cost_reg`
+- `vm_cost_prod_crop(i,factors)` (mio USD17MER/yr; `modules/38_factor_costs/sticky_feb18/declarations.gms:16`) — consumed by Module 11 (via `q11_cost_reg`, both factors) and Module 36 (via `q36_employment` at `modules/36_employment/exo_may22/equations.gms:23-25`, `"labor"` factor only)
 
 **Internal positive variables**:
 - `v38_investment_immobile(j,kcr)` (mio USD17MER/yr; `declarations.gms:17`)
@@ -333,8 +333,10 @@ All three realizations expose the same interface variable to the rest of the mod
 **`vm_cost_prod_crop(i,factors)`** where `factors = {labor, capital}`, unit mio USD17MER/yr.
 
 - **Producer**: Module 38 (whichever realization is active)
-- **Consumer**: Module 11 (Costs) — summed in `q11_cost_reg` via `sum(factors, vm_cost_prod_crop(i2,factors))`
-- **Citation**: see `modules/module_11.md` §3 for the consumer-side description
+- **Consumers**:
+  - Module 11 (Costs) — summed in `q11_cost_reg` via `sum(factors, vm_cost_prod_crop(i2,factors))`
+  - Module 36 (Employment) — `vm_cost_prod_crop(i2,"labor")` read in `q36_employment` (`modules/36_employment/exo_may22/equations.gms:23-25`) to compute agricultural employment from labor cost
+- **Citation**: see `modules/module_11.md` §3 for the M11 consumer-side description and `modules/module_36.md` for the M36 consumer-side description
 
 `pm_factor_cost_shares(t,i,factors)` is also a `pm_` interface and is set by all three realizations (computed in `preloop.gms`). It is consumed by other parts of the model that need the labor/capital split — read its callers via:
 ```bash
@@ -355,6 +357,7 @@ find ../modules -name '*.gms' -exec grep -l 'pm_factor_cost_shares' {} \;
 
 **Provides to**:
 - **Module 11 (Costs)**: `vm_cost_prod_crop(i,factors)` — entered into `q11_cost_reg` (see `modules/module_11.md` §3 for the consumer side)
+- **Module 36 (Employment)**: `vm_cost_prod_crop(i,"labor")` — read by `q36_employment` to compute agricultural employment (`modules/36_employment/exo_may22/equations.gms:23-25`)
 - **Other modules** via `pm_factor_cost_shares(t,i,factors)` — used wherever the labor/capital cost split is needed
 
 **Internal coupling** (sticky family only): capital stock today depends on investment yesterday; production today depends on capital stock today via the investment shortfall equations — this creates the spatial path dependency that motivates the realization.
@@ -614,7 +617,7 @@ If you've switched to `sticky_labor`, the additional checks are:
 - **Name**: Factor Costs (Module 38)
 - **Purpose**: Calculate labor and capital costs for crop production
 - **Active default**: `sticky_feb18` (verify: `grep "cfg\$gms\$factor_costs" ../config/default.cfg`)
-- **Output**: `vm_cost_prod_crop(i,factors)` consumed by Module 11's `q11_cost_reg`
+- **Output**: `vm_cost_prod_crop(i,factors)` consumed by Module 11's `q11_cost_reg` (both factors) and Module 36's `q36_employment` (`"labor"` slice only, for agricultural employment calculation)
 
 ### 14.2 Realization quick-reference
 
