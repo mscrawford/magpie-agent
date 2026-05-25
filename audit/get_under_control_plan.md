@@ -115,6 +115,50 @@ Order matters: do Phase 1 first so the validators catch mechanical drift before 
 | **R25** | High-bomb-probability fresh modules: M11, M38, M52, M53, M70. Pre-sweep each target doc with Phase 1 validators before Sonnet probes. Rotate back to G1+G2 anchors. | Mean ≥8.0 (recover from 7.5) |
 | **R26** | Re-probe Phase 2's swept modules (M30, M80, M11). Establish post-sweep baseline. | ≥8.5/10 per R13 post-fix-retest precedent |
 
+### What R25 specifically must check (added 2026-05-25 end-of-Phase-2)
+
+The R6 / Phase 0-2 work was structural; Phase 3 is the empirical test. R25 needs to answer these specific questions:
+
+**A. Did the bomb rate drop?**
+- Mean score ≥8.0 (R24 was 7.5; gate is "recover")
+- 0 CRITICAL bugs (R4/R5 baseline was 0; Phase 0 work shouldn't have introduced any)
+- ≤1 HIGH bug per question on average (R24 had 16 HIGH across 6 questions; aim for ~6 HIGH)
+
+**B. Did the Phase 2 sweeps actually work?**
+- **NO bombs in M30**: the realization-aware labeling should mean answers about simple_apr24 cite simple_apr24 file:line, not detail_apr24. If a question about default M30 behavior surfaces detail_apr24 line numbers, the sweep was superficial.
+- **NO bombs in M80**: questions touching `s80_resolve_option`, `s80_maxiter`, etc. for the default nlp_apr17 realization should answer from the new Parameters table, not from lp_nlp_apr17.
+- **NO bombs in M11**: the R3 §17.2 fix held under spot-check; R25 should confirm it holds under adversarial probing too.
+
+**C. Did the new Phase 1 mechanizations actually catch their target classes?**
+- **check_units (1a)**: if any new doc edits land between now and R25, run `python3 scripts/check_units.py` first. Should catch any new Tg/Mg-class drift.
+- **Pattern D consumer attribution (1b)**: if a question probes "which modules consume vm_X", the answer should be grep-verifiable. Pattern D is now armed to catch wrong-module attribution prospectively.
+- **Citation fingerprint (1d)**: any new file:line citation in a doc edit should be verifiable; `check_gams_citations_impl.py` now reports actual occurrence + suggested update target when content shifts.
+- **MANDATE 17 (1c)**: questions about variable consumption chains should distinguish direct readers from aggregate-via-intermediary. The R24 Q4-B3 class (M30 → vm_carbon_stock_croparea → M52/M56 attribution error) shouldn't recur.
+
+**D. Did the AGENT.md trim degrade response quality?**
+- Watch for answers that miss load-bearing context that USED to be in always-loaded surface but now lives in a hoisted helper (session_cleanup, link_dont_duplicate, directory_structure). If a question that would have benefited from one of these is answered without it, the auto-load trigger may need tightening or the hoist may need partial revert.
+- Watch for over-tightened triggers (the 4 trigger tightenings in Cluster F: bare "modify"/"water"/"scenario"/"equation" removed). If a question that SHOULD have loaded the relevant helper doesn't trigger it, the trigger list is now too narrow.
+
+**E. Did the magpie4 + preproc workflow additions route correctly?**
+- A question about a report.mif variable should route through `magpie4_reference.md` (G3/G4 regression questions test this directly per validation_rounds.json schema v1.2).
+- A question about input data origin should route to `PREPROC_AGENT.md` per the new DOCUMENT HIERARCHY branch.
+
+**F. Validator state at R25 launch**
+- Run `bash scripts/validate_consistency.sh` immediately before launching R25 questions. Expected: 39/40 pass + 2 acceptable warnings (the README/helper CLAUDE.md mentions + the units advisory). If state has drifted, fix BEFORE running R25 — otherwise R25 confounds Phase 2 outcomes with subsequent drift.
+
+**Practical R25 protocol**:
+1. `bash scripts/validate_consistency.sh` — confirm baseline state.
+2. `python3 scripts/check_units.py --summary` — note current count of advisory mismatches.
+3. `python3 scripts/check_consumer_attribution.py --summary-only` — note Pattern D state.
+4. Run `/validate-semantic` per the standard flow.
+5. Compare: any HIGH-severity finding in M30/M80/M11 means Phase 2 was superficial → revisit. Any check_units / Pattern D / fingerprint finding that the question's auditor MISSED (but the validator caught) means the validator is doing its job and is high-leverage to wire as a regression gate.
+
+**Failure-mode flags for R25**:
+- Mean <7.5 → Phase 0-2 made things worse (rollback or partial-revert assessment needed)
+- Mean 7.5-7.9 → Phase 0-2 didn't help materially (re-strategize before Phase 4)
+- Mean 8.0-8.4 → Recovery achieved; Phase 2's swept modules should be probed in R26 to confirm
+- Mean ≥8.5 → Recovery + improvement; proceed to Phase 4 design
+
 ## Phase 4 — Prospective prevention (1-2 weeks, separate initiative)
 
 **Goal**: catch drift at PR-merge time, not at flywheel-round time.
