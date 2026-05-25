@@ -75,12 +75,14 @@ When a helper is used and:
 
 ### Promoting Lessons
 
-**Trigger**: When a helper's Lessons Learned section reaches **5+ entries**, review them during the next session that loads the helper:
+**Trigger**: When a helper's Lessons Learned section reaches **2+ entries**, review them during the next session that loads the helper:
 1. If a lesson is widely applicable, move its content into the relevant main section (Quick Reference, Pitfalls, etc.)
 2. Mark the original entry: `[PROMOTED to Quick Reference]`
 3. If a lesson is narrow/situational, leave it in place — it's still useful context
 
-**The agent should check lesson count** (in the header `Lessons count: N entries`) each time it loads a helper. When N ≥ 5, scan for promotion candidates before answering.
+**The agent should check lesson count** (in the header `Lessons count: N entries`) each time it loads a helper. When N ≥ 2, scan for promotion candidates before answering.
+
+(Threshold lowered from 5 to 2 in R6 Cluster H4 — the original 5 was set at template creation but no helper had ever hit it, so the promotion mechanism was dead. 2 entries is achievable and surfaces real candidates.)
 
 ### Feedback Integration
 

@@ -10,6 +10,9 @@
 
 **Cross-references**: each MANDATE references `audit/validation_rounds.json` round R-numbers and `core_docs/Bug_Taxonomy.md` patterns. See `audit/flywheel_rubric.md` for severity scoring.
 
+**Last updated**: 2026-05-25
+**Lessons count**: 0 entries
+
 ---
 
 ## Origin (read once)
