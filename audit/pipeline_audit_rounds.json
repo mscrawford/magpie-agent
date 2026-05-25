@@ -659,6 +659,235 @@
       ],
       "status": "fixed + mechanized; 3 phases committed (e3b0cc2 spot-fixes, 99917e3 mechanizations, bb6ec32 opportunistic cleanup)",
       "notes": "R5 ran immediately after a high-change session (commits d44823f magpie4 scaffolding + 327116c /feedback removal + 1c7df77 feedback->audit rename + e7bbb39 G3/G4 regression questions). Lens 4 (instruction-surface) deliberately biased toward the new surface; AGENT.md / deployed copies / helper trigger sync all verified clean. The session's changes themselves introduced no CRITICAL bugs; the sed-sweep produced LOW-severity collateral in historical narrative (Cluster D). Most HIGH/MEDIUM findings predate this session (Pattern 6 count drift, Pattern 10 citations, M18 wrong consumer, M30 default realization deferred since R3). Highest-leverage intervention: one-line scope extension in check_gams_citations_impl.py (Cluster B) \u2014 closes the largest historical bug class outside its current modules/-only scope. Six lenses ran in parallel; total wall-clock ~13 minutes; ~6 Opus 4.7 subagents."
+    },
+    {
+      "round": 6,
+      "date": "2026-05-25",
+      "commit": "ad583d2",
+      "auditor_model": "claude-opus-4-7",
+      "round_type": "doc-surface-drift-audit",
+      "lenses_run": [
+        "L1-staleness",
+        "L2-dead-conventions",
+        "L3-half-deployed-patterns",
+        "L4-cross-doc-inconsistency",
+        "L5-misplaced-outputs",
+        "L6-reference-graph-integrity",
+        "L7-surface-bloat-and-workflow-gaps"
+      ],
+      "findings_total": 58,
+      "findings_raw": 70,
+      "dedup_reduction": "12 findings collapsed via cross-lens corroboration",
+      "by_severity": {
+        "CRITICAL": 0,
+        "HIGH": 16,
+        "MEDIUM": 25,
+        "LOW": 17
+      },
+      "by_lens": {
+        "L1-staleness": 6,
+        "L2-dead-conventions": 9,
+        "L3-half-deployed-patterns": 3,
+        "L4-cross-doc-inconsistency": 5,
+        "L5-misplaced-outputs": 7,
+        "L6-reference-graph-integrity": 11,
+        "L7-surface-bloat-and-workflow-gaps": 17
+      },
+      "corroborated": [
+        {
+          "finding": "C1: project/CURRENT_STATE.json declared 'SINGLE SOURCE OF TRUTH' but last_updated 2026-03-07 (79 days) with stale internal counts (claims 10 helpers / 6 commands / 13-round; actual 14 / 10 / 24)",
+          "lenses": [
+            "L1-staleness",
+            "L2-dead-conventions",
+            "L4-cross-doc-inconsistency",
+            "L6-reference-graph-integrity"
+          ],
+          "severity": "HIGH"
+        },
+        {
+          "finding": "C2: cross_module/{land,water,carbon}_balance_conservation.md footer 'Last Updated: 2025-10-22' (215 days) while files modified 2026-05-24 substantively",
+          "lenses": [
+            "L1-staleness",
+            "L6-reference-graph-integrity"
+          ],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "C3: agent/commands/bootstrap.md:110 'Expected: 6 command files' \u2014 actual 10",
+          "lenses": [
+            "L2-dead-conventions",
+            "L4-cross-doc-inconsistency",
+            "L6-reference-graph-integrity"
+          ],
+          "severity": "HIGH"
+        },
+        {
+          "finding": "C4: pipeline-audit.md and AGENT.md:202 hardcode '6 lenses / 6 parallel Opus agents' \u2014 current R6 runs 7",
+          "lenses": [
+            "L2-dead-conventions",
+            "L4-cross-doc-inconsistency"
+          ],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "C5: 3 helpers (adding_new_scenario, comparing_model_runs, water_scarcity_scenarios) stamp 'Last updated: 2025-07-15/18' \u2014 file first commit is 2026-03-07 (impossible old date)",
+          "lenses": [
+            "L1-staleness",
+            "L6-reference-graph-integrity"
+          ],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "C6: maintenance_protocol.md self-claims authority for staleness/sync questions while own Last updated is 79 days old and Lessons count is 0",
+          "lenses": [
+            "L1-staleness",
+            "L2-dead-conventions",
+            "L6-reference-graph-integrity"
+          ],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "C7: core_docs/Tool_Usage_Patterns.md header 'Last Updated: 2025-11-29' (178 days), file modified 2026-05-24",
+          "lenses": [
+            "L1-staleness",
+            "L6-reference-graph-integrity"
+          ],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "C8: AGENT.md 'Modules with multiple realizations' list omits 18 of 40 actual cases (including hubs 10, 14, 52, 56 where Step 1c is most needed)",
+          "lenses": [
+            "L2-dead-conventions"
+          ],
+          "severity": "HIGH",
+          "note": "single-lens but high confidence; L4 had count-drift on adjacent facets"
+        },
+        {
+          "finding": "C9: validation_rounds.json schema_version drift \u2014 validate-semantic.md says v1.1; JSON header is v1.2",
+          "lenses": [
+            "L4-cross-doc-inconsistency"
+          ],
+          "severity": "HIGH",
+          "note": "single-lens but high confidence"
+        },
+        {
+          "finding": "C10: project/README.md says '2 essential files' \u2014 actual project/ has 4 (CURRENT_STATE.json, README.md, sync_log.json, version_pins.json)",
+          "lenses": [
+            "L2-dead-conventions",
+            "L6-reference-graph-integrity"
+          ],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "C11: README.md '~290K words' vs AGENT.md '~342K words' vs actual ~347K words; README.md not in refresh_aggregate_counts.py TARGET_FILES",
+          "lenses": [
+            "L4-cross-doc-inconsistency"
+          ],
+          "severity": "HIGH",
+          "note": "single-lens but high confidence; verified by reading script source"
+        },
+        {
+          "finding": "C12: Cluster D security risk \u2014 validation_report_*.txt orphans in parent /magpie/ root + same defect class still in validate_consistency.sh + stale .bak with original bug + parent .gitignore missing entries for entire installed agent surface (parent origin is git@github.com:magpiemodel/magpie.git)",
+          "lenses": [
+            "L5-misplaced-outputs"
+          ],
+          "severity": "HIGH",
+          "note": "L5-unique; 4 sub-findings collapse to one root cause; real exposure risk"
+        }
+      ],
+      "root_cause_clusters": [
+        {
+          "cluster": "A \u2014 CURRENT_STATE.json is a dead SSOT; project/ is a confused directory",
+          "findings": 9,
+          "candidate_intervention": "RETIRE CURRENT_STATE.json as SSOT (resolves Standing Decision i); replace 5 pointers with audit/*.json + commit log + agent_lessons.md; move sync_log.json to audit/ so project/ reverts to 2-file framing; remove 'Updated CURRENT_STATE.json' from per-module Quick Quality Checklist",
+          "effort_h": 1.5,
+          "risk": "low",
+          "order": "FIRST (blocks B & E)"
+        },
+        {
+          "cluster": "B \u2014 Static 'Last updated' headers everywhere drift",
+          "findings": 13,
+          "candidate_intervention": "DROP the static Last updated convention (preferred B1); replace with 'run git log -1 to see last semantic edit'; add Hub-status footer to high-in-degree files; OR add pre-commit hook bumping field (B2)",
+          "effort_h": 2,
+          "risk": "low",
+          "order": "after A"
+        },
+        {
+          "cluster": "C \u2014 Empty scaffolds without backfill: notes files + Lessons Learned",
+          "findings": 3,
+          "candidate_intervention": "Resolves Standing Decision iv: KEEP sidecar pattern; DELETE the 8 empty module_XX_notes.md stubs; BACKFILL 3 (M10, M56, M70) from validation_rounds.json findings; add Lessons count header to verifiers.md; lower promotion threshold from 5 to 2 or downgrade language",
+          "effort_h": 1.5,
+          "risk": "low",
+          "order": "parallel with B"
+        },
+        {
+          "cluster": "D \u2014 Misplaced outputs + .gitignore exposure: real security risk",
+          "findings": 5,
+          "candidate_intervention": "HIGHEST URGENCY: (1) add AGENT.md/CLAUDE.md/PREPROC_AGENT.md/magpie-agent//magpie-preproc-agent//.claude//.copilot//validation_report_*.txt/.cache/ to parent /magpie/.gitignore; (2) move/delete 2 existing orphan validation_report_*.txt; (3) fix validate_consistency.sh CWD-before-cd bug; (4) DELETE .bak; (5) git mv add_timestamps.py to scripts/; (6) tighten *.cs* to explicit *.cs2/*.cs3/*.cs4; (7) commit R6 design doc",
+          "effort_h": 1,
+          "risk": "low",
+          "order": "HIGHEST URGENCY \u2014 first"
+        },
+        {
+          "cluster": "E \u2014 Aggregate counts hardcoded, not markered",
+          "findings": 8,
+          "candidate_intervention": "Extend <!--count:--> marker mechanism: add markers for n_commands, n_helpers, n_lenses_current_round, total_doc_words, total_doc_lines, gams_realizations_verified, n_modules_multi_realization, validation_schema_version; extend refresh_aggregate_counts.py TARGET_FILES to include README.md, bootstrap.md, realization_selection.md, circular_dependency_resolution.md; replace static 'Modules with multiple realizations' list with dynamic instruction; reconcile lens count (canonical 6 + R6 per-round override)",
+          "effort_h": 2.5,
+          "risk": "low",
+          "order": "after A and B"
+        },
+        {
+          "cluster": "F \u2014 AGENT.md bloat + magpie4/preproc workflow gaps",
+          "findings": 17,
+          "candidate_intervention": "Hoist 3 sections to dedicated helpers (SESSION CLEANUP, LINK DON'T DUPLICATE, DIRECTORY STRUCTURE) \u2014 saves ~180 lines; add Auto-Loading rows for new helpers; add magpie4 + preproc to 5 workflow-scaffold sections (MANDATORY WORKFLOW Step 1, QUICK MODULE FINDER, QUALITY GUARD, DOCUMENT HIERARCHY, QUICK RESPONSE CHECKLIST); tighten 4 overly-broad triggers (GAMS/modify/water/scenario); optional Twin-agent + COMPLETE DOC STRUCTURE trims",
+          "effort_h": 4.5,
+          "risk": "medium",
+          "order": "LAST (0g; deploy step ships trimmed version)"
+        },
+        {
+          "cluster": "G \u2014 Reference-graph integrity: hub asymmetry + pointer-to-nonexistent + subordinate-README inventory drift",
+          "findings": 8,
+          "candidate_intervention": "Add class-level rule to maintenance_protocol.md ('subordinate READMEs MUST NOT include inventories maintained elsewhere \u2014 only pointers'); audit all *README.md for re-occurrences; fix 4 specific pointer bugs (## Requested Helpers, AGENT.md:300 section name, magpie4_scaffolding_plan \u00a722 self-deposed, modules/README.md Phase 2 stale); add Hub-status footer to high-in-degree files; optional: build pointer_graph.json into refresh_aggregate_counts.py",
+          "effort_h": 1.5,
+          "risk": "low",
+          "order": "parallel with B"
+        },
+        {
+          "cluster": "H \u2014 Dead conventions: hollow automation claims + unenforced trigger thresholds + un-rotated ledgers",
+          "findings": 5,
+          "candidate_intervention": "Wire validate_consistency.sh into session_startup.md Step 6 (H1); lower promotion threshold from 5 to 2 (H2); wire probe_dedup_check.py post-validate-semantic (H3); fix README don't-read contradiction (H4); add Last updated/Lessons count headers to verifiers.md (H5; also in Cluster C)",
+          "effort_h": 1.5,
+          "risk": "low",
+          "order": "after E"
+        }
+      ],
+      "recurring_classes_for_mechanization": [
+        "Hardcoded counts drift -> extend <!--count:--> marker + refresh_aggregate_counts.py TARGET_FILES (R5-precedent on GAMS-side counts; R6 recurrence on doc-surface counts)",
+        "Static 'Last updated' dates drift -> drop convention OR pre-commit hook auto-bump",
+        "Subordinate-README inventory drift (R3 fix resurfaced) -> class-level rule in maintenance_protocol.md + audit script"
+      ],
+      "standing_decisions_resolved": {
+        "i_current_state_json": "RETIRE as SSOT \u2014 5 lenses corroborated dead convention; replace 5 pointers; archive as v1.0 snapshot or demote with banner",
+        "ii_dependency_analysis": "MARK as Oct-2025 snapshot (don't delete, don't regenerate now) \u2014 revert April 2026 in-body insert + add 'Post-snapshot updates' addendum; regenerate is separate ~4-8h initiative",
+        "iii_archive_directories": "KEEP \u2014 disclaimers already in place; no live references; ~170KB cheap; status quo wins",
+        "iv_notes_pattern": "KEEP sidecar; DELETE the 8 empty stubs; BACKFILL 3 (M10, M56, M70) from validation_rounds findings",
+        "v_phase_4_scope": "DEFER to Phase 4 design \u2014 R6 has no data informing CI infrastructure choice"
+      },
+      "recommended_ordering_for_0f_0g": [
+        "0f-1 (Cluster D, 1h, low risk, HIGHEST URGENCY): close parent-repo security exposure first",
+        "0f-2 (Cluster A, 1.5h, low risk): retire CURRENT_STATE.json as SSOT; move sync_log.json to audit/",
+        "0f-3 (Cluster C, 1.5h, low risk): delete 8 empty notes; backfill M10/M56/M70; fix verifiers.md header",
+        "0f-4 (Cluster B, 2h, low risk): drop static Last-updated convention; sweep ~30 files; add Hub-status footer",
+        "0f-5 (Cluster G, 1.5h, low risk): class-level inventory rule + 4 specific pointer bugs",
+        "0f-6 (Cluster H, 1.5h, low risk): wire Layer 1 validator; lower promotion threshold; wire probe_dedup; fix README contradiction",
+        "0f-7 (Cluster E, 2.5h, low risk): extend marker mechanism + TARGET_FILES; dynamic multi-realization instruction; reconcile lens count",
+        "0g (Cluster F, 4-5h, medium risk, LAST): AGENT.md hoists + magpie4/preproc scaffold inserts + trigger tightenings + deploy + verify byte-identical"
+      ],
+      "total_effort_estimate_h": "15-17h (vs original plan estimate 6-8h; R6's broader find ratio bumps this; split across 2 sessions recommended)",
+      "report_path": "audit/pipeline_audit_round6.md",
+      "guards_added": [],
+      "status": "triaged + clustered; awaiting user decisions on standing items before fix phase 0f",
+      "notes": "R6 is a deliberately differently-shaped round vs R1-R5: it hunts doc-surface drift (NOT doc<->code fidelity, which R1-R5 saturated). 7 lenses (not 6) decorrelated by method per template_multi_agent_audit. All 4 calibration anchors (CURRENT_STATE.json, helper 2025-07 dates, bootstrap.md '6 commands', AGENT.md size + magpie4 gap) corroborated across multiple lenses \u2014 decorrelation engineering worked. Critical-zero (consistent with R4/R5) but HIGH-16 (up from R5's 6) confirms doc-surface drift produces a different severity profile than doc<->code drift. 70 raw findings -> 58 deduplicated -> 8 root-cause clusters (K=8 vs N=58 ratio ~7x matches R3 precedent). 5 standing decisions resolved with R6 data: 4 actionable recommendations (retire SSOT, mark snapshot, keep archives, prune notes), 1 deferred to Phase 4. Highest-urgency intervention: Cluster D (gitignore + script CWD fix + .bak delete) \u2014 closes a real parent-repo security exposure (parent's origin is the upstream MAgPIE public repo). Highest-leverage architectural intervention: Cluster F (AGENT.md trim + magpie4 fold-in) \u2014 clears Claude's deployed-surface warning + closes the magpie4 workflow gap discovered as broader than R24 originally surfaced (5 scaffold sections, not 1). Standing decision recommendations awaiting user approval before fix phase 0f-0g execution."
     }
   ]
 }
