@@ -17,7 +17,7 @@ Documentation health is maintained through three complementary layers, each catc
 
 ### Layer 1 — Syntactic Validation (automated, every session)
 
-**What it does**: `scripts/validate_consistency.sh` runs <!--count:validator_main_checks-->25<!--/count--> top-level structural checks (<!--count:validator_sub_checks-->40<!--/count--> sub-checks) against the documentation.
+**What it does**: `scripts/validate_consistency.sh` runs <!--count:validator_main_checks-->26<!--/count--> top-level structural checks (<!--count:validator_sub_checks-->40<!--/count--> sub-checks) against the documentation.
 
 **What it catches**:
 - Broken cross-references and internal links

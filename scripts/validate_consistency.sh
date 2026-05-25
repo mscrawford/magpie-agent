@@ -965,7 +965,7 @@ fi
 # Migration was applied 2026-05-24 via scripts/migrate_bare_cites.py.
 # Pedagogical examples can opt out via per-doc or per-line allow markers.
 # ===============================================
-print_section "25/25" "Checking for bare-basename .gms citations in non-module docs..."
+print_section "25/26" "Checking for bare-basename .gms citations in non-module docs..."
 
 BARE_CITES_SCRIPT="$AGENT_DIR/scripts/check_no_bare_cites.py"
 if [ -f "$BARE_CITES_SCRIPT" ]; then
@@ -981,6 +981,23 @@ if [ -f "$BARE_CITES_SCRIPT" ]; then
     fi
 else
     check_warning "Bare-cite checker not found: $BARE_CITES_SCRIPT"
+fi
+
+print_section "26/26" "Checking doc unit claims vs declarations.gms canonical units (advisory)..."
+
+UNITS_SCRIPT="$AGENT_DIR/scripts/check_units.py"
+if [ -f "$UNITS_SCRIPT" ]; then
+    UNITS_OUTPUT=$(python3 "$UNITS_SCRIPT" --summary 2>&1)
+    UNITS_COUNT=$(echo "$UNITS_OUTPUT" | grep -oE "[0-9]+ mismatch" | grep -oE "[0-9]+" || echo "?")
+    if [ "$UNITS_COUNT" = "0" ]; then
+        check_pass "Doc unit claims match canonical declarations"
+    else
+        # Advisory: warning only. Drift here is sometimes legitimate
+        # (e.g., doc abbreviates "USD17MER" as "USD"); reviewer triages.
+        check_warning "$UNITS_COUNT doc unit claim(s) differ from canonical (advisory; run scripts/check_units.py for details)"
+    fi
+else
+    check_warning "Unit checker not found: $UNITS_SCRIPT"
 fi
 
 # ============
