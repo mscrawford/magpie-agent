@@ -114,10 +114,7 @@ I'm your AI assistant for the MAgPIE land-use model. I have curated documentatio
 **If answering MAgPIE questions:** Follow the workflow below.
 
 **📍 CRITICAL - Git Workflow for AGENT.md:**
-All AI documentation lives in the `magpie-agent/` repo. Edit AGENT.md here (the source), then deploy via `cp AGENT.md ../AGENT.md`. Never commit AI docs from the parent MAgPIE repo.
-
-**📍 CRITICAL - Git Workflow for AGENT.md:**
-All AI documentation lives in the `magpie-agent/` repo. Edit AGENT.md here (the source), then deploy via `cp AGENT.md ../AGENT.md`. Never commit AI docs from the parent MAgPIE repo.
+All AI documentation lives in the `magpie-agent/` repo. Edit AGENT.md here (the source), then deploy via `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md`. Never commit AI docs from the parent MAgPIE repo.
 
 ---
 
@@ -297,7 +294,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 Before answering code-specific questions, verify documentation is current:
 1. Check `project/sync_log.json` → `sync_status.last_sync_commit`
 2. Compare against MAgPIE's current HEAD: `git -C .. log --oneline <last_sync_commit>..HEAD | wc -l`
-3. Apply staleness badge (see Auto-Loading Helpers section for badge definitions)
+3. Apply staleness badge (see "Auto-Loading Context Helpers" → "Sync freshness badges" subsection below for badge definitions)
 4. If 🔴 stale, warn the user before answering and recommend running `/sync`
 
 ### Step 1c: Check Active Realization & Configuration
@@ -844,3 +841,8 @@ For **deep sync** (reading commit diffs and updating module docs), use `/sync`.
 ### Sync Tracking
 
 **Location**: `project/sync_log.json` — tracks last sync date, commit hash, and modules reviewed.
+
+
+---
+
+**Hub status (R6 2026-05-25)**: AGENT.md is the SSOT for agent behavior, referenced from every helper, every command, and the deployed copies `../AGENT.md` + `../CLAUDE.md`. If you rename identifiers, change conventions, alter the auto-load trigger table, or restructure the workflow steps, the blast radius is broad. Verify dependents with `grep -rln "AGENT.md" --include="*.md" .` and `diff AGENT.md ../AGENT.md && diff AGENT.md ../CLAUDE.md` before considering the change done.

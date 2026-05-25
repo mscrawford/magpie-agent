@@ -1096,3 +1096,8 @@ library(magpie4)
 ---
 
 **REMEMBER**: These 4 modules are the **structural backbone** of MAgPIE. Treat modifications with extreme care. When in doubt, **test more, change less**.
+
+
+---
+
+**Hub status (R6 2026-05-25)**: this file is referenced from 8+ helpers and module docs as authoritative for the conservation law / safety profile it documents. If you change equation names, set semantics, or risk-tier assignments, audit dependents (`grep -rln "modification_safety_guide.md" --include="*.md" .`) before committing.

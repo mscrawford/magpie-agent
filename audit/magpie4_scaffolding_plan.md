@@ -15,7 +15,7 @@ Enable the magpie-agent to answer questions about magpie4 (the R post-processing
 
 ## Non-goals (scope guards)
 
-- **No curated function docs.** magpie4 has 309 exports; `getReport` alone fans out to 108 `report*` callees. Curation would be an endless treadmill.
+- **No curated function docs.** magpie4 has 309 exports; `getReport` alone fans out to ~106 `report*` callees (see top-of-file correction note). Curation would be an endless treadmill.
 - **No coverage of `magpiesets`, `gdx2`, or other postproc R packages.** Deferred until magpie4 lean scaffolding is proven; the same mechanism extends trivially if needed.
 - **No magpie4 inclusion in core_docs/** — it's not an architectural concept of MAgPIE itself.
 - **No live source reads against `~/Documents/Work/Workspace/magpie4/`** (HEAD) — that clone drifts from the renv-pinned version. The user's runs use version 2.70.0 per `magpie/input/renv.lock`; the workspace clone is at 2.75.1 (5 minor versions ahead).
@@ -24,7 +24,7 @@ Enable the magpie-agent to answer questions about magpie4 (the R post-processing
 
 - `magpie/input/renv.lock` pins **magpie4 @ 2.70.0** (Source: "Repository", date 2026-03-13). The renv.lock entry needs to be parsed to extract the version; SHA may need a separate lookup via `git ls-remote --tags pik-piam/magpie4 v2.70.0`.
 - Local clone at `~/Documents/Work/Workspace/magpie4/` is at **2.75.1** — DO NOT use for version-correct reads.
-- `getReport.R` calls **108 unique `report*` functions** via an `if/else if (any(grepl(...)))` dispatch pattern. Each `reportX` corresponds to an IAMC variable subtree.
+- ~~`getReport.R` calls **108 unique `report*` functions** via an `if/else if (any(grepl(...)))` dispatch pattern. Each `reportX` corresponds to an IAMC variable subtree.~~ **[CORRECTED 2026-05-24 R5 audit]** Actual: 106 unique `report*` functions, dispatched via flat `tryList(...)` of unconditional calls (no `control` argument, no `grepl` gating). See `agent/helpers/magpie4_reference.md` for the verified structure.
 - `scripts/output/rds_report.R:37` (in MAgPIE proper) is what invokes `magpie4::getReport(gdx)`.
 - Direct namespace-qualified usage in `scripts/output/`: only 9 calls (`magpie4::land` 4×, `magpie4::tau` 2×, `magpie4::croparea` 2×, `magpie4::production` 1×, plus 5 singletons). Most calls are bare-name under `library(magpie4)`.
 

@@ -325,3 +325,8 @@ stopifnot(max_shortage < 0.01)  # Small tolerance for numerical error
 **Verified Against**: MAgPIE 4.x module documentation
 **Created**: 2025-10-22
 **Note**: This is a concise summary. Full documentation available in individual module docs.
+
+
+---
+
+**Hub status (R6 2026-05-25)**: this file is referenced from 8+ helpers and module docs as authoritative for the conservation law / safety profile it documents. If you change equation names, set semantics, or risk-tier assignments, audit dependents (`grep -rln "nitrogen_food_balance.md" --include="*.md" .`) before committing.

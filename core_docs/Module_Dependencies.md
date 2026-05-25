@@ -417,3 +417,7 @@ The dependency analysis reveals MAgPIE as a tightly coupled system with clear ar
 4. **Clear architectural layers** from inputs through optimization
 
 This dependency map provides essential guidance for model development, testing strategies, and understanding change propagation through the system.
+
+---
+
+**Hub status (R6 2026-05-25)**: Module_Dependencies.md is referenced from ~15+ helpers and module docs as authoritative for cross-module dependency counts, consumer/provider attributions, and centrality rankings. If you recompute counts here, audit dependents (`grep -rln "Module_Dependencies" --include="*.md" .`) and update any cited counts that appear elsewhere — see `agent/helpers/maintenance_protocol.md` §5 class-level rule on subordinate-README inventory drift.

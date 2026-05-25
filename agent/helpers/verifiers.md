@@ -274,3 +274,8 @@ This invokes the variable, equation, realization, and citation checkers. Any fai
 <!-- Append new MANDATEs or worked examples as future rounds surface them. Each entry: date, MANDATE number, what was found, source round. -->
 
 - **2026-05-23 (origin)**: hoisted from AGENT.md Step 1d. 16 MANDATEs preserved verbatim from the prior in-place version, with binding language tightened and worked examples drawn from the rounds named in each rule's text. R1-R21 validation history is the empirical foundation.
+
+
+---
+
+**Hub status (R6 2026-05-25)**: verifiers.md is auto-loaded into every session that hits a GAMS identifier (vm_/pm_/q_/realization/etc.) and is referenced from AGENT.md as the binding source for the 16 MANDATEs. If you add a MANDATE, change its trigger language, or renumber, update AGENT.md Step 1d short-index table (and the deployed copies) in the same commit to avoid index drift.

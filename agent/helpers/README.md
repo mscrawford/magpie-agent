@@ -22,7 +22,9 @@ Each helper is a **self-improving document**: its "Lessons Learned" section accu
 
 That table is the single source of truth for trigger keywords and helper files. This README intentionally does NOT duplicate it, because a duplicated routing table drifts (R3 audit found this README was 5+ helpers behind AGENT.md). When you add or modify a helper, update only the AGENT.md table.
 
-For a quick overview, helpers in this directory currently cover: session startup (always); anti-confabulation MANDATEs (`verifiers.md`); infeasibility debugging; carbon-pricing/diet/water-scarcity scenarios; modification impact analysis; output interpretation; realization selection; adding crops; adding scenarios; comparing model runs; documentation maintenance. See `AGENT.md` for exact triggers.
+For the current helper inventory + triggers, see `AGENT.md` "Auto-Loading Context Helpers" table.
+(Per `agent/helpers/maintenance_protocol.md` §5 "Class-level rule", this README intentionally
+does NOT enumerate helpers — that surface drifts. `ls agent/helpers/*.md` shows the file list.)
 
 ### When NOT to auto-load
 
@@ -89,6 +91,14 @@ The agent records lessons directly during sessions:
 - Corrections and discoveries → Append to relevant helper's Lessons Learned
 - Module-specific insights → Append to `modules/module_XX_notes.md`
 - New helper requests → Flag for creation in this README under `## Requested Helpers`
+
+---
+
+## Requested Helpers
+
+When the agent encounters a recurring workflow that isn't covered by any existing helper, log the request here for later triage.
+
+(No requests pending. Add entries as `- YYYY-MM-DD: [helper concept] — [why it would be useful] (source: [session N | user feedback])`.)
 
 ---
 

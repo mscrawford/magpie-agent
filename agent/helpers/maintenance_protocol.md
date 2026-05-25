@@ -231,6 +231,16 @@ For confident, high-quality answers:
 - All `module_XX_notes.md` warnings addressed
 - Helpers tested against recent model runs
 
+### Class-level rule: subordinate-README inventory drift (R6 G1)
+
+**Rule**: Subordinate READMEs (e.g., `agent/helpers/README.md`, `modules/README.md`, `cross_module/README.md`, `core_docs/README.md`) MUST NOT contain inventories — helper lists, command lists, file lists, count tables — that are maintained elsewhere. Only pointers.
+
+**Why**: in R3 the agent's `helpers/README.md` had a duplicated routing table that drifted from `AGENT.md` by 5+ helpers. That table was retired and replaced with a pointer. In R6 the SAME root cause re-emerged: a prose helper inventory in helpers/README.md was one helper behind AGENT.md (missing `magpie4_reference` added 2026-05-24), and `project/README.md` claimed "2 essential files" while the directory had 4. The fix-once-locally pattern doesn't generalize; the rule does.
+
+**Exception**: prose summaries are OK only if they explicitly cite the canonical source by name on the same line (e.g., "see AGENT.md auto-load table for the canonical list"). Even then, prefer pointers over enumerations.
+
+**How to check**: when reviewing or writing any non-top-level README, search for enumerated lists of files/helpers/commands. If found, replace with a pointer to the canonical source.
+
 ---
 
 ## 6. Recovery Procedures

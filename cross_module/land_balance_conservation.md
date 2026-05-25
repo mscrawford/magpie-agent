@@ -820,3 +820,8 @@ plot(land[,"y1995":"y2100",])  # Should show smooth transitions
 **Verified Against**: MAgPIE 4.x source code and module documentation
 **Created**: 2025-10-22
 _Conservation-law structure verified against MAgPIE 4.x architecture; underlying module equations re-verified as of last GAMS sync (see `../project/sync_log.json`)._
+
+
+---
+
+**Hub status (R6 2026-05-25)**: this file is referenced from 8+ helpers and module docs as authoritative for the conservation law / safety profile it documents. If you change equation names, set semantics, or risk-tier assignments, audit dependents (`grep -rln "land_balance_conservation.md" --include="*.md" .`) before committing.
