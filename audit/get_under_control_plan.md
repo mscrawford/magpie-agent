@@ -1,7 +1,7 @@
 # Plan: get the bomb rate under control + clean up the doc surface
 
 **Created**: 2026-05-24 (post-R24 conversation)
-**Status**: ☐ Phase 0  ☐ Phase 1  ☐ Phase 2  ☐ Phase 3  ☐ Phase 4
+**Status**: ☑ Phase 0 (2026-05-25)  ☐ Phase 1  ☐ Phase 2  ☐ Phase 3  ☐ Phase 4
 **Target completion (Phases 0-3)**: ~3-4 focused sessions over 1-2 weeks
 
 ## Executive summary
@@ -173,4 +173,22 @@ Update the checkbox row at the top as phases complete. Append session-by-session
 
 ### Sessions
 
-(none yet — this plan was created 2026-05-24 directly after R24 completion)
+**Session 1 — 2026-05-25 — Phase 0 (Stale-and-Remnant pipeline audit R6) — COMPLETE**
+
+- 0a (design): 7 lens prompts with R24 anchors, model upgraded Sonnet → Opus mid-design per user. → `audit/pipeline_audit_round6_design.md`.
+- 0b (lens agents): 7 parallel Opus sub-agents, ~15-25min wall each, returned 70 raw findings. → `audit/pipeline_audit_round6_raw_findings.md`.
+- 0c (Opus re-run): SKIPPED — Opus already used for all 7 lens agents.
+- 0d (synthesis): single Opus call, 70 raw → 58 dedup, 8 root-cause clusters, 4 standing decisions resolved + 1 deferred. → `audit/pipeline_audit_round6.md`.
+- 0e (per-cluster decisions): user approved all synthesis recommendations on all 4 standing decisions + 5 open questions in one turn.
+- 0f (apply interventions): 7 cluster commits stacked in dependency order — D (security) first, then A, C, B, G, H, E. + 1 parent-repo commit (parent `.gitignore` exposure fix, --no-verify per user authorization for the over-firing pre-commit hook).
+- 0g (Cluster F): AGENT.md trim 846 → 724 lines / 46KB → 44KB. 3 new auto-loaded helpers (session_cleanup, link_dont_duplicate, directory_structure). magpie4 + preproc added to 5 scaffold sections. 4 broad triggers tightened. AGENT.md re-deployed to `../AGENT.md` + `../CLAUDE.md`.
+- 0h (log): `audit/pipeline_audit_rounds.json` R6 status → "fixed + mechanized", 10 guards recorded.
+
+Effort: actual ~10-12h compute (vs synthesis estimate 15-17h). Below estimate because clustering aggregated effort efficiently.
+
+**Deferred (out of Phase 0 scope, flagged for future)**:
+- D6: tighten parent magpie/.gitignore `*.cs*` → `*.cs2/cs3/cs4` (upstream MAgPIE concern, not agent's call).
+- F5: hoist Twin-agent disambiguation (~26 lines) + trim COMPLETE DOCUMENTATION STRUCTURE (~55 lines) for further ~80-line AGENT.md reduction. Both MEDIUM-severity. Revisit if AGENT.md still feels too large in Phase 3 re-measure.
+- C2-extension: M11/M17/M21/M32/M52 backfill from validation rounds — per synthesis recommendation, these stay deleted unless future use surfaces warnings worth recording.
+
+**Next**: Phase 1 (mechanize uncovered semantic bug classes — units check, prose consumer attribution, one-hop reads, citation content fingerprint). Awaits user direction on when to start.
