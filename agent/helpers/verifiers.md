@@ -1,10 +1,10 @@
 # Verifiers — MANDATEs for anti-confabulation
 
-**Purpose**: 16 binding rules that prevent the recurring confabulation patterns identified across <!--count:total_rounds-->24<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->474<!--/count--> bugs catalogued, <!--count:total_bugs_fixed-->314<!--/count--> fixed as of last update — see `audit/validation_rounds.json.cumulative_stats`). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
+**Purpose**: 17 binding rules that prevent the recurring confabulation patterns identified across <!--count:total_rounds-->24<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->474<!--/count--> bugs catalogued, <!--count:total_bugs_fixed-->314<!--/count--> fixed as of last update — see `audit/validation_rounds.json.cumulative_stats`). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
 
 **Auto-load**: this file is loaded automatically when the user asks about specific GAMS modules, variables, equations, realizations, or default values. See `AGENT.md` Auto-Loading Context Helpers table.
 
-**Auto-load triggers**: "vm_", "pm_", "v<N>_", "p<N>_", "s<N>_", "c<N>_", "q<N>_", "realization", "default value", "default realization", "modify code", "variable name", "equation name"
+**Auto-load triggers**: "vm_", "pm_", "v<N>_", "p<N>_", "s<N>_", "c<N>_", "q<N>_", "realization", "default value", "default realization", "modify code", "variable name", "equation name", "M_X uses vm_", "M_X consumes"
 
 **Binding language**: MUST, FORBIDDEN, NEVER, ALWAYS are normative. If you cannot satisfy a MANDATE, state that explicitly rather than constructing a plausible workaround.
 
@@ -259,6 +259,27 @@ bash scripts/check_gams_variables.sh  # confirm zero stale references
 
 ---
 
+## MANDATE 17 — One-hop reads (direct vs transitive consumer)
+
+<!-- check-gams-vars: allow vm_FOO, vm_FOO_aggregate, vm_FOO_component -->
+**Trigger**: any claim of the form "M_X uses `vm_*` / `pm_*` / `im_*`" or "M_X consumes / reads / depends on [variable]".
+
+**Rule**: NEVER attribute consumption to a module that does not directly read the variable. Before writing "M_X uses `vm_FOO`" (pedagogical placeholder), verify direct consumption with:
+
+```bash
+grep -ln "vm_FOO" ../modules/XX_*/*/equations.gms ../modules/XX_*/*/presolve.gms ../modules/XX_*/*/postsolve.gms ../modules/XX_*/*/preloop.gms
+```
+
+If `vm_FOO` is **not** directly grep-hit in M_X's files but M_X reads an aggregate (e.g., `vm_carbon_stock`) that is in turn populated by M_X's contribution, the doc MUST say: "M_X contributes to `vm_FOO_aggregate` via `vm_FOO_component`; `vm_FOO_aggregate` is the direct interface variable". One-hop reads MUST be labeled as such.
+
+**Worked example** (R24, Q4-B3, Major doc_error): `module_30.md:360` stated `vm_carbon_stock_croparea` is consumed directly by M52 and M56. Actual data path: M30 → M29 (`q29_carbon` aggregates) → `vm_carbon_stock` → M52/M56. M52 and M56 read the aggregated `vm_carbon_stock`, NOT `vm_carbon_stock_croparea`. The mis-attribution misleads modification-safety reasoning: a user editing M30 would not expect the change to ripple to M52/M56 via M29.
+
+**Asymmetry to watch**: "X uses Y" is doc-side shorthand. Code-side, only direct equation-level reads count. Aggregate populators (M30/M29 in the example) are upstream contributors, NOT consumers of the aggregate they help populate.
+
+**Verified by**: human review for now (G2 anchor logic in `audit/validation_rounds.json` regression questions tests this prospectively each round). Mechanization candidate: extend `scripts/check_consumer_attribution.py` to flag attributions where the named module does NOT contain a direct grep-hit for the cited variable. See Phase 1 1c plan entry in `audit/get_under_control_plan.md`.
+
+---
+
 ## Verification one-liner
 
 After writing any answer that references GAMS code, run (from the magpie-agent directory):
@@ -274,8 +295,9 @@ This invokes the variable, equation, realization, and citation checkers. Any fai
 <!-- Append new MANDATEs or worked examples as future rounds surface them. Each entry: date, MANDATE number, what was found, source round. -->
 
 - **2026-05-23 (origin)**: hoisted from AGENT.md Step 1d. 16 MANDATEs preserved verbatim from the prior in-place version, with binding language tightened and worked examples drawn from the rounds named in each rule's text. R1-R21 validation history is the empirical foundation.
+- **2026-05-25 (R6 Phase 1 1c)**: added MANDATE 17 (one-hop reads / direct vs transitive consumer). Motivating bug: R24 Q4-B3 (Major doc_error) — `module_30.md:360` claimed `vm_carbon_stock_croparea` is directly consumed by M52/M56; actual chain is M30 → M29 aggregate → M52/M56. Mechanization via `check_consumer_attribution.py` extension is Phase 1 1c follow-up.
 
 
 ---
 
-**Hub status (R6 2026-05-25)**: verifiers.md is auto-loaded into every session that hits a GAMS identifier (vm_/pm_/q_/realization/etc.) and is referenced from AGENT.md as the binding source for the 16 MANDATEs. If you add a MANDATE, change its trigger language, or renumber, update AGENT.md Step 1d short-index table (and the deployed copies) in the same commit to avoid index drift.
+**Hub status (R6 2026-05-25)**: verifiers.md is auto-loaded into every session that hits a GAMS identifier (vm_/pm_/q_/realization/etc.) and is referenced from AGENT.md as the binding source for the MANDATEs. If you add a MANDATE, change its trigger language, or renumber, update AGENT.md Step 1d short-index table (and the deployed copies) in the same commit to avoid index drift.

@@ -250,7 +250,7 @@ If the user's module appears in that list, run Step 1c. If not (single realizati
 
 ### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 
-**16 MANDATEs** that prevent recurring confabulation patterns identified across <!--count:total_rounds-->24<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->474<!--/count--> catalogued bugs, <!--count:total_bugs_fixed-->314<!--/count--> fixed; see `audit/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
+**17 MANDATEs** that prevent recurring confabulation patterns identified across <!--count:total_rounds-->24<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->474<!--/count--> catalogued bugs, <!--count:total_bugs_fixed-->314<!--/count--> fixed; see `audit/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
 
 **Why hoisted**: ~150 lines of binding rules don't belong in always-loaded AGENT.md context; auto-loading on relevant triggers saves tokens, and a dedicated MANDATE doc with binding language separates "must enforce" from "FYI".
 
@@ -274,6 +274,7 @@ If the user's module appears in that list, run Step 1c. If not (single realizati
 | 14 | Deprecated-name italics | Renamed variables/equations |
 | 15 | Post-rename global grep | Any global rename |
 | 16 | Citation full-path + post-merge line numbers | `file:line` citations |
+| 17 | One-hop reads (direct vs transitive consumer) | "M_X uses vm_FOO" claims |
 
 **Validation tracking**: See `audit/validation_rounds.json` for the full audit history (scores, bugs, root causes). The rubric for scoring is `audit/flywheel_rubric.md`. Future agents append new rounds to validation_rounds.json. Severity tiers and immutable anchor examples are in flywheel_rubric.md §1.
 
@@ -352,7 +353,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 
 | User intent detected | Load this helper | Trigger keywords |
 |---------------------|-----------------|-----------------|
-| **Naming a specific GAMS interface variable, equation, realization, or default (NOT broad module-XX questions)** | `agent/helpers/verifiers.md` (16 anti-confabulation MANDATEs) | "vm_", "pm_", "v<N>_", "p<N>_", "s<N>_", "c<N>_", "q<N>_", "realization", "default value", "default realization", "modify code", "variable name", "equation name" |
+| **Naming a specific GAMS interface variable, equation, realization, or default (NOT broad module-XX questions)** | `agent/helpers/verifiers.md` (17 anti-confabulation MANDATEs) | "vm_", "pm_", "v<N>_", "p<N>_", "s<N>_", "c<N>_", "q<N>_", "realization", "default value", "default realization", "modify code", "variable name", "equation name", "M_X uses vm_", "M_X consumes" |
 | Reading/writing/explaining GAMS code | `reference/GAMS_MAgPIE_Patterns.md` + other phases as needed | "GAMS", "gms file", ".gms", "equations.gms", "declarations.gms", "=e=", "=l=", "=g=", "q<N>_", "GAMS syntax", "variable declaration", "write code", "explain this code", "debug code" |
 | Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort" |
 | Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget" |
