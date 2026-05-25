@@ -118,59 +118,9 @@ All AI documentation lives in the `magpie-agent/` repo. Edit AGENT.md here (the 
 
 ---
 
-## 🏁 SESSION CLEANUP: Before Ending a Session
+## 🏁 SESSION CLEANUP
 
-**Before a session ends** (user says goodbye, wraps up, or you sense the conversation is concluding), run this checklist:
-
-### 1. Show Learning Summary to User
-
-**Always show this when any learning occurred during the session:**
-
-```
-🧠 Session learnings:
-  • [Recorded correction about X → Y]
-  • [Added warning to module_58_notes.md about peatland infeasibility]
-  • [Discovered new pattern: ...]
-
-These will be saved to the magpie-agent repository so future sessions benefit.
-Want me to commit and push? (You can review the changes first if you prefer.)
-```
-
-If no learning occurred, skip this — don't show an empty summary.
-
-### 2. Commit Accumulated Learning
-
-Check if you made **any** of these changes during the session:
-- Appended entries to any helper's `## Lessons Learned` section
-- Created or updated a `modules/module_XX_notes.md` file
-- Discovered and recorded a user correction
-- Updated `audit/global/agent_lessons.md`
-
-If YES → show the user what changed (step 1 above), then **pull, commit, and push** to the magpie-agent repo:
-```bash
-cd magpie-agent/
-git pull --rebase origin main   # ← CRITICAL: merge teammates' changes first
-git add -A
-git commit -m "learn: session learnings — [brief description]
-
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
-git push origin main
-```
-**Ask the user before pushing** — they may want to review the changes first.
-
-**If `git pull --rebase` creates a merge conflict**: Show the user the conflicting file(s) and ask how to resolve. For append-only files (notes, lessons), the resolution is almost always "keep both entries."
-
-### 3. Flag Documentation Gaps
-If during the session you noticed:
-- A helper was loaded but **lacked critical information** → note what was missing in the helper's Lessons Learned
-- A user question had **no matching helper** and would have benefited from one → mention it to the user: "💡 This workflow could benefit from a dedicated helper. Want me to create one?"
-- Module documentation was **wrong or outdated** → update the module_XX_notes.md with a warning
-
-### 4. Deploy AGENT.md (if changed)
-If you modified AGENT.md itself during the session:
-```bash
-cp AGENT.md ../AGENT.md
-```
+End-of-session learning capture is primarily handled by the user's global `session-close` skill (triggers automatically when the user wraps up). As a fallback / detailed walkthrough, see `agent/helpers/session_cleanup.md` (auto-loaded on goodbye triggers). Key points: show learning summary if any learning occurred; pull-rebase before commit; ask before pushing; deploy AGENT.md if edited (`cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md`).
 
 ---
 
@@ -211,51 +161,18 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 
 ---
 
-## 📂 CRITICAL: Directory Structure & Path Resolution
+## 📂 Directory Structure (key distinctions)
 
-**Your working directory**: `magpie-agent/` (relative to the MAgPIE project root)
+**Your working directory**: `magpie-agent/` (relative to the MAgPIE project root).
 
-**Directory layout**:
-```
-/magpie/                          ← Parent: Main MAgPIE project (git repo #1)
-├── AGENT.md                      ← DEPLOYED copy (DO NOT EDIT - auto-updated at session start)
-├── modules/                      ← GAMS modules (actual MAgPIE code)
-│   ├── 14_yields/
-│   ├── 70_livestock/
-│   └── ...
-├── main.gms                      ← MAgPIE entry point
-└── magpie-agent/                 ← YOU ARE HERE (git repo #2)
-    ├── AGENT.md                  ← SOURCE instructions (edit here)
-    ├── agent/
-    │   ├── commands/             ← Slash command definitions
-    │   └── helpers/              ← Auto-loading context helpers
-    ├── modules/                  ← AI documentation (NOT GAMS code)
-    │   ├── module_14.md
-    │   ├── module_70.md
-    │   └── ...
-    └── core_docs/                ← Architecture docs
-```
+The two most-confused distinctions:
 
-**Path resolution rules**:
+- `modules/` in current dir = **AI documentation** (markdown, `module_XX.md`) | `../modules/` in parent dir = **MAgPIE GAMS code** (`XX_name/realization/*.gms`). Same word, different meaning.
+- `AGENT.md` in current dir = **SOURCE** (edit this) | `../AGENT.md` and `../CLAUDE.md` in parent dir = **DEPLOYED COPIES** (auto-deployed; `../CLAUDE.md` is what Claude actually reads — drift between source and copies is a Check-23 validator failure).
 
-1. **For AI documentation** (module_XX.md, core_docs, etc.):
-   - From current dir: `modules/module_14.md` ✅
-   - NOT: `magpie-agent/modules/module_14.md` ❌
+For the full layout tree and path-resolution rules, see `agent/helpers/directory_structure.md` (auto-loaded on path-confusion triggers).
 
-2. **For MAgPIE GAMS code** (modules/XX_name/realization/):
-   - From current dir: `../modules/14_yields/managementcalib_aug19/equations.gms` ✅
-   - NOT: `modules/14_yields/...` ❌ (that's AI docs, not GAMS!)
-
-3. **Important distinctions**:
-   - `modules/` in current dir = AI documentation (markdown)
-   - `../modules/` in parent dir = MAgPIE GAMS code
-   - `AGENT.md` in current dir = SOURCE (edit this)
-   - `../AGENT.md` in parent dir = DEPLOYED (auto-copied, don't edit)
-
-4. **Git operations**:
-   - For AI docs: commit from current directory (magpie-agent repo)
-   - For MAgPIE code: commit from parent directory (main repo)
-   - NEVER commit magpie-agent changes to main MAgPIE repo!
+Git workflow: commit AI docs from `magpie-agent/`; commit MAgPIE code from parent. NEVER commit magpie-agent changes to the main MAgPIE repo.
 
 ---
 
@@ -287,7 +204,9 @@ When a command is detected, read and execute `agent/commands/[name].md`.
    - `nitrogen_food_balance.md` — nitrogen tracking + food supply=demand
    - `modification_safety_guide.md` — safety protocols for high-centrality modules
    - `circular_dependency_resolution.md` — 26 circular dependencies and resolution
-5. **Then supplement** with module docs, notes files, or code as needed
+5. **For report.mif / IAMC variable / model-output-provenance questions**, also check `agent/helpers/magpie4_reference.md` — the magpie4 R package produces `report.mif` from the GDX and is the authoritative source for the IAMC variable mapping. GAMS code is the source of the underlying numbers; magpie4 is the source of how they're labeled and aggregated.
+6. **For input-data / preprocessing questions** ("where does this input file come from?", "how is parameter X computed?"), route to `PREPROC_AGENT.md` (R packages: madrat / mrcommons / mrmagpie / etc. — see top of this file).
+7. **Then supplement** with module docs, notes files, or code as needed
 
 ### Step 1b: Check Documentation Freshness
 
@@ -434,19 +353,22 @@ When the user's question matches a trigger pattern, **silently read the helper f
 | User intent detected | Load this helper | Trigger keywords |
 |---------------------|-----------------|-----------------|
 | **Naming a specific GAMS interface variable, equation, realization, or default (NOT broad module-XX questions)** | `agent/helpers/verifiers.md` (16 anti-confabulation MANDATEs) | "vm_", "pm_", "v<N>_", "p<N>_", "s<N>_", "c<N>_", "q<N>_", "realization", "default value", "default realization", "modify code", "variable name", "equation name" |
-| Reading/writing/explaining GAMS code | `reference/GAMS_MAgPIE_Patterns.md` + other phases as needed | "GAMS", "gms file", "equation", "variable declaration", "write code", "modify code", "code means", "explain this code", "debug code", "what does this do", ".gms" |
+| Reading/writing/explaining GAMS code | `reference/GAMS_MAgPIE_Patterns.md` + other phases as needed | "GAMS", "gms file", ".gms", "equations.gms", "declarations.gms", "=e=", "=l=", "=g=", "q<N>_", "GAMS syntax", "variable declaration", "write code", "explain this code", "debug code" |
 | Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort" |
 | Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget" |
-| Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "modify", "change module", "what breaks", "impact of changing", "safe to modify", "can I change", "extend", "add to module" |
+| Modifying code / impact analysis | `agent/helpers/modification_impact_analysis.md` | "is it safe to modify", "what will break if", "impact of changing", "dependencies of", "before I change", "safe to modify", "can I change", "extend module", "add to module" |
 | Setting up diet/food scenarios | `agent/helpers/scenario_diet_change.md` | "diet", "EAT-Lancet", "food demand", "livestock reduction", "food waste", "dietary change", "BMI", "food scenario" |
 | Understanding model outputs | `agent/helpers/interpreting_outputs.md` | "model output", "run results", "fulldata.gdx", "postsolve", "report.mif", "understand results" |
 | magpie4 functions / report.mif variable provenance | `agent/helpers/magpie4_reference.md` | "magpie4", "getReport", "magpie4::", "report.mif variable", "IAMC variable", "which magpie4 function", "magpie4 R function", or any concrete `report<X>` function name (e.g., "reportEmissions", "reportLandUse", "reportCosts"), or an IAMC-style variable like `Emissions\|N2O\|...` / `Land Cover\|...` |
 | Choosing between realizations | `agent/helpers/realization_selection.md` | "which realization", "choose realization", "realization comparison", "switch realization", "alternative realization", "compare realizations" |
 | Adding a new crop/commodity | `agent/helpers/adding_new_crop.md` | "add crop", "new crop type", "add commodity", "extend crop set", "new product", "crop type" |
-| Creating new scenarios | `agent/helpers/adding_new_scenario.md` | "scenario", "new scenario", "policy scenario", "combine policies", "config switches", "scenario design" |
+| Creating new scenarios | `agent/helpers/adding_new_scenario.md` | "create scenario", "set up scenario", "design scenario", "new scenario", "policy scenario", "combine policies", "config switches", "scenario design", "new policy run" |
 | Comparing model runs | `agent/helpers/comparing_model_runs.md` | "compare runs", "compare scenarios", "model comparison", "output comparison", "multiple runs", "scenario comparison", "diff runs" |
-| Water scarcity analysis | `agent/helpers/water_scarcity_scenarios.md` | "water", "water scarcity", "irrigation", "water availability", "water demand", "water constraint", "groundwater", "environmental flow" |
+| Water scarcity analysis | `agent/helpers/water_scarcity_scenarios.md` | "water scarcity", "water constraint", "water-stressed", "water shortage", "irrigation deficit", "water availability", "groundwater", "environmental flow" |
 | Documentation maintenance | `agent/helpers/maintenance_protocol.md` | "maintenance", "keep docs current", "docs outdated", "documentation drift", "update docs", "stale documentation", "doc maintenance" |
+| End-of-session / committing learnings | `agent/helpers/session_cleanup.md` | "goodbye", "wrapping up", "done for now", "close session", "session over", "ending session", "commit learnings" |
+| Editing or creating documentation | `agent/helpers/link_dont_duplicate.md` | "update doc", "edit module_XX.md", "add to documentation", "doc edit", "duplicate this", "where does this belong", "linking vs duplicating", "writing docs" |
+| Path confusion / where files live | `agent/helpers/directory_structure.md` | "where is", "which directory", "AGENT.md path", "directory structure", "where does this live", "path confusion" |
 
 ### Sync freshness badges
 
@@ -557,6 +479,10 @@ Question Type                              → Check Here First
 **Environment**: 22 (conservation), 44 (biodiversity), 45 (climate), 54 (phosphorus)
 **Other**: 28 (age class), 36 (employment), 37 (labor productivity), 80 (optimization)
 
+**Adjacent layers (NOT GAMS modules)**:
+- **Upstream (R preprocessing)** — `madrat` / `mrcommons` / `mrmagpie` / `mrland` / `mrwater` / `mrdrivers` / `mrlandcore` / `mrdownscale`. These produce the `input.tgz` MAgPIE consumes. Route input-data questions to `PREPROC_AGENT.md`.
+- **Downstream (R reporting)** — `magpie4`. Produces `report.mif` / IAMC variables from the GDX output. Route report.mif / output-interpretation questions to `agent/helpers/magpie4_reference.md`.
+
 *Full list with descriptions in Core_Architecture.md Section 4.2*
 
 ---
@@ -644,11 +570,17 @@ Other IAMs may use different approaches:
 | File:line citations | Constraint types (=e=, =l=, =g=) |
 | Realization directory names | Variable names in formal equations |
 | Parameter default values | Cross-module dependency claims |
+| **magpie4 source-of-truth citations** | |
+| Output-interpretation answers grounded in GAMS code rather than magpie4 source | |
 
 ### Cascade Effect
 
 Wrong realization name → wrong file path → wrong file size → ALL line citations invalid.
 **Always verify realization names FIRST** before writing any file:line citations.
+
+### magpie4 cascade
+
+report.mif variables can be COMPUTED in magpie4 (combinations / aggregations of GAMS outputs). Citing only the GAMS source omits the magpie4 layer that constructed the variable. Always check `agent/helpers/magpie4_reference.md` for any report.mif claim — it pins to the renv-locked magpie4 version (`project/version_pins.json`) and has the dispatch source for the relevant `reportX` function. (Regression questions G3 + G4 in `validation_rounds.json` schema v1.2 specifically guard this.)
 
 ### For Writing Automation Scripts
 
@@ -709,6 +641,15 @@ User asks MAgPIE question
   → core_docs/ (ARCHITECTURE if structural question)
   → reference/GAMS_*.md (GAMS CODE if writing/debugging code)
 
+User asks about report.mif / IAMC variable / model output
+  → agent/helpers/magpie4_reference.md (magpie4 R reporting layer — version-pinned)
+  → agent/helpers/interpreting_outputs.md (output file structure + workflows)
+  → modules/module_XX.md (only if magpie4 reads GAMS variables you need to understand)
+
+User asks about input data / preprocessing
+  → PREPROC_AGENT.md (R preprocessing pipeline — madrat / mrcommons / etc.)
+  → core_docs/Data_Flow.md (file-by-file source mapping for the consumed inputs)
+
 User asks to WRITE or EDIT module documentation
   → reference/Verification_Protocol.md (verification steps)
   → core_docs/Bug_Taxonomy.md (14 error patterns to avoid)
@@ -726,83 +667,7 @@ User asks to WRITE or EDIT module documentation
 
 ## 🔗 LINK DON'T DUPLICATE
 
-**When updating or creating documentation, follow these rules to prevent information drift:**
-
-### Authoritative Sources (Single Source of Truth)
-
-**Never duplicate these - always link instead:**
-
-| Information Type | Authoritative Source | Link Format |
-|-----------------|---------------------|-------------|
-| Module equations, parameters, variables | `modules/module_XX.md` | `modules/module_XX.md#equation-name` |
-| Dependency counts & lists | `core_docs/Module_Dependencies.md` | `core_docs/Module_Dependencies.md` §2.1 (centrality table) |
-| Conservation law equations | `cross_module/*_balance.md` | `cross_module/land_balance_conservation.md` |
-| GAMS syntax & patterns | `reference/GAMS_*.md` | `reference/GAMS_MAgPIE_Patterns.md#topic` |
-| Data file sources | `core_docs/Data_Flow.md` | `core_docs/Data_Flow.md#file-name` |
-
-### When to Link vs When to Duplicate
-
-**✅ ALWAYS LINK** (never duplicate):
-- Dependency counts ("Module X has 23 dependents") → link to `Module_Dependencies.md`
-- Equation formulas from other modules → link to authoritative `module_XX.md`
-- Data file sources and formats → link to `Data_Flow.md`
-- Exact numerical values that must stay synchronized
-
-**✅ LEGITIMATE DUPLICATION** (different contexts, different purposes):
-- **Conservation law equations** in both:
-  - `modules/module_XX.md` (technical doc: "This is equation 1 of Module X")
-  - `cross_module/*_balance.md` (system-level doc: "This is THE conservation constraint")
-- **Different levels of explanation**:
-  - Overview (high-level summary) vs Detailed (full technical specification)
-  - Pedagogical (teaching concept) vs Reference (looking up facts)
-
-### Examples
-
-❌ **WRONG** - Hardcoded dependency count:
-```markdown
-**Risk Level**: HIGH (Module 10 has 23 dependents)
-```
-
-✅ **CORRECT** - Link to authoritative source:
-```markdown
-**Risk Level**: HIGH (see `core_docs/Module_Dependencies.md#module-10` for dependency list)
-```
-
-❌ **WRONG** - Duplicate equation from another module:
-```markdown
-Module 29 uses land allocation:
-q10_land_area(j2) .. sum(land, vm_land(j2,land)) =e= ...
-```
-
-✅ **CORRECT** - Link to authoritative source:
-```markdown
-Module 29 uses land allocation from Module 10 (see `modules/module_10.md` §1 — Equation 1: Land Area Conservation)
-```
-
-✅ **ACCEPTABLE** - Legitimate pedagogical duplication:
-```markdown
-# In module_10.md (technical documentation)
-**Equation 1**: q10_land_area enforces land conservation
-[full formula]
-
-# In cross_module/land_balance_conservation.md (system-level analysis)
-**The Core Conservation Constraint**: q10_land_area ensures total land remains constant
-[same formula shown for pedagogical clarity]
-```
-
-### Enforcement During Updates
-
-**Before adding information to documentation:**
-1. **Check if it already exists** - Search for existing coverage
-2. **Identify authoritative source** - Where does this information live?
-3. **Link don't duplicate** - Reference the authoritative source
-4. **If duplicating** - Ensure different context/purpose justifies it
-
-**Red flags that indicate duplication:**
-- Writing the same equation formula seen elsewhere
-- Listing dependency counts already in Module_Dependencies.md
-- Describing data files already documented in Data_Flow.md
-- Copying exact parameter descriptions from another module doc
+When updating or creating documentation, prefer pointers to canonical sources over duplication — duplicated facts drift. For the full editorial policy (authoritative-source table, link-vs-duplicate rules, examples, red flags), see `agent/helpers/link_dont_duplicate.md` (auto-loaded on doc-edit triggers). The class-level rule on subordinate-README inventories is in `agent/helpers/maintenance_protocol.md` §5.
 
 ---
 
@@ -820,6 +685,8 @@ Module 29 uses land allocation from Module 10 (see `modules/module_10.md` §1 �
 - [ ] **If high-stakes claim**: Verified in code, not just docs (Step 2b)
 - [ ] **If uncertain**: Said so explicitly, not constructed plausible answer (Step 2c)
 - [ ] **Stated limitations** (what code does NOT do)
+- [ ] **If report.mif / IAMC variable**: cited magpie4 source path (`.cache/sources/magpie4/...`), not just GAMS module
+- [ ] **If input data origin**: routed to preproc-agent / `PREPROC_AGENT.md` or cited the `mr*` R package, not just MAgPIE input file path
 
 **For complete checklist (20+ items), see `core_docs/Response_Guidelines.md`**
 

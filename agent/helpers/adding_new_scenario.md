@@ -1,6 +1,6 @@
 # Helper: Creating New MAgPIE Scenarios
 
-**Auto-load triggers**: "scenario", "new scenario", "policy scenario", "combine policies", "config switches", "scenario design"
+**Auto-load triggers**: "create scenario", "set up scenario", "design scenario", "new scenario", "policy scenario", "combine policies", "config switches", "scenario design", "new policy run"
 **Lessons count**: 0 entries
 
 ---
