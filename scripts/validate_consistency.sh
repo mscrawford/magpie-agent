@@ -18,15 +18,17 @@ PASSED_CHECKS=0
 WARNINGS=0
 ERRORS=0
 
-# Report file
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-REPORT_DIR=".cache/validation_reports"
-mkdir -p "$REPORT_DIR"
-REPORT_FILE="${REPORT_DIR}/validation_report_${TIMESTAMP}.txt"
-
-# Get script directory
+# Get script directory FIRST (so REPORT_DIR can be anchored to agent root,
+# not the caller's CWD — historical bug: invoking from parent magpie/ root
+# spawned validation_report_*.txt in the upstream MAgPIE repo. Fixed R6 0f-1.)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AGENT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Report file (anchored to AGENT_DIR, independent of caller's CWD)
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+REPORT_DIR="${AGENT_DIR}/.cache/validation_reports"
+mkdir -p "$REPORT_DIR"
+REPORT_FILE="${REPORT_DIR}/validation_report_${TIMESTAMP}.txt"
 
 # Functions
 print_header() {
