@@ -101,6 +101,15 @@ CRITICAL_CONSUMERS_RE = re.compile(
 PROSE_MODULE_NUM_RE = re.compile(
     r"(?:^|[,:;]\s*|\b)([A-Za-z][A-Za-z _]{2,30}?)\s*\((\d{2})(?:-\d{2})?\)"
 )
+# Pattern D-extended (R25 Phase 1 follow-up): also recognize `Module N` /
+# `Module N (Description)` / `Module's q*_*` forms used pervasively in
+# module_38.md and similar producer-side docs. The R25 Q4 finding showed
+# the original "Name (NN)" pattern missed entirely when the doc wrote
+# `consumed by Module 11 via q11_cost_reg`. Capture just the 2-digit module
+# number; the label is implicitly "Module".
+PROSE_MODULE_BARE_RE = re.compile(
+    r"\bModule\s+(\d{2})\b",
+)
 # Triggering language that indicates we're in a consumer-attribution sentence
 # (not just any list of (NN) parentheticals). Conservative to avoid FP.
 PROSE_TRIGGER_RE = re.compile(
@@ -370,14 +379,28 @@ def scan_prose_attribution(
                 idents.append(base)
         if not idents:
             continue
-        # Find Name (NN) patterns on the SAME line
+        # Find module-number references on the SAME line:
+        #   - "Name (NN)" form (Pattern D original) — keep label
+        #   - "Module N" bare form (Pattern D extended for R25 Q4 class)
+        # Both forms feed the same nn_pairs list so positive-evidence and
+        # negative-evidence (Pattern D2) checks see a unified listed set.
         nn_pairs = []
+        seen_nums = set()
         for m in PROSE_MODULE_NUM_RE.finditer(line):
             label = m.group(1).strip()
             num = m.group(2)
             if len(label) < 3:
                 continue
+            if num in seen_nums:
+                continue
+            seen_nums.add(num)
             nn_pairs.append((label, num))
+        for m in PROSE_MODULE_BARE_RE.finditer(line):
+            num = m.group(1)
+            if num in seen_nums:
+                continue
+            seen_nums.add(num)
+            nn_pairs.append(("Module", num))
         if not nn_pairs:
             continue
         for var in set(idents):
@@ -385,6 +408,7 @@ def scan_prose_attribution(
             actual_consumer_nums = {d.split("_", 1)[0] for d in actual_consumers_dirs if "_" in d}
             producer_dir = producers.get(var, "")
             producer_num = producer_dir.split("_", 1)[0] if "_" in producer_dir else ""
+            listed_nums = {num for _, num in nn_pairs}
             for label, num in nn_pairs:
                 if num not in num_to_dir:
                     continue
@@ -393,6 +417,163 @@ def scan_prose_attribution(
                     continue
                 if num not in actual_consumer_nums:
                     findings.append((rel_path, lineno, var, label, num))
+    return findings
+
+
+def scan_prose_omissions(
+    text: str,
+    rel_path: str,
+    producers: dict[str, str],
+    consumers: dict[str, set[str]],
+) -> list[tuple[str, int, str, str, str, str]]:
+    """Pattern D2 — NEGATIVE-evidence (R25 Phase 1 follow-up).
+
+    Goal: catch the R25 Q4-B1 pattern where a producer-side doc enumerates
+    consumers but OMITS a real consumer. Pre-R25, Pattern D's positive-
+    evidence check verified that listed modules grep-match, but never asked
+    the inverse: "are there modules that grep-match but are absent from
+    the listed set?"
+
+    Triggers a finding when:
+      (a) line has a backticked interface variable, AND
+      (b) line has a consumer-direction trigger word, AND
+      (c) line names one or more modules (via "Module N" or "Name (NN)"), AND
+      (d) actual_consumer_nums - listed_nums - {producer_num} is NON-EMPTY
+
+    Conservative guard: skip lines containing partial-list hedges
+    ("primary", "main", "most important", "key", "e.g.", "such as", "etc")
+    — these signal the doc is intentionally not enumerating all consumers.
+
+    Returns: (file, lineno, var, omitted_module_num, omitted_module_label, omitted_module_dir).
+    """
+    consumer_direction = re.compile(
+        r"\b(consumed by|reads?|consumes?|uses?|fed (?:by|into)|sourced from)\b",
+        re.IGNORECASE,
+    )
+    historical_marker = re.compile(
+        r"\b(earlier wording|previously listed|prior wording|before fix|stale wording|correction|misattributed|R\d+ audit|R\d+ correction|removed in R\d+)\b",
+        re.IGNORECASE,
+    )
+    # Hedges that signal the doc is intentionally listing a subset, not all
+    # consumers. If present, skip the line — the omission is by design.
+    partial_list_hedge = re.compile(
+        r"\b(primary|main|most important|key consumer|principal|e\.?g\.|such as|etc\b|among others|including but not limited to)\b",
+        re.IGNORECASE,
+    )
+
+    findings: list[tuple[str, int, str, str, str, str]] = []
+    # num -> dir mapping (built same way as scan_prose_attribution)
+    consumer_module_dirs: set[str] = set()
+    for dirs in consumers.values():
+        consumer_module_dirs.update(dirs)
+    for d in producers.values():
+        if d:
+            consumer_module_dirs.add(d)
+    num_to_dir: dict[str, str] = {}
+    for d in consumer_module_dirs:
+        if "_" in d:
+            num = d.split("_", 1)[0]
+            if num.isdigit():
+                num_to_dir[num] = d
+
+    # Helper: extract listed module numbers from a line (both regex forms)
+    def line_listed_nums(line: str) -> set[str]:
+        nums: set[str] = set()
+        for m in PROSE_MODULE_NUM_RE.finditer(line):
+            label = m.group(1).strip()
+            if len(label) >= 3:
+                nums.add(m.group(2))
+        for m in PROSE_MODULE_BARE_RE.finditer(line):
+            nums.add(m.group(1))
+        return nums
+
+    # Helper: extract backticked interface var bases from a line
+    def line_idents(line: str) -> list[str]:
+        out = []
+        for m in re.finditer(r"`([a-z][\w]+(?:\([^)]*\))?)`", line):
+            base = strip_dims(m.group(1))
+            if is_interface_var(base):
+                out.append(base)
+        return out
+
+    # Helper: bullet-list prefix (whitespace + `-` or `*` followed by space)
+    bullet_prefix_re = re.compile(r"^(\s*[-*]\s+)")
+
+    lines = text.splitlines()
+    for lineno, line in enumerate(lines, 1):
+        if not consumer_direction.search(line):
+            continue
+        if historical_marker.search(line):
+            continue
+        if partial_list_hedge.search(line):
+            continue
+        idents = line_idents(line)
+        if not idents:
+            continue
+        listed_nums = line_listed_nums(line)
+        if not listed_nums:
+            continue
+
+        # BULLET-LIST AGGREGATION (R25 Phase 1 follow-up):
+        # If this line is a bullet item AND adjacent bullet items at the same
+        # indent level reference the same variable, combine their listed_nums.
+        # Without this, an enumeration like
+        #     - Module 11 (Costs) — `vm_X` ...
+        #     - Module 36 (Employment) — `vm_X` ...
+        # produces a false "omits M11" flag on the M36 bullet (and vice versa
+        # if we scanned forward only). Walk both directions until the bullet
+        # chain breaks (different indent, different prefix, blank line gap >1,
+        # or var not mentioned).
+        m_bullet = bullet_prefix_re.match(line)
+        if m_bullet:
+            indent_prefix = m_bullet.group(1)
+            # Walk back
+            for j in range(lineno - 2, max(-1, lineno - 10), -1):
+                if j < 0 or j >= len(lines):
+                    break
+                prev = lines[j]
+                if not prev.strip():
+                    # Allow ONE blank line gap, then stop
+                    if j > 0 and not lines[j - 1].strip():
+                        break
+                    continue
+                if not prev.startswith(indent_prefix):
+                    break
+                # Same indent bullet; check if it mentions any of our idents
+                prev_idents = set(line_idents(prev))
+                if not (prev_idents & set(idents)):
+                    break
+                listed_nums |= line_listed_nums(prev)
+            # Walk forward
+            for j in range(lineno, min(len(lines), lineno + 10)):
+                if j >= len(lines):
+                    break
+                nxt = lines[j]
+                if not nxt.strip():
+                    if j + 1 < len(lines) and not lines[j + 1].strip():
+                        break
+                    continue
+                if not nxt.startswith(indent_prefix):
+                    break
+                nxt_idents = set(line_idents(nxt))
+                if not (nxt_idents & set(idents)):
+                    break
+                listed_nums |= line_listed_nums(nxt)
+
+        for var in set(idents):
+            actual_consumers_dirs = consumers.get(var, set())
+            actual_consumer_nums = {d.split("_", 1)[0] for d in actual_consumers_dirs if "_" in d}
+            producer_dir = producers.get(var, "")
+            producer_num = producer_dir.split("_", 1)[0] if "_" in producer_dir else ""
+            # Compute omitted = (actual - listed - {producer})
+            omitted = actual_consumer_nums - listed_nums - ({producer_num} if producer_num else set())
+            for num in sorted(omitted):
+                if num not in num_to_dir:
+                    continue
+                module_dir = num_to_dir[num]
+                # Module label: take the dir name minus the leading number
+                label = module_dir.split("_", 1)[1] if "_" in module_dir else module_dir
+                findings.append((rel_path, lineno, var, num, label, module_dir))
     return findings
 
 
@@ -441,12 +622,16 @@ def main() -> int:
     # since its output shape is different (no claimed/expected count — instead
     # per-module-attribution findings).
     prose_findings: list[tuple[str, int, str, str, str]] = []
+    # Pattern D2 — prose omissions (R25 Phase 1 follow-up). Negative-evidence:
+    # producer-side doc lists consumers but omits a real consumer.
+    omission_findings: list[tuple[str, int, str, str, str, str]] = []
     for doc in scopes:
         if not doc.is_file():
             continue
         text = doc.read_text(encoding="utf-8", errors="ignore")
         rel = str(doc.relative_to(AGENT_DIR))
         prose_findings.extend(scan_prose_attribution(text, rel, producers, consumers))
+        omission_findings.extend(scan_prose_omissions(text, rel, producers, consumers))
 
     # Triage findings
     mismatches: list[tuple[str, int, str, int, int, str]] = []  # expected non-None and != claimed
@@ -517,6 +702,29 @@ def main() -> int:
                 print(f"  ... and {len(prose_findings) - 30} more")
     else:
         print("✅ Pattern D prose attribution: all listed modules grep-verify")
+
+    # Pattern D2 output (R25 Phase 1 follow-up): negative-evidence omissions.
+    # Advisory — many "consumer" lines intentionally list a subset; we filter
+    # out the partial-list hedges already, but residual FPs are expected.
+    # Triage rule: if a doc consistently omits the same consumer across multiple
+    # lines for the same variable, that's a real Pattern D2 doc bug.
+    print()
+    if omission_findings:
+        print(f"ℹ️  Pattern D2 omission check: {len(omission_findings)} possibly-omitted consumer(s) (advisory):")
+        if summary_only:
+            from collections import Counter
+            # Aggregate by (file, var, omitted_num) to surface repeated omissions
+            counts = Counter((f[0], f[2], f[3]) for f in omission_findings)
+            top = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:15]
+            for (doc, var, num), n in top:
+                print(f"  {doc}  `{var}` omits M{num} ({n} line{'s' if n > 1 else ''})")
+        else:
+            for path, lineno, var, num, label, module_dir in sorted(omission_findings)[:30]:
+                print(f"  {path}:{lineno}  `{var}` mentions consumers but omits M{num} ({label}) — grep-hits in module {module_dir}")
+            if len(omission_findings) > 30:
+                print(f"  ... and {len(omission_findings) - 30} more")
+    else:
+        print("✅ Pattern D2 omission check: no obvious consumer omissions detected")
 
     # Advisory exit: always 0. Mismatches surface via output text.
     return 0

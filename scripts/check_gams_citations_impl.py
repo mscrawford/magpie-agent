@@ -31,6 +31,25 @@ CITATION_RE = re.compile(r'((?:core/|modules/[\w/]+/)?[\w/]+\.gms):(\d+)(?:-(\d+
 # GAMS identifier classes (used by Pattern 12 content check)
 GAMS_ID_RE = re.compile(r'`((?:vm|pm|v|p|i|f|s|c|cm|sm|im|fm|pcm|ic|ov|oq|q)\d*_[a-zA-Z][\w]*)`')
 
+# Structured-section labels used for cross-line lookback (R25 Phase 1 follow-up).
+# When a doc presents:
+#     **Variable:** `vm_foo`
+#     ...
+#     **Citation:** `file.gms:NN`
+# the identifier and citation are on different lines, so the per-line nearby_ids
+# window misses the pairing. Look back up to 5 non-empty lines for one of these
+# labels and add any backticked identifier on that label-line to nearby_ids.
+STRUCT_LABEL_RE = re.compile(
+    r"\*\*(?:Variable|Equation|Source|Source Module|Output|Interface|Provides)[: ]"
+)
+# Lines that mark a HARD STOP for cross-line lookback — they signal we've
+# entered a different documentation block whose identifier shouldn't be paired
+# with the current citation. The check is on prefix because we want to match
+# the entire `**File:**` / `**Citation:**` field-label including the colon.
+BOUNDARY_RE = re.compile(
+    r"^\s*(?:#{2,6}\s|\*\*(?:File|Citation|Location|Defined in)[: ])"
+)
+
 
 def main():
     agent_dir = sys.argv[1]
@@ -58,6 +77,19 @@ def main():
             except (OSError, UnicodeDecodeError):
                 file_lines_cache[path] = []
         return file_lines_cache[path]
+
+    # Cache of DOC file lines (needed for cross-line lookback of structured sections).
+    # Distinct from file_lines_cache (which caches GAMS source files).
+    doc_lines_cache = {}
+
+    def get_doc_lines(path):
+        if path not in doc_lines_cache:
+            try:
+                with open(path, 'r', errors='replace') as f:
+                    doc_lines_cache[path] = f.read().splitlines()
+            except (OSError, UnicodeDecodeError):
+                doc_lines_cache[path] = []
+        return doc_lines_cache[path]
 
     # Extract citations + nearby context from AI docs.
     # R5 (2026-05-24): scope extended from modules/-only to all doc directories
@@ -90,9 +122,17 @@ def main():
         m = re.match(r'^(.+\.md):(\d+):(.+)', line)
         if not m:
             continue
-        doc_file, _doc_line, context = m.group(1), m.group(2), m.group(3)
+        doc_file, doc_line_str, context = m.group(1), m.group(2), m.group(3)
+        doc_line_idx = int(doc_line_str) - 1
         mod_match = re.search(r'/module_(\d+)\w*\.md$', doc_file)
         mod_num = mod_match.group(1) if mod_match else None
+
+        # Detect table-row context: lines starting with `|` are markdown table
+        # rows. In tables, citations and their subject identifier are typically
+        # in different cells separated by ~50-150 chars. The 40-char back
+        # window misses these. Drop the per-char limit on table rows; rely
+        # only on the previous-cite cut-off to avoid sibling-cell collisions.
+        is_table_row = context.lstrip().startswith("|")
 
         # Find all citations on this line so we can scope each nearby_ids window
         # only to the text between this cite and the previous one (avoids picking
@@ -103,14 +143,51 @@ def main():
             start = int(cit_match.group(2))
             end = int(cit_match.group(3)) if cit_match.group(3) else None
 
-            # Capture nearby backticked GAMS identifiers in a tighter window:
-            # back to the previous cite (or 40 chars, whichever is closer) and
-            # forward only 10 chars (citations typically follow their subject).
+            # Capture nearby backticked GAMS identifiers. For PROSE: tighter
+            # window — back to previous cite (or 40 chars, whichever is closer)
+            # plus 10 chars forward (cites typically follow their subject).
+            # For TABLE ROWS: no per-char back limit (cells can be long); only
+            # the previous-cite bound applies.
             prev_end = cite_matches[idx - 1].end() if idx > 0 else 0
-            window_start = max(prev_end, cit_match.start() - 40)
+            if is_table_row:
+                window_start = prev_end
+            else:
+                window_start = max(prev_end, cit_match.start() - 40)
             window_end = min(len(context), cit_match.end() + 10)
             window = context[window_start:window_end]
             nearby_ids = set(GAMS_ID_RE.findall(window))
+
+            # CROSS-LINE LOOKBACK (R25 Phase 1 follow-up):
+            # If no identifier found in the same-line window, look back up to
+            # 5 non-empty lines for a structured-section label (**Variable:**,
+            # **Equation:**, etc.) with a backticked identifier. This catches
+            # the `**Variable:** \`vm_X\`` ... `**Citation:** \`file:NN\`` pattern
+            # used pervasively in module_11.md cost-component sections.
+            #
+            # HARD STOP at section boundaries (markdown headers #### / ###,
+            # or another **File:** / **Citation:** / **Location:** label).
+            # Without this, lookback crosses block boundaries and pairs the
+            # PREVIOUS block's identifier with this block's citation — false
+            # positive observed in module_14.md per-forest-type sections.
+            if not nearby_ids:
+                doc_lines = get_doc_lines(doc_file)
+                lookback_count = 0
+                for j in range(doc_line_idx - 1, max(-1, doc_line_idx - 12), -1):
+                    if j < 0 or j >= len(doc_lines):
+                        break
+                    prev_line = doc_lines[j]
+                    if not prev_line.strip():
+                        continue  # skip blank lines, don't count toward limit
+                    if BOUNDARY_RE.search(prev_line):
+                        break  # crossed a section boundary; don't reach further
+                    lookback_count += 1
+                    if lookback_count > 5:
+                        break
+                    if STRUCT_LABEL_RE.search(prev_line):
+                        found = set(GAMS_ID_RE.findall(prev_line))
+                        if found:
+                            nearby_ids.update(found)
+                            break
 
             key = (doc_file, mod_num, gms_hint, start, end)
             if key not in citations:
