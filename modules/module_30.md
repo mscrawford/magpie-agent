@@ -1,16 +1,18 @@
 # Module 30: Croparea - Complete Implementation Guide
 
 **Status**: 100% Verified
-**Version**: `simple_apr24` (default) | `detail_apr24` (alternative)
-**Lines of Code**: ~650 (detail_apr24 realization)
+**Default realization**: `simple_apr24` (per `config/default.cfg`: `cfg$gms$croparea <- "simple_apr24"`)
+**Alternative**: `detail_apr24`
+**Lines of Code**: ~450 (simple_apr24) | ~620 (detail_apr24)
 **Equations**: 9 (simple_apr24 default) | 12 (detail_apr24); 13 unique equation names across both realizations
 
 ---
 
-> ⚙️ **Default Realization**: `simple_apr24`
-> Confirmed in `config/default.cfg`: `cfg$gms$croparea <- "simple_apr24"`. The bulk of the detailed equation documentation below comes from `detail_apr24`. Where behaviour differs between realizations, this is noted. See the [simple_apr24 Realization](#simple_apr24-realization--equations-unique-or-different-from-detail_apr24) section for simple_apr24-specific equations.
->
-> ⚠️ **R3 audit warning (2026-05-23)**: declarations.gms file:line citations throughout this doc point at `detail_apr24` line numbers, NOT `simple_apr24` (the actual default). In `simple_apr24`, `vm_area` is at declarations.gms:18 (doc cites :21), `vm_rotation_penalty` at :19 (doc cites :22), `vm_carbon_stock_croparea` at :20 (doc cites :23). The cited line numbers were verified to match `detail_apr24` exactly. Variables like `v30_penalty` and `v30_penalty_max_irrig` do NOT exist in `simple_apr24` — they are `detail_apr24`-only. For default-config questions, read `../modules/30_croparea/simple_apr24/*.gms` directly. A full re-derivation of citations is deferred to a future session.
+> ⚙️ **Realization-awareness in this doc** (R6 Phase 2 sweep, 2026-05-25):
+> - §§1-2, 6-8 describe equations that exist in BOTH realizations with shared semantics; cited line numbers are for `detail_apr24` (the historically-documented realization). In `simple_apr24`, q30_prod is at L14-15 and q30_betr_missing at L21-23 (identical). q30_carbon, q30_bv_ann, q30_bv_per, q30_crop_reg exist in both but at different lines (simple: L49,56,60,66; detail: L87,94,99,105).
+> - §§3, 4, 5 describe `detail_apr24`-specific rotational constraint mechanics (rule-based with `i30_implementation=1` conditional + penalty-based with `i30_implementation=0`). simple_apr24 has DIFFERENT q30_rotation_max/min equation bodies (uses `crp_kcr30` sets, no `i30_implementation` conditional) — see §10 for the simple_apr24 forms.
+> - §9 (`q30_cost`) is simple_apr24-only — replaces what would be a penalty payment equation in detail_apr24.
+> - For default-config behaviour, read `../modules/30_croparea/simple_apr24/*.gms`. For alternative-realization behaviour, read `../modules/30_croparea/detail_apr24/*.gms`.
 
 ---
 
@@ -51,12 +53,12 @@ This module provides the critical interface variable `vm_area(j,kcr,w)` that is 
 
 ---
 
-## Core Equations (12 Total)
+## Core Equations (9 in simple_apr24 default; 12 in detail_apr24 alternative)
 
-### 1. Production Calculation
+### 1. Production Calculation (both realizations)
 
 #### q30_prod - Agricultural Production
-**Location**: `equations.gms:14-15`
+**Location**: `simple_apr24/equations.gms:14-15` (also `detail_apr24/equations.gms:14-15`)
 **Purpose**: Calculate production by multiplying area with yield
 
 ```gams
@@ -79,10 +81,10 @@ q30_prod(j2,kcr) ..
 
 ---
 
-### 2. Bioenergy Tree Target
+### 2. Bioenergy Tree Target (both realizations)
 
 #### q30_betr_missing - Bioenergy Tree Land Shortfall
-**Location**: `equations.gms:21-23`
+**Location**: `simple_apr24/equations.gms:21-23` (also `detail_apr24/equations.gms:21-...`)
 **Purpose**: Calculate missing bioenergy tree land relative to target
 
 ```gams
@@ -121,18 +123,20 @@ Default penalty: `s30_betr_penalty = 2460 USD17MER/ha` (`input.gms:31`)
 
 ---
 
-### 3. Rotational Constraints - Rule-Based
+### 3. Rotational Constraints - Rule-Based (detail_apr24)
 
-MAgPIE implements rotational constraints to prevent over-specialization (monoculture). The model supports two implementation modes:
+> **Realization**: §§3-5 describe the rotational-constraint mechanics in `detail_apr24` (the alternative realization). The default `simple_apr24` has a SIMPLER rotational structure with no `i30_implementation` switch and no penalty-based variants — see §10 for `simple_apr24` rotation equations.
+
+MAgPIE's `detail_apr24` realization implements rotational constraints to prevent over-specialization (monoculture) with TWO implementation modes:
 - **Rule-based** (`i30_implementation = 1`): Hard constraints, infeasible if violated
 - **Penalty-based** (`i30_implementation = 0`): Soft constraints via penalty payments
 
-**Mode Selection**:
-- Historic period (≤ SSP2 fix year): Always rule-based (`presolve.gms:19`)
+**Mode Selection** (detail_apr24):
+- Historic period (≤ SSP2 fix year): Always rule-based (`detail_apr24/presolve.gms:19`)
 - Future period: User-configurable via `s30_implementation` scalar (`detail_apr24/input.gms:24`)
 
-#### q30_rotation_max - Maximum Rotational Share (Rule-Based)
-**Location**: `equations.gms:36-38`
+#### q30_rotation_max - Maximum Rotational Share (Rule-Based; detail_apr24)
+**Location**: `detail_apr24/equations.gms:36-38`
 **Purpose**: Limit maximum share of crop groups on total cropland
 
 ```gams
@@ -175,8 +179,8 @@ Interpolates from "default" to selected scenario (`input.gms:14`) over period 20
 
 **Description**: This equation prevents monoculture by limiting the share of specific crop groups. For example, cereals might be limited to 67% of total cropland to force crop diversity.
 
-#### q30_rotation_min - Minimum Rotational Share (Rule-Based)
-**Location**: `equations.gms:40-42`
+#### q30_rotation_min - Minimum Rotational Share (Rule-Based; detail_apr24)
+**Location**: `detail_apr24/equations.gms:40-42`
 **Purpose**: Enforce minimum share of crop groups on total cropland
 
 ```gams
@@ -206,10 +210,12 @@ rotamin_red30(rotamin30) = yes$(i30_rotation_rules(t,rotamin30) > 0);
 
 ---
 
-### 4. Rotational Constraints - Penalty-Based
+### 4. Rotational Constraints - Penalty-Based (detail_apr24 only)
 
-#### q30_rotation_penalty - Total Rotation Penalty
-**Location**: `equations.gms:46-53`
+> **Realization**: §4 is `detail_apr24`-only. `simple_apr24` does NOT have penalty-based rotational variants — its q30_cost equation handles only the betr-target penalty (see §9). Switching to penalty-based rotation requires `detail_apr24`.
+
+#### q30_rotation_penalty - Total Rotation Penalty (detail_apr24)
+**Location**: `detail_apr24/equations.gms:46-53`
 **Purpose**: Aggregate all rotational constraint violations into regional penalty
 
 ```gams
@@ -257,8 +263,8 @@ When using rule-based constraints, penalty variables are fixed to zero to avoid 
 
 **Description**: This equation enters Module 11's objective function via `vm_rotation_penalty(i)`. The penalty creates a soft constraint: the model can violate rotational rules but must pay for it. This can help find feasible solutions when rule-based constraints would be infeasible.
 
-#### q30_rotation_max2 - Maximum Rotational Share (Penalty-Based)
-**Location**: `equations.gms:59-62`
+#### q30_rotation_max2 - Maximum Rotational Share (Penalty-Based; detail_apr24)
+**Location**: `detail_apr24/equations.gms:59-62`
 **Purpose**: Calculate penalty amount for exceeding maximum share
 
 ```gams
@@ -281,7 +287,7 @@ rotamax_red30(rotamax30) = yes$(i30_rotation_incentives(t,rotamax30) > 0);
 
 **Description**: This calculates how much a crop group exceeds its maximum share. The excess area is multiplied by the penalty rate in `q30_rotation_penalty`. If area is below the maximum, the positive variable constraint ensures penalty = 0.
 
-#### q30_rotation_min2 - Minimum Rotational Share (Penalty-Based)
+#### q30_rotation_min2 - Minimum Rotational Share (Penalty-Based; detail_apr24)
 **Location**: `equations.gms`
 **Purpose**: Calculate penalty amount for falling below minimum share
 
@@ -305,9 +311,11 @@ rotamin_red30(rotamin30) = yes$(i30_rotation_incentives(t,rotamin30) > 0);
 
 ---
 
-### 5. Irrigated Area Constraints
+### 5. Irrigated Area Constraints (detail_apr24 only)
 
-#### q30_rotation_max_irrig - Maximum Irrigated Rotational Share
+> **Realization**: §5's `q30_rotation_max_irrig` is `detail_apr24`-only. `simple_apr24` does not have irrigated-area-specific rotational constraints.
+
+#### q30_rotation_max_irrig - Maximum Irrigated Rotational Share (detail_apr24)
 **Location**: `equations.gms`
 **Purpose**: Prevent over-specialization on irrigated land (always active)
 
@@ -332,7 +340,9 @@ q30_rotation_max_irrig(j2,rotamax_red30) ..
 
 ---
 
-### 6. Carbon Stocks
+### 6. Carbon Stocks (both realizations; different line numbers)
+
+> Line numbers differ between realizations because detail_apr24's rotational section is larger. The equation BODY is identical.
 
 #### q30_carbon - Cropland Carbon Content
 **Location**: `equations.gms`
@@ -362,7 +372,7 @@ q30_carbon(j2,ag_pools) ..
 
 ---
 
-### 7. Biodiversity Values
+### 7. Biodiversity Values (both realizations; different line numbers)
 
 #### q30_bv_ann - Biodiversity Value for Annual Crops
 **Location**: `equations.gms`
@@ -432,7 +442,7 @@ vm_bv.l(j,"crop_per",potnatveg) =
 
 ---
 
-### 8. Regional Aggregation
+### 8. Regional Aggregation (both realizations)
 
 #### q30_crop_reg - Regional Cropland Area
 **Location**: `equations.gms`
