@@ -348,7 +348,7 @@ New documentation project session
   → README.md (orientation and session protocol)
   → audit/validation_rounds.json (semantic flywheel record)
   → audit/pipeline_audit_rounds.json (structural audit record)
-  → audit/get_under_control_plan.md or audit/next_session_plan.md (open plans)
+  → audit/BACKLOG.md (open work — active / deferred / won't-fix)
   → project/sync_log.json (MAgPIE sync state)
   → Ask user: "What should I work on?"
 ```

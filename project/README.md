@@ -28,10 +28,10 @@ This directory contains 4 files supporting the AI documentation project:
 
 After v1.0 the state-tracking surface migrated out of this directory. **For current state, read:**
 
-- `audit/validation_rounds.json` — semantic-flywheel rounds (R1-R24+)
+- `audit/BACKLOG.md` — single source of truth for open work
+- `audit/validation_rounds.json` — semantic-flywheel rounds (R1-R25+)
 - `audit/pipeline_audit_rounds.json` — structural pipeline audits (R1-R6+)
-- `audit/next_session_plan.md` — open multi-session plans
-- `audit/get_under_control_plan.md` — current phased plan (Phase 0: doc-surface drift)
+- `audit/get_under_control_plan.md` — R24 bomb-rate campaign (Phases 0-3 done; kept for the R26 charter)
 - `audit/global/agent_lessons.md` — system-wide lessons
 - `project/sync_log.json` — MAgPIE sync state
 - `git log` — commit history is canonical
@@ -42,10 +42,10 @@ After v1.0 the state-tracking surface migrated out of this directory. **For curr
 
 If you're continuing work on the documentation project:
 
-1. Read `audit/get_under_control_plan.md` for the current phased plan (if active).
+1. Read `audit/BACKLOG.md` for all open work (active / deferred / won't-fix).
 2. Check `audit/validation_rounds.json` tail entries for the most recent flywheel rounds.
 3. Check `audit/pipeline_audit_rounds.json` tail for structural audits.
-4. Check `audit/next_session_plan.md` for any open one-off work items.
+4. See `audit/get_under_control_plan.md` for the R24 campaign / R26 charter (if active).
 5. `git log --oneline -20` for recent commits.
 
 (Do NOT edit `archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json` — it is a frozen snapshot.)

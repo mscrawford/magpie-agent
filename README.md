@@ -4,7 +4,7 @@
 
 Comprehensive, AI-optimized documentation for the MAgPIE land-use model. Works with any AI assistant (Claude Code, Cursor, Copilot, etc.).
 
-For current state of the project, see `audit/validation_rounds.json`, `audit/pipeline_audit_rounds.json`, `audit/next_session_plan.md` / `audit/get_under_control_plan.md`, and the git commit log. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
+For current state of the project, see `audit/validation_rounds.json`, `audit/pipeline_audit_rounds.json`, `audit/BACKLOG.md` (open work) / `audit/get_under_control_plan.md` (R24 campaign), and the git commit log. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
 
 ---
 
@@ -107,13 +107,14 @@ Doc-vs-code accuracy is mechanically guarded by `scripts/validate_consistency.sh
 
 (Skip this section if you're a MAgPIE user.)
 
-Current open plans live in `audit/`:
+Open work is tracked in one place:
 
-- `audit/get_under_control_plan.md` — current multi-session plan (Phase 0: doc-surface drift)
-- `audit/next_session_plan.md` — open one-off work items
-- `audit/validation_rounds.json` — semantic-flywheel round log (R1-R24+)
+- `audit/BACKLOG.md` — single source of truth for open work (active / deferred / won't-fix)
+- `audit/get_under_control_plan.md` — R24 bomb-rate campaign (Phases 0-3 done; kept for the R26 charter)
+- `audit/validation_rounds.json` — semantic-flywheel round log (R1-R25+)
 - `audit/pipeline_audit_rounds.json` — structural pipeline audit log (R1-R6+)
 - `audit/global/agent_lessons.md` — system-wide lessons
+- `audit/archive/` — completed plans (`plans/`) and per-round artifacts (`rounds/`)
 
 `git log --oneline -20` shows recent direction.
 

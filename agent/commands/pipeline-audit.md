@@ -6,7 +6,7 @@
 
 **Cost**: typically 6 parallel Opus sub-agents, one per lens. Substantial — a deep audit, heavier than `/validate-semantic`. Reserve for periodic hardening rounds.
 
-**Per-round overrides**: the lens set is the typical doc↔code-drift focus described below. Specific rounds may use a different lens design (e.g., R6 used 7 lenses for "Stale-and-Remnant" doc-surface drift — see `audit/pipeline_audit_round6_design.md`). When a round overrides the default, the round design doc explicitly states the lens set and rationale.
+**Per-round overrides**: the lens set is the typical doc↔code-drift focus described below. Specific rounds may use a different lens design (e.g., R6 used 7 lenses for "Stale-and-Remnant" doc-surface drift — see `audit/archive/rounds/pipeline_audit_round6_design.md`). When a round overrides the default, the round design doc explicitly states the lens set and rationale.
 
 **Out of scope**: behavioral answer-quality — that is the semantic flywheel (`audit/validation_rounds.json` + `/validate-semantic`). This audits the *machinery*, not the *answers*.
 
@@ -104,7 +104,7 @@ followed by a 2-3 line summary.
 3. **Triage by severity** — CRITICAL/HIGH first. For each finding, spot-check the evidence (run the command, read the diff) — do not take a finding on trust.
 4. **Cluster by root cause** — group findings by shared mechanism, not by symptom. Per `[[feedback_synthetic_interventions]]`, N findings typically collapse to 2-3 root interventions. A finding corroborated by multiple lenses or agents usually points at one root.
 5. **Findings report** — a severity-ordered list: location, failure mode, evidence, proposed fix, confidence, corroboration count, root-cause cluster.
-6. **Log the round** to `audit/pipeline_audit_rounds.json` (see schema below).
+6. **Log the round** to `audit/pipeline_audit_rounds.json` (see schema below). Write the detailed report, design, and raw-findings markdown to `audit/archive/rounds/pipeline_audit_round{N}*.md` — the JSON is the living log; the per-round markdown is a frozen artifact kept out of the `audit/` top level (where validators skip it).
 7. **Present the report.** Phase "fix + mechanize" is **reviewed with the user before execution** — do NOT proactively fix.
 
 ## Fix + mechanize (reviewed with the user first)
@@ -133,7 +133,7 @@ Mirrors `audit/validation_rounds.json`. One object per round:
   "by_lens": {"lens-name": count, ...},
   "corroborated": [{"finding": "...", "lenses": ["...", "..."], "severity": "..."}],
   "root_cause_clusters": [{"cluster": "...", "findings": ["..."], "candidate_intervention": "..."}],
-  "report_path": "audit/pipeline_audit_roundN.md",
+  "report_path": "audit/archive/rounds/pipeline_audit_roundN.md",
   "guards_added": [],
   "status": "triaged | fixed | mechanized"
 }
@@ -148,4 +148,4 @@ Create the file on round 1 with `{"rounds": [...]}`.
 <!-- Append insights as the command is used in practice. -->
 
 - **2026-05-23 (origin)**: created as the structural counterpart to `/validate-semantic` (behavioral). Six lens-differentiated Opus agents; doc↔code fidelity is the proven hot spot (445 bugs across 21 flywheel rounds as of origin) so Lens 1 and Lens 2 are decorrelated copies (doc→code reading vs code→doc grep). Lens 5 (cross-doc consistency) replaces preproc-agent's R→GAMS-boundary lens, which has no analog here. Ported from `magpie-preproc-agent/agent/commands/pipeline-audit.md` (2026-05-17 origin there) with lens adaptation for magpie-agent's surface.
-- **2026-05-23 (R1)**: 71 findings, 8 root-cause clusters; CRITICAL Module 18 wrong-realization; 13/46 module-doc footer fabrications (single root cause: no realization-validity validator); MANDATE 8 worked example itself contained a fabricated realization (`fbask_jul23` — actual default is `fbask_jan16`). Findings + triage logged at `audit/pipeline_audit_round1.md`.
+- **2026-05-23 (R1)**: 71 findings, 8 root-cause clusters; CRITICAL Module 18 wrong-realization; 13/46 module-doc footer fabrications (single root cause: no realization-validity validator); MANDATE 8 worked example itself contained a fabricated realization (`fbask_jul23` — actual default is `fbask_jan16`). Findings + triage logged at `audit/archive/rounds/pipeline_audit_round1.md`.

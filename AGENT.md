@@ -108,7 +108,7 @@ I'm your AI assistant for the MAgPIE land-use model. I have curated documentatio
 
 **If working on the MAgPIE AI Documentation Project:**
 1. Read: `README.md` (project orientation — note: this is for documentation-project work only, not MAgPIE Q&A)
-2. Read live state from: `audit/validation_rounds.json` (semantic flywheel), `audit/pipeline_audit_rounds.json` (structural audits), `audit/next_session_plan.md` / `audit/get_under_control_plan.md` (open plans), `project/sync_log.json` (MAgPIE sync state), `audit/global/agent_lessons.md` (system-wide lessons), recent commits. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
+2. Read live state from: `audit/BACKLOG.md` (single source of truth for open work), `audit/validation_rounds.json` (semantic flywheel), `audit/pipeline_audit_rounds.json` (structural audits), `audit/get_under_control_plan.md` (R24 campaign, R26 pending), `project/sync_log.json` (MAgPIE sync state), `audit/global/agent_lessons.md` (system-wide lessons), recent commits. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
 3. Ask user: "What should I work on?"
 
 **If answering MAgPIE questions:** Follow the workflow below.
@@ -146,7 +146,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/validate` | Check documentation consistency (syntactic) | Maintainers |
 | `/validate-module` | Validate specific module docs | Maintainers |
 | `/validate-semantic` | Run adversarial semantic accuracy flywheel (scoring spec: `audit/flywheel_rubric.md`) | Maintainers |
-| `/pipeline-audit` | Multi-lens structural audit of the agent's own machinery (typically 6 parallel Opus agents; per-round lens design may vary — see `audit/pipeline_audit_round{N}_design.md` for the specific round's lens set) | Maintainers |
+| `/pipeline-audit` | Multi-lens structural audit of the agent's own machinery (typically 6 parallel Opus agents; per-round lens design may vary — see `audit/archive/rounds/pipeline_audit_round{N}_design.md` for the specific round's lens set) | Maintainers |
 
 **Note**: Agent auto-update and AGENT.md deployment happen automatically at session start (see session_startup.md Step 0). Use `/update` when you want to also sync docs with MAgPIE develop and run semantic freshness validation on affected modules.
 

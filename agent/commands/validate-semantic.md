@@ -72,6 +72,8 @@ Session startup checks `validation_rounds.json` for last validation date:
 
 ## Step-by-Step Execution
 
+> **Round artifacts convention**: write the round's scratch markdown (design, `answers/`, `audits/`, synthesis) to `audit/archive/rounds/round{N}_*` — NOT the `audit/` top level. The living record is `audit/validation_rounds.json` (top level); the per-round markdown is frozen history kept in `archive/rounds/`, where validators skip it.
+
 ### Step 1: Generate Questions
 
 **Before designing questions**: review `audit/probe_dedup_ledger.json`. Names appearing there within their lock-out window are off-limits for fresh probes (would test recognition, not capability). Calibration anchors are exempt — they recur by design.

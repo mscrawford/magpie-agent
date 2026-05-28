@@ -1,5 +1,7 @@
 # Plan: get the bomb rate under control + clean up the doc surface
 
+> **Historical campaign record (R24 bomb-rate, created 2026-05-24).** Phases 0-3 are complete; only **R26** remains (see §Phase 3). Live open-work tracking is now in `audit/BACKLOG.md` — this file is kept at the `audit/` top level only as the R26 charter, and moves to `archive/plans/` once R26 closes.
+
 **Created**: 2026-05-24 (post-R24 conversation)
 **Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☑ Phase 2 (2026-05-25)  ◐ Phase 3 (R25 done, R26 pending)  ⏸ Phase 4 (deep-shelf as of 2026-05-25)
 **Target completion (Phases 0-3)**: ~3-4 focused sessions over 1-2 weeks
@@ -51,8 +53,8 @@ Each lens has at least one R24-found example pre-loaded as a calibration anchor.
 
 | Step | Effort | Output |
 |------|--------|--------|
-| 0a. Design lens prompts (1 per L1-L7) with R24 ground-truth examples baked in | 30min | `audit/pipeline_audit_round6_design.md` |
-| 0b. Run 7 parallel Sonnet lens agents | ~45min wall | `audit/pipeline_audit_round6_raw_findings.md` |
+| 0a. Design lens prompts (1 per L1-L7) with R24 ground-truth examples baked in | 30min | `audit/archive/rounds/pipeline_audit_round6_design.md` |
+| 0b. Run 7 parallel Sonnet lens agents | ~45min wall | `audit/archive/rounds/pipeline_audit_round6_raw_findings.md` |
 | 0c. Optional: re-run L2 + L6 (judgment-heavy) with Opus on Sonnet-not-flagged docs | ~30min | Confidence check |
 | 0d. Opus synthesis: cluster findings by root cause | 1h | Cluster table — likely 5-8 clusters |
 | 0e. Per-cluster decisions (SSOT, archives, dependency_analysis, notes pattern, etc.) | 15min | Direction per cluster |
@@ -193,10 +195,10 @@ The R6 / Phase 0-2 work was structural; Phase 3 is the empirical test. R25 needs
 If you're a future Claude picking this up cold, here's the pointer set:
 
 ### What R24 found (the trigger for this plan)
-- `audit/round24_design.md` — round design (6 questions: 4 new probes + G3/G4 first-use)
-- `audit/round24_answers/{Q1-Q4,G3,G4}_answer.md` — Sonnet answers
-- `audit/round24_audits/{Q1-Q4,G3,G4}_audit.md` — Opus audits with bug listings
-- `audit/round24_synthesis.md` — synthesis, root-cause clusters, doc-vs-answerer attribution
+- `audit/archive/rounds/round24_design.md` — round design (6 questions: 4 new probes + G3/G4 first-use)
+- `audit/archive/rounds/round24_answers/{Q1-Q4,G3,G4}_answer.md` — Sonnet answers
+- `audit/archive/rounds/round24_audits/{Q1-Q4,G3,G4}_audit.md` — Opus audits with bug listings
+- `audit/archive/rounds/round24_synthesis.md` — synthesis, root-cause clusters, doc-vs-answerer attribution
 - `audit/validation_rounds.json` R24 entry — mean 7.5/10, 2 bombs (Q4 4/10, Q1 5/10)
 
 ### Doc fixes already applied in R24
@@ -228,10 +230,10 @@ Update the checkbox row at the top as phases complete. Append session-by-session
 
 **Session 1 — 2026-05-25 — Phase 0 (Stale-and-Remnant pipeline audit R6) — COMPLETE**
 
-- 0a (design): 7 lens prompts with R24 anchors, model upgraded Sonnet → Opus mid-design per user. → `audit/pipeline_audit_round6_design.md`.
-- 0b (lens agents): 7 parallel Opus sub-agents, ~15-25min wall each, returned 70 raw findings. → `audit/pipeline_audit_round6_raw_findings.md`.
+- 0a (design): 7 lens prompts with R24 anchors, model upgraded Sonnet → Opus mid-design per user. → `audit/archive/rounds/pipeline_audit_round6_design.md`.
+- 0b (lens agents): 7 parallel Opus sub-agents, ~15-25min wall each, returned 70 raw findings. → `audit/archive/rounds/pipeline_audit_round6_raw_findings.md`.
 - 0c (Opus re-run): SKIPPED — Opus already used for all 7 lens agents.
-- 0d (synthesis): single Opus call, 70 raw → 58 dedup, 8 root-cause clusters, 4 standing decisions resolved + 1 deferred. → `audit/pipeline_audit_round6.md`.
+- 0d (synthesis): single Opus call, 70 raw → 58 dedup, 8 root-cause clusters, 4 standing decisions resolved + 1 deferred. → `audit/archive/rounds/pipeline_audit_round6.md`.
 - 0e (per-cluster decisions): user approved all synthesis recommendations on all 4 standing decisions + 5 open questions in one turn.
 - 0f (apply interventions): 7 cluster commits stacked in dependency order — D (security) first, then A, C, B, G, H, E. + 1 parent-repo commit (parent `.gitignore` exposure fix, --no-verify per user authorization for the over-firing pre-commit hook).
 - 0g (Cluster F): AGENT.md trim 846 → 724 lines / 46KB → 44KB. 3 new auto-loaded helpers (session_cleanup, link_dont_duplicate, directory_structure). magpie4 + preproc added to 5 scaffold sections. 4 broad triggers tightened. AGENT.md re-deployed to `../AGENT.md` + `../CLAUDE.md`.
@@ -280,10 +282,10 @@ Phase 2 takeaway: deferred-since-R3 work closed in a single session. The Phase 1
 **Session 4 — 2026-05-25 — Phase 3 R25 (re-measure) — COMPLETE**
 
 - Pre-launch baseline: `scripts/validate_consistency.sh` 39/41 + 2 advisory warnings; `check_units.py` 5 advisory; `check_consumer_attribution.py` 0 mismatches + Pattern D clean. magpie4 clone synced (v2.70.0 @ a360d8c9ec).
-- R25 design (`audit/round25_design.md`): 5 new probes (Q1 M30 rotation, Q2 M80 solver, Q3 M57 N-MACC chain, Q4 M38 consumer attribution, Q5 magpie4 N2O AWMS provenance) + 2 regression (G1 M14 yields, G2 vm_carbon_stock).
-- Answers (`audit/round25_answers/`): 7 parallel Sonnet 4.6 magpie-helper agents, doc-only (Q5 also allowed magpie4 pinned clone). All wrote answer files.
-- Audits (`audit/round25_audits/`): 7 parallel Opus 4.6 general-purpose agents, scored per `flywheel_rubric.md`.
-- Synthesis (`audit/round25_synthesis.md`): mean **8.93/10** (vs R24 7.5; +1.43 recovery). 0 CRITICAL, 2 Major, 5 Minor, 4 Info. Both regression anchors G1, G2 scored 10/10 with drift=false. Per plan: mean ≥8.5 → "Recovery + improvement; proceed to Phase 4 design."
+- R25 design (`audit/archive/rounds/round25_design.md`): 5 new probes (Q1 M30 rotation, Q2 M80 solver, Q3 M57 N-MACC chain, Q4 M38 consumer attribution, Q5 magpie4 N2O AWMS provenance) + 2 regression (G1 M14 yields, G2 vm_carbon_stock).
+- Answers (`audit/archive/rounds/round25_answers/`): 7 parallel Sonnet 4.6 magpie-helper agents, doc-only (Q5 also allowed magpie4 pinned clone). All wrote answer files.
+- Audits (`audit/archive/rounds/round25_audits/`): 7 parallel Opus 4.6 general-purpose agents, scored per `flywheel_rubric.md`.
+- Synthesis (`audit/archive/rounds/round25_synthesis.md`): mean **8.93/10** (vs R24 7.5; +1.43 recovery). 0 CRITICAL, 2 Major, 5 Minor, 4 Info. Both regression anchors G1, G2 scored 10/10 with drift=false. Per plan: mean ≥8.5 → "Recovery + improvement; proceed to Phase 4 design."
 - Bug fixes (8 doc edits + 1 infra):
   - `modules/module_30.md:522` c30_rotation_constraints input.gms `:24` → `:14`
   - `modules/module_80.md` Parameters table: `:8-13` → `:8-15` range; `s80_counter :13`→`:14`; `s80_resolve_option :14`→`:15`

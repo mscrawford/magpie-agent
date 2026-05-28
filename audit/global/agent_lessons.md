@@ -72,4 +72,4 @@ The AGENT.md file (formerly CLAUDE.md) serves as the agent's primary instruction
 
 **Mitigation hook**: When synthesizing a round, treat any Critical-tier fabricated-name claim as `tier_uncertainty: true` until grep-verified. This is now a binding rule for the synthesis phase, not a suggestion.
 
-*Source: R24 Q4-B2 (downgraded from Critical to nothing); see `audit/round24_synthesis.md` and `audit/round24_audits/Q4_audit.md` for the original audit and `audit/validation_rounds.json` R24 entry for the corrected score.*
+*Source: R24 Q4-B2 (downgraded from Critical to nothing); see `audit/archive/rounds/round24_synthesis.md` and `audit/archive/rounds/round24_audits/Q4_audit.md` for the original audit and `audit/validation_rounds.json` R24 entry for the corrected score.*
