@@ -108,7 +108,7 @@ I'm your AI assistant for the MAgPIE land-use model. I have curated documentatio
 
 **If working on the MAgPIE AI Documentation Project:**
 1. Read: `README.md` (project orientation — note: this is for documentation-project work only, not MAgPIE Q&A)
-2. Read live state from: `audit/BACKLOG.md` (single source of truth for open work), `audit/validation_rounds.json` (semantic flywheel), `audit/pipeline_audit_rounds.json` (structural audits), `audit/get_under_control_plan.md` (R24 campaign, R26 pending), `project/sync_log.json` (MAgPIE sync state), `audit/global/agent_lessons.md` (system-wide lessons), recent commits. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
+2. Read live state from: `audit/BACKLOG.md` (single source of truth for open work), `audit/validation_rounds.json` (semantic flywheel), `audit/pipeline_audit_rounds.json` (structural audits), `audit/get_under_control_plan.md` (R24 campaign, complete -- archive-ready), `project/sync_log.json` (MAgPIE sync state), `audit/global/agent_lessons.md` (system-wide lessons), recent commits. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
 3. Ask user: "What should I work on?"
 
 **If answering MAgPIE questions:** Follow the workflow below.
@@ -250,7 +250,7 @@ If the user's module appears in that list, run Step 1c. If not (single realizati
 
 ### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 
-**17 MANDATEs** that prevent recurring confabulation patterns identified across <!--count:total_rounds-->24<!--/count--> semantic-validation rounds (<!--count:total_bugs_found-->474<!--/count--> catalogued bugs, <!--count:total_bugs_fixed-->314<!--/count--> fixed; see `audit/validation_rounds.json` cumulative_stats for current totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
+**17 MANDATEs** that prevent recurring confabulation patterns identified across many semantic-validation rounds (see `audit/validation_rounds.json` cumulative_stats for current bug/round totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
 
 **Why hoisted**: ~150 lines of binding rules don't belong in always-loaded AGENT.md context; auto-loading on relevant triggers saves tokens, and a dedicated MANDATE doc with binding language separates "must enforce" from "FYI".
 
@@ -548,7 +548,7 @@ Other IAMs may use different approaches:
 ### The Three Rules
 
 1. **NEVER FABRICATE** — Copy variable names, equation names, realization names, and line numbers directly from code. Never construct them from context. (`ls ../modules/XX_name/` to verify realization directories)
-2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (<!--count:validator_main_checks-->26<!--/count--> checks, <!--count:validator_sub_checks-->40<!--/count--> sub-checks). It catches wrong names, stale citations, and convention violations automatically.
+2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (the run's summary prints the live check count). It catches wrong names, stale citations, and convention violations automatically.
 3. **VERIFY BEFORE CITING** — If you haven't read a file THIS session, don't cite its line numbers. Line numbers drift as code evolves.
 
 ### Bug Distribution (where errors actually occur)
@@ -581,7 +581,7 @@ Wrong realization name → wrong file path → wrong file size → ALL line cita
 
 ### magpie4 cascade
 
-report.mif variables can be COMPUTED in magpie4 (combinations / aggregations of GAMS outputs). Citing only the GAMS source omits the magpie4 layer that constructed the variable. Always check `agent/helpers/magpie4_reference.md` for any report.mif claim — it pins to the renv-locked magpie4 version (`project/version_pins.json`) and has the dispatch source for the relevant `reportX` function. (Regression questions G3 + G4 in `validation_rounds.json` schema v1.2 specifically guard this.)
+report.mif variables can be COMPUTED in magpie4 (combinations / aggregations of GAMS outputs). Citing only the GAMS source omits the magpie4 layer that constructed the variable. Always check `agent/helpers/magpie4_reference.md` for any report.mif claim — it pins to the renv-locked magpie4 version (`project/version_pins.json`) and has the dispatch source for the relevant `reportX` function. (Regression questions G3 + G4 in `validation_rounds.json` schema v1.3 specifically guard this.)
 
 ### For Writing Automation Scripts
 
@@ -589,7 +589,7 @@ macOS ships bash 3.x: no associative arrays (`declare -A`), no `grep -P`. Use Py
 
 ### For Future Audit Sessions
 
-Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See `core_docs/Bug_Taxonomy.md` for <!--count:bug_taxonomy_patterns-->14<!--/count--> documented patterns and the improvement flywheel methodology.
+Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See `core_docs/Bug_Taxonomy.md` for the documented patterns and the improvement flywheel methodology.
 
 ---
 
@@ -599,7 +599,7 @@ Syntactic audits (variable names, equation names, realization names, citations) 
 
 - **"MAgPIE accounts for..." / "The model considers..." / "MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA? Is this MECHANISTIC or PARAMETERIZED? See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix; apply the three-check verification (equation structure, parameter source, dynamic feedback).
 
-**After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (<!--count:validator_main_checks-->26<!--/count--> checks, <!--count:validator_sub_checks-->40<!--/count--> sub-checks). See `core_docs/Response_Guidelines.md` for the full response checklist.
+**After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (the run's summary prints the live check count). See `core_docs/Response_Guidelines.md` for the full response checklist.
 
 ---
 
