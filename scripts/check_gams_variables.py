@@ -34,7 +34,7 @@ GAMS_NUMBERED_RE = re.compile(
     # prefixes (e.g., ic42_pumping_cost, ov56_*) which were previously
     # uncheckable due to single-char [vpfisc] class.
     # 2026-05-24: pc\d+_ added — carry-over from previous timestep (e.g.
-    # pc35_secdforest_natural). Surfaced by pr_doc_impact.py on PR #876.
+    # pc35_secdforest_natural). Surfaced on PR #876.
     r"\b(?:ic\d+_|oq\d+_|ov\d+_|pc\d+_|[vpfisc]\d+_)[a-zA-Z0-9_]+[a-zA-Z0-9]"
 )
 GAMS_CORE_SCALAR_RE = re.compile(r"\bs_[a-zA-Z0-9_]+[a-zA-Z0-9]")

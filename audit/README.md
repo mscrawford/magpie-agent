@@ -28,7 +28,6 @@ audit/
 ├── renames.json                      ← Tracked historical renames (for validate_consistency.sh)
 ├── global/                           ← System-wide agent lessons (agent_lessons.md)
 ├── integrated/                       ← Archived agent-recorded lessons (history)
-├── templates/                        ← Templates referenced by validators/auditors
 ├── archive/                          ← Frozen history; validators skip everything under here
 │   ├── plans/                        ← Completed / superseded plans (next_session, R3 exec, feedback removal, magpie4 scaffolding, Pattern-D2)
 │   ├── rounds/                       ← Per-round artifacts: round{N}_* + pipeline_audit_round{N}*.md
