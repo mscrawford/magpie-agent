@@ -74,7 +74,7 @@ MAgPIE tracks carbon in 3 pools for each land type:
 
 **Sources** (Module 52):
 - LPJmL simulations for equilibrium values
-- Linear convergence over 20 years (IPCC assumption, `modules/52_carbon/normal_dec17/start.gms:19,30,37`)
+- Linear convergence over 20 years (IPCC assumption, `modules/52_carbon/normal_dec17/start.gms:19-20,30-31`)
 
 ---
 
@@ -91,12 +91,12 @@ MAgPIE tracks carbon in 3 pools for each land type:
 - IPCC 2019 methodology with stock change factors
 - 15% annual convergence to equilibrium
 
-**Subsoil** (Module 52):
-- Static (fixed from LPJmL)
+**Subsoil** (parameter `i59_subsoilc_density` in Module 59, derived from M52 `fm_carbon_density` of other land):
+- Static (fixed from LPJmL via M52)
 - Not affected by land use (assumption)
 
 **Key Difference**:
-- **Module 52 provides** total soil carbon densities (topsoil + subsoil)
+- **M52 provides** underlying `fm_carbon_density`; **M59 derives** subsoil density and writes total soilc into `vm_carbon_stock`
 - **Module 59 tracks** dynamic topsoil carbon pools separately
 - Interface: `vm_carbon_stock(j,land,c_pools,stockType)` includes both — 4D, declared at `modules/56_ghg_policy/price_aug22/declarations.gms:34`; equations typically use the `"actual"` slice of `stockType`
 
@@ -539,9 +539,8 @@ v59_som_pool(j,land) = lossrate × target + (1-lossrate) × legacy
 ```
 
 **Interface with Module 52**:
-- Module 59 calculates topsoil carbon dynamics
-- Module 52 provides total soil carbon (topsoil + subsoil) to `vm_carbon_stock`
-- Topsoil from Module 59 + Subsoil from Module 52 = Total soil carbon
+- Module 59 assembles the soil-carbon slice of `vm_carbon_stock` via `q59_carbon_soil` (`modules/59_som/cellpool_jan23/equations.gms:61-64`): topsoil pool `v59_som_pool` + subsoil density `i59_subsoilc_density` (a Module-59 parameter derived from M52 `fm_carbon_density`)
+- M52 provides the underlying `fm_carbon_density`; M59 derives subsoil and writes total soilc into `vm_carbon_stock`
 
 ---
 
@@ -588,11 +587,11 @@ v59_som_pool(j,land) = lossrate × target + (1-lossrate) × legacy
 
 ---
 
-### 7.5 Modules 30, 31, 32, 35 - Land Use Drives Carbon
+### 7.5 Modules 29, 31, 32, 34, 35 - Land Use Drives Carbon
 
-**Module 30 (Croparea)**:
-- Determines crop areas → affects cropland carbon stocks
-- Irrigated vs rainfed → affects soil carbon equilibrium (Module 59)
+**Module 29 (Cropland)**:
+- `q29_carbon` aggregates `vm_carbon_stock_croparea` (from M30) into the cropland slice of `vm_carbon_stock(j2,"crop",...)` (`modules/29_cropland/detail_apr24/equations.gms:39`)
+- M30 computes `vm_carbon_stock_croparea`; M29 is the direct populator of the crop slice
 
 **Module 31 (Pasture)**:
 - Determines pasture area → affects pasture carbon stocks
@@ -602,13 +601,18 @@ v59_som_pool(j,land) = lossrate × target + (1-lossrate) × legacy
 - Determines plantation age distribution → affects vegetation carbon accumulation
 - Harvest removes biomass → carbon loss (but regrows in next rotation)
 
+**Module 34 (Urban)**:
+- Fixes urban carbon stock to zero: `vm_carbon_stock.fx(j,"urban",ag_pools,stockType) = 0` (`modules/34_urban/exo_nov21/presolve.gms:8`)
+
 **Module 35 (Natural Vegetation)**:
 - Determines forest age distributions → affects secondary forest carbon
 - Disturbances (fire, shifting agriculture) → reset age classes → carbon loss
 - Abandoned land recovery → carbon sequestration
 
-**All Provide**:
-- `vm_carbon_stock(j,land,c_pools,"actual")`: Current carbon stocks → to Module 52
+**Direct populators of vm_carbon_stock (crop, past, forestry, urban, primforest/secdforest/other slices)**:
+- M29 (crop), M31 (past), M32 (forestry), M34 (urban, fixed to 0), M35 (primforest/secdforest/other)
+- M59 writes the soilc slice for all land types (see §7.2)
+- All populated slices flow to Module 52 and Module 56
 
 ---
 

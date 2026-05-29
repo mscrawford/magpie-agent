@@ -35,11 +35,11 @@
 | **Atmospheric Deposition** | 50 | Wet/dry deposition from atmosphere | 1-20 kg N/ha/yr (exogenous) |
 | **SOM Mineralization** | 59 | N release from soil organic matter loss | Variable (land-use dependent) |
 
-**Source**: Module 50, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:18-30`
+**Source**: Module 50, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:14-16` (q50_nr_bal_crp, the =g= balance constraint; inputs summed in q50_nr_inputs at :22-32)
 
 **Key Equation** (Module 50, nitrogen soil budget):
 ```gams
-vm_nr_inorg_fert_reg(i,land_ag) + other_inputs ≥ N_withdrawal
+vm_nr_inorg_fert_reg(i,land_ag) + other_inputs >= N_withdrawal
 ```
 
 **Optimization**: MAgPIE minimizes fertilizer costs subject to meeting crop N requirements
@@ -71,37 +71,38 @@ Where `ef` = IPCC emission factor (e.g., 0.01 for direct N₂O). MACCs for soil 
 
 ### 1.4 Soil Nitrogen Budget
 
-**Equation** (Module 50, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:18-30`):
+**Equation** (Module 50, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:14-16` for q50_nr_bal_crp; q50_nr_inputs at :22-32):
 ```
-Inputs = Outputs + ΔSoil_N_stock
+Inputs = Outputs + N_surplus_residual
 ```
+(No soil-N stock variable; N_surplus_residual = v50_nr_surplus_cropland, a per-period flow residual)
 
 **Expanded**:
 ```
 Fertilizer + Fixation + Manure + Deposition + SOM_mineralization
 =
-Harvest + N2O + NH3 + Leaching + NOx + ΔSoil_pool
+Harvest + N2O + NH3 + Leaching + NOx + N_surplus_residual
 ```
+(N_surplus_residual = v50_nr_surplus_cropland, an unconstrained flow residual - NOT a tracked pool)
 
-**NO Strict Constraint**: Soil N pool can increase (accumulation) or decrease (depletion)
+**No soil-N stock tracked**: Module 50 declares no soil mineral-N state variable (all variables are period flows). The N surplus (v50_nr_surplus_cropland = inputs - withdrawals) is an unconstrained residual flow that leaves as emissions/leaching; MAgPIE carries no soil mineral-N pool across periods, so it cannot enforce that withdrawals never exceed available soil N.
 
-**Implication**: Model can deplete or build soil N based on management
+**Implication**: N surplus or deficit is a flow residual per period; no inter-period soil N pool is accumulated or depleted
 
 ---
 
 ### 1.5 Key Limitations
 
-**1. No Soil N Constraint**: Soil nitrogen pool can go negative (physically impossible)
-- Reality: Crops cannot extract more N than available in soil
-- Implication: Model may overestimate yields in N-depleted soils
+**1. No Soil N Stock Tracked**: Module 50 carries no soil mineral-N pool across periods. The N surplus (v50_nr_surplus_cropland = inputs - withdrawals) is an unconstrained residual flow exiting as emissions/leaching; there is no stock constraint preventing withdrawals from exceeding available soil N.
+- Reality: Crops cannot extract more N than is available in the soil
+- Implication: Model may overestimate yields in N-depleted soils (no N-limitation feedback on yields)
 
 **2. Fixed IPCC Emission Factors**: Do not vary by soil type, climate, management
 - Reality: EFs vary 0.3-3% depending on conditions
 - Implication: Emissions may be under/overestimated regionally
 
-**3. No N Limitation on Yields**: Yields assume sufficient N available
-- Module 13 (TC) handles N-responsive yields, but default assumes N met
-- Implication: Cannot model N-limited systems without fertilizer
+**3. No N Limitation on Yields**: MAgPIE has no N-limitation-on-yield feedback. Nitrogen demand (vm_nr_inorg_fert_reg, a free variable in Module 50) adjusts to meet crop withdrawals at the given nutrient-use efficiency (vm_nr_eff); yields are set independently (Modules 14/13 tau), so fertilizer follows yields rather than constraining them.
+- Implication: Cannot model N-limited systems where insufficient fertilizer depresses yields
 
 ---
 
@@ -112,7 +113,7 @@ Harvest + N2O + NH3 + Leaching + NOx + ΔSoil_pool
 **Food Balance** ensures that **food supply meets food demand** at regional or global level through production and trade. This IS enforced as an **inequality constraint** (supply ≥ demand) or **equality constraint** with trade flexibility.
 
 **Key Modules**:
-- **Module 16 (Demand)**: Calculates food, feed, processing demands
+- **Module 16 (Demand)**: Aggregates food, feed, processing, material, bioenergy, seed and waste demand into vm_supply (food demand computed in Module 15; feed M70; processing M20; material M62; bioenergy M60; seed and waste internal to M16)
 - **Module 17 (Production)**: Aggregates crop and livestock production
 - **Module 21 (Trade)**: Balances regional supply and demand via trade
 
@@ -127,15 +128,17 @@ At global level, total production must meet total supply requirements (which inc
 
 ### 2.2 Food Demand Components
 
-**Module 16 Calculates** (demand driven by):
+**Demand components aggregated by M16 into vm_supply** (source module in parentheses):
 
-| Demand Type | Drivers | Typical Elasticities |
-|-------------|---------|----------------------|
-| **Food** | Population, income, diet preferences | Income elasticity: 0.3-0.8 |
-| **Feed** | Livestock production (endogenous) | Derived from livestock demand |
-| **Material** | Population, economic activity | Low elasticity (~0.1-0.3) |
-| **Processing** | Food processing industry | Linked to food demand |
-| **Seed** | Crop area (endogenous) | Fixed % of production |
+| Demand Type | Source Module | Drivers | Typical Elasticities |
+|-------------|--------------|---------|----------------------|
+| **Food** | M15 (food) | Population, income, diet preferences | Income elasticity: 0.3-0.8 |
+| **Feed** | M70 (livestock) | Livestock production (endogenous) | Derived from livestock demand |
+| **Material** | M62 (material) | Population, economic activity | Low elasticity (~0.1-0.3) |
+| **Processing** | M20 (processing) | Food processing industry | Linked to food demand |
+| **Bioenergy** | M60 (bioenergy) | Policy/SSP scenarios | Exogenous or endogenous |
+| **Seed** | M16 (internal) | Crop area (endogenous) | Fixed % of production |
+| **Waste** | M16 (internal) | Supply * waste share | Exogenous waste shares |
 
 **Source**: Module 16, `equations.gms` (demand system)
 
@@ -278,7 +281,7 @@ stopifnot(max_shortage < 0.01)  # Small tolerance for numerical error
 | **Water Balance** | Flow (Inequality) | Soft (buffer) | 42, 43 | Yes - groundwater buffer for exogenous |
 | **Carbon Balance** | Stock-Flow | None | 52, 56, 59 | N/A - emissions allowed (open system) |
 | **Nitrogen Balance** | Flow | None | 50, 51, 59 | N/A - inputs/outputs allowed |
-| **Food Balance** | Flow (Equality) | Hard (with trade) | 16, 17, 21 | No - trade adjusts to meet demand |
+| **Food Balance** | Flow (Inequality, supply >= demand) | Hard (with trade) | 16, 17, 21 | No - trade adjusts to meet demand |
 
 ---
 
@@ -286,7 +289,7 @@ stopifnot(max_shortage < 0.01)  # Small tolerance for numerical error
 
 **Strictly Conserved**:
 1. **Land**: Total area constant in each cell (physical constraint)
-2. **Food**: Supply = Demand at global level (with trade adjustment)
+2. **Food**: Supply >= Demand at global level (inequality binds tightly via trade)
 
 **Soft Constraints**:
 3. **Water**: Supply ≥ Demand (but buffer allows violation for exogenous)

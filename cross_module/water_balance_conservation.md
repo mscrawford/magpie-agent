@@ -52,7 +52,7 @@ vm_watdem("agriculture",j) * v42_irrig_eff(j) =e=
 **Components**:
 - **Crop irrigation**: Irrigated area × water requirement per ha (from LPJmL)
 - **Livestock water**: Production × water requirement per ton (from FAO)
-- **Irrigation efficiency**: Accounts for conveyance losses (66% default)
+- **Irrigation efficiency**: Accounts for conveyance losses (default: GDP-based sigmoidal efficiency ~64-90% via s42_irrig_eff_scenario=2; the flat 0.66 applies only under the non-default global-static scenario s42_irrig_eff_scenario=1)
 
 **Key Point**: Agricultural demand is **optimized** - responds to water scarcity via shadow prices
 
@@ -100,7 +100,7 @@ vm_watdem.fx("ecosystem",j) =
 
 **Environmental Flow Protection (EFP) Policy** (Module 42, `modules/42_water_demand/all_sectors_aug13/input.gms:35-36`):
 - Linear ramp-up from 2025 (0%) to 2040 (100%)
-- Country-specific targeting (default: all 195 countries)
+- Country-specific targeting (default: all ISO countries/territories -- the full 249-member iso set)
 - Development-state dependent: HIC only, or all countries, or none
 
 **Key Point**: Environmental flows **compete** with human water use for limited renewable water
@@ -308,7 +308,7 @@ v43_watavail.fx("ground",j) = v43_watavail.up("ground",j)
 - Non-agricultural sectors always meet demands (via unsustainable extraction)
 - Model cannot explore trade-offs between sectors when water scarce
 
-**Justification** (Module 43, `modules/43_water_availability/total_water_aug13/realization.gms:40-42`):
+**Rationale** (domain reasoning -- NOT in code; `modules/43_water_availability/total_water_aug13/realization.gms:40-42` documents only the buffer interface):
 - Non-agricultural sectors typically have higher economic value
 - Politically difficult to cut manufacturing/domestic water
 - Agricultural water use is more elastic (can switch to rainfed, import food)

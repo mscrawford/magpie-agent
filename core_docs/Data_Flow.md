@@ -175,7 +175,7 @@ p35_secdforest(t,j,ac) = pc35_secdforest(j,ac-1)
 
 # Forest disturbance losses
 p35_disturbance_loss_secdf(t,j,ac) =
-    pc35_secdforest(j,ac) × f35_forest_lost_share(i,"fires")
+    pc35_secdforest(j,ac) × f35_forest_lost_share(i,"shifting_agriculture")
 
 # Carbon density updates
 pm_carbon_density_secdforest_ac(t,j,ac,"vegc") from LPJmL
@@ -290,8 +290,8 @@ p35_secdforest(t,j,ac)$(ord(ac) > s35_shift) =
 
 **Carbon System:**
 - `fm_carbon_density(t_all,j,land,c_pools)` - From LPJmL
-- `pm_carbon_density_secdforest_ac(t,j,ac,ag_pools)` - Age-specific
-- Used by: modules 35, 32, 52, 56
+- `pm_carbon_density_secdforest_ac(t_all,j,ac,ag_pools)` - Age-specific
+- Populated by: Module 52 (owner; modules/52_carbon/normal_dec17/declarations.gms:9, set in modules/52_carbon/normal_dec17/preloop.gms:71). Read by: modules 14 (modules/14_yields/managementcalib_aug19/presolve.gms:44) and 35 (modules/35_natveg/pot_forest_may24/presolve.gms:248-251). (Modules 29, 32, 35 instead read the uncalibrated sibling pm_carbon_density_secdforest_ac_uncalib.)
 
 **Production System:**
 - `i14_yields_calib(t,j,kve,w)` - Calibrated yields
@@ -334,9 +334,9 @@ p35_secdforest(t,j,ac)$(ord(ac) > s35_shift) =
 reportLandUse()       # Land statistics
 reportEmissions()     # GHG calculations
 reportProduction()    # Agricultural output
-reportPrices()        # Shadow prices
-reportWater()         # Water stress
-reportBiodiversity()  # BII indicators
+reportPriceAgriculture()  # Agricultural prices (also reportPriceFoodIndex(), reportPriceLand())
+reportWaterUsage()        # Water use (also reportWaterAvailability(), reportWaterIndicators())
+reportBII()               # Biodiversity Intactness Index
 ```
 
 **Output Formats:**

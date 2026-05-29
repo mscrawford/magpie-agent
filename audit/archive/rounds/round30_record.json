@@ -1,0 +1,550 @@
+{
+ "round": 30,
+ "date": "2026-05-29",
+ "type": "hybrid_doc_audit",
+ "scope": "hub + cross-module consumer/dependency/conservation docs (core_docs/, cross_module/, module_10)",
+ "commit_before": "bcdf663",
+ "commit_after": null,
+ "answerer_model": "claude-sonnet-4-6",
+ "auditor_model": "claude-opus-4-8",
+ "verification_source": "origin/develop @ee98739fd (worktree /tmp/magpie_develop_ro)",
+ "summary": {
+  "mean_score": 7,
+  "doc_quality_mean": null,
+  "n_docs": 10,
+  "dropped": [],
+  "doc_audit_bugs": {
+   "critical": 2,
+   "major": 17,
+   "minor": 19
+  },
+  "total_edits": 51,
+  "gate": {
+   "clean": true,
+   "validate_consistency_errors": 0,
+   "new_errors": [
+    "check_no_bare_cites (validate_consistency.sh check 25/27): 7 bare-basename .gms citations introduced this round in 4 non-module docs. Locations + fixes: (1) cross_module/circular_dependency_resolution.md:110 'Module 56, postsolve.gms:8' -> 'modules/56_ghg_policy/price_aug22/postsolve.gms:8'; (2) cross_module/modification_safety_guide.md:461 'preloop.gms:24-25' (im_pollutant_prices/57_maccs) -> 'modules/57_maccs/on_aug22/preloop.gms:24-25'; (3) cross_module/modification_safety_guide.md:495 same -> 'modules/57_maccs/on_aug22/preloop.gms:24-25'; (4) core_docs/Core_Architecture.md:231 'input.gms:70' (s15_maxiter) -> 'modules/15_food/anthro_iso_jun22/input.gms:70' (also tightened the adjacent '15_food/anthro_iso_jun22/input.gms:66' to full 'modules/...' form); (5-7) core_docs/Data_Flow.md:294 'preloop.gms:71','presolve.gms:44','presolve.gms:248-251' -> 'modules/52_carbon/normal_dec17/preloop.gms:71','modules/14_yields/managementcalib_aug19/presolve.gms:44','modules/35_natveg/pot_forest_may24/presolve.gms:248-251'. All fixed (not reverted)."
+   ],
+   "reverted_files": [],
+   "check_units_advisories": 5,
+   "check_consumer_advisories": 4,
+   "notes": "FINAL STATE CLEAN: validate_consistency.sh = 0 errors, 40 passed, 2 warnings (matches the 0-error/2-warning baseline). The standalone check_no_bare_cites.py also re-runs clean (0 bare cites). All 7 errors were bare-basename .gms citations introduced this round inside otherwise-correct fixes; I fixed rather than reverted because every target was trivially recoverable AND I verified each against live GAMS source before rewriting (not just pattern-fixed). VERIFICATION DONE: default realizations confirmed from config/default.cfg (food=anthro_iso_jun22, carbon=normal_dec17, ghg_policy=price_aug22, maccs=on_aug22, yields=managementcalib_aug19, natveg=pot_forest_may24); line contents read directly and confirmed -- 56_ghg_policy/price_aug22/postsolve.gms:8 = pcm_carbon_stock assignment; 57_maccs/on_aug22/preloop.gms:24-25 = i57_mac_step uses im_pollutant_prices; 15_food/anthro_iso_jun22/input.gms:70 = s15_maxiter /10/ and :66 = s15_elastic_demand /0/; 52_carbon/normal_dec17/preloop.gms:71 = pm_carbon_density_secdforest_ac populator; 14_yields/.../presolve.gms:44 and 35_natveg/.../presolve.gms:248-251 read it. ADVISORIES (not this round, NOT errors): check_units.py = 5 mismatches, check_consumer_attribution.py = 4 patterns (3 D-class + 1 D2 omission: vm_supply/M70). All advisory hits are in module_XX.md files (60,57,12,56,39,52,16), NONE of which are in this round's edit set -- pre-existing, no action taken. Repo confirmed: mscrawford/magpie-agent fork on branch main (not pik-piam). Did NOT commit, did NOT push."
+  },
+  "anchors": [
+   {
+    "id": "G2",
+    "score": 10,
+    "drift": false,
+    "notes": "G2 fully verified vs /tmp/magpie_develop_ro. vm_carbon_stock DECLARED M56 declarations.gms:34 (exact), ABSENT M52 (grep+rg, positive control passed). M52 reads via q52_emis_co2_actual eq:16-19. Populators 29/31/32/34(presolve .fx=0)/35/59 +30-folds-29 all confirmed. M56 chain q56_emis_pricing_co2->v56_emis_pricing->q56_emission_cost_oneoff->v56_emission_cost->q56_emission_costs->vm_emission_costs all at cited lines (15-17,19-22,45-52,56-58). Defaults actualNoAcEst/reddnatveg_nosoil/s52_calib=1 + all M52 density citations exact. No confab vm_carbon_stocks. 0 bugs."
+   },
+   {
+    "id": "G3",
+    "score": 10,
+    "drift": false,
+    "notes": "Fully accurate. Verified this session: version_pins.json (2.70.0 / a360d8c9ec / resolution \"sha\"), ../input/renv.lock Packages.magpie4 (Version+RemoteSha match), clone HEAD==pin SHA, lock_file_sha256 matches (pin current), sync_magpie4_clone.py SHA->tag->HEAD order. Reads the pin not the workspace clone -> source-of-truth discipline intact. 0 bugs."
+   }
+  ]
+ },
+ "questions": [
+  {
+   "label": "Module_Dependencies",
+   "score": 5,
+   "bugs_critical": 0,
+   "bugs_major": 2,
+   "bugs_minor": 1,
+   "bugs_informational": 0,
+   "doc_errors_latent": [
+    "module_10.md:306 lists `14_yields | vm_land (1)` in the PROVIDES-TO table; code: 14 has ZERO vm_land refs, consumes pm_land_start (14_yields/managementcalib_aug19/preloop.gms:15-16). Contradicts same doc's verified prose at :318. Critical (R20 anchor).",
+    "module_10.md:312 lists `71_disagg_lvst | vm_land (1)`; code: 71 (foragebased_jul23) has ZERO vm_land refs, reads pm_land_start (preloop.gms:9) + pcm_land (nl_fix.gms:13-14). Contradicts :318. Critical.",
+    "module_10.md:313 lists `80_optimization | vm_land (1) | Objective function`; code: 80 references vm_landdiff (lp_nlp_apr17/solve.gms:76,77,196,197), not vm_land. Contradicts :318. Major (wrong var, should be vm_landdiff)."
+   ],
+   "root_causes": [
+    "answerer_confabulation: pm_land_start attributed to 13_tc (B1) \u2014 13 actually reads pcm_land (13_tc/endo_jan22/presolve.gms:9,10,40); cited docs do not make this claim",
+    "answerer_confabulation: 14_yields dropped from the transitive/18-union consumer set (B2) \u2014 14 reads pm_land_start (14_yields/managementcalib_aug19/preloop.gms:15-16); B1+B2 share one root: mishandled pm_land_start consumer set",
+    "answerer_confabulation: 44_biodiversity transitive path named as vm_lu_transitions (B3) \u2014 44 has no vm_lu_transitions ref (consumers are 29/35/59); receives signal via vm_bv",
+    "doc_error_answerer_beat_it: module_10.md PROVIDES-TO table rows 306/312/313 list vm_land for 14/71/80, contradicting same doc's line 318 + code; answer dodged by omission"
+   ],
+   "notes": "Spine correct: 2 inputs, 10 direct vm_land consumers, vm_carbon_stock decl@56/declarations.gms:34 (G2), 52+56 direct readers, populators, CO2-pricing asymmetry \u2014 all code-verified w/ exact lines. 2 Major (pm_land_start->13 wrong=pcm_land; 14_yields omitted), 1 Minor (44 path). Score 5. 3 latent module_10.md table errors recorded.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/Module_Dependencies.md"
+  },
+  {
+   "label": "Data_Flow",
+   "score": 7,
+   "bugs_critical": 0,
+   "bugs_major": 0,
+   "bugs_minor": 3,
+   "bugs_informational": 3,
+   "doc_errors_latent": [
+    "module_09.md:864 (also :208): 'Module 13 (tc): GDP affects technology adoption rates' \u2014 code reality (modules/13_tc/endo_jan22/presolve.gms:21-26) is a GDP-share CAP on vm_tech_cost.up via s13_max_gdp_shr, active only when m_year>sm_fix_SSP2; a spending cap, not an adoption-rate driver. Minor (directionally OK; CONSUMER SET at module_09.md:337 is correct vs code). Answer propagated the gloss (doc_error, not beat-it)."
+   ],
+   "root_causes": [
+    "answerer_style_or_framing: B1 substituted literal 0.25 for named scalar s14_yld_past_switch (default IS 0.25, so number right) and B3 input-file table compresses raw total-GDP files into derived per-capita params",
+    "answerer_confabulation: B2 mislabeled fm_tau1995 (file-loaded input baseline, modules/13_tc/endo_jan22/input.gms:51-56) as 'produced' by M13; vm_tau IS produced (declarations.gms:13)",
+    "doc_error: module_09.md M13 mechanism gloss imprecise vs code, propagated into answer"
+   ],
+   "notes": "Spine correct + both negative findings (M14 & M16 consume ZERO M09 params) verified twice w/ positive control. 3 Minor: 0.25 vs s14_yld_past_switch; fm_tau1995 'produced' (it's a file input); total-GDP-file vs per-capita-param table conflation. 7/10.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/Data_Flow.md"
+  },
+  {
+   "label": "Core_Architecture",
+   "score": 0,
+   "bugs_critical": 1,
+   "bugs_major": 3,
+   "bugs_minor": 2,
+   "bugs_informational": 0,
+   "doc_errors_latent": [
+    "core_docs/Core_Architecture.md:231-232 presents the food-demand WHILE-loop iteration as default ('typically 2-5 iterations'); code default s15_elastic_demand=0 (config/default.cfg:414; 15_food/anthro_iso_jun22/input.gms:66) means the loop runs ONCE per timestep, gated by intersolve.gms:30. Cap is s15_maxiter=10 not 2-5. Critical future-reader harm (produced the answer's Critical bug). module_15.md:14,482,758 already has the correct caveat.",
+    "core_docs/Core_Architecture.md:222-226 pseudocode: says '15_food sets sm_intersolve' and omits that core/calculations.gms:79 sets sm_intersolve=1 UNCONDITIONALLY and load_gdx.gms is $included in the loop; Module 15 sets it BACK to 0 to CONTINUE (intersolve.gms:125), not to exit. Major."
+   ],
+   "root_causes": [
+    "doc_error (Bug-1 Critical + Bug-2 Major: answer reproduced Core_Architecture.md:222-232 which omits the s15_elastic_demand=0 default caveat and inverts the sm_intersolve flow)",
+    "answerer_confabulation (Bug-3 fabricated set member 'fires' vs real 'shifting_agriculture'/'wildfire'; Bug-4 vm_land.lo(j,land_natveg) mis-attributed to M22 presolve_ini instead of M35 presolve)",
+    "answerer_style_or_framing (Bug-5 hardcoded ac-1 shift formula; Bug-6 '5-year steps' overstates uniform stepping)"
+   ],
+   "notes": "Structurally strong (M80 solve, vm_cost_glo=M11, M14 input/preloop, pcm_land + oq52 postsolve all exact-verified). Score 0: Critical s15_elastic_demand=0 means loop runs ONCE/timestep, not '2-5 iterations' (default-OFF, s42_pumping-class) + 3 Major confabs. 2 latent Core_Architecture.md doc bugs; module_15.md already correct.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/Core_Architecture.md"
+  },
+  {
+   "label": "land_balance_conservation",
+   "score": 10,
+   "bugs_critical": 0,
+   "bugs_major": 0,
+   "bugs_minor": 0,
+   "bugs_informational": 0,
+   "doc_errors_latent": [],
+   "root_causes": [],
+   "notes": "10/10, zero bugs. Verified vs develop: q10_land_area eq:13-15 exact, pcm_land postsolve:9, 7 land types sets.gms:250-251, all per-pool eqs (q29/q31/q32/q35x2/q34), type32, s34=1e6, 20tC. Key: 'vm_land consumed by 10 modules' confirmed EXACTLY 10 (22,29,30,31,32,34,35,50,58,59) w/ positive control vs vm_land_other. No confabulation. 2 soft doc-hygiene notes (LUH3 provenance is preproc-layer/GAMS-silent; module_10.md centrality HIGHEST vs Rank#2) \u2014 neither a hard doc-vs-code error, not load-bearing.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/land_balance_conservation.md"
+  },
+  {
+   "label": "carbon_balance_conservation",
+   "score": 7,
+   "bugs_critical": 0,
+   "bugs_major": 1,
+   "bugs_minor": 1,
+   "bugs_informational": 0,
+   "doc_errors_latent": [
+    "cross_module/carbon_balance_conservation.md:94-96 (reinforced :543,:939): frames 'Subsoil (Module 52): Static (fixed from LPJmL)'. CODE: subsoil is computed inside Module 59 (i59_subsoilc_density = fm_carbon_density(...,'other','soilc') - f59_topsoilc_density, 59_som/cellpool_jan23/preloop.gms); M52 provides only total fm_carbon_density. 'subsoil' never appears in modules/52_carbon/. Self-inconsistent with same doc line 99 and module_59.md:169,324. This is the root cause of Bug R30-B1 (answer trusted the doc). Severity Major by future-reader harm."
+   ],
+   "root_causes": [
+    "doc_error",
+    "answerer_style_or_framing"
+   ],
+   "notes": "Spine perfect (eq text, stock-diff math, populator set 29/31/32/34/35/59, sets, macros, FRA calib, no-vars all verified exact). -3 from: B1 Major doc-propagated 'M52 provides subsoil' (actually M59 computes split; also latent doc bug at carbon_balance_conservation.md:94-96); B2 Minor urban-soilc placeholder placed in M34 row (M59 populates, M52-input sets density). G2 anchor populator set correct.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/carbon_balance_conservation.md"
+  },
+  {
+   "label": "water_balance_conservation",
+   "score": 10,
+   "bugs_critical": 0,
+   "bugs_major": 0,
+   "bugs_minor": 0,
+   "bugs_informational": 1,
+   "doc_errors_latent": [
+    "cross_module/water_balance_conservation.md:55 says irrigation efficiency '66% default'; code: 66% (s42_irrigation_efficiency=0.66, input.gms:19) applies ONLY under non-default s42_irrig_eff_scenario=1. Default is scenario 2 (input.gms:14 /2/) = GDP-sigmoidal 1/(1+e^((-22160-gdp1995)/37767)) (presolve.gms:17-18), ~64-90%, NOT flat 66%. Answer correctly avoided this (doc_error_answerer_beat_it, Minor). Doc internally inconsistent: line 347 already has correct ~64-90% range."
+   ],
+   "root_causes": [
+    "answerer_style_or_framing: B1 vm_water_cost unit '/yr' vs declaration comment 'per m^3' (declarations.gms:31) \u2014 answer's dimension is correct reading (eq: mio m3/yr * USD/m3 = USD/yr); variable is 0 by default (s42_pumping=0). Informational, no harm.",
+    "doc_error_answerer_beat_it: Latent-1, doc line 55 '66% default' wrong vs code default scenario-2 GDP-sigmoidal; answer re-derived correctly from code/M42 doc."
+   ],
+   "notes": "Near-flawless. q43_water =l=, both eqs verbatim, all defaults (all_sectors_aug13, total_water_aug13, env_flow=2, env_flow_policy=off, SSP2, pumping=0), sets (wat_dem 5, wat_src 4, watdem_ineldo 3), citations, buffer logic all verified. 1 Info (unit label), 1 latent doc bug (line 55 '66% default'). Score 10.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/water_balance_conservation.md"
+  },
+  {
+   "label": "nitrogen_food_balance",
+   "score": 7,
+   "bugs_critical": 0,
+   "bugs_major": 1,
+   "bugs_minor": 1,
+   "bugs_informational": 1,
+   "doc_errors_latent": [
+    "module_21.md:70 claims k_trade has '38 items'; actual is 33 (modules/21_trade/selfsuff_reduced/sets.gms:17-21, 15 crops+10 processed+6 livestock/fish+2 forestry). The doc's OWN enumeration at module_21.md:71-74 sums to 33 -> internal inconsistency. Major future-reader harm; fix header to '33 items'. k_hardtrade21 '16 items' at module_21.md:76 is CORRECT.",
+    "module_50.md:437,751 'Accounts for 8 nitrogen input sources for croplands' vs 9 distinct additive terms in q50_nr_inputs (macceff_aug22/equations.gms:24-32). Borderline: doc merges crop-area + fallow fixation into one 'fixation' category (defensible), but propagated the answer's 'eight vs nine' inconsistency. Low priority; clarify fixation=2 terms rather than changing the count."
+   ],
+   "root_causes": [
+    "doc_error: answer's 'k_trade=38' faithfully copied wrong-and-internally-inconsistent module_21.md:70 (actual 33)",
+    "ambiguous: 'eight sources' adopts module_50.md category count but answer then lists nine terms (code has 9 additive terms) -> internal inconsistency",
+    "answerer_style_or_framing: 'NOx' label in indirect-N2O table cell vs set member no2_n (answer's own prose correctly uses no2_n)"
+   ],
+   "notes": "Strong trace; M59->M50->M51 + food-balance equations all verified at equation/line level (consumers, NUE-fix in presolve, s51_snupe_base=0.5, q21_trade_glo). 1 Major = k_trade 38 vs 33 (copied from wrong module_21.md:70 -> latent doc bug). 1 Minor 8-vs-9 inputs, 1 Info NOx.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/nitrogen_food_balance.md"
+  },
+  {
+   "label": "circular_dependency_resolution",
+   "score": 5,
+   "bugs_critical": 0,
+   "bugs_major": 2,
+   "bugs_minor": 1,
+   "bugs_informational": 0,
+   "doc_errors_latent": [
+    "circular_dependency_resolution.md:110-111 \u2014 'Code Evidence' block attributes pcm_carbon_stock postsolve update to 'Module 52'; it is Module 56 (price_aug22/postsolve.gms:8), and renders index sets as c_pools (no stockType) when code uses ag_pools,stockType. Critical by future-reader harm (wrong module + wrong sets, presented as code; source of answer Bug B2).",
+    "circular_dependency_resolution.md:96-99,110 \u2014 Type-1 diagram uses variable name 'pcm_carbon_density', which does NOT exist in code (confirmed zero hits; positive control fm_carbon_density present). Real var is pcm_carbon_stock. Major (invented variable name); answerer beat it.",
+    "circular_dependency_resolution.md:967-968 (Appendix A) \u2014 pcm_carbon_stock update listed with c_pools; postsolve.gms:8 updates only ag_pools. Module(56) and file:line(postsolve.gms:8) correct; set name imprecise. Minor."
+   ],
+   "root_causes": [
+    "doc_error: answer's postsolve code block (Bug B2) reproduced circular_dependency_resolution.md:110-111's wrong index sets (c_pools, missing stockType) vs code's ag_pools,stockType.",
+    "doc_error: answer's 'Module 52 calculates vm_carbon_stock' (Bug B1) echoes the doc's Type-1 diagram/\u00a73.4 M52-vs-M56 carbon-stock-ownership confusion; M52 only reads it, M56 declares it, M29/31/32/35/59 populate it (G2 anchor).",
+    "answerer_style_or_framing: Bug B3 cost-chain shortcut (v56_emission_cost vs the actual vm_emission_costs read by M11) is a diagram simplification; the answer's own variable table is correct."
+   ],
+   "notes": "Thesis (lagged pcm_carbon_stock breaks loop) is correct + verified. 2 Major: B1 G2-class 'M52 calculates vm_carbon_stock' (M52 only reads; M56 declares; M29/31/32/35/59 populate); B2 postsolve block c_pools/missing-stockType vs code ag_pools,stockType. 1 Minor cost-chain shortcut. Both Majors trace to doc errors L1-L3.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/circular_dependency_resolution.md"
+  },
+  {
+   "label": "modification_safety_guide",
+   "score": 3,
+   "bugs_critical": 1,
+   "bugs_major": 1,
+   "bugs_minor": 1,
+   "bugs_informational": 0,
+   "doc_errors_latent": [
+    "cross_module/modification_safety_guide.md:47 mislabels vm_lu_transitions as '(net changes only)'; code (modules/10_land/landmatrix_dec18/equations.gms:19-38) tracks GROSS between-type transitions. module_10_notes.md:13,15 already flag this exact net/gross conflation (recurring R15 error in 8 locations); line 47 is a 9th instance. doc_error_answerer_beat_it: the answer correctly said 'gross'. Fix: '(net changes only)' -> '(gross between-type transitions)'. Major by future-reader harm."
+   ],
+   "root_causes": [
+    "answerer_confabulation: per-variable Named-consumer sets for pcm_land/vm_landexpansion/vm_landreduction/vm_lu_transitions invented (52,56,32,44,11,14,39,80 are non-consumers of the named var) despite the CORRECT sets being present in land_balance_conservation.md:227-228 and module_10.md:344 -- counts stayed right, names did not",
+    "answerer_confabulation: MANDATE-17 direct-vs-transitive -- 'M52 reads vm_land to compute vm_carbon_stock' (M52 reads vm_carbon_stock, not vm_land; land modules populate vm_carbon_stock)",
+    "doc_error_answerer_beat_it: safety-guide net/gross label wrong; answer beat it"
+   ],
+   "notes": "Spine verified (vm_land 10-consumer set, 18-module union, q10/q11 eqs, 32 cost terms 31+/1-, 27 providers, M80 sole objective consumer all correct). Critical: M10 per-var Named-consumer column confabulated (52/56/32/44/11/14/39/80 are phantoms) on a modification-safety Q. Major: M52 'reads vm_land' (MANDATE 17). Minor: M42/M43 swap. Latent L1: doc 'net changes only' wrong.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/modification_safety_guide.md"
+  },
+  {
+   "label": "module_10",
+   "score": 10,
+   "bugs_critical": 0,
+   "bugs_major": 0,
+   "bugs_minor": 0,
+   "bugs_informational": 2,
+   "doc_errors_latent": [
+    "module_10.md:306/312/313 \u2014 \u00a75 consumer table attributes `vm_land` consumption to 14_yields / 71_disagg_lvst / 80_optimization (each `vm_land (1)`). Code: all three have ZERO `vm_land` refs in any .gms (verified grep+rg+positive controls). Self-contradicted by module_10.md:318 ('11/14/39/71/80 contain zero vm_land references') and the correct 10-module list at :315-316. Major (phantom-add, inverse of R20 anchor; self-corrected 2 lines below). Fix: move 14/71/80 out of the vm_land column to match line 318. Note: modification_safety_guide.md:46-49/54-55 counts are CORRECT vs code."
+   ],
+   "root_causes": [
+    "doc_error_answerer_beat_it: module_10.md \u00a75 table lists 14/71/80 as vm_land consumers (phantom); answer followed the correct line-315/318 list + safety guide and beat it",
+    "answerer_style_or_framing (INFO-1): 35_natveg vm_landexpansion 'Use' labeled 'secondary forest regrowth' but actual uses are forest-establishment ceiling (eq:197) + other-land regeneration (eq:222) \u2014 module correctly listed as consumer",
+    "answerer_style_or_framing (INFO-2): '1995 LUH2 total ... 5-year step' \u2014 LUH version not code-verifiable (input data; companion doc says LUH3), 5yr is a default-timestep assumption; mechanism unaffected"
+   ],
+   "notes": "Answer 10/10: all 3 consumer lists EXACT vs grep (vm_land=22,29,30,31,32,34,35,50,58,59; expansion=35,39,58,59; reduction=39,58). Eqs/citations/postsolve:9/realization all verified. MANDATE17 (39 not vm_land) correct; no R16 fabrication. 1 latent doc bug: module_10.md:306/312/313 phantom-lists 14/71/80 as vm_land consumers, self-contradicted by line 318.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_audits/module_10.md"
+  }
+ ],
+ "doc_centric_audit": [
+  {
+   "label": "Module_Dependencies",
+   "doc": "core_docs/Module_Dependencies.md",
+   "counts": {
+    "critical": 0,
+    "major": 0,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 1,
+    "total": 1
+   },
+   "deferred": [
+    "Centrality 'Provides To/Depends On' splits + per-module connection/dependency totals (lines 31-40, 209-213, 254-273): external-tool edge-counting convention unstated, not reproducible from greps; component var-set claims verified, rolled-up totals not.",
+    "'173 inter-module dependencies' and '26 circular cycles' (lines 6,150,384,388): graph aggregates, not independently reproducible; internally consistent across doc.",
+    "pm_demand_forestry framed '(73 -> 32)' (line 234): also consumed by 62_material (exo_flexreg_apr16/equations.gms:37), but this is the forestry-subsystem graph where 32<->73 scoping is deliberate; Informational, not a consumers-of-X table.",
+    "Croparea<->41 AEI cycle (lines 170-174,239): vm_AEI consumed by 30_croparea only in non-default detail_apr24 (detail_apr24/equations.gms:82); default simple_apr24 does not. Structural union-over-realizations view; no default-activity claim made. Nuance not a code-contradiction.",
+    "Architectural-layer groupings (lines 93-128) and '09_drivers -> 14 modules' (lines 38,133): characterizations/soft provider counts; structural direction consistent with code (09 has no upstream deps, declares many im_) but exact 14 is tool-derived."
+   ],
+   "summary": "Module_Dependencies.md is exceptionally accurate (9.5/10). All load-bearing claims verified vs develop @ee98739fd: 83/21/17 var counts, every consumer SET (vm_land=10, vm_prod=8, 11_costs=32 vars/27 modules, Land=18, Prod=13, Carbon=4, Yields=3), G2 carbon-stock decl in M56, optimization sink default nuance, file:line cites. 1 Minor confirmed: line-6 '115' vs table sum 121.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/Module_Dependencies.md"
+  },
+  {
+   "label": "Data_Flow",
+   "doc": "core_docs/Data_Flow.md",
+   "counts": {
+    "critical": 1,
+    "major": 1,
+    "minor": 2,
+    "informational": 0,
+    "confirmed": 4,
+    "total": 4
+   },
+   "deferred": [
+    "File-format counts in 1.1 (.cs3 20/.cs4 10/.mz 26/.csv 76/.rds 22) and ~72MB/~172 files: depend on runtime input.tgz, not in worktree",
+    "67,420 land cells and 259,200 theoretical (360x720 arithmetic correct; 67420 is version-specific cellular figure not in worktree)",
+    "Prefix-convention table (x_ eXtremely important outputs, o_ outputs): no machine-checkable canonical source in GAMS tree",
+    "Flow arrows 'Module 14->30->17' (lines 299): high-level pipeline narrative, not a single-line code claim",
+    "Run-statistics table 8.2 (~100k vars, ~150k eqs, solve times, output sizes): runtime/config-dependent, not code-verifiable",
+    "Validation-metrics 9.1 (R2>0.8, +/-10%): preprocessing/validation targets, route to preproc layer",
+    "magpie4 output-format bullets (IAMC/NetCDF/CSV/ggplot2): R-side, not GAMS-verifiable",
+    "Cosmetic: line 184 illustrative snippet indexes pm_land_conservation(...,land,...) for a land_natveg row; postsolve attr ordering 227-230 differs cosmetically - both illustrative, not flagged"
+   ],
+   "summary": "4 confirmed bugs. DF-1 Critical: Carbon System dep set (line 294) lists phantom M56 + omits real consumer M14; M32 reads only the _uncalib sibling. DF-2 Major: 3 invented magpie4 fns (reportPrices/Water/Biodiversity). DF-3/DF-4 Minor: bogus set element \"fires\"; t vs t_all. Interface vars, model stmt, defaults clean.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/Data_Flow.md"
+  },
+  {
+   "label": "Core_Architecture",
+   "doc": "core_docs/Core_Architecture.md",
+   "counts": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0,
+    "informational": 0,
+    "confirmed": 0,
+    "total": 0
+   },
+   "deferred": [
+    "x_ prefix (\u00a76 line 244, 'Critical output parameters'): no live variable in develop uses x_/x##_/xm_ (rg: x[0-9][0-9]_ = 0 unique, xm_ = 0; positive control o[0-9][0-9]_ = 8). BUT corroborated by Data_Flow.md:70 + MAgPIE README 'Coding Etiquette' tradition; plausibly a reserved/unused prefix, not fabricated. Not flagged per 'claimed-convention-absent = highest-risk FP' rule.",
+    "\u00a72.1 step '12. Time Loop Execution' has no line number and the loop lives in core/calculations.gms (included at step 11, main.gms:295), not directly in main.gms. Pedagogical flattening; main.gms is genuinely the entry point. Minor structural-precision nit at most, not a code error.",
+    "\u00a78.1 'IMAGE: Socioeconomic projections' \u2014 prose data-provenance claim (MAgPIE drivers are SSP-based; preproc/mrdrivers domain); not statically verifiable from GAMS code.",
+    "\u00a711 dependency chains ('All modules depend on 09_drivers,10_land'; 14\u219217\u219270; 35\u219232\u219273; 52\u219256\u219257) \u2014 directionally plausible (spot-checked 32_forestry/73_timber refs), but 'depend on' is fuzzy and these are architectural generalizations, not enumerated consumer sets to falsify."
+   ],
+   "summary": "Core_Architecture.md audited vs develop @ee98739fd. 0 confirmed bugs; doc is unusually clean. All 11 main.gms line citations exact, 46-module list correct, core/sets.gms sets correct, 12-phase list + time-loop pseudo-code match calculations.gms, naming prefixes verified to exist. 4 deferred (x_ prefix unused-but-documented; time-loop nesting; IMAGE prose; fuzzy dep chains).",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/Core_Architecture.md"
+  },
+  {
+   "label": "land_balance_conservation",
+   "doc": "cross_module/land_balance_conservation.md",
+   "counts": {
+    "critical": 0,
+    "major": 0,
+    "minor": 3,
+    "informational": 0,
+    "confirmed": 3,
+    "total": 3
+   },
+   "deferred": [
+    "doc:230 centrality '17 connections (2 inputs, 15 outputs)' \u2014 derived graph metric; matches SSOT Module_Dependencies.md:32 exactly. Absolute correctness is methodology-dependent, not independently code-checkable; doc internally consistent -> no bug.",
+    "doc \u00a74.1 7x7 transition-matrix ASCII (142-149) \u2014 illustrative; forbidden (\u2717) cells all consistent with presolve.gms:13,16,17,20; 'M35' annotations are narrative simplification consistent with doc:207.",
+    "M35 carbon-threshold citation presolve.gms:99-107 \u2014 the literal '> 20 tC/ha' logic is at lines 106-117 (~5-10 lines below); the value (20) is verified correct and the section header is at 106, so left as a non-flagged near-miss to avoid a false positive.",
+    "R-code magpie4 examples (\u00a76.2, \u00a78.2): land(gdx,...), dimSums(...) \u2014 magpie4 R API, outside GAMS-code ground truth; not verified (only the GDX symbol name in L-2 is GAMS-checkable)."
+   ],
+   "summary": "MOSTLY ACCURATE. Core q10_* eqs, all module eq citations (M29/31/32/34/35), 7-pool set, presolve/postsolve, and the high-risk vm_landexpansion/reduction consumer sets all CORRECT (authors correctly excluded the _forestry look-alike + handled M58 macro). 3 Minor bugs: wrong crop breakdown (2 not 4 bioenergy), non-existent GDX symbol oq_land_area (should be oq10_land_area), and M32 presolve citation drift 208-210->213-215. No Critical/Major.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/land_balance_conservation.md"
+  },
+  {
+   "label": "carbon_balance_conservation",
+   "doc": "cross_module/carbon_balance_conservation.md",
+   "counts": {
+    "critical": 0,
+    "major": 3,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 4,
+    "total": 4
+   },
+   "deferred": [
+    "\u00a73.7 attributes urban vegc/litc zeroing to Module 52 in the table; actual stock-zeroing is M34 vm_carbon_stock.fx while M52 supplies densities and fixes urban soilc to other-land. Split-attribution defensible at this granularity; not flagged.",
+    "\u00a77.2:537 still uses the simplified Sigma(crops) Area*C_ratio*Natural_density shorthand that \u00a73.1:134 says was superseded by the 4-term form; internal-consistency nit in labeled 'Key Equations' context, not a code-vs-doc error.",
+    "\u00a73.1:140 / \u00a75.3:420 call the irrigation effect 'optional, controlled by c59_irrigation_scenario' without stating its default ('on', default.cfg:1935); mild MANDATE-4 caveat gap but no false claim (does not assert OFF).",
+    "\u00a78.4 uses s59_scm_target = 0.5 as a labeled scenario intervention; actual default is 0 (default.cfg:1957). Presented as a scenario knob, not claimed as default -> not a bug.",
+    "All \u00a74-\u00a78 numerical examples are explicitly labeled illustrative/made-up; not code-checkable and correctly caveated."
+   ],
+   "summary": "Verdict: Mostly Accurate (lower band). 3 Major + 1 Minor, all reproducible. Major cluster: \u00a77.5 vm_carbon_stock populator set (M30 mis-attributed as direct provider vs M29 aggregator [R24/MANDATE17]; M29+M34 omitted [R20/MANDATE13]) and \u00a77.2/\u00a72.3 soil-carbon assembly attributed to M52 when M59 q59_carbon_soil writes the soilc slice. Equations, set citations, all realization+scalar defaults, and the G2 vm_carbon_stock declaration verify clean.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/carbon_balance_conservation.md"
+  },
+  {
+   "label": "water_balance_conservation",
+   "doc": "cross_module/water_balance_conservation.md",
+   "counts": {
+    "critical": 0,
+    "major": 2,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 3,
+    "total": 3
+   },
+   "deferred": [
+    "magpie4 R functions in Sections 8-10 (water_demand(), water_avail(), readGDX args) -- downstream R layer, not verifiable against GAMS worktree",
+    "'cell' vs 'cluster' terminology -- standard MAgPIE shorthand; ~200 cells matches 200-cluster default; not a code error",
+    "Section 6.4 'no feedback from M43 to M41 investment' / 'stranded AEI' -- modeling-judgment claim, vm_AEI and area<=AEI constraint (41/.../equations.gms:11) are real; no-feedback assertion not falsifiable by single grep, plausible",
+    "Section 7.3 LPJmL regional runoff patterns -- explicitly labeled literature/illustrative",
+    "All '(illustrative)' numbered examples (5.1,7.1,7.2,7.5,8.x) -- explicitly labeled made-up"
+   ],
+   "summary": "38 load-bearing claims verified; doc is mostly accurate. 3 confirmed bugs: WB-1 Major (Sec 2.1 '66% default' irrigation efficiency wrong -- default is GDP-sigmoid scenario 2, 0.66 only under non-default scenario 1); WB-2 Major (Sec 5.3 citation realization.gms:40-42 attributes uncoded economic/political justifications to buffer-interface lines); WB-3 Minor (EFP_countries default=249 ISO, not '195'). No fabricated vars/eqs/realizations; cross-module consumer sets for vm_watdem/im_wat_avail/v43_watavail all correct and complete.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/water_balance_conservation.md"
+  },
+  {
+   "label": "nitrogen_food_balance",
+   "doc": "cross_module/nitrogen_food_balance.md",
+   "counts": {
+    "critical": 0,
+    "major": 1,
+    "minor": 4,
+    "informational": 0,
+    "confirmed": 5,
+    "total": 5
+   },
+   "deferred": [
+    "Numerical magnitude ranges in input/output tables (e.g. '50-250 kg N/ha/yr', '10-40% of N surplus', 'income elasticity 0.3-0.8', '1-3% of N applied') - illustrative, not single code constants; not checkable against a scalar default.",
+    "'f21_trade_balanceflow ... near zero outside base period' - quantitative claim about input-data values (.cs3); not checkable from .gms.",
+    "Doc lines 196-199 (calories/protein/fat in M15; balance in DM) - directionally consistent, not deeply verified this round (outside M50/51/59/16/17/21 scope).",
+    "q51_emissions_* glob (doc lines 59,68): two of seven emission eqs are named q51_emissionbal_awms / q51_emissionbal_man_past; M51 substantively computes all pathways, so harmless wildcard shorthand - NOT flagged.",
+    "Part 2.4 'Regional Balance (Module 21, q21_trade_reg)': q21_trade_reg is the self-sufficiency production-band lower bound, not a supply=demand balance (non-tradable balance is q21_notrade). Equation name is correct and prose accurate at high level; characterization loose but not clearly wrong - noted, not flagged."
+   ],
+   "summary": "5 bugs: 1 Major (M13 falsely credited with N-responsive yields; M13 has zero N refs, models tau) + 4 Minor (cite :18-30 should be :14-16 balance; nonexistent soil-N pool asserted; M16 'calculates' vs aggregates food demand; Food Balance mislabeled 'Equality' vs code =g=). No Critical. q21_trade_glo verbatim + vm_import/export non-existence correctly stated.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/nitrogen_food_balance.md"
+  },
+  {
+   "label": "circular_dependency_resolution",
+   "doc": "cross_module/circular_dependency_resolution.md",
+   "counts": {
+    "critical": 0,
+    "major": 3,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 4,
+    "total": 4
+   },
+   "deferred": [
+    "Executive Summary '26 circular dependency cycles' count + sec 8.1 source cite to Module_Dependencies.md:149-179 -- cycle count is an analytical artifact (depends on enumeration method), not grep-falsifiable; sec 8.2 is self-labeled 'Inferred/Suspected'.",
+    "Sec 3.2 Cycle-2 diagram tag 'pm_land_conservation [22] -> vm_land.lo(j,land_natveg) [10]': parameter + 'protect' member correct, bounds ARE set on M10's vm_land.lo but the read/bound-setting is in M35 (pot_forest_may24/presolve.gms:162,201,231) and M29, not M10. Tagging the bounded variable '[10]' (its home module) is defensible shorthand; not flagged (MANDATE-17 borderline, does not mislead modification safety since the variable genuinely belongs to M10).",
+    "Sec 6.1 risk-table parentheticals ('Module 10: 4+ cycles, 15 consumers'; 'Module 54: 0 cycles, 1 connection') -- 'consumer' undefined; vm_land has 10+ consumers (order-of-magnitude plausible) but not falsifiable to a precise integer.",
+    "Sec 7.3 parallelization claims (modules 37/45/54 independent; water 41-42-43 isolatable) -- architectural assertions, not single-line code facts.",
+    "Sec 2.4 'Yields<->TC<->Livestock require multiple model runs to converge' -- documented multi-run tau calibration; M14 managementcalib_aug19/preloop.gms exists; not falsifiable at this granularity.",
+    "Illustrative '* Example:'-labeled code in sec 6.2/7.2/9 (vm_cost_landcon, damping postsolve, tau adjustment) -- pedagogical modification patterns (MANDATE 5 permits), not code-evidence claims; not audited."
+   ],
+   "summary": "30 claims verified; realizations/defaults/q10_land_area exact. 4 bugs: 3 Major (sec2.2 trade describes non-default bilateral realization + fabricates q21_trade_bilat; sec2.1 pcm_carbon_stock update wrongly attributed to M52 not M56 w/ wrong dims; sec2.1 invents pcm_carbon_density, real is pm_carbon_density), 1 Minor (pm_interest miscategorized in pcm_* table). Bugs 2-3 contradict the doc's own Appendix A.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/circular_dependency_resolution.md"
+  },
+  {
+   "label": "modification_safety_guide",
+   "doc": "cross_module/modification_safety_guide.md",
+   "counts": {
+    "critical": 1,
+    "major": 2,
+    "minor": 3,
+    "informational": 0,
+    "confirmed": 6,
+    "total": 6
+   },
+   "deferred": [
+    "Appendix A graph metrics (lines 1055-1068: Connections / Provides To / Depends On) are sourced to Module_Dependencies.md:29-40 under that doc's own counting convention; code gives 10_land 'Provides To'=18 distinct consumers vs table's 15, but the metric's inclusion rules cannot be reconstructed from GAMS alone. M11 'Depends On: 27' WAS independently confirmed. Defer rest to a Module_Dependencies.md-vs-code audit.",
+    "Internal doc-to-doc line citations not checkable against GAMS: module_11.md:84-115 (line 229), Module_Dependencies.md:151-179 (line 606), :29-40 (line 1068), section 2.1 lines 46-59 (line 1087), nitrogen_food_balance.md:229-250 (line 424), carbon_balance_conservation.md:450-550 (line 504).",
+    "section 1.2 historical narrative 'pcm_land 5->12; others OVERSTATED' (line 52) is metadata about a past recompute; current counts all verified correct, deltas not load-bearing.",
+    "section 4.4 flow-diagram arrow 'CDR Rewards -> 32_forestry' (line 493): vm_reward_cdr_aff is consumed only by 11_costs, but the arrow is framed as an economic/emergent linkage (reward enters objective via 11, optimizer then expands forestry), not a hard '32 consumes vm_reward_cdr_aff' interface claim. Not flagged.",
+    "c56_pollutant_prices shorthand 'SSP2-NPi2025' vs full R34M410-SSP2-NPi2025, and im_pollutant_prices(t,...) vs declared (t_all,...): acceptable abbreviations, not bugs."
+   ],
+   "summary": "6 bugs: 1 Critical (im_pollutant_prices consumers listed as 32/60; actual sole consumer is 57_maccs - R20 anchor), 2 Major citation drifts (pm_prod_init cited to 70_livestock not 17_production:10; s56_c_price_induced_aff cited to input.gms:103 not :69), 3 Minor (15-vs-11 module count; footnote omits 2 union-driving vars; vm_emission_costs omits 15_food). Core consumer sets, 9 cost attributions, M56 defaults, equations all verified correct vs develop @ ee98739fd.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/modification_safety_guide.md"
+  },
+  {
+   "label": "module_10",
+   "doc": "modules/module_10.md",
+   "counts": {
+    "critical": 0,
+    "major": 5,
+    "minor": 3,
+    "informational": 0,
+    "confirmed": 8,
+    "total": 8
+   },
+   "deferred": [
+    "LUH2 category mapping (module_10.md:229-235, c3ann+c4ann->crop etc.) is preprocessing (mrcommons/mrland), not in M10 GAMS; doc cites no GAMS file for it.",
+    "secdforest >20 tC/ha and other <20 tC/ha thresholds (module_10.md:159,161) are preprocessing-derived land classifications, not in M10 GAMS.",
+    "'67,420 original 0.5 deg cells' (module_10.md:413) is a global LUH/preprocessing grid figure, not verifiable from the develop GAMS tree; doc hedges it.",
+    "LUH2 source provenance and '249 ISO countries' (module_10.md:223,265) are input-data facts, not GAMS-checkable here.",
+    "'Last Verified 2026-03-06 ... Changes Since Last Verification: None (stable)' footer is metadata; equations/variables are in fact stable, so not flagged as a content bug."
+   ],
+   "summary": "module_10.md core (7 eqs, vars, params, citations, land set) is verbatim-accurate. Both advisory-flagged R29 fixes HELD (vm_land 10-consumer list at :316; expansion/reduction note at :344 - survived the _forestry look-alike trap). 8 bugs: 5 Major (self-contradicting '11 modules' for vm_land vs the doc's own 10; PROVIDES-TO table mislabels 80/14/71 as vm_land when they read vm_landdiff/pm_land_start; 13/44/56 called 'indirect' but directly read pcm_land, which is omitted from the interface table) + 3 Minor (h200 vs c200; Secondary<->Other one-directional; 318 vs 292 lines).",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round30_docaudits/module_10.md"
+  }
+ ],
+ "fixes": [
+  {
+   "doc": "core_docs/Module_Dependencies.md",
+   "files_fixed": [
+    "core_docs/Module_Dependencies.md"
+   ],
+   "n_edits": 1,
+   "deferred": [
+    "module_10.md:306 -- vm_land in PROVIDES-TO for module 14 (no vm_land refs in code)",
+    "module_10.md:312 -- vm_land in PROVIDES-TO for module 71 (no vm_land refs in code)",
+    "module_10.md:313 -- vm_land for module 80 (should be vm_landdiff per code)"
+   ],
+   "self_check_ok": true
+  },
+  {
+   "doc": "core_docs/Data_Flow.md",
+   "files_fixed": [
+    "core_docs/Data_Flow.md"
+   ],
+   "n_edits": 3,
+   "deferred": [
+    "module_09.md:864 / :208 gloss on M13 TC mechanism ('GDP affects adoption rates' vs. spending-cap via s13_max_gdp_shr) -- the audit entry flags it as a doc_error but the provided evidence is a file:line read without a quoted replacement string, and the entry notes it is Minor and directionally OK. Deferred pending a concrete replacement sentence to avoid introducing a different inaccuracy."
+   ],
+   "self_check_ok": true
+  },
+  {
+   "doc": "core_docs/Core_Architecture.md",
+   "files_fixed": [
+    "core_docs/Core_Architecture.md"
+   ],
+   "n_edits": 2,
+   "deferred": [],
+   "self_check_ok": true
+  },
+  {
+   "doc": "cross_module/land_balance_conservation.md",
+   "files_fixed": [
+    "cross_module/land_balance_conservation.md"
+   ],
+   "n_edits": 3,
+   "deferred": [],
+   "self_check_ok": true
+  },
+  {
+   "doc": "cross_module/carbon_balance_conservation.md",
+   "files_fixed": [
+    "cross_module/carbon_balance_conservation.md"
+   ],
+   "n_edits": 4,
+   "deferred": [
+    "carbon_balance_conservation.md:943 ('Modules 52 and 59 must interface correctly (topsoil + subsoil)') \u2014 this developer note is accurate at a high level (they do interface, with M59 writing soilc using M52 density), so no edit is warranted. The latent-bug 'reinforced :939' reference points to a blank line in the actual file; the nearby prose is not wrong."
+   ],
+   "self_check_ok": true
+  },
+  {
+   "doc": "cross_module/water_balance_conservation.md",
+   "files_fixed": [
+    "cross_module/water_balance_conservation.md"
+   ],
+   "n_edits": 3,
+   "deferred": [
+    "Latent doc error entry for line 55 (irrigation efficiency 66% default) is identical to confirmed bug #1 and was resolved by the same edit -- no separate action needed."
+   ],
+   "self_check_ok": true
+  },
+  {
+   "doc": "cross_module/nitrogen_food_balance.md",
+   "files_fixed": [
+    "cross_module/nitrogen_food_balance.md"
+   ],
+   "n_edits": 11,
+   "deferred": [
+    "Latent: module_21.md:70 k_trade '38 items' should be '33 items' - confirmed bug with code evidence (modules/21_trade/selfsuff_reduced/sets.gms:17-21) but target doc is module_21.md, not nitrogen_food_balance.md; not in scope for this task.",
+    "Latent: module_50.md:437,751 '8 nitrogen input sources' vs 9 terms in q50_nr_inputs - in module_50.md, not in scope for this task."
+   ],
+   "self_check_ok": true
+  },
+  {
+   "doc": "cross_module/circular_dependency_resolution.md",
+   "files_fixed": [
+    "cross_module/circular_dependency_resolution.md"
+   ],
+   "n_edits": 5,
+   "deferred": [
+    "circular_dependency_resolution.md:967-968 latent note about c_pools set name imprecision \u2014 resolved as part of Fix 4 (Appendix A pcm_carbon_stock row updated to ag_pools,stockType)"
+   ],
+   "self_check_ok": true
+  },
+  {
+   "doc": "cross_module/modification_safety_guide.md",
+   "files_fixed": [
+    "cross_module/modification_safety_guide.md"
+   ],
+   "n_edits": 8,
+   "deferred": [],
+   "self_check_ok": true
+  },
+  {
+   "doc": "modules/module_10.md",
+   "files_fixed": [
+    "modules/module_10.md"
+   ],
+   "n_edits": 11,
+   "deferred": [],
+   "self_check_ok": true
+  }
+ ]
+}

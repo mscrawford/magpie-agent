@@ -173,7 +173,7 @@ MAgPIE distinguishes **7 land pools**:
 **6 variables** that form the land allocation core:
 
 1. **`vm_land(j,land)`** - Current land area by type (mio. ha)
-   - **Most shared variable in MAgPIE** (used by 11 modules!)
+   - **Most shared variable in MAgPIE** (used by 10 modules)
    - Optimization variable (solver determines allocation)
 
 2. **`vm_landexpansion(j,land)`** - Area gained from other types (mio. ha)
@@ -221,7 +221,7 @@ $include "./modules/10_land/input/avl_land_t.cs3"
 ```
 
 **Source**: Land-Use Harmonization 2 (LUH2) dataset
-**Resolution**: 0.5° gridded, aggregated to ~200 MAgPIE cells (default h200 spatial resolution)
+**Resolution**: 0.5° gridded, aggregated to ~200 MAgPIE cells (default c200 spatial resolution)
 **Years**: 1995, 2000, 2005, 2010, 2015
 **Correction**: Negative values (from rounding) set to zero (`input.gms:16`)
 
@@ -303,19 +303,19 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 | **32_forestry** | vm_land, pm_land_start (2) | Plantation area |
 | **39_landconversion** | vm_landreduction, vm_landexpansion (2) | Land conversion costs |
 | **11_costs** | vm_cost_land_transition (1) | Cost aggregation |
-| **14_yields** | vm_land (1) | Yield calculations |
+| **14_yields** | pm_land_start (1) | Pasture-yield aggregation |
 | **22_land_conservation** | vm_land (1) | Protected area constraints |
 | **30_croparea** | vm_land (1) | Crop allocation |
 | **31_past** | vm_land (1) | Pasture management |
 | **34_urban** | vm_land (1) | Urban expansion |
 | **50_nr_soil_budget** | vm_land (1) | Nitrogen budget |
-| **71_disagg_lvst** | vm_land (1) | Livestock disaggregation |
-| **80_optimization** | vm_land (1) | Objective function |
+| **71_disagg_lvst** | pm_land_start (1) | Livestock disaggregation |
+| **80_optimization** | vm_landdiff (1) | Objective function |
 
 **Direct consumers of `vm_land`** (10 modules — authoritative list in `cross_module/modification_safety_guide.md:54-55`):
 - 22_land_conservation, 29_cropland, 30_croparea, 31_past, 32_forestry, 34_urban, 35_natveg, 50_nr_soil_budget, 58_peatland, 59_som
 
-`11_costs` consumes `vm_cost_land_transition`, and `39_landconversion` consumes `vm_landexpansion`/`vm_landreduction` — NOT `vm_land` itself. `13_tc`/`14_yields`/`44_biodiversity`/`56_ghg_policy`/`71_disagg_lvst`/`80_optimization` are affected only indirectly via other Module-10 interface variables (see the 18-module union in the safety guide). Verified: 11/14/39/71/80 contain zero `vm_land(` references in any `.gms` file (origin/develop ee98739fd).
+`11_costs` consumes `vm_cost_land_transition`, and `39_landconversion` consumes `vm_landexpansion`/`vm_landreduction` — NOT `vm_land` itself. `13_tc`, `44_biodiversity`, and `56_ghg_policy` directly read `pcm_land` (M10 previous-timestep parameter, declared in `declarations.gms:11`, populated in `postsolve.gms:9`; 12 direct consumers — see `cross_module/modification_safety_guide.md`). `14_yields` and `71_disagg_lvst` directly read `pm_land_start`. `80_optimization` reads `vm_landdiff`. None of these six read `vm_land` directly. Verified: 11/14/39/71/80 contain zero `vm_land(` references in any `.gms` file (origin/develop ee98739fd).
 
 **Why vm_land is So Critical**: It's the fundamental spatial allocation that determines:
 - How much land available for production
@@ -345,7 +345,7 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 
 ✅ **4. Applies Transition Restrictions** (`presolve.gms:10-23`)
 - **No plantation forestry on primary forest** (`vm_lu_transitions.fx(j,"primforest","forestry") = 0`)
-- **No conversions within natveg** (Primary↔Other, Secondary↔Other blocked)
+- **Restricted conversions within natveg**: Primary↔Other bidirectional (both primforest->other and all->primforest are fixed); secdforest->other blocked (note: other->secdforest regrowth is allowed)
 - **Primary forest can only decrease** (no land can become primary)
 - **Primary→Primary allowed** (persistence OK)
 
@@ -409,7 +409,7 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 - Total land conservation still enforced (urban expansion must come from somewhere)
 
 ❌ **7. Does NOT Model Sub-Grid Heterogeneity**
-- Each cell (~200 at default h200 resolution) treated as homogeneous
+- Each cell (~200 at default c200 resolution) treated as homogeneous
 - Reality: 67,420 original 0.5° cells aggregated (cell count depends on spatial resolution setting)
 - Within-cell variation lost in aggregation
 
@@ -771,9 +771,9 @@ for(yr in hist_years) {
 6. **Initialize from LUH2 data** (1995-2015 historical)
 
 **Key Features**:
-- Only 318 lines of code, but **15 modules depend on it**
+- Only ~292 lines of code, but **15 modules depend on it**
 - 7 equations enforce accounting and conservation
-- 6 variables (most critical: `vm_land` used by 11 modules)
+- 6 variables (most critical: `vm_land` used by 10 modules)
 - 2 parameters (initialization and history)
 - Recursive dynamics: current → previous via `postsolve.gms`
 
@@ -888,6 +888,7 @@ This section shows Module 10's role in system-level mechanisms. For complete det
 | `vm_lu_transitions` | `(j,land_from,land_to)` | Land transitions between time steps | mio. ha |
 | `pm_land_start` | `(j,land)` | Land initialization area | mio. ha |
 | `pm_land_hist` | `(t_ini10,j,land)` | Land area for historical time steps | mio. ha |
+| `pcm_land` | `(j,land)` | Land area in previous time step (populated in `postsolve.gms:9`; 12 direct consumers including 13_tc, 44_biodiversity, 56_ghg_policy) | mio. ha |
 
 **Source**: `declarations.gms` (verified against GAMS code)
 

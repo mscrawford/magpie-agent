@@ -3,7 +3,7 @@
 
 ### Executive Summary
 
-This phase analyzed all 46 MAgPIE modules to create a comprehensive dependency graph showing how modules interact through interface variables. The analysis identified 115 interface variables facilitating 173 inter-module dependencies with 26 circular dependency cycles, revealing the model's complex feedback structure.
+This phase analyzed all 46 MAgPIE modules to create a comprehensive dependency graph showing how modules interact through interface variables. The analysis identified 121 interface variables (83 vm_ + 21 pm_ + 17 im_; see §1.1) facilitating 173 inter-module dependencies with 26 circular dependency cycles, revealing the model's complex feedback structure.
 
 ### 1. Dependency Architecture Overview
 

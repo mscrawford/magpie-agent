@@ -260,7 +260,7 @@ q29_cropland(j2)..
 
 **Key Variable**: `vm_area(j,kcr,w)` - Agricultural production area (mio. ha)
 - **j**: Cell
-- **kcr**: 19 crop types (15 food crops + 4 bioenergy)
+- **kcr**: 19 crop types (17 food crops + 2 bioenergy: `begr`, `betr`)
 - **w**: Water management (rainfed, irrigated)
 
 **Constraints**:
@@ -322,7 +322,7 @@ q32_land(j2) ..
 - Establishment decisions based on forward-looking timber demand
 - Subject to maximum forest establishment constraint (from Module 35)
 
-**Land Conservation** (`modules/32_forestry/dynamic_may24/presolve.gms:208-210`):
+**Land Conservation** (`modules/32_forestry/dynamic_may24/presolve.gms:213-215`):
 - Avoids conflict with secdforest restoration targets
 - Respects protected area constraints
 
@@ -718,7 +718,7 @@ for(t in getYears(total_land)[-1]) {
 ```r
 transitions <- readGDX(gdx, "ov_lu_transitions", select=list(type="level"))
 land_current <- readGDX(gdx, "ov_land", select=list(type="level"))
-land_previous <- readGDX(gdx, "oq_land_area", select=list(type="level"))
+land_previous <- readGDX(gdx, "oq10_land_area", select=list(type="level"))
 
 # Verify: sum(transitions from X) = previous land X
 # Verify: sum(transitions to Y) = current land Y

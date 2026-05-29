@@ -219,17 +219,16 @@ FOR each time step t:
     1. Set ct(t) = current time, pt(t) = previous time
     2. Execute all module presolve_ini phases
     3. Execute all module presolve phases
-    4. WHILE (sm_intersolve = 0):
-        a. Load GDX starting points
+    4. WHILE (sm_intersolve = 0):  [core sets sm_intersolve=0 before loop; after each solve, core sets sm_intersolve=1 unconditionally; Module 15 intersolve sets it BACK to 0 to trigger another iteration, only when s15_elastic_demand=1 and convergence not yet reached]
+        a. Load GDX starting points (load_gdx.gms included inside loop)
         b. Execute solve phase (80_optimization → CONOPT/IPOPT)
-        c. Execute intersolve phase (15_food sets sm_intersolve)
+        c. Execute intersolve phase (core sets sm_intersolve=1; Module 15 may reset to 0 to continue)
     5. Execute all module postsolve phases
     6. Execute_Unload "fulldata.gdx"
     7. Clear ct/pt, save restart point, advance to next time step
 ```
 
-**Note**: The WHILE loop (steps 4a-4c) implements food demand coupling — Module 15 iterates
-between food demand and the optimizer until convergence (typically 2-5 iterations).
+**Note**: The WHILE loop (steps 4a-4c) implements food demand coupling. With the default `s15_elastic_demand=0` (config/default.cfg:414; modules/15_food/anthro_iso_jun22/input.gms:66), the loop runs ONCE per timestep (Module 15 intersolve does not reset sm_intersolve to 0). When `s15_elastic_demand=1`, Module 15 iterates between food demand and the optimizer until convergence, up to a maximum of `s15_maxiter=10` iterations (default; modules/15_food/anthro_iso_jun22/input.gms:70).
 
 ### 6. Variable Naming Convention
 

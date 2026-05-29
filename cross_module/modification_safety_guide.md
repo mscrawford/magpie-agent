@@ -44,7 +44,7 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 | Variable | Consumers | Risk Level | Description |
 |----------|-----------|------------|-------------|
 | `vm_land(j,land)` | 10 modules | 🔴 EXTREME | Current land allocation by type |
-| `vm_lu_transitions(j,land_from,land_to)` | 3 modules | 🟠 HIGH | Transition matrix (net changes only) |
+| `vm_lu_transitions(j,land_from,land_to)` | 3 modules | 🟠 HIGH | Transition matrix (gross between-type transitions) |
 | `vm_landexpansion(j,land)` | 4 modules | 🟠 HIGH | Land gained from other types |
 | `vm_landreduction(j,land)` | 2 modules | 🟡 MEDIUM | Land lost to other types |
 | `pcm_land(j,land)` | 12 modules | 🔴 EXTREME | Previous timestep land allocation |
@@ -54,7 +54,7 @@ This guide covers the **4 highest-centrality modules** in MAgPIE:
 **Direct vm_land consumers** (the 10 modules that will break if `vm_land` is modified incompatibly):
 - 22_land_conservation, 29_cropland, 30_croparea, 31_past, 32_forestry, 34_urban, 35_natveg, 50_nr_soil_budget, 58_peatland, 59_som
 
-**Modules touched by any Module 10 interface variable** (broader 18-module union — these may be affected by changes to `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`, `pcm_land`, or `pm_land_hist/start` even if they don't consume `vm_land` directly):
+**Modules touched by any Module 10 interface variable** (broader 18-module union — these may be affected by changes to `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`, `vm_landdiff`, `pcm_land`, `pm_land_hist/start`, or `vm_cost_land_transition` even if they don't consume `vm_land` directly):
 - 11_costs, 13_tc, 14_yields, 22_land_conservation, 29_cropland, 30_croparea, 31_past, 32_forestry, 34_urban, 35_natveg, 39_landconversion, 44_biodiversity, 50_nr_soil_budget, 56_ghg_policy, 58_peatland, 59_som, 71_disagg_lvst, 80_optimization
 
 ### 1.3 Conservation Law: LAND BALANCE (STRICT EQUALITY)
@@ -154,7 +154,7 @@ vm_land.fx(j,"forest") = 50;  * Lost 50 Mha forest
 
 3. **Downstream Module Test**:
    - Run model with modified Module 10
-   - Verify ALL 15 modules touched by Module 10 interface variables (10 for `vm_land` + 5 for `vm_landexpansion`/`vm_landreduction`/`vm_lu_transitions`) execute without errors
+   - Verify ALL 11 modules touched by vm_land, vm_landexpansion, vm_landreduction, vm_lu_transitions (the 10 vm_land consumers plus 39_landconversion) execute without errors
    - Check no new infeasibilities or warnings
 
 4. **Conservation Law Test**:
@@ -383,7 +383,7 @@ pm_prod_init(j,"rice") = 1000;  * 1000 mio. tDM in one cell!
 
 **Result**: Solver starts far from optimal solution, slow convergence or failure
 
-**✅ FIX**: Use realistic initialization (modules/70_livestock/fbask_jan16/presolve.gms:10-16)
+**✅ FIX**: Use realistic initialization (modules/17_production/flexreg_apr16/presolve.gms:10)
 ```gams
 * Correct initialization = Area × Yield
 pm_prod_init(j,kcr) = sum(w, fm_croparea("y1995",j,w,kcr) * pm_yields_semi_calib(j,kcr,w));
@@ -456,9 +456,9 @@ vm_prod_reg(i,kall) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
 
 | Variable | Consumers | Description |
 |----------|-----------|-------------|
-| `vm_emission_costs(i)` | 11_costs | Total GHG costs (enters objective) |
+| `vm_emission_costs(i)` | 11_costs, 15_food | Total GHG costs (enters objective); 15_food reads it for food-tax recycling in intersolve.gms |
 | `vm_reward_cdr_aff(i)` | 11_costs | Carbon removal revenue (afforestation) |
-| `im_pollutant_prices(t,i,pollutants,emis_source)` | 32_forestry, 60_bioenergy | Price signals for land-use decisions |
+| `im_pollutant_prices(t_all,i,pollutants,emis_source)` | 57_maccs | Certificate prices; 57 reads them to size MAC abatement steps (modules/57_maccs/on_aug22/preloop.gms:24-25) |
 
 **Key Equation**: `q56_emission_costs` calculates GHG policy costs entering objective function
 
@@ -492,8 +492,8 @@ vm_prod_reg(i,kall) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
    │     └─ Drives land-use change across 10, 29-35
    ├─ CDR Rewards → 32_forestry (afforestation incentive)
    │     └─ Affects land competition (forest vs. crop)
-   └─ Price Signals → 60_bioenergy (bioenergy vs. food)
-         └─ Affects crop demand and trade (21, 16)
+   └─ Price Signals → 57_maccs (MAC abatement step sizing, modules/57_maccs/on_aug22/preloop.gms:24-25)
+         └─ [Economic knock-on: bioenergy/food trade-offs via cost signal through 11_costs]
 ```
 
 **Conservation Law Impact**:
@@ -529,7 +529,7 @@ s56_c_price_induced_aff = 0;  * Disabled CDR!
 
 **Result**: Model pays for emissions but cannot earn revenue from removals → unrealistic mitigation costs
 
-**✅ FIX**: Enable CDR if pricing CO2 (`modules/56_ghg_policy/price_aug22/input.gms:103`)
+**✅ FIX**: Enable CDR if pricing CO2 (`modules/56_ghg_policy/price_aug22/input.gms:69`)
 ```gams
 s56_c_price_induced_aff = 1;  * Enable afforestation CDR
 * Check vm_reward_cdr_aff provides incentive for forest expansion

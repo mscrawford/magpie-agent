@@ -95,20 +95,20 @@ pcm_land(j2,land) = vm_land.l(j2,land);
 Module 10 (Land) ────────────→ Module 52 (Carbon)
        ↑                             │
        │                             ↓
-  pcm_carbon_density ←──── vm_carbon_stock
-  (previous timestep)      (current timestep)
+  pm_carbon_density ←──── vm_carbon_stock
+  (previous timestep)     (current timestep)
 ```
 
 **Resolution**:
 1. **Timestep t-1**: Optimize vm_land(t-1) → generates vm_carbon_stock(t-1)
-2. **Postsolve t-1**: pcm_carbon_density(t-1) ← f(vm_carbon_stock(t-1))
-3. **Timestep t**: Use pcm_carbon_density(t-1) as **fixed parameter** for land costs
+2. **Postsolve t-1**: pm_carbon_density(t-1) ← f(vm_carbon_stock(t-1))
+3. **Timestep t**: Use pm_carbon_density(t-1) as **fixed parameter** for land costs
 4. **No circular dependency** within timestep t (carbon density is fixed)
 
 **Code Evidence**:
 ```gams
-* Module 52, postsolve.gms:
-pcm_carbon_stock(j,land,c_pools) = vm_carbon_stock.l(j,land,c_pools);
+* Module 56: modules/56_ghg_policy/price_aug22/postsolve.gms:8
+pcm_carbon_stock(j,land,ag_pools,stockType) = vm_carbon_stock.l(j,land,ag_pools,stockType);
 
 * Module 29/30 (land conversion costs), equations.gms:
 * Uses pm_carbon_density from PREVIOUS timestep for conversion costs
@@ -135,14 +135,19 @@ Module 17 (Production)
 
 **Resolution**:
 1. **Both variables optimized simultaneously** in same solve
-2. **Coupled equations** form system:
+2. **Coupled equations** form system (default selfsuff_reduced realization, pool-based):
    ```
-   vm_prod_reg(i,kall) = sum(cell(i,j), vm_prod(j,kall))      [q17_prod_reg]
-   sum(i, vm_prod_reg(i,k)) ≥ sum(i, vm_supply(i,k))          [q21_trade_glo]
-   v21_trade(i_ex,i_im,k_trade) handles bilateral trade flows  [q21_trade_bilat]
+   vm_prod_reg(i,kall) = sum(cell(i,j), vm_prod(j,kall))               [q17_prod_reg]
+   sum(i2, vm_prod_reg(i2,k_trade)) >= sum(i2, vm_supply(i2,k_trade))
+       + balanceflow                                                     [q21_trade_glo]
+   * Regional self-sufficiency and comparative-advantage pools:          [q21_trade_reg / q21_trade_reg_up]
    ```
+   Note: The default selfsuff_reduced realization splits demand into self-sufficiency
+   (q21_trade_reg/q21_trade_reg_up) and comparative-advantage (q21_trade_glo) pools.
 3. **GAMS solver** (CONOPT/IPOPT) solves all equations together
-4. **Note**: vm_import/vm_export do NOT exist — trade uses bilateral flows via `v21_trade`
+4. **Note**: vm_import/vm_export do NOT exist. The default selfsuff_reduced realization is
+   pool-based, not bilateral; bilateral flows via `v21_trade` exist only in the non-default
+   selfsuff_reduced_bilateral22 realization.
 
 **Convergence**: Guaranteed if equations are **consistent and feasible**
 
@@ -965,8 +970,7 @@ vm_problematic_var.fx(j) = baseline_value(j);
 | Variable | Module | Purpose | Updated in |
 |----------|--------|---------|------------|
 | `pcm_land(j,land)` | 10_land | Previous land allocation | modules/10_land/landmatrix_dec18/postsolve.gms:9 |
-| `pcm_carbon_stock(j,land,c_pools,stockType)` | 56_ghg_policy | Previous carbon stocks | modules/56_ghg_policy/price_aug22/postsolve.gms:8 |
-| `pm_interest(t_all,i)` | 12_interest_rate | Interest rates | modules/12_interest_rate/select_apr20/preloop.gms:23 |
+| `pcm_carbon_stock(j,land,ag_pools,stockType)` | 56_ghg_policy | Previous carbon stocks | modules/56_ghg_policy/price_aug22/postsolve.gms:8 |
 | `pcm_tau(j,tautype)` | 13_tc | Previous TC factors | modules/13_tc/endo_jan22/postsolve.gms:16 |
 | ... | ... | ... | ... |
 
