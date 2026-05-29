@@ -580,7 +580,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 - Self (Module 56): Used in next time step as `pcm_carbon_stock` for emission calculation
 - Reporting modules: Carbon accounting, validation
 
-**Calculated by:** Land modules (30, 31, 32, 35, 58) sum to this interface variable
+**Calculated by:** Land modules 29 (cropland, crop pool), 31 (pasture), 32 (forestry), 34 (urban, fixed to 0), 35 (natveg: primforest/secdforest/other), and 59 (SOM, soilc pool for all land types) populate this interface variable. Module 30 populates the separate `vm_carbon_stock_croparea`, which M29 folds in; Module 58 (peatland) does NOT populate it.
 **Citation:** `declarations.gms:34`
 
 ---
@@ -613,7 +613,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 ---
 
-**From Land Modules (30, 31, 32, 35, 58):**
+**From Land Modules (29, 31, 32, 34, 35, 59):**
 
 - **vm_carbon_stock(j,land,c_pools,stockType)**: Current time step carbon stocks (mio. tC)
 - Modules populate different land types; Module 56 aggregates for emission accounting
@@ -1034,13 +1034,14 @@ Even with high global C prices, countries with low development state receive red
 
 ### 12.4 Receives Carbon Stocks From
 
-- **Module 30 (Crop):** Cropland carbon
+- **Module 29 (Cropland):** Cropland crop-pool carbon (folds in `vm_carbon_stock_croparea` from Module 30)
 - **Module 31 (Pasture):** Pasture carbon
-- **Module 32 (Forestry):** Plantation carbon
-- **Module 35 (Natural Vegetation):** Forest and other natural land carbon
-- **Module 58 (Peatland):** Peatland carbon
+- **Module 32 (Forestry):** Plantation/forestry carbon
+- **Module 34 (Urban):** Urban carbon (fixed to 0)
+- **Module 35 (Natural Vegetation):** primforest, secdforest, and other natural land carbon
+- **Module 59 (SOM):** Soil carbon (soilc pool) for all land types
 
-All populate `vm_carbon_stock` interface variable.
+All populate the `vm_carbon_stock` interface variable. (Croparea's contribution enters via the separate `vm_carbon_stock_croparea`, which cropland folds in; peatland carbon uses its own emission path and is not part of `vm_carbon_stock`.)
 
 ---
 

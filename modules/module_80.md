@@ -690,7 +690,7 @@ GAMS modelstat values used throughout Module 80:
 |-----------|---------|---------------------|
 | 1 | Optimal | ✅ Success: save results, continue to next timestep |
 | 2 | Locally optimal | ✅ Success (NLP may be locally optimal, not globally) |
-| 7 | Feasible solution | ⚠️ Accepted (not proven optimal, but feasible) |
+| 7 | Feasible solution | ⚠️ `nlp_apr17`: 7 `>2` so it enters the retry loop (solve.gms:47) and never hits the `<=2` success-exit; at finalization NO timestep GDX is saved (`<=2` required, :98) and NO abort (excluded by `ne 7`, :102). Silent limbo, not "success". |
 | 13 | Error during solve | ❌ Retry (CONOPT realizations: CONOPT3/relaxed CONOPT4; `nlp_ipopt`: re-solve with Ipopt) |
 | >2 (except 7) | Infeasible/unbounded/error | ❌ Retry up to s80_maxiter times, then ABORT |
 | NA | Not available (evaluation error) | Set to 13, then retry (nlp_apr17/solve.gms:44, 87; nlp_ipopt/solve.gms:70, 91) |
@@ -825,21 +825,20 @@ vm_cost_glo.up = Inf;
 
 ---
 
-### 8. **Modelstat 7 (Feasible) Treatment Inconsistent**
+### 8. **Modelstat 7 (Feasible) Lands in Silent Limbo (default `nlp_apr17`)**
 
-**In success check**: Modelstat 7 accepted as success (solve.gms:74, 194):
+In the **default `nlp_apr17`** realization, modelstat 7 is NOT treated as success. Because 7 `> 2` it enters the retry loop (`nlp_apr17/solve.gms:47`) and never satisfies the success-exit `modelstat <= 2` (`:91`), so a solver that keeps returning 7 burns all `s80_maxiter` (30) retries. At finalization it falls into a gap between the two end-of-solve checks:
+
 ```gams
-if ((magpie.modelstat=1 or magpie.modelstat = 7), ...
+if ((p80_modelstat(t) <= 2), ... mv -f magpie_p.gdx magpie_<t>.gdx);   * :98  - 7 fails <=2 -> NO timestep GDX written
+if ((p80_modelstat(t) > 2 and p80_modelstat(t) ne 7), ... abort);      * :102 - 7 is excluded -> NO abort
 ```
 
-**In failure check**: Modelstat 7 excluded from failure (solve.gms, nlp_apr17/solve.gms:102):
-```gams
-if ((p80_modelstat(t) > 2 and p80_modelstat(t) ne 7), abort
-```
+So modelstat 7 saves no timestep GDX and triggers no abort: the run continues with no `magpie_<year>.gdx` for that step and no console error. Only `magpie.solprint = 1` (extended .lst output, `:79-81`) fires near the iteration cap.
 
-**Implication**: Modelstat 7 (feasible but not proven optimal) is treated as acceptable. Solution may not be optimal, but model continues. No warning issued to user.
+**Where the `modelstat=1 or 7` gate actually lives**: that snippet is in the **non-default `lp_nlp_apr17`** realization (`lp_nlp_apr17/solve.gms:74,194`), and there it is NOT a generic success check - it is the gate that, once the cost solve succeeds, fixes `vm_cost_glo.up = vm_cost_glo.l` and runs the secondary `vm_landdiff` minimization. It does not exist in `nlp_apr17`. (The earlier version of this note mislabeled that gate as a default-realization "success check".)
 
-**Potential issue**: If solver consistently returns modelstat 7, results may be suboptimal without user awareness.
+**Implication**: A persistent modelstat-7 case in the default realization yields a missing-GDX timestep with no abort. Diagnose via `p80_modelstat(t)`, not just the presence/absence of an abort.
 
 ---
 

@@ -420,7 +420,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
   - `c_pools`: Carbon pools (vegc, litc, soilc)
   - `stockType`: Stock type ("actual")
 - **Usage**: Equation q52_emis_co2_actual (equations.gms:16)
-- **Provider**: Modules 30 (Cropland), 31 (Pasture), 32 (Forestry), 34 (Urban), 35 (Natural Vegetation) calculate and report carbon stocks by land type
+- **Provider**: Modules 29 (Cropland, crop pool), 31 (Pasture), 32 (Forestry), 34 (Urban, fixed to 0), 35 (Natural Vegetation), and 59 (SOM, soilc pool for all land types) populate `vm_carbon_stock` by land type. Module 30 populates the separate `vm_carbon_stock_croparea`, which Module 29 folds in; Module 58 (peatland) does NOT populate it.
 
 **2. pcm_carbon_stock** (Module 56 declarations.gms)
 - **Declaration**: `pcm_carbon_stock(j,land,c_pools,stockType)`
@@ -480,7 +480,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Description**: LPJmL carbon density for all land types and carbon pools (tC per ha)
 - **Dimensions**: `(t_all,j,land,c_pools)`
 - **Source**: LPJmL output file `lpj_carbon_stocks.cs3`
-- **Consumers**: All land modules (30, 31, 32, 34, 35) for carbon stock calculations
+- **Consumers**: Modules 14, 29, 30, 31, 35, 56, and 59 (the `fm_carbon_density` consumer list in the carbon-density calibration section above) for carbon-density and carbon-stock calculations
 
 **5. im_vol_conv** (NEW 2026-04-20, declarations.gms:23)
 - **Description**: Regional basic wood density (tDM per m³)
