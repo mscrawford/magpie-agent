@@ -1,8 +1,8 @@
-# Flywheel rubric (v1.1)
+# Flywheel rubric (v1.2)
 
 Used by the Opus auditor to score Sonnet magpie-agent answers in semantic-validation rounds (`/validate-semantic`). Designed to maximize stability across rounds (so trends are real) while staying sensitive to actual agent improvements.
 
-**Version**: 1.1 (2026-05-24). Bumps required for any change to severity criteria, anchor examples, or bug-class definitions. Adding new bug classes and extending the regression-question set is permitted at minor versions (1.x). See §9 Changelog.
+**Version**: 1.2 (2026-05-29). Bumps required for any change to severity criteria, anchor examples, or bug-class definitions. Adding new bug classes and extending the regression-question set is permitted at minor versions (1.x). See §9 Changelog.
 
 **Anchor examples are immutable across rubric versions** — they are the empirical reference points that prevent rubric drift. If reality contradicts an anchor, fix the underlying issue or bump the major version; do not silently re-interpret the anchor.
 
@@ -80,6 +80,14 @@ Opus assigns each bug exactly one tier via top-down decision-tree match. **First
 
 When between two tiers, **pick the lower** (less severe). Set `tier_uncertainty: true` in the bug record so trend analysis can flag if too many bugs are getting downgraded.
 
+### Latent doc bugs (record independent of the answer score)
+
+The score above measures the ANSWER. A correct answer can still rest on a WRONG doc: the answerer (docs-only) sometimes re-derives the right fact from code, or guesses correctly, despite a doc claim that contradicts the code. The bug is then invisible to the score - and the next round's answerer may trust the bad doc and reproduce it.
+
+**Mandate**: when the answer is correct but relied on a **load-bearing** doc claim (interface variable, equation, populator/consumer set, realization, or default) that is WRONG versus code, the auditor MUST record a bug with root cause `doc_error_answerer_beat_it`. It does NOT lower the answer's score (the answer was right), but it is recorded in the question's `doc_errors_latent[]` and FIXED this session anyway (validate-semantic.md Step 5). Severity is assessed by the harm to a future reader who trusts the doc: a wrong producer/consumer set is **Critical** per the R20 anchor even when this round's answer dodged it.
+
+**Anchor example (immutable)** - G2 carbon-stock populators: R22 found the doc's populator list wrong (3 bugs) but the answer's spine was right; R23 scored 10 because the answerer re-enumerated from code, and the doc fix was declined ("answer was right, no doc bug"); the wrong list stayed in `module_56.md`/`module_52.md` and R26 regressed to 7 when a later answerer trusted it. Under this mandate the R23 auditor records a `doc_error_answerer_beat_it` (Critical, by future-reader harm), Step 5 fixes the doc unconditionally, and the regression never happens. (Fixed R26; anchor recovered to 9 at R27.)
+
 ---
 
 ## 2. Mechanical checks (binary, per question)
@@ -117,6 +125,9 @@ The 14 patterns in `core_docs/Bug_Taxonomy.md` are restated here as scoring cate
 | 12 | Content-level citation mismatch | Major | Manual review (verifier candidate) |
 | 13 | Wrong parameter default value | Critical | `scripts/check_default_realizations.py` |
 | 14 | Deployment copy drift | Minor | `scripts/validate_consistency.sh` Check 10 |
+| 15 | Latent doc error (answer beat the doc) | by future-reader harm (often Critical) | doc-vs-code cross-check; `scripts/check_consumer_attribution.py` (prose) |
+
+Classes 1-14 map to the `core_docs/Bug_Taxonomy.md` patterns; **class 15 is flywheel-specific** (added v1.2) - it has no Bug_Taxonomy entry because it is a scoring category for the §1.5 latent-doc-bug case (answer correct, doc wrong), not a doc-authoring pattern.
 
 **Read this together with the Bug_Taxonomy.md anchor examples** — the taxonomy documents prevention strategies per pattern; this rubric scores when prevention failed.
 
@@ -132,6 +143,14 @@ score_0_10 = max(0, 10 - raw_severity_weighted)
 A question with zero bugs → 10. A question with one Major + two Minor → 10 − 2 − 1 − 1 = 6. A question with one Critical → 10 − 4 = 6 minimum.
 
 **Why this weighting**: a single Critical bug is functionally equivalent to ~2 Major bugs or ~4 Minor bugs in terms of user harm. The weighting reflects the action-cost asymmetry, not bug-count parity.
+
+### Round-level doc-quality mean (v1.2)
+
+The headline `mean_score` (and `cumulative_stats.mean_score_trend`) is the RAW per-question mean and **stays raw** for cross-round comparability. Report a second figure alongside it:
+
+> `doc_quality_mean` = mean of per-question scores **excluding** questions whose bugs are exclusively `answerer_confabulation` (the doc was correct; the answerer was sloppy). Questions with any `doc_error` / `doc_error_answerer_beat_it` bug stay IN. Also report `n_questions_doc_quality` (count kept) and a one-line `doc_quality_mean_method`.
+
+This separates doc quality (what the flywheel exists to improve) from answerer noise. Example - R27: the raw mean 7.1 was dragged by Q5/M20 (4/10), a pure answerer confabulation against a verified-correct doc; excluding it, doc-quality is ~7.6. Never substitute `doc_quality_mean` for the raw mean; report both.
 
 ---
 
@@ -250,3 +269,4 @@ These exist specifically to prevent rubric drift across rounds:
 
 - **v1.0 (2026-05-23)**: Initial hoist from `agent/commands/validate-semantic.md`. Severity tiers and bug-class list preserved verbatim from prior practice; anchor examples drawn from R3, R6, R16, R20, R21 detailed bug records in `audit/validation_rounds.json`. Established §5 (round composition with regression questions) and §6 (initial regression-question set G1/G2) as new structural requirements.
 - **v1.1 (2026-05-24)**: Extended the §6 regression-question set with G3 (magpie4 source-of-truth / version-pin discipline) and G4 (magpie4 getReport dispatch structure), following the 2026-05-24 magpie4 lean-scaffolding initiative (commit d44823f). G1 expected-answer text in §6 corrected to remove the non-existent `q14_yieldcalib` reference (R22 audit had already corrected the JSON; v1.0 rubric was stale on this point). §1 severity tiers unchanged — the existing "Invented variable name", "Citation drift", and "Module attribution" triggers cover magpie4-specific bugs naturally (with `report*` function names and the two-clone source-of-truth distinction as the new surface).
+- **v1.2 (2026-05-29)**: Added §1.5 "Latent doc bugs" - record a `doc_error_answerer_beat_it` when the answer is correct but relied on a wrong doc, and fix it regardless of the answer score - with the G2 regression as its immutable anchor. Added bug class 15 (flywheel-specific, beyond the 14 Bug_Taxonomy patterns). Added §4 "Round-level doc-quality mean". Closes the score-the-answer-not-the-doc blind spot that let the G2 anchor regress R22->R23->R26. Companion edits: validate-semantic.md Steps 3/5/5b; validation_rounds.json schema 1.3.

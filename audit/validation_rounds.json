@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Persistent record of semantic validation rounds for MAgPIE-agent documentation quality tracking",
-    "schema_version": "1.2",
+    "schema_version": "1.3",
     "schema_version_history": [
       {
         "version": "1.0",
@@ -17,12 +17,18 @@
         "version": "1.2",
         "date": "2026-05-24",
         "change": "added G3 (magpie4 source-of-truth / version-pin discipline) and G4 (magpie4 getReport dispatch structure) regression questions; rubric bumped to v1.1"
+      },
+      {
+        "version": "1.3",
+        "date": "2026-05-29",
+        "change": "added (a) 'doc_error_answerer_beat_it' as a bugs_by_root_cause value + an optional per-question doc_errors_latent[] for LATENT doc bugs (answer correct but relied on a doc claim wrong vs code); recorded + fixed regardless of answer score - closes the G2 R22->R23->R26 regression blind spot. (b) summary.doc_quality_mean + n_questions_doc_quality + doc_quality_mean_method: doc-quality mean excluding pure answerer_confabulation questions, reported alongside the raw mean_score (mean_score_trend stays raw). See flywheel_rubric.md sec 1.5 + sec 4 and validate-semantic.md Steps 3/5/5b."
       }
     ],
     "created": "2026-03-07",
     "instructions": "Append new rounds to the 'rounds' array. Each round must include all fields. Bug sources: 'doc_error' = bug in the AI documentation, 'answerer_confabulation' = agent invented wrong info despite docs being correct, 'ambiguous' = unclear which caused the error. Each new round MUST include at least 1 regression question from the top-level 'regression_questions' array (added 2026-05-23); score against expected_answer_summary; if regression, set drift_observed=true and update used_in_rounds. Severity tiers + audit format: audit/flywheel_rubric.md.",
     "rubric_path": "audit/flywheel_rubric.md",
-    "rubric_version": "1.1"
+    "rubric_version": "1.1",
+    "root_cause_vocabulary_note": "bugs_by_root_cause keys: doc_error (doc wrong AND answer wrong); doc_error_answerer_beat_it (doc wrong but answer right - LATENT, fix anyway); answerer_confabulation (doc correct, answer wrong); answerer_style_or_framing; process_gap; ambiguous. See flywheel_rubric.md sec 1.5."
   },
   "regression_questions": [
     {

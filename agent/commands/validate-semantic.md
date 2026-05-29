@@ -124,6 +124,7 @@ QUESTION: [question]
 Launch **5 parallel Opus 4.6 agents** (or highest-capability model), each with:
 - The question + the Sonnet answer
 - Instructions to verify **every claim** against raw GAMS source code
+- Instructions to ALSO verify the **load-bearing DOC claims the answer relied on** (not just the answer's surface claims): when the answer is correct but a doc statement it depended on is wrong vs code, record a `doc_error_answerer_beat_it` latent doc bug per `audit/flywheel_rubric.md` §1.5 (does NOT lower the score, but MUST still be fixed; put it in the question's `doc_errors_latent[]`).
 - A pointer to **`audit/flywheel_rubric.md`** for severity tiers, mechanical checks, bug classes, and the audit report format.
 
 Use the `general-purpose` agent type with `model: claude-opus-4.6`.
@@ -158,6 +159,8 @@ SELECT question, COUNT(*) FROM bugs GROUP BY question;
 
 ### Step 5: Improve
 
+**Doc-error rule (overrides the priority tiers below)**: every bug whose root cause is `doc_error` or `doc_error_answerer_beat_it` is FIXED this session regardless of the question's score. A high score never closes a doc error - the next answerer may not re-derive around it (this is what let the G2 anchor regress R22→R23→R26). The tiers below only triage `answerer_confabulation` / style bugs.
+
 Fix bugs in priority order:
 1. **Critical** bugs → fix immediately in module docs
 2. **Major** bugs → fix in the same session
@@ -169,14 +172,16 @@ After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic 
 
 ### Step 5b: Record Results
 
-**MANDATORY**: Append results to `audit/validation_rounds.json` (schema v<!--count:validation_schema_version-->1.2<!--/count-->; latest entries describe G3/G4 magpie4 regression questions). This is the persistent record for tracking quality over time. Include:
+**MANDATORY**: Append results to `audit/validation_rounds.json` (schema v<!--count:validation_schema_version-->1.3<!--/count-->; latest entries describe G3/G4 magpie4 regression questions). This is the persistent record for tracking quality over time. Include:
 - Round number, date, commit hashes (before/after)
 - Per-question: topic, modules tested, score, bug counts by severity
 - **Regression questions section**: score the round's regression questions (rotate across G1-G4 per `regression_questions` top-level array; minimum 1 per round). Set `drift_observed=true` if any answer drifted from the expected_answer_summary. Append round number to `used_in_rounds` for each used. For G3 (magpie4 version pin), the auditor must read `project/version_pins.json` directly to compute the expected version/SHA — do NOT score against a hardcoded version, the pin advances when upstream renv.lock updates.
-- Summary: mean score, total bugs, bug sources (doc_error vs answerer_confabulation), root causes, files fixed, safeguards added
+- Summary: raw `mean_score` AND `doc_quality_mean` (+ `n_questions_doc_quality`, `doc_quality_mean_method`) per `flywheel_rubric.md` §4; total bugs, bug sources (`doc_error` / `doc_error_answerer_beat_it` / `answerer_confabulation`), root causes, files fixed, safeguards added. Record any latent doc bugs in each question's `doc_errors_latent[]`.
 - Update `cumulative_stats` at the bottom
 
 **Schema v1.1 changes** (2026-05-23): top-level `regression_questions` array added; each new round MUST include at least 1 regression question alongside new probes. Severity tiers and audit format are now in `audit/flywheel_rubric.md` (hoisted from this command file).
+
+**Schema v1.3 changes** (2026-05-29): added `doc_error_answerer_beat_it` root cause + per-question `doc_errors_latent[]` (latent doc bugs: answer correct but relied on a wrong doc, recorded and fixed regardless of score; see flywheel_rubric.md §1.5), plus `summary.doc_quality_mean` (+ `n_questions_doc_quality`, `doc_quality_mean_method`; flywheel_rubric.md §4). Closes the score-the-answer-not-the-doc blind spot behind the G2 R22→R23→R26 regression.
 
 This file allows future agents to compute trends: score over time, confabulation rate, calibration-anchor drift, which modules are reliable vs fragile.
 
