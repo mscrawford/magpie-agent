@@ -41,7 +41,8 @@
         22,
         23,
         25,
-        26
+        26,
+        27
       ],
       "drift_observed": false
     },
@@ -63,10 +64,12 @@
         22,
         23,
         25,
-        26
+        26,
+        27
       ],
-      "drift_observed": true,
-      "r26_note": "Drifted at R26 (populator-list recurrence). Doc root-cause fixed in R26 (module_56.md + module_52.md -> 29/31/32/34/35/59); expect recovery next re-measure."
+      "drift_observed": false,
+      "r26_note": "Drifted at R26 (populator-list recurrence). Doc root-cause fixed in R26 (module_56.md + module_52.md -> 29/31/32/34/35/59); expect recovery next re-measure.",
+      "r27_note": "Recovered to 9.0 at R27 after the R26 doc fix; drift cleared."
     },
     {
       "id": "G3",
@@ -3609,15 +3612,207 @@
           "notes": "REGRESSION 10(R23) -> 10(R25) -> 7(R26). High-stakes spine verified correct end-to-end (vm_carbon_stock declared in M56 not M52; M52 read-only via q52_emis_co2_actual; full M52->M56 cost chain with file:line; actualNoAcEst default). 3 Minor doc_error in the populator list (recurrence of the R22 M30-for-M29 / phantom-M58 / omitted-M59 error). Root cause: R23 declined to fix the doc ('answer was right'), leaving wrong lists in module_56.md (583/616/1037-43) and module_52.md (423); R26 Sonnet trusted them. FIXED: corrected both docs to verified set 29/31/32/34/35/59 (M30 -> vm_carbon_stock_croparea folded by M29; M58 not a populator), reconciling module_52.md self-contradiction (267-272 already correct). Overrode R23 'no doc fix' on new evidence (load-bearing recurrence + code verification vs origin/develop)."
         }
       ]
+    },
+    {
+      "round": 27,
+      "date": "2026-05-29",
+      "commit_before": "e191970",
+      "commit_after": "pending (R27 doc fixes recorded together with this round entry)",
+      "answerer_model": "claude-sonnet-4-6 (Agent model:sonnet, magpie-helper)",
+      "auditor_model": "claude-opus-4-8 (Agent model:opus, general-purpose)",
+      "type": "coverage",
+      "scope": "Interactive recovery run (continuation of R26) after the scheduled overnight run failed. Fresh coverage of 5 never-deeply-probed modules: M18 residues (past Critical wrong-realization bug), M53 methane (multi-realization), M31 pasture, M40 transport, M20 processing + regression anchors G1 (M14) + G2 (vm_carbon_stock M52/M56, re-tested after the R26 doc fix). 5 probes + 2 regression. Verification baseline origin/develop.",
+      "summary": {
+        "total_bugs_reported_by_auditors": 15,
+        "auditor_false_positives_withdrawn": 0,
+        "total_bugs_net": 15,
+        "bugs_by_severity": {
+          "critical": 0,
+          "major": 5,
+          "minor": 10,
+          "informational": 0
+        },
+        "bugs_by_root_cause": {
+          "doc_error": 5,
+          "answerer_confabulation": 10
+        },
+        "mean_score": 7.1,
+        "score_range": [
+          4,
+          10
+        ],
+        "regression_anchors": {
+          "G1": {
+            "score": 10.0,
+            "drift_observed": false,
+            "trend": "stable R22/23/25/26/27 = 10.0."
+          },
+          "G2": {
+            "score": 9.0,
+            "drift_observed": false,
+            "trend": "RECOVERED 7(R26)->9(R27). The R26 populator-list doc fix (module_56.md + module_52.md -> 29/31/32/34/35/59) held: R27 answerer read the corrected docs and enumerated the populators correctly. Only 1 Minor left (an answer-prose mislabel of a pcm_carbon_stock init line as M52's preloop, though the file:line cite is correct)."
+          }
+        },
+        "gate_summary": "No numeric gate for a coverage round. 0 bombs (Critical) across all 7 questions. Mean 7.1 is dragged by Q4 (M40, 5/10 - a real doc_error, fixed) and Q5 (M20, 4/10 - ANSWERER CONFABULATION against a verified-CORRECT doc, NOT a doc-quality problem). Excluding the Q5 measurement artifact, doc-quality is solid; 5 doc_error bugs found and fixed.",
+        "bugs_fixed_this_session": 5,
+        "bugs_fixed_detail": "(1) module_18.md:105 gj->ge (attribute set member is `ge` gross energy, not the unit `gj`); (2) module_53.md GWP: AR4/25 -> AR5/28 at :443, :859-863, and :867 (verified vs modules/56_ghg_policy/price_aug22/preloop.gms:78,80 which uses 12/44*28; resolves contradiction with module_56.md which already said 28); (3) module_53.md vm_area mis-attribution: 'Module 30 or Module 17' -> 'Module 30' at :277/:409/:410/:413 (vm_area declared only in 30_croparea, never M17); (4) module_40.md:171-174 replaced the doc's self-labelled 'inferred' (and wrong) M11 aggregation sum(j2,vm_cost_transp) with the verified sum((cell(i2,j2),k), vm_cost_transp(j2,k)) at modules/11_costs/default/equations.gms:21 + added the q11_cost_reg->v11_cost_reg->q11_cost_glo->vm_cost_glo objective chain. Two follow-up self-fixes: made the new M40 cross-module cites full `modules/...` paths (citation check) and reworded 'verified against' to 'per' (it had collided with the realization-validity check's 'Verified Against' footer parser).",
+        "bugs_deferred": 0,
+        "not_fixed_answerer_confab": "Q5 (M20) 4/10 and Q1 (M18) Major are answerer (Sonnet) confabulations against CORRECT docs - no doc fix. Q5: answerer put vm_dem_food on M16 (it is M15's) and v20_dem_processing on the wrong set; module_20.md is correct. Optional future hardening (not done): add an explicit v20_dem_processing declaration row to module_20.md to pre-empt the set confusion.",
+        "validators": "validate_consistency.sh 39/41 (2 pre-existing advisories), check_consumer_attribution.py 9, check_units.py 5 advisory - ALL unchanged from baseline after fixing 2 self-induced FPs (a bare cross-module citation path and a 'verified against' phrase collision).",
+        "run_context": "Interactive recovery run 2026-05-29 ~06:00-onward Berlin. User directed 2 rounds (R26+R27), not 3 (R28 skipped); overnight 05:30 time guard overridden by explicit instruction. Commits local only, prefixed '[autonomous overnight, pending review]'; nothing pushed. Aggregate-count markers NOT refreshed (would require deploying AGENT.md into the experiment-branch parent repo; deferred - see checkpoint).",
+        "highlights": [
+          "G2 calibration anchor RECOVERED 7->9: the R26 root-cause doc fix held (R27 answerer read corrected docs).",
+          "M40 transport: fixed a doc error the doc itself had flagged 'inferred' - the M11 cost-aggregation formula omitted the cell(i2,j2) mapping; replaced with verified code + objective chain.",
+          "M53 methane: CH4 GWP corrected 25(AR4)->28(AR5) across 3 doc locations, matching the value M56 actually uses.",
+          "Q5 (M20) 4/10 is an answerer-confabulation artifact against a correct doc, not a doc-quality failure - flagged to avoid misreading the mean."
+        ]
+      },
+      "questions": [
+        {
+          "id": "R27-Q1",
+          "archetype": "default vs. switch + cross-module causal chain",
+          "modules_tested": [
+            18,
+            17,
+            16,
+            50
+          ],
+          "question": "In MAgPIE's default config, which realization of module 18 (residues) is active, and how does it compute/allocate crop/above-ground residues? Name key variables and q18_* equations, and how residues link to production (M17) and demand/recycling (M16/M50). Cite file:line.",
+          "score": 7,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 1,
+          "bugs_informational": 0,
+          "phase_gate": "0 bombs. Correct default realization flexreg_apr16 (NO recurrence of the historical wrong-realization Critical), all 9 q18_* names/ranges/formulas exact.",
+          "notes": "R27-Q1-B1 Major = answerer_confabulation (M50 link cited at wrong line/equation - q50_nr_withdrawals never reads vm_res_recycling; correct is q50_nr_inputs); no doc fix. R27-Q1-B2 Minor = doc_error FIXED: module_18.md:105 listed attribute `gj` (a unit) for `ge` (gross-energy set member); corrected vs core/sets.gms attributes set."
+        },
+        {
+          "id": "R27-Q2",
+          "archetype": "quantitative verification + cross-module causal",
+          "modules_tested": [
+            53,
+            70,
+            30,
+            56
+          ],
+          "question": "How does MAgPIE compute CH4 emissions in the default realization of module 53? Default realization, emission variable(s) and q53_* equation(s), drivers from livestock (M70) and rice area, and how emissions feed GHG pricing (M56). Cite file:line.",
+          "score": 7,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 1,
+          "bugs_informational": 0,
+          "phase_gate": "0 bombs. Default ipcc2006_aug22, 4 CH4 equations + formulas/count, vm_emissions_reg, drivers (vm_feed_intake M70, rice vm_area M30), full M56 annual pricing chain all verified.",
+          "notes": "Both doc_error, FIXED. R27-Q2-B1 Major: module_53.md claimed CH4 GWP=25 (AR4) used in M56; actual M56 uses GWP=28 (AR5) per price_aug22/preloop.gms:78,80 (12/44*28) - corrected at :443/:859-863/:867, resolving the contradiction with module_56.md (already 28). R27-Q2-B2 Minor: vm_area attributed to 'Module 30 or Module 17'; declared only in 30_croparea - corrected to M30 at :277/:409/:410/:413."
+        },
+        {
+          "id": "R27-Q3",
+          "archetype": "causal chain + conservation law",
+          "modules_tested": [
+            31,
+            70,
+            14,
+            10,
+            22
+          ],
+          "question": "Trace pasture in the default realization of module 31: area/production variables, q31_* equation(s), how pasture yields (M14) and livestock feed demand (M70) drive it, and how pasture area enters the land balance (M10). Cite file:line.",
+          "score": 8,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 2,
+          "bugs_informational": 0,
+          "phase_gate": "0 bombs. q31_prod =l= formula + 5 q31_* citations, the past-vs-pasture set-member trap handled correctly, q14_yield_past, q70_feed =g=, q10_land_area set-sum preserved - all verified.",
+          "notes": "Both Minor = answerer_confabulation (M14 citation imprecisions: a blank-line off-by-one on realization.gms and a loose preloop.gms lambda-calibration range). module docs correct. No doc fix."
+        },
+        {
+          "id": "R27-Q4",
+          "archetype": "quantitative verification + cost provenance",
+          "modules_tested": [
+            40,
+            11,
+            17
+          ],
+          "question": "How does module 40 (transport) compute transport costs in the default realization? Default realization, cost variable, q40_* equation(s), inputs (distances, production from M17), and how the cost reaches the M11 objective. Cite file:line.",
+          "score": 5,
+          "bugs_found": 4,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 3,
+          "bugs_informational": 0,
+          "phase_gate": "0 bombs but lowest module score. Module-40-internal facts (gtap_nov12, vm_cost_transp, q40_cost_transport eq:11-13, vm_prod M17, f40_distance/f40_transport_costs) all correct; the M11-objective half failed.",
+          "notes": "R27-Q4-B1 Major = doc_error FIXED: module_40.md:172 carried a self-labelled 'inferred' (wrong) M11 aggregation sum(j2,vm_cost_transp(j2,k)); actual is sum((cell(i2,j2),k), vm_cost_transp(j2,k)) at modules/11_costs/default/equations.gms:21 (collapses both cell->region map and k). B2 Minor (missing objective chain) FIXED with B1 (added q11_cost_reg->v11_cost_reg->q11_cost_glo->vm_cost_glo). B3/B4 Minor = answerer embellishments (circa-2000 framing; bad unit-cancellation rationale) against a doc that only claimed 'static' - no doc fix."
+        },
+        {
+          "id": "R27-Q5",
+          "archetype": "causal chain + conservation",
+          "modules_tested": [
+            20,
+            17,
+            16,
+            21,
+            15
+          ],
+          "question": "How does module 20 (processing) convert primary to secondary products in the default realization? Processing variables, q20_* equation(s), relationship to supply (M17), demand (M16), trade (M21). Name default realization, cite file:line.",
+          "score": 4,
+          "bugs_found": 4,
+          "bugs_critical": 0,
+          "bugs_major": 2,
+          "bugs_minor": 2,
+          "bugs_informational": 0,
+          "phase_gate": "0 bombs. Lowest score, but SOURCE = answerer_confabulation against a CORRECT doc (measurement artifact, not a doc-quality failure).",
+          "notes": "All 4 = answerer_confabulation; module_20.md is correct (no doc fix). Default substitution_may21, q20_processing name/lines 59-65/formula exact, M21 'no direct interface' correct. Answerer errors: v20_dem_processing declared over processing20 instead of processing_subst20 (drops the substitutes route); vm_dem_food twice attributed to M16 when it is M15's variable. Optional future doc hardening noted (not done)."
+        },
+        {
+          "id": "R27-G1",
+          "archetype": "regression_question_calibration_anchor",
+          "modules_tested": [
+            14
+          ],
+          "question": "What is the default realization of module 14 (yields)? List the equations defined in its equations.gms.",
+          "score": 10,
+          "bugs_found": 0,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0,
+          "bugs_informational": 0,
+          "drift_observed": false,
+          "notes": "Anchor stable: R22/23/25/26/27 = 10. Default managementcalib_aug19, exactly 2 equations q14_yield_crop + q14_yield_past, citations exact (14-16, 35-39), no phantom q14_yieldcalib. No drift."
+        },
+        {
+          "id": "R27-G2",
+          "archetype": "regression_question_calibration_anchor",
+          "modules_tested": [
+            52,
+            56,
+            29,
+            31,
+            32,
+            34,
+            35,
+            59
+          ],
+          "question": "Walk through how vm_carbon_stock is computed in Module 52 and where it enters the GHG-policy cost in Module 56. Cite equations and file:line. Name the modules that POPULATE vm_carbon_stock.",
+          "score": 9,
+          "bugs_found": 1,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 1,
+          "bugs_informational": 0,
+          "drift_observed": false,
+          "notes": "RECOVERED 7(R26)->9(R27). The R26 doc fix held: answerer enumerated populators 29/31/32/34/35/59 correctly (M30/M58 correctly excluded), declaration site (M56:34), M52 read-only role, and full M52->M56 chain all verified vs origin/develop. Only 1 Minor: an answer-prose mislabel ('Module 52's preloop.gms' for a pcm_carbon_stock init line that lives in M56's preloop) - the file:line cite itself is correct. No doc fix needed."
+        }
+      ]
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 26,
+    "total_rounds": 27,
     "total_docs_validated": 85,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 493,
-    "total_bugs_fixed": 327,
+    "total_bugs_found": 508,
+    "total_bugs_fixed": 332,
     "validator_checks": 25,
     "validator_sub_checks": 40,
     "gams_variables_verified": 953,
@@ -3625,6 +3820,6 @@
     "gams_realizations_verified": 75,
     "file_line_citations_verified": 2598,
     "last_validation_date": "2026-05-29",
-    "mean_score_trend": "6.7→8.2→5.8→8.6→7.2→8.7→6.9→6.0→7.5→7.0→7.6→7.3→8.6→7.8→7.7→8.0→8.2→8.0→8.67→9.0→7.5→8.93→8.2"
+    "mean_score_trend": "6.7→8.2→5.8→8.6→7.2→8.7→6.9→6.0→7.5→7.0→7.6→7.3→8.6→7.8→7.7→8.0→8.2→8.0→8.67→9.0→7.5→8.93→8.2→7.1"
   }
 }

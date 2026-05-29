@@ -168,10 +168,10 @@ vm_cost_transp.fx(j,k) = 0;
 **Units**: Million USD17MER per year
 **Direction**: Module 40 provides → Module 11 aggregates to regional costs
 
-**Usage in Module 11** (inferred from standard MAgPIE cost structure):
-- Regional aggregation: `sum(j2, vm_cost_transp(j2,k))` summed by region `i`
-- Added to objective function via regional cost variable
-- Influences land allocation: cells with high f40_distance penalized, shifting production toward accessible areas
+**Usage in Module 11** (per `modules/11_costs/default/equations.gms`):
+- Regional aggregation: `+ sum((cell(i2,j2),k), vm_cost_transp(j2,k))` inside `q11_cost_reg(i2)` (`modules/11_costs/default/equations.gms:21`) - the sum collapses BOTH the `cell(i2,j2)` cell-to-region mapping AND the commodity set `k` into a single scalar per region `i2`.
+- Objective chain: `q11_cost_reg(i2)` -> `v11_cost_reg(i2)` -> `q11_cost_glo` (`modules/11_costs/default/equations.gms:10`: `vm_cost_glo =e= sum(i2, v11_cost_reg(i2))`) -> `vm_cost_glo` (the objective minimized by Module 80).
+- Influences land allocation: cells with high f40_distance are penalized, shifting production toward accessible areas
 
 **Interpretation**: Annualized costs of transporting all agricultural products from each cell to nearest market
 

@@ -274,7 +274,7 @@ vm_emissions_reg(i2,"rice","ch4") =e=
   - `"rice_pro"`: Rice products (crop type)
   - `w`: Water management (rainfed vs. irrigated)
 - Summed over cells in region i2 via `cell(i2,j2)` mapping (equations.gms:61)
-- Provided by Module 30 (Croparea) or Module 17 (Production)
+- Provided by Module 30 (Croparea)
 
 **Emission factor**: `f53_ef_ch4_rice(ct,i2)` (equations.gms:62, input.gms:16-21)
 - CH4 emission per hectare of rice (tCH4 per ha per year)
@@ -406,11 +406,11 @@ Module 53 uses interface variables declared in other modules.
 - **Usage**: Equation q53_emissionbal_ch4_awms (equations.gms:48)
 - **Provider**: Module 55 (AWMS) calculates manure from feed intake minus animal products
 
-**4. vm_area** (Module 30: Croparea or Module 17: Production)
-- **Declaration**: `vm_area(j,kcr,w)` (Module 30 or 17 declarations.gms)
+**4. vm_area** (Module 30: Croparea)
+- **Declaration**: `vm_area(j,kcr,w)` (Module 30 declarations.gms; detail_apr24:21, simple_apr24:18)
 - **Description**: Cropland area by crop type and water management (Mha)
 - **Usage**: Equation q53_emissionbal_ch4_rice (equations.gms:59)
-- **Provider**: Module 30 (Croparea) or Module 17 (Production)
+- **Provider**: Module 30 (Croparea)
 
 **5. vm_res_ag_burn** (Module 18: Residues)
 - **Declaration**: `vm_res_ag_burn(i,kcr,attributes)` (Module 18 declarations.gms)
@@ -440,7 +440,7 @@ Module 53 uses interface variables declared in other modules.
 **Note on unit consistency**:
 - Module 53 calculations in **tCH4 per year**
 - Module 56 declaration says "Tg per yr" but actually receives tCH4 (unit mismatch in declaration comment, not actual values)
-- Conversion to CO2-eq in Module 56 via GWP (CH4 GWP = 25 in IPCC AR4, used in Module 57)
+- Conversion to CO2-eq in Module 56 via GWP (CH4 GWP = 28, IPCC AR5 WG1 Ch08 Table 8.7; see modules/56_ghg_policy/price_aug22/preloop.gms:78,80)
 
 ---
 
@@ -856,15 +856,14 @@ vm_emissions_reg(i2,"resid_burn","ch4") =e=
   - Computationally expensive, many uncertain parameters
 - Emission factor approach: Simple, fast, calibrated to observations, but static
 
-**AR4 GWP** (Module 57 MACC, Module 56 GHG policy):
-- CH4 converted to CO2-eq using GWP = 25 (IPCC AR4 100-year GWP)
-- IPCC AR5: GWP = 28 (fossil CH4) or 27 (biogenic CH4)
-- IPCC AR6: GWP = 27-30 depending on climate-carbon feedbacks
-- Module uses AR4 for consistency with MACC calibration (PBL curves based on AR4)
+**GWP for CH4 pricing** (Module 56 GHG policy):
+- Module 56 converts CH4 to CO2-eq using **GWP = 28**, verified at `modules/56_ghg_policy/price_aug22/preloop.gms:78,80` (the CH4 price cap applies `12/44*28`); N2O uses GWP = 265 (both IPCC AR5 WG1 Ch08 Table 8.7). This matches module_56.md.
+- Reference values: IPCC AR4 CH4 GWP = 25; AR5 = 28 (fossil) / 27 (biogenic); AR6 = 27-30 depending on climate-carbon feedbacks.
+- Note: the Module 57 MACC abatement curves derive from PBL/IMAGE work; verify their GWP vintage against Module 57 directly rather than assuming it matches Module 56's AR5 value.
 
 **100-year time horizon** (Module 56):
 - CH4 has atmospheric lifetime ~12 years, GWP declines over time
-- 100-year GWP = 25, 20-year GWP = 84 (CH4 much more potent over short term)
+- 100-year GWP = 28 (AR5, as used by Module 56), 20-year GWP = 84 (CH4 much more potent over short term)
 - Choice of time horizon affects optimal mitigation (short-term climate goals favor CH4 reduction)
 
 ### 7. Data Limitations

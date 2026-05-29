@@ -102,7 +102,7 @@ q18_prod_res_ag_reg(i2,kcr,attributes) ..
 
 **Multicropping** (`f18_multicropping(ct,i2)`): Accounts for multiple cropping cycles per year. Applied to the area-based intercept term only (not the production-based slope term). Values > 1 indicate multiple harvests annually.
 
-**Attribute conversion** (`f18_attributes_residue_ag(attributes,kcr)`): Maps dry-matter biomass to per-attribute content (dm, nr, c, gj, p, k, wm; full attribute set from core sets).
+**Attribute conversion** (`f18_attributes_residue_ag(attributes,kcr)`): Maps dry-matter biomass to per-attribute content (dm, nr, c, ge, p, k, wm; full attribute set from core sets - `ge` = gross energy, in GJ).
 
 **Inputs**:
 - `vm_area(j,kcr,w)` - cluster harvested area by water type (from Module 30)
