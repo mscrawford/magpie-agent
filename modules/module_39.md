@@ -94,11 +94,10 @@ i39_reward_reduction(t,i,"crop") = s39_reward_crop_reduction * i39_calib(t,i,"re
 **File**: `modules/39_landconversion/calib/equations.gms:12-15`
 
 ```gams
-q39_cost_landcon(j,land) ..
-  vm_cost_landcon(j,land) =e=
-    (vm_landexpansion(j,land) * i39_cost_establish(i,land)
-     - vm_landreduction(j,land) * i39_reward_reduction(i,land))
-    * pm_interest(i) / (1 + pm_interest(i))
+q39_cost_landcon(j2,land) .. vm_cost_landcon(j2,land) =e=
+  (vm_landexpansion(j2,land)*sum((ct,cell(i2,j2)), i39_cost_establish(ct,i2,land))
+  - vm_landreduction(j2,land)*sum((ct,cell(i2,j2)), i39_reward_reduction(ct,i2,land)))
+  * sum((cell(i2,j2),ct),pm_interest(ct,i2)/(1+pm_interest(ct,i2)));
 ```
 
 **Mathematical Form**:
@@ -283,7 +282,7 @@ vm_cost_landcon(j,land)   ! Land conversion costs (mio. USD17MER/yr)
 **vm_cost_landcon(j,land)** - Land conversion costs
 - **File**: `modules/39_landconversion/calib/declarations.gms:13`
 - **Type**: Variable (unrestricted, can be negative due to rewards)
-- **Dimensions**: [j, land] where land = {crop, past, forestry, urban}
+- **Dimensions**: [j, land] over the full 7-member `land` set; only crop, past, forestry, urban carry a non-zero establishment cost — primforest, secdforest, other are initialized to zero cost in `preloop.gms:8` and never overwritten
 - **Units**: mio USD17MER per yr
 - **Typical Range**:
   - Expansion-dominated: +$1-100 million/yr per cell

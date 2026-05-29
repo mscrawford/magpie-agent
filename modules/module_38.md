@@ -236,16 +236,14 @@ p38_capital_mobile(t+1, j)        = p38_capital_mobile(t, j)        + v38_invest
 
 ### 3.1 CES production function (`q38_ces_prodfun`)
 
-**File**: `modules/38_factor_costs/sticky_labor/equations.gms`
+**File**: `modules/38_factor_costs/sticky_labor/equations.gms:19-23`
 
 ```gams
-q38_ces_prodfun(j2,kcr) ..
+ q38_ces_prodfun(j2,kcr) ..
   i38_ces_scale(j2,kcr) *
-  ( i38_ces_shr(j2,kcr) * sum(mobil38, v38_capital_need(j2,kcr,mobil38))**(-s38_ces_elast_par)
-    + (1 - i38_ces_shr(j2,kcr)) * (pm_labor_prod(j2) * pm_productivity_gain_from_wages(i2)
-                                   * v38_laborhours_need(j2,kcr))**(-s38_ces_elast_par)
-  )**(-1/s38_ces_elast_par)
-    =e= 1 + v38_relax_CES_lp(j2,kcr);
+  (i38_ces_shr(j2,kcr)*sum(mobil38, v38_capital_need(j2,kcr,mobil38))**(-s38_ces_elast_par) +
+  (1 - i38_ces_shr(j2,kcr))*(sum(ct, pm_labor_prod(ct,j2) * sum(cell(i2,j2), pm_productivity_gain_from_wages(ct,i2))) * v38_laborhours_need(j2,kcr))**(-s38_ces_elast_par))**(-1/s38_ces_elast_par)
+  =e= 1 + v38_relax_CES_lp(j2,kcr);
 ```
 
 **Mathematical form** (conceptual; verify against `sticky_labor/equations.gms` before quoting):

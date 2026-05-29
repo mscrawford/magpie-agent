@@ -1,17 +1,17 @@
 {
   "ledger_version": "1.0",
   "captured_at": "2026-05-29",
-  "_purpose": "Track GAMS modules / variables / equations / realizations named in agent-loaded text or prior round results, so future flywheel probes don't accidentally measure recognition rather than capability. See audit/flywheel_rubric.md §5 (round composition) and §8 (stability mechanisms).",
+  "_purpose": "Track GAMS modules / variables / equations / realizations named in agent-loaded text or prior round results, so future flywheel probes don't accidentally measure recognition rather than capability. See audit/flywheel_rubric.md \u00a75 (round composition) and \u00a78 (stability mechanisms).",
   "schema": {
-    "name": "string — exact GAMS module / variable / equation / realization name as it appears in source",
+    "name": "string \u2014 exact GAMS module / variable / equation / realization name as it appears in source",
     "type": "module | variable | equation | realization | parameter",
-    "source_files": "array of strings — files where this name appears in agent text or round results",
-    "named_in": "array — categories: rule_text | rubric_anchor | response_shape | round_result | calibration_anchor",
-    "first_named_at": "ISO date — earliest naming",
-    "first_named_round": "int — earliest round that named this (or null if from agent-loaded text)",
+    "source_files": "array of strings \u2014 files where this name appears in agent text or round results",
+    "named_in": "array \u2014 categories: rule_text | rubric_anchor | response_shape | round_result | calibration_anchor",
+    "first_named_at": "ISO date \u2014 earliest naming",
+    "first_named_round": "int \u2014 earliest round that named this (or null if from agent-loaded text)",
     "retirement_eligible_after": "int round number (round N+3) OR \"calibration-exempt\""
   },
-  "rotation_policy": "Names appearing in round N are retirement_eligible_after = N + 3. After N+3, the name can be re-probed once before going back off-limits. Calibration anchors (regression_questions G1, G2) are exempt — their repetition IS the test. Names appearing only in agent rule text (verifiers.md MANDATEs, Bug_Taxonomy.md patterns, flywheel_rubric.md anchors) without prior round usage retire after current_round + 3 = 24 (since last round is R21, next round R22).",
+  "rotation_policy": "Names appearing in round N are retirement_eligible_after = N + 3. After N+3, the name can be re-probed once before going back off-limits. Calibration anchors (regression_questions G1, G2) are exempt \u2014 their repetition IS the test. Names appearing only in agent rule text (verifiers.md MANDATEs, Bug_Taxonomy.md patterns, flywheel_rubric.md anchors) without prior round usage retire after current_round + 3 = 24 (since last round is R21, next round R22).",
   "calibration_exempt": [
     "module_14 (G1 anchor)",
     "module_52 (G2 anchor)",
@@ -70,11 +70,12 @@
       ],
       "source_files": [
         "R21 Q1 (PR #866 bilateral-trade overhaul); 4 mentions",
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_38",
@@ -85,11 +86,12 @@
       ],
       "source_files": [
         "R19 Q1; MANDATE 9 worked example (cost-variable attribution)",
-        "R25 R25 Q4 (factor costs consumer attribution; Pattern D test)"
+        "R25 R25 Q4 (factor costs consumer attribution; Pattern D test)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 28
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_35",
@@ -236,11 +238,12 @@
       "source_files": [
         "demand system R6 (m15_food_demand pair)",
         "R23 (re-use, Q1 M16 aggregation)",
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 6,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_10",
@@ -251,11 +254,12 @@
       "source_files": [
         "land balance questions",
         "R25 (auto-appended)",
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_41",
@@ -290,11 +294,12 @@
         "round_result"
       ],
       "source_files": [
-        "R19 Q5 (som — soil organic matter)"
+        "R19 Q5 (som \u2014 soil organic matter)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 22
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_73",
@@ -318,11 +323,12 @@
       "source_files": [
         "R21 Q1 (trade costs)",
         "R25 R25 Q3 (q11_cost_reg N-MACC cost chain; Phase 2c sweep test)",
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 31
     },
     {
       "name": "vm_water_available",
@@ -567,7 +573,7 @@
         "rule_text"
       ],
       "source_files": [
-        "verifiers.md MANDATE 8 worked example (invented realization — does NOT exist; default is fbask_jan16)"
+        "verifiers.md MANDATE 8 worked example (invented realization \u2014 does NOT exist; default is fbask_jan16)"
       ],
       "first_named_at": "2026-05-23",
       "first_named_round": null,
@@ -594,7 +600,7 @@
         "rule_text"
       ],
       "source_files": [
-        "verifiers.md MANDATE 8 worked example (invented realization — does NOT exist; croparea has simple_apr24 / detail_apr24)"
+        "verifiers.md MANDATE 8 worked example (invented realization \u2014 does NOT exist; croparea has simple_apr24 / detail_apr24)"
       ],
       "first_named_at": "2026-05-23",
       "first_named_round": null,
@@ -659,7 +665,7 @@
         "round_result"
       ],
       "source_files": [
-        "R23 Q1 (diet→N chain primary)",
+        "R23 Q1 (diet\u2192N chain primary)",
         "R27 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
@@ -674,11 +680,12 @@
       ],
       "source_files": [
         "R23 Q1 (M17 vm_prod_reg aggregation tested); Q5 (M17 used as worked-example subject)",
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_43",
@@ -714,11 +721,12 @@
       ],
       "source_files": [
         "R23 Q1 (q50_nr_bal_crp form)",
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_51",
@@ -741,7 +749,7 @@
         "round_result"
       ],
       "source_files": [
-        "R23 Q1 (M15→M16 interface variable)"
+        "R23 Q1 (M15\u2192M16 interface variable)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
@@ -1029,7 +1037,7 @@
         "round_result"
       ],
       "source_files": [
-        "R25 R25 Q4 surfaced — employment as missing M38 consumer (Pattern D gap)"
+        "R25 R25 Q4 surfaced \u2014 employment as missing M38 consumer (Pattern D gap)"
       ],
       "first_named_at": "2026-05-25",
       "first_named_round": 25,
@@ -1056,11 +1064,12 @@
       ],
       "source_files": [
         "R24 Q4 (simple_apr24 infeasibility + M10/M29 interaction); R25 Q1 (simple_apr24 rotation constraints; Phase 2a sweep test)",
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 24,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_18",
@@ -1069,11 +1078,12 @@
         "round_result"
       ],
       "source_files": [
-        "R27 Q1 residues"
+        "R27 Q1 residues",
+        "R28 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 31
     },
     {
       "name": "module_53",
@@ -1139,6 +1149,71 @@
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
       "retirement_eligible_after": 30
+    },
+    {
+      "name": "module_34",
+      "type": "module",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R28 (auto-appended)"
+      ],
+      "first_named_at": "2026-05-29",
+      "first_named_round": 28,
+      "retirement_eligible_after": 31
+    },
+    {
+      "name": "module_37",
+      "type": "module",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R28 (auto-appended)"
+      ],
+      "first_named_at": "2026-05-29",
+      "first_named_round": 28,
+      "retirement_eligible_after": 31
+    },
+    {
+      "name": "module_39",
+      "type": "module",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R28 (auto-appended)"
+      ],
+      "first_named_at": "2026-05-29",
+      "first_named_round": 28,
+      "retirement_eligible_after": 31
+    },
+    {
+      "name": "module_54",
+      "type": "module",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R28 (auto-appended)"
+      ],
+      "first_named_at": "2026-05-29",
+      "first_named_round": 28,
+      "retirement_eligible_after": 31
+    },
+    {
+      "name": "module_60",
+      "type": "module",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R28 (auto-appended)"
+      ],
+      "first_named_at": "2026-05-29",
+      "first_named_round": 28,
+      "retirement_eligible_after": 31
     }
   ],
   "_maintenance_notes": [

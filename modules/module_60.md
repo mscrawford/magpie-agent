@@ -53,7 +53,7 @@ vm_dem_bioen(i2,kall) * fm_attributes("ge",kall) =g=
 
 **Right-Hand Side Components**:
 1. **1st generation bioenergy**: `i60_1stgen_bioenergy_dem(ct,i2,kall)` (mio. GJ per yr)
-   - Fixed trajectories for oils and ethanol from input data (`presolve.gms:15-16, 23-24`)
+   - Fixed trajectories for oils and ethanol from input data (`presolve.gms:17-18, 25-26`)
    - Based on established and planned bioenergy policies (Lotze-Campen et al. 2014) (`equations.gms:23-25`)
 2. **2nd generation dedicated**: `v60_2ndgen_bioenergy_dem_dedicated(i2,kall)` (mio. GJ per yr)
    - Variable demand for bioenergy grasses (betr) and trees (begr)
@@ -191,7 +191,7 @@ vm_bioenergy_utility(i2) =e=
   - Can be mass-based (constant over time) or energy-based (time-varying) (`equations.gms:68-69`)
   - Default: 6.5 USD17MER per GJ (mass-based, constant) (`input.gms:38`)
 - `i60_2ndgen_bioenergy_subsidy(t)`: 2nd generation subsidy (USD17MER per GJ) (`declarations.gms:14`)
-  - Energy-based, can vary over time via price implementation scenarios (`presolve.gms:33-34, 40-41, 47-48`)
+  - Energy-based, can vary over time via price implementation scenarios (`presolve.gms:37-41, 44-48, 51-55`)
 
 **Purpose** (`equations.gms:66-71`):
 - Incentivize bioenergy production beyond exogenous minimum demand
@@ -245,7 +245,7 @@ kbe60(kall) = / betr, begr /
 - Not produced from food crops (dedicated energy crops grown on agricultural land)
 - Demand can be specified globally OR regionally (`c60_biodem_level` switch) (`equations.gms:33-41`)
 - Higher estimated efficiency than 1st generation (`equations.gms:27-28`)
-- Can receive subsidies (default: 0, configurable) (`input.gms:40`, `presolve.gms:21`)
+- Can receive subsidies (default: 0, configurable) (`input.gms:40`, `presolve.gms:23`)
 
 **Demand Specification**:
 - Global demand: Model optimizes regional distribution (`q60_bioenergy_glo` active)
@@ -315,7 +315,7 @@ f60_bioenergy_dem(t,i,scen2nd60)  // mio. GJ per yr
 
 **Default**: `const2020` (`input.gms:79`)
 
-**Historical Period**: Until `sm_fix_SSP2`, always uses `const2020` scenario regardless of selection (`presolve.gms:15-16`).
+**Historical Period**: Until `sm_fix_SSP2`, always uses `const2020` scenario regardless of selection (`presolve.gms:17-18`).
 
 ### Residue Demand Scenarios (`scen2ndres60`)
 
@@ -324,7 +324,7 @@ f60_bioenergy_dem(t,i,scen2nd60)  // mio. GJ per yr
 
 **Default**: `ssp2` (`input.gms:69`)
 
-**Historical Period**: Until `sm_fix_SSP2`, always uses `ssp2` scenario regardless of selection (`presolve.gms:17-18`).
+**Historical Period**: Until `sm_fix_SSP2`, always uses `ssp2` scenario regardless of selection (`presolve.gms:19-20`).
 
 ---
 
@@ -404,7 +404,7 @@ Module 60 implements bioenergy subsidies/prices with three temporal trajectories
 
 ### 1. Linear Price Trajectory (`c60_price_implementation = "lin"`, default)
 
-**Formula** (`presolve.gms:44-49`):
+**Formula** (`presolve.gms:51-55`):
 ```
 if (m_year(t) > sm_fix_SSP2):
     i60_1stgen_bioenergy_subsidy(t) =
@@ -425,7 +425,7 @@ if (m_year(t) > sm_fix_SSP2):
 
 ### 2. Exponential Price Trajectory (`c60_price_implementation = "exp"`)
 
-**Formula** (`presolve.gms:29-35`):
+**Formula** (`presolve.gms:37-41`):
 ```
 if (m_year(t) > sm_fix_SSP2):
     i60_1stgen_bioenergy_subsidy(t) =
@@ -449,7 +449,7 @@ if (m_year(t) > sm_fix_SSP2):
 
 ### 3. Constant Price Trajectory (`c60_price_implementation = "const"`)
 
-**Formula** (`presolve.gms:36-42`):
+**Formula** (`presolve.gms:44-48`):
 ```
 if (m_year(t) > sm_fix_SSP2):
     i60_1stgen_bioenergy_subsidy(t) = s60_bioenergy_1st_price
@@ -462,7 +462,7 @@ if (m_year(t) > sm_fix_SSP2):
 
 ### 1st Generation Subsidy Floor
 
-**Enforcement** (`presolve.gms:52-54`):
+**Enforcement** (`presolve.gms:60-61`):
 ```
 i60_1stgen_bioenergy_subsidy(t)$(i60_1stgen_bioenergy_subsidy(t) < s60_bioenergy_1st_subsidy)
     = s60_bioenergy_1st_subsidy
@@ -481,7 +481,7 @@ i60_1stgen_bioenergy_subsidy(t)$(i60_1stgen_bioenergy_subsidy(t) < s60_bioenergy
 **2nd Generation** (`input.gms:40`):
 - `s60_bioenergy_2nd_price`: Energy-based time-varying subsidy target for 2100 (default: 0)
 
-**Historical Period**: Until `sm_fix_SSP2`, subsidies use default values (`presolve.gms:19-21`):
+**Historical Period**: Until `sm_fix_SSP2`, subsidies use default values (`presolve.gms:21-23`):
 - 1st generation: `s60_bioenergy_1st_subsidy` (6.5 USD17MER/GJ)
 - 2nd generation: 0
 
@@ -489,7 +489,7 @@ i60_1stgen_bioenergy_subsidy(t)$(i60_1stgen_bioenergy_subsidy(t) < s60_bioenergy
 
 ## Variable Bounds and Initialization
 
-### Variable Fixing (`presolve.gms:8-12`)
+### Variable Fixing (`presolve.gms:8-14`)
 
 **Non-bioenergy products** (food, feed, material):
 ```
@@ -513,7 +513,7 @@ Only crop residues (`kres`) can have positive 2nd generation residue demand.
 
 **Purpose**: Restrict bioenergy demand to appropriate product types (1st gen: oils/ethanol, 2nd gen dedicated: betr/begr, 2nd gen residues: kres).
 
-### Minimum Demand Floor (`presolve.gms:56-57`)
+### Minimum Demand Floor (`presolve.gms:64`)
 
 **Enforcement**:
 ```
@@ -652,7 +652,7 @@ c60_price_implementation = "lin"
 
 ### 1. Exogenous Demand Trajectories
 
-**Assumption**: All bioenergy demand (1st generation, 2nd generation dedicated, 2nd generation residues) specified exogenously via scenario input files (`preloop.gms:20-36`, `presolve.gms:15-26`).
+**Assumption**: All bioenergy demand (1st generation, 2nd generation dedicated, 2nd generation residues) specified exogenously via scenario input files (`preloop.gms:20-36`, `presolve.gms:16-28`).
 
 **Implication**: Bioenergy demand does NOT respond endogenously to:
 - Energy prices (fossil fuel prices, electricity prices)
@@ -738,7 +738,7 @@ c60_price_implementation = "lin"
 
 ### 8. Historical Harmonization
 
-**Assumption** (`preloop.gms:26-28, 33-35`, `presolve.gms:14-18`): All scenarios harmonized to "R34M410-SSP2-NPi2025" until `sm_fix_SSP2` (typically 2020-2025).
+**Assumption** (`preloop.gms:26-28, 33-35`, `presolve.gms:16-23`): All scenarios harmonized to "R34M410-SSP2-NPi2025" until `sm_fix_SSP2` (typically 2020-2025).
 
 **Implication**:
 - Historical period uses same demand trajectory regardless of scenario selection
@@ -849,7 +849,7 @@ Scale factor of 10^5 improves solver numerics (bioenergy subsidies can be large 
 
 ### Historical Harmonization Logic
 
-**Conditional Assignment** (`preloop.gms:26-35`, `presolve.gms:14-26`):
+**Conditional Assignment** (`preloop.gms:26-35`, `presolve.gms:16-28`):
 ```
 if (m_year(t) <= sm_fix_SSP2):
     use SSP2 baseline
@@ -861,7 +861,7 @@ else:
 
 ### Minimum Demand Floor
 
-**Conditional Override** (`presolve.gms:56-57`):
+**Conditional Override** (`presolve.gms:64`):
 ```
 i60_bioenergy_dem(t,i)$(i60_bioenergy_dem(t,i) < s60_2ndgen_bioenergy_dem_min)
     = s60_2ndgen_bioenergy_dem_min
@@ -882,12 +882,12 @@ i60_bioenergy_dem(t,i)$(i60_bioenergy_dem(t,i) < s60_2ndgen_bioenergy_dem_min)
 - Load bioenergy demand data based on scenario selection (`preloop.gms:19-36`)
 
 **2. Presolve** (before each solve):
-- Fix non-bioenergy products to zero demand (`presolve.gms:8`)
-- Release bioenergy crops (betr, begr) and residues (kres) (`presolve.gms:9-12`)
-- Load 1st generation, 2nd generation residue demands based on scenarios (`presolve.gms:14-27`)
-- Calculate subsidies based on price implementation mode (`presolve.gms:29-50`)
-- Enforce 1st generation subsidy floor (`presolve.gms:52-54`)
-- Enforce minimum demand floor (`presolve.gms:56-57`)
+- Fix non-bioenergy products to zero demand (`presolve.gms:8-10`)
+- Release bioenergy crops (betr, begr) and residues (kres) (`presolve.gms:12, 14`)
+- Load 1st generation, 2nd generation residue demands based on scenarios (`presolve.gms:16-28`)
+- Calculate subsidies based on price implementation mode (`presolve.gms:36-57`)
+- Enforce 1st generation subsidy floor (`presolve.gms:60-61`)
+- Enforce minimum demand floor (`presolve.gms:64`)
 
 **3. Equations** (solved simultaneously):
 - `q60_bioenergy`: Total demand (mass × energy content) ≥ 1st gen + 2nd gen dedicated + 2nd gen residues (`equations.gms:16-21`)

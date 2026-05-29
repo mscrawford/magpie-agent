@@ -90,7 +90,8 @@
       "calibration_intent": "tests (a) source-of-truth discipline for the two-clone setup (SHA-pinned .cache/sources/magpie4/ vs drift-prone ~/Documents/Work/Workspace/magpie4/), (b) reading the auto-loaded agent/helpers/magpie4_reference.md helper before answering (the three pre-answer rules), (c) version-pin awareness (not confabulating a version from training data)",
       "first_used_round": 24,
       "used_in_rounds": [
-        24
+        24,
+        28
       ],
       "drift_observed": false
     },
@@ -106,7 +107,8 @@
       "calibration_intent": "tests (a) reading from the SHA-pinned clone rather than the workspace clone, (b) faithful description of the actual dispatch (no confabulation of control-based gating or grepl filtering), (c) reasonable count of unique report* functions (target ~106; off-by-few is Minor, off-by-order is Critical), (d) precise file:line citation with version pin per MANDATE 16",
       "first_used_round": 24,
       "used_in_rounds": [
-        24
+        24,
+        28
       ],
       "drift_observed": false
     }
@@ -3810,15 +3812,213 @@
           "notes": "RECOVERED 7(R26)->9(R27). The R26 doc fix held: answerer enumerated populators 29/31/32/34/35/59 correctly (M30/M58 correctly excluded), declaration site (M56:34), M52 read-only role, and full M52->M56 chain all verified vs origin/develop. Only 1 Minor: an answer-prose mislabel ('Module 52's preloop.gms' for a pcm_carbon_stock init line that lives in M56's preloop) - the file:line cite itself is correct. No doc fix needed."
         }
       ]
+    },
+    {
+      "round": 28,
+      "date": "2026-05-29",
+      "commit_before": "ec97a13",
+      "commit_after": "pending (R28 doc fixes recorded together with this round entry)",
+      "answerer_model": "claude-sonnet-4-6 (Agent model:sonnet, magpie-helper)",
+      "auditor_model": "claude-opus-4-8 (Agent model:opus, general-purpose)",
+      "type": "coverage",
+      "scope": "Autonomous run (user away, delegated full round + corrections; nothing pushed). Continuation of the /tmp/magpie_overnight_runplan.md sequence (R26+R27 ran interactively this morning; R28 was the deferred third round). Fresh coverage of 5 never-deeply-probed modules: M60 bioenergy, M39 landconversion, M34 urban, M37 labor_prod (default off), M54 phosphorus (default off) + regression anchors G3 (magpie4 version pin) + G4 (magpie4 getReport) -- rotated in for the first time since R24. 5 probes + 2 regression. Verification source = clean origin/develop worktree (ee98739fd).",
+      "summary": {
+        "total_bugs_reported_by_auditors": 12,
+        "auditor_false_positives_withdrawn": 0,
+        "total_bugs_net": 12,
+        "bugs_by_severity": {
+          "critical": 0,
+          "major": 3,
+          "minor": 6,
+          "informational": 3
+        },
+        "bugs_by_root_cause": {
+          "doc_error": 3,
+          "doc_error_answerer_beat_it": 1,
+          "answerer_confabulation": 4,
+          "ambiguous": 1,
+          "answerer_style_or_framing": 3
+        },
+        "mean_score": 8.4,
+        "doc_quality_mean": 8.4,
+        "n_questions_doc_quality": 5,
+        "doc_quality_mean_method": "Raw mean = (7+7+8+8+9+10+10)/7 = 8.43. doc_quality_mean excludes Q3 (8; 2 Minor answerer-citation, docs clean) and Q5 (9; Minor answerer over-read + Info, docs clean); keeps Q1/Q2/Q4 (doc_error-rooted) + Q6/Q7 (clean magpie4 anchors): (7+7+8+10+10)/5 = 8.4.",
+        "score_range": [
+          7,
+          10
+        ],
+        "regression_anchors": {
+          "G3": {
+            "score": 10.0,
+            "drift_observed": false,
+            "trend": "First re-test since R24. v2.70.0 @ a360d8c9ec verified vs version_pins.json (+ renv.lock canary); cited the pin not the workspace clone. No drift."
+          },
+          "G4": {
+            "score": 10.0,
+            "drift_observed": false,
+            "trend": "First re-test since R24. Flat tryList, 106 unique/117 call lines, lines 62-181, verified vs the pinned getReport.R. Helper correctly states 106 (retires stale 108). No drift."
+          }
+        },
+        "gate_summary": "No numeric gate for a coverage round. 0 bombs (Critical) across all 7 questions. Raw mean 8.4 = doc_quality 8.4 (answerer noise minimal this round, unlike R27). 3 Major bugs, ALL doc_error-rooted and ALL fixed; the 2 OFF-default baits (M37, M54) did not catch the answerers.",
+        "bugs_fixed_this_session": 4,
+        "bugs_fixed_detail": "(1) module_60.md presolve.gms citation cluster -- 22 citations corrected (front +2, back +6-8 after the price-implementation block grew; lin/exp/const Formula citations also de-rotated): min-demand-floor 56-57->64, 1st-gen subsidy floor 52-54->60-61, Variable Fixing 8-12->8-14, three subsidy Formulas lin 44-49->51-55 / exp 29-35->37-41 / const 36-42->44-48, plus the demand/subsidy bullets; verified vs the 65-line presolve.gms on origin/develop. (2) module_39.md:96-102 q39_cost_landcon -- replaced simplified block with verbatim equations.gms:12-15 incl. sum((ct,cell(i2,j2)),...) cell->region idiom. (3) module_39.md:286 vm_cost_landcon dimension 4-member->full 7-member land set. (4) module_38.md:242-248 q38_ces_prodfun -- replaced simplified block with verbatim sticky_labor/equations.gms:19-23 (restored sum(ct,...) + sum(cell(i2,j2),...) + pm_labor_prod(ct,j2)) + added :19-23 cite.",
+        "bugs_deferred": 1,
+        "not_fixed_detail": "DEFERRED for review: R28-Q1-B2 (Minor, ambiguous) -- module_21.md:125 frames q21_notrade as 'regional self-sufficiency' but it balances at super-region (h2) level; :119-123 carries the correct superregional formula, so loosely worded not strictly wrong. Deferred because M21 is sensitive (diverges on the experiment branch; rewritten in PR #866) and this is a clarity nicety. NO doc fix needed (docs verified correct) for the answerer-confabulation Minors: Q2-B2 (s39_ignore_calib reward->0), Q3 x2 (citation imprecision), Q5 (belowground-P over-read).",
+        "validators": "validate_consistency.sh 40/42 (2 pre-existing advisory unit warnings) -- UNCHANGED from baseline both before and after the doc edits; no regression introduced by the fixes.",
+        "run_context": "Autonomous interactive run 2026-05-29 from ~16:00 Berlin (the session usage window reset at 16:00; the 13:44 answer fan-out hit the cap mid-batch -- Q1/Q4 answer files completed on disk but their return-summaries were cut, then verified complete by head/tail). User delegated the full round + corrections and stepped away; commits LOCAL ONLY, nothing pushed. Verification source = clean detached origin/develop worktree at /tmp/magpie-develop-r28 (ee98739fd), because the parent repo is on experiment/tc-marginal-pb (M21+M32 diverge from develop; none of the R28 target/anchor modules diverge -- so docs were synced against exactly the code audited). Aggregate-count markers: N/A (R7 consolidation retired the marker system).",
+        "highlights": [
+          "G3+G4 magpie4 anchors exercised for the first time since R24 (rotation per command-file guidance); both 10/10, no drift. G4 auditor independently confirmed the helper correctly states 106 unique report* functions and retires the stale 108 (a naive non-paren-anchored grep over-counts via write.report2).",
+          "Root-cause citation sweep on module_60.md: fixed ALL 22 presolve.gms citations, not just the 6 the auditor flagged, since the drift was systematic after presolve.gms grew (the syntactic citation validator does not check line CONTENT, so it passed at baseline -- exactly the semantic gap the flywheel exists to close).",
+          "Two Pattern-4 'simplified-code-as-verbatim' doc bugs fixed (module_39 q39 + module_38 q38_ces) by restoring the GAMS cell->region sum() idiom -- the rubric 1.5 'answerer trusts a wrong doc' pattern; both Sonnet answerers reproduced the simplification.",
+          "OFF-by-default baits on Q4 (M37) and Q5 (M54) did NOT catch the answerers -- both correctly led with 'off' and labeled enabled-state mechanics as not-active. Zero Critical bugs in the round.",
+          "module_39.md:286 latent doc bug (vm_cost_landcon dim 4 vs 7): the answer beat the doc; fixed regardless per rubric 1.5."
+        ]
+      },
+      "questions": [
+        {
+          "id": "R28-Q1",
+          "archetype": "cross-module causal chain + default/switch",
+          "modules_tested": [
+            60,
+            30,
+            17,
+            16,
+            21,
+            11,
+            14,
+            38
+          ],
+          "question": "In MAgPIE's DEFAULT config, trace 2nd-generation (lignocellulosic) bioenergy demand from the demand side through land allocation to the cost objective. State M60's default realization; name the demand variable(s)/equation(s), the begr/betr crop-set members and where grown, how demand is met (production/trade), and how it reaches the objective. Cite vars/eqs/file:line.",
+          "score": 7,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 1,
+          "bugs_informational": 0,
+          "phase_gate": "0 bombs. M60 default 1st2ndgen_priced_feb24 + all 7 cross-module default realizations correct; full q60->q16->q21->q17->q30->q14->q38/q11 spine verbatim-faithful; begr/betr in kcr and in k_notrade correct.",
+          "notes": "R28-Q1-B1 Major = doc_error (inherited): module_60.md cited the minimum-demand-floor at presolve.gms:56-57 but develop has it at :64 (56-57 is the 2nd-gen subsidy interpolation). FIXED via citation sweep. R28-Q1-B2 Minor = ambiguous: answer described q21_notrade as per-region self-sufficiency; code balances at super-region (h2) level (selfsuff_reduced/equations.gms:18-19). module_21.md:119-123 has the correct superregional formula but :125 is loosely worded. DEFERRED (M21 sensitive: diverges on experiment branch, recently rewritten PR #866).",
+          "doc_errors_latent": [
+            "LDB-1 (Major by future-reader harm, doc_error): module_60.md presolve.gms citations systematically stale (front +2, back +6-8 after the price-implementation block grew). FIXED: swept all 22 presolve.gms citations vs the 65-line presolve.gms on origin/develop."
+          ]
+        },
+        {
+          "id": "R28-Q2",
+          "archetype": "conservation/cost causal chain",
+          "modules_tested": [
+            39,
+            10,
+            11
+          ],
+          "question": "How do land-conversion costs enter MAgPIE in the DEFAULT config? State M39's default realization; the interface cost variable and equation; what transitions trigger costs and how that links to M10's transition/expansion accounting; and how it reaches M11. Distinguish M39's own vars from the M10 land vars. Cite vars/eqs/file:line.",
+          "score": 7,
+          "bugs_found": 3,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 1,
+          "bugs_informational": 1,
+          "phase_gate": "M39 calib / M10 landmatrix_dec18 / M11 default all correct; q10_landexpansion/reduction off-diagonal sums of vm_lu_transitions, q10_land_area conservation, vm_cost_landcon vs vm_cost_land_transition distinction, and q11_cost_reg(20)->q11_cost_glo(10)->vm_cost_glo path all verbatim-faithful.",
+          "notes": "R28-Q2-B1 Major = doc_error (inherited): q39_cost_landcon block dropped the GAMS sum((ct,cell(i2,j2)),...) cell->region idiom. FIXED. R28-Q2-B2 Minor = answerer_confabulation: claimed s39_ignore_calib=1 sets all factors to 1; code sets cost=1, reward=0 (preloop.gms:14-15); module_39.md:392 is correct -> no doc fix. Info = M4 (no per-claim epistemic badges).",
+          "doc_errors_latent": [
+            "LDB-A (Major, doc_error): module_39.md:96-102 + :929-930 presented q39 without cell-mapping sums. FIXED: 96-102 now verbatim equations.gms:12-15 (math form at 104-109 retained).",
+            "LDB-B (Minor, doc_error_answerer_beat_it): module_39.md:286 said vm_cost_landcon dim = {crop,past,forestry,urban}; declared over full 7-member land set (others carry zero cost). Answer wrote the full set (beat the doc). FIXED regardless per rubric 1.5."
+          ]
+        },
+        {
+          "id": "R28-Q3",
+          "archetype": "default/switch + edge case",
+          "modules_tested": [
+            34,
+            10,
+            52
+          ],
+          "question": "How is URBAN land represented under the DEFAULT config? M34 default realization, exogenous vs endogenous, how it enters the M10 land balance and competes, whether it carries a M52 carbon stock, and any input-data caveat. Cite realization/vars/eqs/file:line.",
+          "score": 8,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 2,
+          "bugs_informational": 0,
+          "phase_gate": "All substantive claims verified: exo_nov21 default, hard q34_urban_land regional constraint + soft cell-cost trio, vm_land(j,'urban') in 7-way q10_land_area, vm_carbon_stock urban zero-fix (presolve.gms:8), M52 urban-soilc->other workaround, LUH3-pending caveat, ag_pools={vegc,litc} reasoning.",
+          "notes": "Both Minor = answerer_confabulation (citation imprecision: presolve.gms:12-14 vs 13-15 off-by-one; emis_oneoff SET cited where emis_land MAPPING meant). module_34/10/52 docs verified CLEAN -> no doc fix. EXCLUDED from doc_quality_mean (pure answerer noise). LUH2/LUH3 Minor anchor NOT tripped (answer about default exo_nov21, correctly cites LUH3)."
+        },
+        {
+          "id": "R28-Q4",
+          "archetype": "default vs. switch (OFF-default bait)",
+          "modules_tested": [
+            37,
+            38,
+            11
+          ],
+          "question": "What is M37's (labor productivity) default realization and what does the model do with labor productivity in that state? Be explicit re what is/ isn't active by default. If a non-default realization is used, trace into M38 factor costs and the M11 objective. Cite realization/vars/eqs/file:line.",
+          "score": 8,
+          "bugs_found": 1,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 0,
+          "bugs_informational": 0,
+          "phase_gate": "Correctly led with OFF default (pm_labor_prod=1), sticky_feb18 abort guard, full M38->M11 chain; no Critical (did NOT present non-default mechanics as active). OFF-default bait NOT caught.",
+          "notes": "R28-Q4-B1 Major = doc_error (inherited): q38_ces_prodfun quoted non-verbatim (dropped sum(ct,...) + sum(cell(i2,j2),...), wrote pm_labor_prod(j2) not (ct,j2), left i2 free). FIXED.",
+          "doc_errors_latent": [
+            "Q4-D1 (Major, doc_error): module_38.md:242-248 CES block non-verbatim. FIXED: now verbatim sticky_labor/equations.gms:19-23 + :19-23 cite (conceptual Y=A[...] form retained under its label)."
+          ]
+        },
+        {
+          "id": "R28-Q5",
+          "archetype": "default/switch + cross-module (OFF-default bait)",
+          "modules_tested": [
+            54,
+            50,
+            18,
+            59
+          ],
+          "question": "Does MAgPIE track PHOSPHORUS by default? M54 default realization and what it does in that state. When enabled, how does the P budget relate to the M50 N budget, M18 residues, and M59 SOM? Be explicit re default-off vs enabled. Cite realization/vars/eqs/file:line.",
+          "score": 9,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 1,
+          "bugs_informational": 1,
+          "phase_gate": "OFF-default bait NOT caught: correctly stated 'off' is the ONLY realization, vm_p_fert_costs fixed to 0, 0 equations, all enabled-state mechanics labeled intended/not-implemented. Every cross-module citation (q18_res_recycling_pk, pk18, q50_nr_bal_crp, q59_nr_som*) verified exact.",
+          "notes": "Minor = answerer over-read (claimed belowground-residue P 'already computed'; q18_prod_res_bg_reg ranges over dm_nr={dm,nr,c}, excludes p). module_18.md:121 CORRECT on the BG dim -> answerer error, no doc fix. Info = M4 badges. EXCLUDED from doc_quality_mean (pure answerer noise)."
+        },
+        {
+          "id": "R28-G3",
+          "archetype": "regression_question_calibration_anchor (magpie4 source-of-truth / version pin)",
+          "modules_tested": [],
+          "question": "Which version of magpie4 does this agent's source-of-truth clone reflect, and how was that version determined? Cite the file(s) you read.",
+          "score": 10,
+          "bugs_found": 0,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0,
+          "bugs_informational": 0,
+          "drift_observed": false,
+          "notes": "First exercise since R24 (rotation per command-file guidance: G1/G2 ran every round R22-27, G3/G4 overdue). v2.70.0 @ a360d8c9ec1ee7af6c9287791e8b182bf391d355 (resolution sha) verified vs project/version_pins.json; pin canary current (live renv.lock sha256 == pin lock_file_sha256); upstream authority ../input/renv.lock correctly named; cited version_pins.json NOT the workspace clone. No drift."
+        },
+        {
+          "id": "R28-G4",
+          "archetype": "regression_question_calibration_anchor (magpie4 getReport dispatch)",
+          "modules_tested": [],
+          "question": "How does magpie4::getReport organize its reporting? Describe the dispatch pattern, how many unique report* functions it calls, and cite the file:line range from the pinned clone.",
+          "score": 10,
+          "bugs_found": 1,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0,
+          "bugs_informational": 1,
+          "drift_observed": false,
+          "notes": "First exercise since R24. Verified vs .cache/sources/magpie4/R/getReport.R @ a360d8c9ec: flat unconditional tryList, NO control arg, NO grepl gating, 106 unique report* / 117 call lines (11 diff = 9 multi-arg fns), tryList block 62-181, file 235 lines. Info = answerer relied on helper rather than opening the pinned file (values correct, tagged Documented). Latent-doc check: helper correctly states 106 and retires stale 108 -> NO doc bug. No drift."
+        }
+      ]
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 27,
+    "total_rounds": 28,
     "total_docs_validated": 85,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 508,
-    "total_bugs_fixed": 332,
+    "total_bugs_found": 520,
+    "total_bugs_fixed": 336,
     "validator_checks": 28,
     "validator_sub_checks": 43,
     "gams_variables_verified": 953,
@@ -3826,6 +4026,6 @@
     "gams_realizations_verified": 75,
     "file_line_citations_verified": 2598,
     "last_validation_date": "2026-05-29",
-    "mean_score_trend": "6.7→8.2→5.8→8.6→7.2→8.7→6.9→6.0→7.5→7.0→7.6→7.3→8.6→7.8→7.7→8.0→8.2→8.0→8.67→9.0→7.5→8.93→8.2→7.1"
+    "mean_score_trend": "6.7→8.2→5.8→8.6→7.2→8.7→6.9→6.0→7.5→7.0→7.6→7.3→8.6→7.8→7.7→8.0→8.2→8.0→8.67→9.0→7.5→8.93→8.2→7.1→8.4"
   }
 }
