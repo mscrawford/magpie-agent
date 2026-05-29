@@ -122,7 +122,7 @@ q21_notrade(h2,k_notrade)..
 
 **Meaning**: Superregional production ≥ superregional supply (for non-tradables)
 
-**Purpose**: Enforces regional self-sufficiency for non-tradable commodities
+**Purpose**: Enforces superregional self-sufficiency for non-tradable commodities (production can be reallocated among regions within a super-region `h2`; this is NOT strict per-region self-sufficiency)
 
 **Applies To**: 8 commodities in `k_notrade` (oilpalm, foddr, pasture, residues, begr, betr)
 
