@@ -182,13 +182,15 @@ This file allows future agents to compute trends: score over time, confabulation
 
 ### Step 5c: Update probe-dedup ledger (R6 H3)
 
-After Step 5b records the round, run the dedup-check to append new probe names to `audit/probe_dedup_ledger.json` and increment `retirement_eligible_after` per the ledger's `rotation_policy`. This was previously dead — the policy said "next round R22" while actual was R24, meaning R22-R24 names never entered the ledger.
+After Step 5b records the round, append the round's probe names to `audit/probe_dedup_ledger.json` with `--append-latest`:
 
 ```bash
-python3 scripts/probe_dedup_check.py
+python3 scripts/probe_dedup_check.py --append-latest
 ```
 
-The script reads the last round in `validation_rounds.json`, extracts probe names that should enter the ledger, appends them with `retirement_eligible_after = current_round + 3` per policy. If new probes added: commit the ledger update with the round commit.
+This resolves the latest recorded round, extracts its `modules_tested` (skipping regression anchors), and appends new names with `retirement_eligible_after = round + 3` (advancing existing entries). If new probes are added, commit the ledger with the round commit.
+
+⚠️ Do NOT run the bare `python3 scripts/probe_dedup_check.py` for this step. The bare form is the design-time recognition SCAN: with no input it reads stdin, and on empty stdin it reports "no names" and exits WITHOUT appending. That foot-gun (NOT an off-by-one; `auto_detect_next_round()`'s latest+1 is correct for the design scan) is why probe names silently failed to enter the ledger for several rounds. The bare form now errors on an interactive TTY; `--append-latest` is the canonical Step 5c invocation. Verify the script with `python3 scripts/probe_dedup_check.py --self-test`.
 
 ### Step 6: Expand Coverage
 

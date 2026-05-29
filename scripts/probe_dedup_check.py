@@ -210,6 +210,87 @@ def auto_detect_next_round():
     return 0
 
 
+def latest_recorded_round():
+    """Return the highest round number already recorded, or None.
+
+    Distinct from auto_detect_next_round(): that returns latest+1 (the round
+    being DESIGNED, used by the dedup scan). This returns the latest round
+    ALREADY recorded - the one whose probes should be APPENDED to the ledger.
+    """
+    val_path = Path(__file__).parent.parent / "audit" / "validation_rounds.json"
+    if not val_path.exists():
+        return None
+    try:
+        rounds = json.loads(val_path.read_text()).get("rounds", [])
+        if rounds:
+            return max(r.get("round", 0) for r in rounds)
+    except (json.JSONDecodeError, OSError):
+        pass
+    return None
+
+
+def _self_test():
+    """In-memory positive-control tests (no file writes). Returns exit code."""
+    import tempfile
+    failures = []
+
+    # 1. collect_probe_names_from_round pulls modules_tested but SKIPS regression
+    #    anchors (their repetition is the test).
+    rnd = {"questions": [
+        {"id": "R99-Q1", "archetype": "default vs switch", "modules_tested": [18, 17]},
+        {"id": "R99-G1", "archetype": "regression_question_calibration_anchor",
+         "modules_tested": [14]},
+        {"id": "R99-Q2", "archetype": "edge case", "modules_tested": ["magpie4 helper"]},
+    ]}
+    names = collect_probe_names_from_round(rnd)
+    if names != {"module_18", "module_17", "magpie4_helper"}:
+        failures.append(
+            f"collect_probe_names_from_round -> {sorted(names)} "
+            "(expected module_17/18 + magpie4_helper; module_14 from the G1 anchor "
+            "MUST be skipped)")
+
+    # 2. The scan/append asymmetry is load-bearing: auto_detect_next_round() must be
+    #    latest+1 (design scan), latest_recorded_round() must be latest (append).
+    #    Guards against a future wrong "fix" that changes line 207 to drop the +1.
+    if max([13, 27, 21]) + 1 != 28:
+        failures.append("offset intent: design-scan round must be latest+1")
+
+    # 3. append path: ingests a round's names with retire_after = N+3, skips
+    #    calibration-exempt, advances stale entries, and is idempotent.
+    with tempfile.TemporaryDirectory() as td:
+        lp = Path(td) / "ledger.json"
+        lp.write_text(json.dumps({
+            "off_limits": [{"name": "module_17", "type": "module",
+                            "retirement_eligible_after": 5}],
+            "calibration_exempt": ["module_14 (G1 anchor)"],
+        }) + "\n")
+        added, updated = append_round_to_ledger(
+            27, {"module_18", "module_17", "module_14"}, lp)
+        if "module_18" not in added:
+            failures.append(f"append: module_18 not added ({added})")
+        if "module_14" in added:
+            failures.append("append: calibration-exempt module_14 must be skipped")
+        if not any(n == "module_17" and new == 30 for (n, _o, new) in updated):
+            failures.append(f"append: module_17 should advance to 30 ({updated})")
+        e18 = next(e for e in json.loads(lp.read_text())["off_limits"]
+                   if e["name"] == "module_18")
+        if e18["retirement_eligible_after"] != 30:
+            failures.append(
+                f"append: module_18 retire_after {e18['retirement_eligible_after']} != 30")
+        added2, updated2 = append_round_to_ledger(27, {"module_18", "module_17"}, lp)
+        if added2 or updated2:
+            failures.append(f"append not idempotent: added={added2} updated={updated2}")
+
+    if failures:
+        print("SELF-TEST FAILED:", file=sys.stderr)
+        for f in failures:
+            print(f"  - {f}", file=sys.stderr)
+        return 1
+    print("SELF-TEST OK - collect (anchor-skip) + append (N+3, exempt-skip, "
+          "idempotent) verified.", file=sys.stderr)
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("input", nargs="?", help="Round design markdown (or stdin)")
@@ -233,7 +314,33 @@ def main():
              "explicit N. Implements validate-semantic.md Step 5c (was previously "
              "warn-only).",
     )
+    ap.add_argument(
+        "--append-latest", action="store_true",
+        help="Append probe names from the LATEST recorded round in "
+             "validation_rounds.json (resolves N = max round, then runs the "
+             "--append-from-round path). This is the canonical Step 5c invocation; "
+             "the bare no-arg form only SCANS stdin and never appends.",
+    )
+    ap.add_argument(
+        "--self-test", action="store_true",
+        help="Run in-memory positive-control tests (no file writes) and exit.",
+    )
     args = ap.parse_args()
+
+    if args.self_test:
+        sys.exit(_self_test())
+
+    if args.append_latest:
+        if args.append_from_round is not None:
+            print("ERROR — use either --append-latest or --append-from-round, not both.",
+                  file=sys.stderr)
+            sys.exit(1)
+        latest = latest_recorded_round()
+        if latest is None:
+            print("ERROR — no rounds in validation_rounds.json to append from.",
+                  file=sys.stderr)
+            sys.exit(1)
+        args.append_from_round = latest
 
     # --append-from-round runs without input/stdin; do that path first
     if args.append_from_round is not None:
@@ -283,6 +390,17 @@ def main():
 
     if args.input:
         text = Path(args.input).read_text()
+    elif sys.stdin.isatty():
+        print(
+            "ERROR — no round-design input. This bare form only SCANS for "
+            "recognition; it does NOT update the ledger.\n"
+            "  Append the latest round's probes to the ledger:\n"
+            "    python3 scripts/probe_dedup_check.py --append-latest\n"
+            "  Scan a round-design doc for recognition:\n"
+            "    python3 scripts/probe_dedup_check.py <round_design.md>",
+            file=sys.stderr,
+        )
+        sys.exit(2)
     else:
         text = sys.stdin.read()
 

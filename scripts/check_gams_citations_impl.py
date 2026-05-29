@@ -332,15 +332,27 @@ def main():
                 if narrowed:
                     mod_candidates = narrowed
                 else:
-                    # Realization hint present but doesn't match any candidate —
-                    # do NOT walk-order rescue; surface as FILE issue.
-                    file_missing += 1
-                    details.append(
-                        f"  FILE: {gms_hint}:{start} (in {doc_short}) — bare hint with "
-                        f"realization '{realization_hint}' but no matching file under "
-                        f"module {mod_num}_*"
-                    )
-                    continue
+                    # The realization hint may actually be a CROSS-MODULE path (e.g.
+                    # "11_costs/default" cited inside module_40.md). Resolve it against
+                    # THAT module before declaring the file missing. Clear the candidate
+                    # lists so the same-module basename fallback below does not overwrite
+                    # the cross-module hit with the doc's-own-module file of the same name.
+                    first_seg = realization_hint.split('/', 1)[0]
+                    if (len(first_seg) > 3 and first_seg[:2].isdigit()
+                            and first_seg[2] == '_'
+                            and os.path.isfile(os.path.join(magpie_root, 'modules', gms_hint))):
+                        actual = os.path.join(magpie_root, 'modules', gms_hint)
+                        candidates = []
+                        mod_candidates = []
+                    else:
+                        # not a resolvable cross-module path; do NOT walk-order rescue.
+                        file_missing += 1
+                        details.append(
+                            f"  FILE: {gms_hint}:{start} (in {doc_short}) — bare hint with "
+                            f"realization '{realization_hint}' but no matching file under "
+                            f"module {mod_num}_* (and not a resolvable cross-module path)"
+                        )
+                        continue
 
             if mod_candidates:
                 actual = mod_candidates[0]

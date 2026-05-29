@@ -57,7 +57,17 @@ HEADER_REAL_RE = re.compile(
 # in multi-path footers (e.g. M18's flexreg_apr16 default body + flexcluster_jul23
 # alternative summary). Now all cited realizations are validated.
 VERIFIED_LINE_RE = re.compile(
-    r'(?:Verified\s+Against|verified\s+against)[:\s\*]+(?P<rest>[^\n]+)'
+    # Footer-ANCHORED (R27 fix): the match must be a line-start label of the form
+    # "[bullet] **Verified Against**: ..." (colon required). Previously this matched
+    # "verified against" ANYWHERE via finditer over the whole doc, so inline prose
+    # ("(verified against GAMS code)", "formulas verified against equations.gms",
+    # and an R27 inline "(verified against modules/11_costs/default/...)" ) was
+    # misread as a footer realization claim — the latter wrongly flagged module_40
+    # as citing realization `default`. Corpus survey: 50 real footers are all
+    # line-start "**Verified Against**:"; 50 inline occurrences are all mid-line.
+    # The line-start + colon-label discriminator keeps the 50 footers and drops the
+    # 50 inline cases. Verify with --self-test.
+    r'(?im)^\s*(?:[-*]\s*)?\*{0,2}\s*Verified\s+Against\s*\*{0,2}\s*:\s*(?P<rest>[^\n]+)'
 )
 PATH_RE = re.compile(
     r'`?(?:\.{1,2}/)?modules/(?P<num>\d+)_(?P<name>[a-z_*]+)/(?P<real>[a-zA-Z][\w]*)/'
@@ -246,11 +256,50 @@ def check_one_module(doc_path, defaults, module_map, verbose=False):
     return findings
 
 
+def _self_test():
+    """Positive control: inline 'verified against' prose must NOT parse as a footer
+    claim; real line-start footers MUST. Returns exit code."""
+    failures = []
+    inline = (
+        "# Module 40\n"
+        "**Source**: `declarations.gms` (verified against GAMS code)\n"
+        "All formulas verified against `equations.gms`.\n"
+        "Usage in Module 11 (verified against `modules/11_costs/default/equations.gms`).\n"
+    )
+    _h, claims = find_realization_claims(inline)
+    if claims:
+        failures.append(f"inline prose parsed as footer claims: {claims}")
+    footer = (
+        "# Module 40\n\n"
+        "**Verified Against**: `../modules/40_transport/gtap_nov12/equations.gms`\n"
+    )
+    _h, claims = find_realization_claims(footer)
+    if claims != [("gtap_nov12", "40", "transport")]:
+        failures.append(f"real footer not parsed: {claims}")
+    footer2 = "**Verified Against:** `modules/11_costs/default/equations.gms`\n"
+    _h, claims = find_realization_claims(footer2)
+    if claims != [("default", "11", "costs")]:
+        failures.append(f"colon-inside-bold footer not parsed: {claims}")
+    if failures:
+        print("SELF-TEST FAILED:", file=sys.stderr)
+        for f in failures:
+            print("  -", f, file=sys.stderr)
+        return 1
+    print("SELF-TEST OK - inline 'verified against' prose ignored; line-start "
+          "footers parsed.", file=sys.stderr)
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--verbose", action="store_true", help="Print info lines for clean modules")
     ap.add_argument("--module", type=int, help="Check only this module number (e.g. 18)")
+    ap.add_argument("--self-test", action="store_true",
+                    help="Run in-memory positive-control tests and exit.")
     args = ap.parse_args()
+
+    if args.self_test:
+        sys.exit(_self_test())
 
     defaults = load_default_realizations()
     module_map = load_module_map()

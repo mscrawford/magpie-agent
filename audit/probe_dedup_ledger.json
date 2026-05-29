@@ -69,11 +69,12 @@
         "round_result"
       ],
       "source_files": [
-        "R21 Q1 (PR #866 bilateral-trade overhaul); 4 mentions"
+        "R21 Q1 (PR #866 bilateral-trade overhaul); 4 mentions",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 24
+      "retirement_eligible_after": 30
     },
     {
       "name": "module_38",
@@ -206,11 +207,12 @@
         "round_result"
       ],
       "source_files": [
-        "conservation; 3 mentions across early rounds"
+        "conservation; 3 mentions across early rounds",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 23
+      "retirement_eligible_after": 30
     },
     {
       "name": "module_58",
@@ -233,11 +235,12 @@
       ],
       "source_files": [
         "demand system R6 (m15_food_demand pair)",
-        "R23 (re-use, Q1 M16 aggregation)"
+        "R23 (re-use, Q1 M16 aggregation)",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 6,
-      "retirement_eligible_after": 26
+      "retirement_eligible_after": 30
     },
     {
       "name": "module_10",
@@ -247,11 +250,12 @@
       ],
       "source_files": [
         "land balance questions",
-        "R25 (auto-appended)"
+        "R25 (auto-appended)",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 28
+      "retirement_eligible_after": 30
     },
     {
       "name": "module_41",
@@ -313,11 +317,12 @@
       ],
       "source_files": [
         "R21 Q1 (trade costs)",
-        "R25 R25 Q3 (q11_cost_reg N-MACC cost chain; Phase 2c sweep test)"
+        "R25 R25 Q3 (q11_cost_reg N-MACC cost chain; Phase 2c sweep test)",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 28
+      "retirement_eligible_after": 30
     },
     {
       "name": "vm_water_available",
@@ -654,11 +659,12 @@
         "round_result"
       ],
       "source_files": [
-        "R23 Q1 (diet→N chain primary)"
+        "R23 Q1 (diet→N chain primary)",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 26
+      "retirement_eligible_after": 30
     },
     {
       "name": "module_17",
@@ -667,11 +673,12 @@
         "round_result"
       ],
       "source_files": [
-        "R23 Q1 (M17 vm_prod_reg aggregation tested); Q5 (M17 used as worked-example subject)"
+        "R23 Q1 (M17 vm_prod_reg aggregation tested); Q5 (M17 used as worked-example subject)",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 26
+      "retirement_eligible_after": 30
     },
     {
       "name": "module_43",
@@ -706,11 +713,12 @@
         "round_result"
       ],
       "source_files": [
-        "R23 Q1 (q50_nr_bal_crp form)"
+        "R23 Q1 (q50_nr_bal_crp form)",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 26
+      "retirement_eligible_after": 30
     },
     {
       "name": "module_51",
@@ -1047,11 +1055,12 @@
         "round_result"
       ],
       "source_files": [
-        "R24 Q4 (simple_apr24 infeasibility + M10/M29 interaction); R25 Q1 (simple_apr24 rotation constraints; Phase 2a sweep test)"
+        "R24 Q4 (simple_apr24 infeasibility + M10/M29 interaction); R25 Q1 (simple_apr24 rotation constraints; Phase 2a sweep test)",
+        "R27 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 24,
-      "retirement_eligible_after": 28
+      "retirement_eligible_after": 30
     },
     {
       "name": "module_18",
@@ -1117,9 +1126,22 @@
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
       "retirement_eligible_after": 30
+    },
+    {
+      "name": "module_70",
+      "type": "module",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R27 (auto-appended)"
+      ],
+      "first_named_at": "2026-05-29",
+      "first_named_round": 27,
+      "retirement_eligible_after": 30
     }
   ],
   "_maintenance_notes": [
-    "2026-05-29 R27: probe_dedup_check.py was a no-op (reported 'round 28'; off-by-one round detection, the previously-documented dead mechanism). Added R27 probe modules 18/53/31/40/20 manually, eligible_after=30. FLAG: fix the script's round detection."
+    "2026-05-29 R27: probe_dedup_check.py Step-5c was a no-op because the documented BARE command takes the design-time SCAN path and reads empty stdin, never appending (NOT an off-by-one; auto_detect_next_round latest+1 is correct for the scan). FIXED: Step-5c now uses --append-latest + a TTY guard + --self-test. Ledger repopulated via --append-latest (added module_70 missed by the initial manual add; advanced spanned modules to eligible_after=30)."
   ]
 }

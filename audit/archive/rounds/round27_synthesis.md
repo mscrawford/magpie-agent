@@ -42,5 +42,5 @@ Two follow-up self-corrections after the first validator re-run: made the new M4
 All unchanged from baseline: `validate_consistency.sh` 39/41 (2 advisories), `check_consumer_attribution.py` 9, `check_units.py` 5 advisory.
 
 ## Bookkeeping notes
-- `probe_dedup_check.py` was a no-op (reported "round 28"; off-by-one round detection - the previously-documented dead mechanism). R27 probe modules 18/53/31/40/20 added to the ledger manually (eligible_after=30). **FLAG: fix the script's round detection.**
+- `probe_dedup_check.py` Step-5c was a no-op: the documented BARE command takes the design-time recognition SCAN path and reads empty stdin, so it never appends (NOT an off-by-one; `auto_detect_next_round()`'s latest+1 is correct for the scan). _Corrected in follow-up implementation_: Step-5c now uses `--append-latest`, plus a TTY foot-gun guard and a `--self-test`; the ledger was repopulated via `--append-latest` (which also added `module_70`, missed by the initial manual add). The R27 probe modules 18/53/31/40/20 were initially added by hand (eligible_after=30).
 - Aggregate-count markers (`<!--count:-->` in AGENT.md + 3 files) NOT refreshed: refreshing requires deploying AGENT.md into the experiment-branch parent repo. Deferred to avoid disturbing the user's parent tree. Current cumulative: 27 rounds, 508 found, 332 fixed.
