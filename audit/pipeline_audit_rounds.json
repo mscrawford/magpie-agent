@@ -900,6 +900,50 @@
       "status": "fixed + mechanized; 8 cluster commits stacked + 1 follow-up + 1 deploy (R6 audit artifacts in bcaffd9, D 45fc771+f24b578, A 86a1c03, C d03eb28, B d00e97c, G 58fc3dc, H e27d9ce, E a365a73, F c3bef94)",
       "notes": "R6 is a deliberately differently-shaped round vs R1-R5: it hunts doc-surface drift (NOT doc<->code fidelity, which R1-R5 saturated). 7 lenses (not 6) decorrelated by method per template_multi_agent_audit. All 4 calibration anchors (CURRENT_STATE.json, helper 2025-07 dates, bootstrap.md '6 commands', AGENT.md size + magpie4 gap) corroborated across multiple lenses \u2014 decorrelation engineering worked. Critical-zero (consistent with R4/R5) but HIGH-16 (up from R5's 6) confirms doc-surface drift produces a different severity profile than doc<->code drift. 70 raw findings -> 58 deduplicated -> 8 root-cause clusters (K=8 vs N=58 ratio ~7x matches R3 precedent). 5 standing decisions resolved with R6 data: 4 actionable recommendations (retire SSOT, mark snapshot, keep archives, prune notes), 1 deferred to Phase 4. Highest-urgency intervention: Cluster D (gitignore + script CWD fix + .bak delete) \u2014 closes a real parent-repo security exposure (parent's origin is the upstream MAgPIE public repo). Highest-leverage architectural intervention: Cluster F (AGENT.md trim + magpie4 fold-in) \u2014 clears Claude's deployed-surface warning + closes the magpie4 workflow gap discovered as broader than R24 originally surfaced (5 scaffold sections, not 1). Standing decision recommendations awaiting user approval before fix phase 0f-0g execution.",
       "fix_phase_notes": "All 8 clusters resolved. Open Questions answered as recommended (B1 drop static dates, F1 replace SESSION CLEANUP with skill pointer, H1 wire Layer 1 validator, G4 hand-write hub footers, E4 keep 6-lens canonical). Standing decisions (i)-(iv) actioned; (v) deferred to Phase 4 design as planned. D6 (parent .gitignore *.cs* tightening to *.cs2/cs3/cs4) DEFERRED \u2014 out of scope for agent-side audit; that lives in upstream MAgPIE .gitignore. F5 (Twin-agent + COMPLETE DOC STRUCTURE further AGENT.md trims) DEFERRED \u2014 both MEDIUM-severity, AGENT.md is below the original 846/46KB but above the 600/40KB target; revisit if signals warrant."
+    },
+    {
+      "round": 7,
+      "date": "2026-05-29",
+      "commit": "717cd78",
+      "auditor_model": "claude-opus-4-8",
+      "round_type": "consolidation-audit",
+      "lenses_run": [
+        "C1-dead-no-op",
+        "C2-redundant-overlapping",
+        "C3-drift-unenforced",
+        "C4-untested-testers",
+        "C5-over-complexity",
+        "C6-coherence-cross-surface"
+      ],
+      "findings_total": 40,
+      "by_severity": {"CRITICAL": 0, "HIGH": 4, "MEDIUM": 19, "LOW": 17},
+      "by_lens": {"C1-dead-no-op": 6, "C2-redundant-overlapping": 5, "C3-drift-unenforced": 7, "C4-untested-testers": 8, "C5-over-complexity": 9, "C6-coherence-cross-surface": 5},
+      "verify_stage": "7 deduped removal/merge candidates adversarially checked (skeptic prompted to REFUTE removal): 5 confirm_safe_to_remove, 2 partial_keep_some. Refuted before applying: Check 18 merge (a synthesized known-bug test proved Check 18/19 catch DISJOINT classes; the overlap header form is used by 0 docs); MANDATE demotion (none fully mechanized -> would drop the answer-time guard); citations.sh deletion (genuine wrapper, not a duplicate).",
+      "corroborated": [
+        {"finding": "pr_*.py trio (~1192 LOC) unwired/deep-shelf, 0 lifetime catches", "lenses": ["C1-dead-no-op", "C5-over-complexity"], "severity": "MEDIUM"},
+        {"finding": "dual .sh/.py GAMS checkers redundant; realizations pair drifted LIVE (61 vs 127), .sh feeding the count ledger", "lenses": ["C1-dead-no-op", "C2-redundant-overlapping", "C4-untested-testers", "C5-over-complexity"], "severity": "HIGH"}
+      ],
+      "root_cause_clusters": [
+        {"cluster": "I1 collapse dual .sh/.py GAMS checkers to one .py", "status": "APPLIED 65f6718"},
+        {"cluster": "I2 remove dead scripts (add_timestamps, pr_* trio, audit/templates)", "status": "APPLIED a3079b7"},
+        {"cluster": "I3 retire the aggregate-count marker system (2 scripts + Check 27 + 14 markers; print_section auto-numbers)", "status": "APPLIED be17620 + 717cd78"},
+        {"cluster": "I4 coherence fixes (MANDATE 16->17, round-ranges, schema 1.2->1.3, R26 status) + hedged-claims FP narrow", "status": "APPLIED d82d50b + 717cd78"},
+        {"cluster": "I5 check-retirements (Checks 1/2/4/6/23/26) + bare-basename advisory silence", "status": "DEFERRED (user; session length)"},
+        {"cluster": "I6 backfill self-tests for 3 surviving load-bearing checks (17 citations, 18 default-real, 14/21 var/doc-var)", "status": "DEFERRED (additive; user)"}
+      ],
+      "report_path": "audit/archive/rounds/pipeline_audit_round7.md",
+      "design_path": "audit/archive/rounds/pipeline_audit_round7_design.md",
+      "guards_added": [],
+      "consolidations_applied": [
+        "deleted 7 scripts (~1900 LOC): check_gams_{equations,realizations,variables}.sh, add_timestamps.py, pr_{doc_impact,mechanical_update,semantic_update}.py, check_marker_staleness.py, refresh_aggregate_counts.py",
+        "removed gate Check 27 (marker staleness); gate 28->27 sections, 4->2 warnings, 0 errors throughout",
+        "print_section auto-numbers from one SECTION_TOTAL var (replaced 28 hardcoded /28 denominators with no self-check)",
+        "retired the count-marker system: 18 markers became live-source pointers / plain prose across 10 docs (incl. AGENT.md, redeployed byte-identical)",
+        "narrowed check_hedged_claims.py HEDGE_RE to high-signal words (15 FPs -> 0; self-test still passes)",
+        "deleted audit/templates/ (5 orphaned stubs) + fixed the false audit/README.md claim"
+      ],
+      "status": "consolidation applied (I1-I4 + AGENT.md batch; 5 local commits 65f6718..717cd78; nothing pushed). I5 retirements + bare-basename silence + I6 self-tests DEFERRED to a follow-up per user.",
+      "notes": "FIRST consolidation-focused round; per-round override of the doc<->code default lens set (see pipeline_audit_round7_design.md). Motivation: the agent accretes machinery faster than it verifies it (feedback_test_the_testers) -- probe_dedup was a multi-round no-op, count markers drifted ~3 rounds, 2 parsers FP'd, all surfaced the same 2026-05-29 session. Standing bias AGAINST adding surface area; every removal carried what_it_protects/who_else_needs_it/blast_radius (feedback_blast_radius_before_infrastructure); a stage-2 adversarial verify refuted 3 candidate removals before they were applied. 40 findings collapsed to 6 root interventions (feedback_synthetic_interventions). scripts/ hot spot tripled by method (C1 static-liveness || C2 static-redundancy || C5 empirical-run). Net: ~7 scripts + ~1900 LOC + 1 gate check + the marker subsystem removed; a live count drift killed; ~900 computed advisory lines/run eliminated. guards_added is empty by design -- a consolidation round removes surface area rather than adding checks."
     }
   ]
 }
