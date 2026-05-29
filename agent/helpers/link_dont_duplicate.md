@@ -23,7 +23,7 @@ Never duplicate these — always link instead:
 | GAMS syntax & patterns | `reference/GAMS_*.md` | `reference/GAMS_MAgPIE_Patterns.md#topic` |
 | Data file sources | `core_docs/Data_Flow.md` | `core_docs/Data_Flow.md#file-name` |
 | Helper / command inventories | `AGENT.md` Auto-Loading + Available Commands tables | (do NOT duplicate; link only) |
-| Aggregate counts (rounds, bugs, helpers, commands, etc.) | `<!--count:KEY-->N<!--/count-->` markers fed from `scripts/refresh_aggregate_counts.py` | wrap the literal in the marker |
+| Aggregate counts (rounds, bugs, checks, etc.) | `audit/validation_rounds.json.cumulative_stats`; the validator prints its own live check count | cite the live source; do NOT freeze the number in prose (R7 retired the `<!--count:-->` marker system) |
 
 ## When to Link vs When to Duplicate
 

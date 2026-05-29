@@ -26,7 +26,7 @@ A **realization** is one of several alternative implementations of a MAgPIE modu
 
 **Key fact**: Many modules (24 of 46) have only 1 realization. Behavioral variation comes from **switches** (`s*`, `c*` scalars) within that realization, not from swapping realizations. Always check switches before assuming you need a different realization.
 
-**Statistics**: <!--count:module_docs_validated-->46<!--/count--> modules total, <!--count:gams_realizations_verified-->87<!--/count--> active realizations, <!--count:n_modules_multi_realization-->40<!--/count--> modules with multiple realizations.
+**Statistics**: 46 modules total; 40 of them have multiple realizations (see `config/default.cfg` for the active realization per module).
 
 ## How to Switch Realizations
 

@@ -12,7 +12,7 @@
 ./scripts/validate_consistency.sh
 ```
 
-The script runs **<!--count:validator_main_checks-->26<!--/count--> top-level checks (<!--count:validator_sub_checks-->40<!--/count--> sub-checks total)** across these categories:
+The script runs **a suite of top-level structural checks (each with sub-checks)** across these categories (the run's `=== Summary ===` prints the live counts):
 
 1. **Dependency counts** — Same counts across files (Modules 10, 11, 17)
 2. **Equation parameters** — Consistent descriptions
@@ -52,5 +52,5 @@ The script generates a timestamped report file — delete it after reviewing.
 
 ## See Also
 
-- `scripts/validate_consistency.sh` — Script source (<!--count:validator_main_checks-->26<!--/count--> checks)
+- `scripts/validate_consistency.sh` — Script source (run it to see the live check list)
 - `AGENT.md` — Document precedence hierarchy and link rules

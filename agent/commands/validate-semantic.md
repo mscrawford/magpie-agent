@@ -16,7 +16,7 @@ The semantic validation flywheel generates expert questions, answers them from d
 GENERATE → ANSWER (Sonnet) → AUDIT (Opus) → SYNTHESIZE → IMPROVE → EXPAND
 ```
 
-**Baseline**: See `audit/validation_rounds.json.cumulative_stats` for current totals (<!--count:total_rounds-->24<!--/count--> rounds, <!--count:total_docs_validated-->85<!--/count--> docs validated, <!--count:total_bugs_found-->474<!--/count--> bugs found, <!--count:total_bugs_fixed-->314<!--/count--> fixed as of last update). Authoritative trend is the `mean_score_trend` field in that file — do not duplicate it here (would drift).
+**Baseline**: See `audit/validation_rounds.json.cumulative_stats` for current totals (rounds, docs validated, bugs found and fixed). The authoritative trend is the `mean_score_trend` field in that file; do not duplicate it here (it would drift).
 
 ---
 
@@ -172,7 +172,7 @@ After fixing, run `bash scripts/validate_consistency.sh` to ensure no syntactic 
 
 ### Step 5b: Record Results
 
-**MANDATORY**: Append results to `audit/validation_rounds.json` (schema v<!--count:validation_schema_version-->1.3<!--/count-->; latest entries describe G3/G4 magpie4 regression questions). This is the persistent record for tracking quality over time. Include:
+**MANDATORY**: Append results to `audit/validation_rounds.json` (use the `schema_version` recorded in that file's `metadata`; bump it there if the entry structure changes). This is the persistent record for tracking quality over time. Include:
 - Round number, date, commit hashes (before/after)
 - Per-question: topic, modules tested, score, bug counts by severity
 - **Regression questions section**: score the round's regression questions (rotate across G1-G4 per `regression_questions` top-level array; minimum 1 per round). Set `drift_observed=true` if any answer drifted from the expected_answer_summary. Append round number to `used_in_rounds` for each used. For G3 (magpie4 version pin), the auditor must read `project/version_pins.json` directly to compute the expected version/SHA — do NOT score against a hardcoded version, the pin advances when upstream renv.lock updates.

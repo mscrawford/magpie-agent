@@ -18,7 +18,7 @@
 
 Decorrelation is engineered, not hoped for. Give N sub-agents the identical prompt and their blind spots correlate — you get N near-identical audits, N-1 of them redundant. So each agent gets a distinct **lens** = a failure mode + a method + a ground-truth anchor.
 
-The **proven hot spot for magpie-agent is doc↔code drift** (<!--count:total_bugs_found-->474<!--/count--> catalogued bugs across <!--count:total_rounds-->24<!--/count--> flywheel rounds as of <!--count:last_validation_date-->2026-05-24<!--/count-->, mostly doc-vs-GAMS mismatches; see `audit/validation_rounds.json.cumulative_stats` for current totals). Lenses 1 and 2 double on this with deliberately decorrelated methods (doc-first code-reading vs code-first empirical grep), which fail differently.
+The **proven hot spot for magpie-agent is doc↔code drift** (the largest catalogued bug class across the flywheel rounds, mostly doc-vs-GAMS mismatches; see `audit/validation_rounds.json.cumulative_stats` for current totals). Lenses 1 and 2 double on this with deliberately decorrelated methods (doc-first code-reading vs code-first empirical grep), which fail differently.
 
 Lens 5 is magpie-specific — it replaces preproc-agent's R→GAMS-boundary lens, which has no analog here. Instead it audits the rich cross-document consistency surface (module↔module cross-references, cross_module/*.md vs underlying modules, Module_Dependencies.md aggregate counts vs grep).
 

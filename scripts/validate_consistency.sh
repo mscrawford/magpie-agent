@@ -64,9 +64,15 @@ check_error() {
     log_color "${RED}❌ $1${NC}" "❌ $1"
 }
 
+# Section labels auto-number from SECTION_NUM; SECTION_TOTAL is the SINGLE place
+# the denominator lives (R7: replaced the 28 hardcoded "/28" literals, which had
+# no self-check and drifted). The legacy first arg ("N/M") is now ignored.
+SECTION_NUM=0
+SECTION_TOTAL=27
 print_section() {
+    SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
-    log_color "${BLUE}[$1] $2${NC}" "[$1] $2"
+    log_color "${BLUE}[$SECTION_NUM/$SECTION_TOTAL] $2${NC}" "[$SECTION_NUM/$SECTION_TOTAL] $2"
 }
 
 # Start report
@@ -997,26 +1003,7 @@ else
     check_warning "Unit checker not found: $UNITS_SCRIPT"
 fi
 
-print_section "27/28" "Checking aggregate-count marker staleness (advisory)..."
-
-MARKER_SCRIPT="$AGENT_DIR/scripts/check_marker_staleness.py"
-if [ -f "$MARKER_SCRIPT" ]; then
-    MARKER_OUTPUT=$(python3 "$MARKER_SCRIPT" 2>&1)
-    MARKER_COUNT=$(echo "$MARKER_OUTPUT" | grep -oE "[0-9]+ stale aggregate" | grep -oE "[0-9]+" | head -1)
-    [ -z "$MARKER_COUNT" ] && MARKER_COUNT=0
-    if [ "$MARKER_COUNT" = "0" ]; then
-        check_pass "Aggregate-count markers (stable keys) current"
-    else
-        # Advisory: refreshing rewrites AGENT.md (-> parent redeploy), so this never
-        # blocks. Remediate with refresh_aggregate_counts.py (--exclude-agent-md to
-        # leave the parent untouched).
-        check_warning "$MARKER_COUNT stale aggregate-count marker(s) vs cumulative_stats (advisory; run scripts/refresh_aggregate_counts.py)"
-    fi
-else
-    check_warning "Marker-staleness checker not found: $MARKER_SCRIPT"
-fi
-
-print_section "28/28" "Checking hedged-as-fact claims on interface-identifier lines (advisory)..."
+print_section "" "Checking hedged-as-fact claims on interface-identifier lines (advisory)..."
 
 HEDGED_SCRIPT="$AGENT_DIR/scripts/check_hedged_claims.py"
 if [ -f "$HEDGED_SCRIPT" ]; then
