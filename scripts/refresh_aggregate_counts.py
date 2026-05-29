@@ -207,14 +207,14 @@ def run_live_counts() -> dict[str, str]:
         out["gams_variables_verified"] = n
 
     # GAMS equations
-    out_text = run(["bash", str(SCRIPT_DIR / "check_gams_equations.sh")])
+    out_text = run(["python3", str(SCRIPT_DIR / "check_gams_equations.py"), "--summary-only"])
     n = parse_int(out_text, r"\((\d+)/\d+ unique equations\)")
     if n:
         out["gams_equations_verified"] = n
 
-    # GAMS realizations
-    out_text = run(["bash", str(SCRIPT_DIR / "check_gams_realizations.sh")])
-    n = parse_int(out_text, r"\((\d+)/\d+ references\)")
+    # GAMS realizations (module-scoped .py: output is "(61/127 references; module-scoped check)")
+    out_text = run(["python3", str(SCRIPT_DIR / "check_gams_realizations.py"), "--summary-only"])
+    n = parse_int(out_text, r"(\d+)/\d+ references")
     if n:
         out["gams_realizations_verified"] = n
 

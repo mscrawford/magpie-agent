@@ -72,7 +72,7 @@ but wrong prefix. The prefix carries semantic meaning (scope + type) that
 requires checking declarations.gms.
 
 **Prevention**:
-- ✅ Automated: `scripts/check_gams_variables.sh` (Check 14 in validator)
+- ✅ Automated: `scripts/check_gams_variables.py` (Check 14 in validator)
 - 📝 Manual: When writing variable names, verify prefix against declarations.gms
 - 🧠 Rule: If unsure, check `modules/{N}_{name}/*/declarations.gms`
 
@@ -191,7 +191,7 @@ keywords with date suffixes. The verification footer was never actually verified
 - `../modules/38_*/fixed_nov23/*.gms` → actual: `sticky_feb18`
 - `../modules/73_*/static_jan21/*.gms` → actual: `default`
 
-**Prevention**: ✅ Automated — Check 16 (check_gams_realizations.sh)
+**Prevention**: ✅ Automated — Check 16 (check_gams_realizations.py)
 
 **Root cause insight**: This is a variation of **hallucination**, but specifically in
 metadata/footer sections that receive less human review than main content. 12 of 15
@@ -210,7 +210,7 @@ meant to prove the document was verified.
 **Why it happens**: AI constructs plausible equation names from context (cost + tc → q11_cost_tc)
 rather than looking up the actual declaration. Similar to Pattern 2 but for equations instead of variables.
 
-**Prevention**: ✅ Automated — Check 15 (check_gams_equations.sh)
+**Prevention**: ✅ Automated — Check 15 (check_gams_equations.py)
 
 ### Pattern 10: Stale File:Line Citations
 

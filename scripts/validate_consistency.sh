@@ -694,19 +694,16 @@ fi
 # ==========================================
 print_section "15/28" "Checking GAMS equation names in docs..."
 
-# C1: prefer Python version (40x faster); fall back to bash if missing.
+# Python implementation (the check_gams_equations.sh twin was removed in R7).
 EQ_CHECK_PY="$AGENT_DIR/scripts/check_gams_equations.py"
-EQ_CHECK_SH="$AGENT_DIR/scripts/check_gams_equations.sh"
 if [ -f "$EQ_CHECK_PY" ]; then
     if EQ_OUTPUT=$(python3 "$EQ_CHECK_PY" --summary-only 2>&1); then EQ_EXIT=0; else EQ_EXIT=$?; fi
-elif [ -x "$EQ_CHECK_SH" ]; then
-    if EQ_OUTPUT=$("$EQ_CHECK_SH" 2>&1); then EQ_EXIT=0; else EQ_EXIT=$?; fi
 else
     EQ_OUTPUT=""
     EQ_EXIT=127
 fi
 if [ "$EQ_EXIT" = "127" ]; then
-    check_warning "GAMS equation checker not found (looked for .py and .sh)"
+    check_warning "GAMS equation checker not found ($EQ_CHECK_PY)"
 elif [ "$EQ_EXIT" -eq 0 ]; then
     EQ_ACCURACY=$(echo "$EQ_OUTPUT" | grep "Accuracy:" | head -1)
     check_pass "GAMS equation names verified: $EQ_ACCURACY"
@@ -722,22 +719,19 @@ fi
 # =============================================
 print_section "16/28" "Checking GAMS realization names in docs..."
 
-# C1: prefer Python version (10x faster); fall back to bash if missing.
+# Python implementation (the check_gams_realizations.sh twin was removed in R7).
 # (Note: this is Check 16's "GAMS realization names in docs" check — separate
 # from Check 19's check_module_realizations.py which validates header/footer
 # alignment against config/default.cfg.)
 REAL_CHECK_PY="$AGENT_DIR/scripts/check_gams_realizations.py"
-REAL_CHECK_SH="$AGENT_DIR/scripts/check_gams_realizations.sh"
 if [ -f "$REAL_CHECK_PY" ]; then
     if REAL_OUTPUT=$(python3 "$REAL_CHECK_PY" --summary-only 2>&1); then REAL_EXIT=0; else REAL_EXIT=$?; fi
-elif [ -x "$REAL_CHECK_SH" ]; then
-    if REAL_OUTPUT=$("$REAL_CHECK_SH" 2>&1); then REAL_EXIT=0; else REAL_EXIT=$?; fi
 else
     REAL_OUTPUT=""
     REAL_EXIT=127
 fi
 if [ "$REAL_EXIT" = "127" ]; then
-    check_warning "GAMS realization checker not found (looked for .py and .sh)"
+    check_warning "GAMS realization checker not found ($REAL_CHECK_PY)"
 elif [ "$REAL_EXIT" -eq 0 ]; then
     REAL_ACCURACY=$(echo "$REAL_OUTPUT" | grep "Accuracy:" | head -1)
     check_pass "GAMS realization names verified: $REAL_ACCURACY"

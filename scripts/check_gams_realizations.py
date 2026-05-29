@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check 16 (Python rewrite of check_gams_realizations.sh).
+"""Check 16: GAMS realization name verification (docs).
 
 Validates realization names cited in AI documentation against actual
 realization subdirectories under `../modules/NN_name/`. Builds the directory

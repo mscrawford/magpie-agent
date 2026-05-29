@@ -107,9 +107,9 @@ These are NOT preferences. They are evidence-derived rules. Violating them silen
 <!-- check-gams-vars: allow vm_water_available, vm_water_demand, pcm_AEI -->
 **Worked example** (R3, 2026-03-07): the agent invented `vm_water_available`, `vm_water_demand`, `pcm_AEI` — combining MAgPIE naming conventions (vm_ for interface, water domain, AEI = Area Equipped for Irrigation). None exist. The actual variables are different.
 
-**Verification**: `bash scripts/check_gams_variables.sh` after writing; it greps for every backtick-quoted variable name against the actual declarations.
+**Verification**: `python3 scripts/check_gams_variables.py` after writing; it greps for every backtick-quoted variable name against the actual declarations.
 
-**Verified by**: `scripts/check_gams_variables.py` (Python; bash wrapper preserved) — backtick-quoted vm_/pm_/v<N>_/p<N>_/s<N>_/f<N>_/i<N>_/pcm_/c<N>_/cm_/sm_ names only (R2 follow-up extended the prefix coverage). **Gap**: unbacktiked prose names (~82% of references) are NOT checked.
+**Verified by**: `scripts/check_gams_variables.py` (Python) — backtick-quoted vm_/pm_/v<N>_/p<N>_/s<N>_/f<N>_/i<N>_/pcm_/c<N>_/cm_/sm_ names only (R2 follow-up extended the prefix coverage). **Gap**: unbacktiked prose names (~82% of references) are NOT checked.
 
 **Per-doc allowlist marker**: legitimate placeholders that can't be resolved at validation time (e.g., MACC type-templated names like `f57_maccs_<type>`, or external references not yet committed) can be exempted with an HTML comment marker placed anywhere in the doc:
 ```html
@@ -130,9 +130,9 @@ Use sparingly — every allowlist entry is a verification escape hatch. The mark
 
 **Worked example**: agents have invented `fbask_aug21` for livestock (does NOT exist — only `fbask_jan16` and `fbask_jan16_sticky` exist; default is `fbask_jan16`), `croparea_nov24` for croparea (does NOT exist — only `simple_apr24` and `detail_apr24` exist). They have also confused `agr_sector_aug13` with `all_sectors_aug13` for water_demand — both are real but only `all_sectors_aug13` is default. Cascading bugs follow because non-default realizations have different equations.
 
-**Verification**: `bash scripts/check_gams_realizations.sh` greps backtick-quoted realization names against the actual directory listings. The realization regex matches month-format names only (e.g., `fbask_aug21`); non-month names (`default`, `static`, `off`, `nlp_ipopt`, `bii_target`) are NOT extracted by the regex.
+**Verification**: `python3 scripts/check_gams_realizations.py` greps backtick-quoted realization names against the actual directory listings. The realization regex matches month-format names only (e.g., `fbask_aug21`); non-month names (`default`, `static`, `off`, `nlp_ipopt`, `bii_target`) are NOT extracted by the regex.
 
-**Verified by**: `scripts/check_gams_realizations.sh` (month-format names only) + `scripts/check_module_realizations.py` (post-R1: cross-references each module doc's claimed realization against config/default.cfg + verifies the directory exists, covering both month and non-month names).
+**Verified by**: `scripts/check_gams_realizations.py` (month-format names only) + `scripts/check_module_realizations.py` (post-R1: cross-references each module doc's claimed realization against config/default.cfg + verifies the directory exists, covering both month and non-month names).
 
 ---
 
@@ -206,7 +206,7 @@ Enumerate EVERY consumer in the documentation.
 
 **Worked example** (R20, 2026-04-20, Major): when `pm_carbon_density_*_ac_uncalib` was introduced, the doc listed only M29 (tree cover) as a consumer. Actually consumed by M32 (afforestation) and NDC at `modules/29_cropland/detail_apr24/presolve.gms:59,61,68` as well. A user refactoring the parameter would have missed two modules.
 
-**Verified by**: human review (no mechanical guard for consumer-set completeness; partially mitigated by `scripts/check_gams_variables.sh` flagging cross-module variable mentions).
+**Verified by**: human review (no mechanical guard for consumer-set completeness; partially mitigated by `scripts/check_gams_variables.py` flagging cross-module variable mentions).
 
 ---
 
@@ -214,7 +214,7 @@ Enumerate EVERY consumer in the documentation.
 
 **Trigger**: referring to a variable, equation, or parameter that has been renamed (historical context).
 
-**Rule**: For deprecated names, use `*italics*` (NOT backticks). The GAMS variable and equation checkers (`scripts/check_gams_variables.sh`, `scripts/check_gams_equations.sh`) match backtick-wrapped names against current GAMS code. Sentences like ``"renamed from `old_name`"`` flag forever as missing.
+**Rule**: For deprecated names, use `*italics*` (NOT backticks). The GAMS variable and equation checkers (`scripts/check_gams_variables.py`, `scripts/check_gams_equations.py`) match backtick-wrapped names against current GAMS code. Sentences like ``"renamed from `old_name`"`` flag forever as missing.
 
 **Convention**:
 - Current name: `` `new_name` `` (backticks)
@@ -222,7 +222,7 @@ Enumerate EVERY consumer in the documentation.
 
 **Example**: "formerly `*pm_timber_yield*`, now `` `im_growing_stock` ``"
 
-**Verified by**: `scripts/check_gams_variables.sh` indirectly — italicized names are not checked (escape from the backtick-pattern regex). Italicizing a CURRENT variable name (stylistic mistake) escapes detection; partial coverage gap (R1 audit Cluster 4).
+**Verified by**: `scripts/check_gams_variables.py` indirectly — italicized names are not checked (escape from the backtick-pattern regex). Italicizing a CURRENT variable name (stylistic mistake) escapes detection; partial coverage gap (R1 audit Cluster 4).
 
 ---
 
@@ -236,12 +236,12 @@ Enumerate EVERY consumer in the documentation.
 ```bash
 grep -rn "<old_name>" modules/module_*.md
 # fix all hits
-bash scripts/check_gams_variables.sh  # confirm zero stale references
+python3 scripts/check_gams_variables.py  # confirm zero stale references
 ```
 
 **Worked example** (R20 post-sync): 10 stale backtick references survived a global rename because the rename only touched the formal "Variables" sections of module docs; advisory text and footers retained the old name. Running the variable checker after the global grep is what catches the remainder.
 
-**Verified by**: `scripts/check_gams_variables.sh` (post-rename: zero stale backtick references must remain).
+**Verified by**: `scripts/check_gams_variables.py` (post-rename: zero stale backtick references must remain).
 
 ---
 

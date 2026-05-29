@@ -101,7 +101,7 @@ When a variable/scalar/parameter is renamed (e.g., `pm_timber_yield` → `im_gro
 ```bash
 grep -rn "<old_name>" modules/module_*.md
 ```
-Update ALL occurrences, then verify with `scripts/check_gams_variables.sh`. R20 post-pull had 10 stale references across 5 files because the first-pass doc update missed them.
+Update ALL occurrences, then verify with `python3 scripts/check_gams_variables.py`. R20 post-pull had 10 stale references across 5 files because the first-pass doc update missed them.
 
 **Rule 3 — USE ITALICS (not backticks) for deprecated names in historical context.**
 The GAMS variable checker matches backtick-wrapped names. When writing "formerly named X" or "previously called X" sentences for deprecated parameters, wrap the deprecated name in `*italics*` rather than `` `backticks` `` so the checker only flags genuinely-orphaned current-tense references. Example:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check 14 (Python rewrite of check_gams_variables.sh).
+"""Check 14: GAMS variable name verification.
 
 Validates GAMS variable names cited in AI documentation against the actual
 GAMS codebase. Single-pass index build + O(1) set lookup replaces the bash
@@ -25,7 +25,7 @@ MAGPIE_DIR = AGENT_DIR.parent
 
 DOCS_DIR = AGENT_DIR / "modules"
 
-# Same regexes as the bash version (kept in lockstep with check_gams_variables.sh).
+# Interface / numbered / scalar GAMS identifier regexes.
 GAMS_INTERFACE_RE = re.compile(
     r"\b(?:vm_|pm_|fm_|im_|pcm_|ic_|ov_|oq_|sm_|cm_)[a-zA-Z0-9_]+[a-zA-Z0-9]"
 )

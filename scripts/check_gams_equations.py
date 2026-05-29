@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check 15 (Python rewrite of check_gams_equations.sh).
+"""Check 15: GAMS equation name verification.
 
 Validates GAMS equation-name references (`q\\d+_*` shape) in AI documentation
 against actual equation names in the GAMS codebase. Single-pass index build +

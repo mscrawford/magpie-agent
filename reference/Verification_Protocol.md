@@ -84,7 +84,7 @@ Check that all GAMS variable names in the documentation are correct:
 
 ```bash
 # Run automated checker for a specific module
-scripts/check_gams_variables.sh --module XX
+python3 scripts/check_gams_variables.py --module XX
 ```
 
 **Common error patterns** (see `core_docs/Bug_Taxonomy.md`):

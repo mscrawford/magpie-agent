@@ -111,15 +111,15 @@ The 14 patterns in `core_docs/Bug_Taxonomy.md` are restated here as scoring cate
 
 | # | Class | Severity tendency | Detection |
 |---|---|---|---|
-| 1 | GAMS prefix confusion | Major | `scripts/check_gams_variables.sh` |
-| 2 | Hallucinated variable name | Critical | `scripts/check_gams_variables.sh` |
+| 1 | GAMS prefix confusion | Major | `scripts/check_gams_variables.py` |
+| 2 | Hallucinated variable name | Critical | `scripts/check_gams_variables.py` |
 | 3 | Suffix truncation | Major | Manual review |
 | 4 | Conceptual pseudo-code | Major | Manual review |
-| 5 | Stale reference after rename | Minor | `scripts/check_gams_variables.sh` post-rename grep |
+| 5 | Stale reference after rename | Minor | `scripts/check_gams_variables.py` post-rename grep |
 | 6 | Hardcoded counts drift | Major | `scripts/validate_consistency.sh` Check 1 |
 | 7 | Broken cross-reference | Minor | `scripts/validate_consistency.sh` Check 8 |
-| 8 | Stale realization name (footer) | Minor | `scripts/check_gams_realizations.sh` |
-| 9 | Wrong equation name | Major | `scripts/check_gams_equations.sh` |
+| 8 | Stale realization name (footer) | Minor | `scripts/check_gams_realizations.py` |
+| 9 | Wrong equation name | Major | `scripts/check_gams_equations.py` |
 | 10 | Stale file:line citation | Major | `scripts/check_gams_citations.sh` |
 | 11 | Wrong GAMS filename | Major | Manual review |
 | 12 | Content-level citation mismatch | Major | Manual review (verifier candidate) |
