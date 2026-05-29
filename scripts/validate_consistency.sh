@@ -84,7 +84,7 @@ cd "$AGENT_DIR"
 # ===========================
 # Check 1: Dependency Counts
 # ===========================
-print_section "1/24" "Checking dependency counts..."
+print_section "1/28" "Checking dependency counts..."
 
 # R5 2026-05-24: Fixed vacuous-pass bug — `echo "" | wc -l` returns 1, so
 # empty grep results were being reported as "1 consistent count" with no
@@ -155,7 +155,7 @@ fi
 # =====================================
 # Check 2: Equation Parameter Counts
 # =====================================
-print_section "2/24" "Checking equation parameters..."
+print_section "2/28" "Checking equation parameters..."
 
 # Chapman-Richards parameters
 CR_PARAMS=$(grep -r "Chapman-Richards\|Chapman Richards" \
@@ -199,7 +199,7 @@ fi
 # ============================
 # Check 3: Cross-References
 # ============================
-print_section "3/24" "Checking cross-references..."
+print_section "3/28" "Checking cross-references..."
 
 # Extract module references (pattern: module_XX.md)
 MODULE_REFS=$(grep -r "module_[0-9][0-9]\.md\|module_[0-9][0-9]_notes\.md" \
@@ -267,7 +267,7 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/24" "Checking duplicate equations..."
+print_section "4/28" "Checking duplicate equations..."
 
 # Check for common equations mentioned in multiple places
 # q70_feed
@@ -292,7 +292,7 @@ log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overvie
 # =================================
 # Check 5: Entry Point Consistency
 # =================================
-print_section "5/24" "Checking entry point consistency..."
+print_section "5/28" "Checking entry point consistency..."
 
 # README should point to the live audit-state files (was CURRENT_STATE.json
 # pre-R6; that file was retired and relocated to project/archive/ by R25).
@@ -333,7 +333,7 @@ fi
 # =======================
 # Check 6: File Counts
 # =======================
-print_section "6/24" "Checking file counts..."
+print_section "6/28" "Checking file counts..."
 
 # Count module docs
 MODULE_COUNT=$(ls -1 modules/module_*.md 2>/dev/null | grep -v "_notes" | wc -l | tr -d ' ')
@@ -370,7 +370,7 @@ fi
 # ==========================================
 # Check 7: Convention Linter (stale formats)
 # ==========================================
-print_section "7/24" "Checking naming conventions..."
+print_section "7/28" "Checking naming conventions..."
 
 # Scan for stale "command: X" format in active files (excluding trigger descriptions and archives)
 STALE_CMD_COUNT=0
@@ -451,7 +451,7 @@ fi
 # ==============================================
 # Check 8: Markdown Link Validator (key files)
 # ==============================================
-print_section "8/24" "Checking markdown link targets..."
+print_section "8/28" "Checking markdown link targets..."
 
 BROKEN_LINKS=0
 
@@ -504,7 +504,7 @@ fi
 # ==============================================
 # Check 9: Trigger Keyword Sync
 # ==============================================
-print_section "9/24" "Checking helper trigger keyword sync..."
+print_section "9/28" "Checking helper trigger keyword sync..."
 
 TRIGGER_ISSUES=0
 
@@ -552,7 +552,7 @@ fi
 # =============================================
 # Check 10: AGENT.md Deployment Freshness
 # =============================================
-print_section "10/24" "Checking AGENT.md deployment..."
+print_section "10/28" "Checking AGENT.md deployment..."
 
 DEPLOY_OK=0
 DEPLOY_FAIL=0
@@ -588,7 +588,7 @@ fi
 # =============================================
 # Check 11: Anti-Hardcoding Guard
 # =============================================
-print_section "11/24" "Checking for hardcoded values in mechanism files..."
+print_section "11/28" "Checking for hardcoded values in mechanism files..."
 
 HARDCODED_ISSUES=0
 
@@ -614,7 +614,7 @@ fi
 # ================================================
 # Check 12: Path prefix check (magpie-agent/)
 # ================================================
-print_section "12/24" "Checking for stale path prefixes..."
+print_section "12/28" "Checking for stale path prefixes..."
 
 # Files inside magpie-agent/ should not use magpie-agent/ as a path prefix
 # (since the working directory IS magpie-agent/, this creates double-nesting)
@@ -645,7 +645,7 @@ fi
 # ================================================
 # Check 13: Unclosed code blocks
 # ================================================
-print_section "13/24" "Checking for unclosed code blocks..."
+print_section "13/28" "Checking for unclosed code blocks..."
 
 UNCLOSED=0
 for f in $(find . -name "*.md" -not -path "./.git/*" -not -path "./reference/archive/*" -not -path "./audit/archive/*"); do
@@ -664,7 +664,7 @@ fi
 
 # Check 14: GAMS Variable Name Verification
 # ==========================================
-print_section "14/24" "Checking GAMS variable names in docs..."
+print_section "14/28" "Checking GAMS variable names in docs..."
 
 GAMS_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_variables.py"
 if [ -f "$GAMS_CHECK_SCRIPT" ]; then
@@ -692,7 +692,7 @@ fi
 
 # Check 15: GAMS Equation Name Verification
 # ==========================================
-print_section "15/24" "Checking GAMS equation names in docs..."
+print_section "15/28" "Checking GAMS equation names in docs..."
 
 # C1: prefer Python version (40x faster); fall back to bash if missing.
 EQ_CHECK_PY="$AGENT_DIR/scripts/check_gams_equations.py"
@@ -720,7 +720,7 @@ fi
 
 # Check 16: GAMS Realization Name Verification
 # =============================================
-print_section "16/24" "Checking GAMS realization names in docs..."
+print_section "16/28" "Checking GAMS realization names in docs..."
 
 # C1: prefer Python version (10x faster); fall back to bash if missing.
 # (Note: this is Check 16's "GAMS realization names in docs" check — separate
@@ -751,7 +751,7 @@ fi
 
 # Check 17: File:Line Citation Verification
 # ==========================================
-print_section "17/24" "Checking file:line citations in docs..."
+print_section "17/28" "Checking file:line citations in docs..."
 
 CIT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_gams_citations.sh"
 if [ -x "$CIT_CHECK_SCRIPT" ]; then
@@ -772,7 +772,7 @@ fi
 
 # Check 18: Default Realization Cross-Reference
 # ==============================================
-print_section "18/24" "Checking default realization labels against config/default.cfg..."
+print_section "18/28" "Checking default realization labels against config/default.cfg..."
 
 DEFAULT_CHECK_SCRIPT="$AGENT_DIR/scripts/check_default_realizations.py"
 if [ -f "$DEFAULT_CHECK_SCRIPT" ]; then
@@ -793,7 +793,7 @@ fi
 
 # Check 19: Realization-Validity (header + footer cross-reference)
 # =================================================================
-print_section "19/24" "Checking module-doc realization validity (header + Verified Against footer)..."
+print_section "19/28" "Checking module-doc realization validity (header + Verified Against footer)..."
 
 REAL_CHECK_SCRIPT="$AGENT_DIR/scripts/check_module_realizations.py"
 if [ -f "$REAL_CHECK_SCRIPT" ]; then
@@ -818,7 +818,7 @@ fi
 
 # Check 20: Parameter default values (Pattern 13)
 # ===============================================
-print_section "20/24" "Checking parameter default values against source (Pattern 13)..."
+print_section "20/28" "Checking parameter default values against source (Pattern 13)..."
 
 PARAM_DEFAULT_SCRIPT="$AGENT_DIR/scripts/check_param_defaults.py"
 if [ -f "$PARAM_DEFAULT_SCRIPT" ]; then
@@ -847,7 +847,7 @@ fi
 # Catches fabricated [vmps]\d*_<name> tokens in cross_module/ and core_docs/.
 # Complements Check 14 (which scans modules/module_*.md).
 # ===============================================
-print_section "21/24" "Checking identifier existence in cross-cutting docs..."
+print_section "21/28" "Checking identifier existence in cross-cutting docs..."
 
 DOC_VAR_EXIST_SCRIPT="$AGENT_DIR/scripts/check_doc_var_existence.py"
 if [ -f "$DOC_VAR_EXIST_SCRIPT" ]; then
@@ -877,7 +877,7 @@ fi
 # Module_Dependencies, and modification_safety_guide, recompute the actual
 # consumer count from .gms sources and flag mismatches. Advisory mode.
 # ===============================================
-print_section "22/24" "Checking consumer-count attribution against GAMS source..."
+print_section "22/28" "Checking consumer-count attribution against GAMS source..."
 
 CONSUMER_CHECK_SCRIPT="$AGENT_DIR/scripts/check_consumer_attribution.py"
 if [ -f "$CONSUMER_CHECK_SCRIPT" ]; then
@@ -908,7 +908,7 @@ fi
 # dimensions (set-alias normalized). Catches rename stragglers like the M14
 # pcm_tau h→j drift. Advisory mode (variants are usually legitimate context).
 # ===============================================
-print_section "23/24" "Checking multi-section dimension consistency..."
+print_section "23/28" "Checking multi-section dimension consistency..."
 
 CONSISTENCY_SCRIPT="$AGENT_DIR/scripts/check_multi_section_consistency.py"
 if [ -f "$CONSISTENCY_SCRIPT" ]; then
@@ -937,7 +937,7 @@ fi
 # was renamed in MAgPIE before the doc was last edited" — the M14 pcm_tau
 # straggler class.
 # ===============================================
-print_section "24/25" "Checking historical-rename references..."
+print_section "24/28" "Checking historical-rename references..."
 
 RENAMES_CHECK_SCRIPT="$AGENT_DIR/scripts/check_renames.py"
 if [ -f "$RENAMES_CHECK_SCRIPT" ]; then
@@ -968,7 +968,7 @@ fi
 # Migration was applied 2026-05-24 via scripts/migrate_bare_cites.py.
 # Pedagogical examples can opt out via per-doc or per-line allow markers.
 # ===============================================
-print_section "25/26" "Checking for bare-basename .gms citations in non-module docs..."
+print_section "25/28" "Checking for bare-basename .gms citations in non-module docs..."
 
 BARE_CITES_SCRIPT="$AGENT_DIR/scripts/check_no_bare_cites.py"
 if [ -f "$BARE_CITES_SCRIPT" ]; then
@@ -986,7 +986,7 @@ else
     check_warning "Bare-cite checker not found: $BARE_CITES_SCRIPT"
 fi
 
-print_section "26/26" "Checking doc unit claims vs declarations.gms canonical units (advisory)..."
+print_section "26/28" "Checking doc unit claims vs declarations.gms canonical units (advisory)..."
 
 UNITS_SCRIPT="$AGENT_DIR/scripts/check_units.py"
 if [ -f "$UNITS_SCRIPT" ]; then
@@ -1001,6 +1001,42 @@ if [ -f "$UNITS_SCRIPT" ]; then
     fi
 else
     check_warning "Unit checker not found: $UNITS_SCRIPT"
+fi
+
+print_section "27/28" "Checking aggregate-count marker staleness (advisory)..."
+
+MARKER_SCRIPT="$AGENT_DIR/scripts/check_marker_staleness.py"
+if [ -f "$MARKER_SCRIPT" ]; then
+    MARKER_OUTPUT=$(python3 "$MARKER_SCRIPT" 2>&1)
+    MARKER_COUNT=$(echo "$MARKER_OUTPUT" | grep -oE "[0-9]+ stale aggregate" | grep -oE "[0-9]+" | head -1)
+    [ -z "$MARKER_COUNT" ] && MARKER_COUNT=0
+    if [ "$MARKER_COUNT" = "0" ]; then
+        check_pass "Aggregate-count markers (stable keys) current"
+    else
+        # Advisory: refreshing rewrites AGENT.md (-> parent redeploy), so this never
+        # blocks. Remediate with refresh_aggregate_counts.py (--exclude-agent-md to
+        # leave the parent untouched).
+        check_warning "$MARKER_COUNT stale aggregate-count marker(s) vs cumulative_stats (advisory; run scripts/refresh_aggregate_counts.py)"
+    fi
+else
+    check_warning "Marker-staleness checker not found: $MARKER_SCRIPT"
+fi
+
+print_section "28/28" "Checking hedged-as-fact claims on interface-identifier lines (advisory)..."
+
+HEDGED_SCRIPT="$AGENT_DIR/scripts/check_hedged_claims.py"
+if [ -f "$HEDGED_SCRIPT" ]; then
+    HEDGED_OUTPUT=$(python3 "$HEDGED_SCRIPT" 2>&1)
+    HEDGED_COUNT=$(echo "$HEDGED_OUTPUT" | grep -oE "ADVISORY: [0-9]+ hedged" | grep -oE "[0-9]+" | head -1)
+    [ -z "$HEDGED_COUNT" ] && HEDGED_COUNT=0
+    if [ "$HEDGED_COUNT" = "0" ]; then
+        check_pass "No hedged-as-fact claims on interface-identifier lines"
+    else
+        # Advisory: a hedge near an identifier is sometimes legitimate honest marking.
+        check_warning "$HEDGED_COUNT hedged-as-fact claim(s) on interface-identifier lines (advisory; run scripts/check_hedged_claims.py)"
+    fi
+else
+    check_warning "Hedged-claims checker not found: $HEDGED_SCRIPT"
 fi
 
 # ============

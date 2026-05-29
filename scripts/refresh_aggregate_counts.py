@@ -22,6 +22,11 @@ Usage:
     python3 scripts/refresh_aggregate_counts.py            # update files
     python3 scripts/refresh_aggregate_counts.py --dry-run  # print diffs only
     python3 scripts/refresh_aggregate_counts.py --list     # show known keys
+    python3 scripts/refresh_aggregate_counts.py --exclude-agent-md  # skip AGENT.md
+                                                          # (refresh only non-deployed
+                                                          #  docs; avoids forcing a
+                                                          #  parent ../AGENT.md+CLAUDE.md
+                                                          #  redeploy mid-work)
 """
 
 from __future__ import annotations
@@ -245,6 +250,7 @@ def apply_markers(text: str, counts: dict[str, str]) -> tuple[str, list[tuple[st
 def main() -> int:
     dry_run = "--dry-run" in sys.argv
     show_list = "--list" in sys.argv
+    exclude_agent = "--exclude-agent-md" in sys.argv
 
     counts = load_canonical_counts()
 
@@ -258,7 +264,11 @@ def main() -> int:
     total_changes = 0
     unknown_keys: set[str] = set()
 
-    for path in TARGET_FILES:
+    files = TARGET_FILES
+    if exclude_agent:
+        files = [p for p in TARGET_FILES if p.name != "AGENT.md"]
+        print("(--exclude-agent-md: skipping AGENT.md to avoid a parent redeploy)")
+    for path in files:
         if not path.is_file():
             continue
         original = path.read_text()

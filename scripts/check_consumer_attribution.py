@@ -598,10 +598,159 @@ def scan_prose_omissions(
     return findings
 
 
+# Pattern D3 (2026-05-29): MULTI-LINE producer/populator attribution. Pattern D is
+# line-anchored and consumer-direction, so it misses the G2 class where a populator
+# claim ("... populate `vm_carbon_stock`") has its module-number list on PRECEDING
+# bullet/prose lines. POPULATOR_VERB_RE is the producer-direction trigger set Pattern D
+# lacks ("populate" was the exact verb in the G2 doc bug).
+# Narrowed to 'populate' (the producer-direction verb in the actual G2 doc bug).
+# 'provide/compute/calculate/contribute' are too generic - they appear in
+# consumer-direction and unrelated prose and produced ~30 corpus false positives in
+# testing (e.g. vm_dem_food "provides", pm_interest). 'populate(s|d)', with the variable
+# as its object, is specific to producer attribution and is what the G2 doc bug used.
+POPULATOR_VERB_RE = re.compile(r"\b(populates?|populated)\b", re.IGNORECASE)
+_BACKTICK_SPAN_RE = re.compile(r"`([^`]+)`")
+_ID_TOKEN_RE = re.compile(r"[a-zA-Z][a-zA-Z0-9_]+")
+_POPULATOR_HISTORICAL_RE = re.compile(
+    r"\b(earlier wording|previously listed|prior wording|before fix|stale wording|"
+    r"correction|misattributed|R\d+ audit|R\d+ correction|removed in R\d+|"
+    r"does not populate|not a populator|separate)\b",
+    re.IGNORECASE,
+)
+
+
+def _backticked_interface_vars(line: str) -> set[str]:
+    out: set[str] = set()
+    for span in _BACKTICK_SPAN_RE.findall(line):
+        for tok in _ID_TOKEN_RE.findall(span):
+            base = strip_dims(tok)
+            if is_interface_var(base):
+                out.add(base)
+    return out
+
+
+def scan_populator_claims(
+    text: str,
+    rel_path: str,
+    producers: dict[str, str],
+    consumers: dict[str, set[str]],
+    window: int = 8,
+) -> list[tuple[str, int, str, str, str]]:
+    """Pattern D3 — multi-line producer/populator attribution (G2 class).
+
+    On a line carrying a populator verb AND a backticked interface var, scan a tight
+    backward window (stops at a heading or a 2+ blank-line gap) for `Module NN` /
+    `Name (NN)` numbers. Require >= 2 module numbers (a list, where G2 lived) to
+    reduce single-stray-number FPs. Flag any listed module that does NOT reference
+    the variable in any *.gms (phantom populator - the G2 M58-peatland error). Skips
+    the producer and historical-correction text. Advisory.
+
+    Returns (file, lineno, var, module_num, module_label).
+    """
+    findings: list[tuple[str, int, str, str, str]] = []
+    lines = text.splitlines()
+    num_to_dir: dict[str, str] = {}
+    seen: set[str] = set()
+    for dirs in consumers.values():
+        seen.update(dirs)
+    for d in producers.values():
+        if d:
+            seen.add(d)
+    for d in seen:
+        if "_" in d and d.split("_", 1)[0].isdigit():
+            num_to_dir[d.split("_", 1)[0]] = d
+
+    for i, line in enumerate(lines):
+        if not POPULATOR_VERB_RE.search(line) or _POPULATOR_HISTORICAL_RE.search(line):
+            continue
+        vars_here = {v for v in _backticked_interface_vars(line) if v in consumers}
+        if not vars_here:
+            continue
+        # backward window: collect module numbers, stop at heading / 2+ blank gap
+        win = [(i + 1, line)]
+        blanks = 0
+        for j in range(i - 1, max(-1, i - 1 - window), -1):
+            lj = lines[j]
+            if lj.strip().startswith("#"):
+                break
+            if not lj.strip():
+                blanks += 1
+                if blanks >= 2:
+                    break
+                continue
+            blanks = 0
+            win.append((j + 1, lj))
+        nums: dict[str, int] = {}
+        for ln_no, lj in win:
+            if _POPULATOR_HISTORICAL_RE.search(lj):
+                continue
+            for m in PROSE_MODULE_BARE_RE.finditer(lj):
+                nums.setdefault(m.group(1), ln_no)
+            for m in PROSE_MODULE_NUM_RE.finditer(lj):
+                nums.setdefault(m.group(2), ln_no)
+        if len(nums) < 2:  # require a list; single strays are too FP-prone
+            continue
+        for var in sorted(vars_here):
+            producer_dir = producers.get(var) or ""
+            for num, src_ln in sorted(nums.items()):
+                d = num_to_dir.get(num)
+                if not d or d == producer_dir:
+                    continue
+                if d not in consumers.get(var, set()):
+                    label = d.split("_", 1)[1] if "_" in d else d
+                    findings.append((rel_path, src_ln, var, num, label))
+    return findings
+
+
+def _self_test() -> int:
+    """Positive control for Pattern D3 with synthetic maps (no codebase needed)."""
+    failures = []
+    producers = {"vm_carbon_stock": "56_ghg_policy"}
+    consumers = {
+        "vm_carbon_stock": {"29_cropland", "31_past", "32_forestry", "34_urban",
+                            "35_natveg", "59_som", "52_carbon", "56_ghg_policy"},
+        "vm_carbon_stock_croparea": {"30_croparea", "29_cropland"},
+        "vm_peat": {"58_peatland"},
+    }
+    buggy = (
+        "- **Module 30 (Crop):** Cropland carbon\n"
+        "- **Module 31 (Pasture):** Pasture carbon\n"
+        "- **Module 58 (Peatland):** Peatland carbon\n"
+        "\n"
+        "All populate `vm_carbon_stock` interface variable.\n"
+    )
+    nums = {h[3] for h in scan_populator_claims(buggy, "module_56.md", producers, consumers)}
+    if "58" not in nums:
+        failures.append(f"did not flag phantom M58 populator (got {sorted(nums)})")
+    if "30" not in nums:
+        failures.append(f"did not flag M30 (populates vm_carbon_stock_croparea, not vm_carbon_stock) (got {sorted(nums)})")
+    if "31" in nums:
+        failures.append("wrongly flagged M31 (a real populator)")
+    good = (
+        "- **Module 29 (Cropland):** crop carbon\n"
+        "- **Module 31 (Pasture):** pasture carbon\n"
+        "\n"
+        "All populate `vm_carbon_stock`.\n"
+    )
+    if scan_populator_claims(good, "x.md", producers, consumers):
+        failures.append("flagged a correct populator list (false positive)")
+    if failures:
+        print("SELF-TEST FAILED:", file=sys.stderr)
+        for f in failures:
+            print("  -", f, file=sys.stderr)
+        return 1
+    print("SELF-TEST OK - Pattern D3 flags phantom/wrong populators across lines; "
+          "clean lists pass.", file=sys.stderr)
+    return 0
+
+
 def main() -> int:
     args = sys.argv[1:]
     summary_only = "--summary-only" in args
     verbose = "--verbose" in args
+
+    if "--self-test" in args:
+        return _self_test()
 
     if not (MAGPIE_DIR / "main.gms").is_file() or not (MAGPIE_DIR / "modules").is_dir():
         print(f"⚠️  GAMS codebase not found at {MAGPIE_DIR} - skipping consumer-attribution check")
@@ -646,6 +795,7 @@ def main() -> int:
     # Pattern D2 — prose omissions (R25 Phase 1 follow-up). Negative-evidence:
     # producer-side doc lists consumers but omits a real consumer.
     omission_findings: list[tuple[str, int, str, str, str, str]] = []
+    populator_findings: list[tuple[str, int, str, str, str]] = []
     for doc in scopes:
         if not doc.is_file():
             continue
@@ -653,6 +803,7 @@ def main() -> int:
         rel = str(doc.relative_to(AGENT_DIR))
         prose_findings.extend(scan_prose_attribution(text, rel, producers, consumers))
         omission_findings.extend(scan_prose_omissions(text, rel, producers, consumers))
+        populator_findings.extend(scan_populator_claims(text, rel, producers, consumers))
 
     # Triage findings
     mismatches: list[tuple[str, int, str, int, int, str]] = []  # expected non-None and != claimed
@@ -746,6 +897,24 @@ def main() -> int:
                 print(f"  ... and {len(omission_findings) - 30} more")
     else:
         print("✅ Pattern D2 omission check: no obvious consumer omissions detected")
+
+    # Pattern D3 output (2026-05-29): multi-line producer/populator attribution.
+    print()
+    if populator_findings:
+        uniq = sorted(set(populator_findings))
+        print(f"⚠️  Pattern D3 populator attribution: {len(uniq)} listed populator(s) with NO grep-hit on the variable:")
+        if summary_only:
+            from collections import Counter
+            counts = Counter((f[0], f[2], f[3]) for f in uniq)
+            for (doc, var, num), n in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:15]:
+                print(f"  {doc}  `{var}` lists M{num} as populator ({n} line{'s' if n > 1 else ''})")
+        else:
+            for path, lineno, var, num, label in uniq[:30]:
+                print(f"  {path}:{lineno}  `{var}` lists M{num} ({label}) as a populator but M{num}_* has no grep-hit")
+            if len(uniq) > 30:
+                print(f"  ... and {len(uniq) - 30} more")
+    else:
+        print("✅ Pattern D3 populator attribution: no phantom populators detected")
 
     # Advisory exit: always 0. Mismatches surface via output text.
     return 0
