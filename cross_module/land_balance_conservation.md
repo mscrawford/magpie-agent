@@ -225,7 +225,7 @@ q10_transition_to(j2,land_to) ..
 - `vm_land(j,land)` → To ALL land modules (most shared variable in MAgPIE)
 - `vm_lu_transitions(j,land_from,land_to)` → To modules needing transition info
 - `vm_landexpansion(j,land)` → To modules 35, 39, 58, 59
-- `vm_landreduction(j,land)` → To modules 35, 39, 58, 59
+- `vm_landreduction(j,land)` → To modules 39, 58 (NOT 35/59 — they consume only `vm_landexpansion`)
 
 **Centrality**: **17 connections** (2 inputs, 15 outputs) - **Highest in MAgPIE**
 

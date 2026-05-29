@@ -96,7 +96,7 @@ Start by relaxing the most likely constraint (based on marginals) and re-run.
 
 ## Built-In Slack Variables (Safety Valves)
 
-MAgPIE has 13 slack variables with high penalty costs. When they activate, the model "pays" a huge cost to relax a constraint. **Non-zero slack = constraint strain.**
+MAgPIE has several slack variables with high penalty costs. When they activate, the model "pays" a huge cost to relax a constraint. **Non-zero slack = constraint strain.** The table below lists the main high-penalty safety valves; it is not exhaustive (e.g. `v32_ndc_area_missing`, `v29_treecover_missing`, `v30_betr_missing`, and the CES relaxation `v38_relax_CES_lp` also exist).
 
 | Slack Variable | Module | Penalty | What it relaxes |
 |---|---|---|---|

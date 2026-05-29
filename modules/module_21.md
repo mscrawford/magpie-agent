@@ -124,7 +124,7 @@ q21_notrade(h2,k_notrade)..
 
 **Purpose**: Enforces superregional self-sufficiency for non-tradable commodities (production can be reallocated among regions within a super-region `h2`; this is NOT strict per-region self-sufficiency)
 
-**Applies To**: 8 commodities in `k_notrade` (oilpalm, foddr, pasture, residues, begr, betr)
+**Applies To**: 8 commodities in `k_notrade` (oilpalm, foddr, pasture, res_cereals, res_fibrous, res_nonfibrous, begr, betr) (`modules/21_trade/selfsuff_reduced/sets.gms:12`)
 
 ---
 

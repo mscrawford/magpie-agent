@@ -312,10 +312,10 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 | **71_disagg_lvst** | vm_land (1) | Livestock disaggregation |
 | **80_optimization** | vm_land (1) | Objective function |
 
-**Critical Consumers of `vm_land`** (11 modules total):
-- 11_costs, 14_yields, 22_land_conservation, 29_cropland, 30_croparea
-- 31_past, 32_forestry, 34_urban, 35_natveg, 39_landconversion, 50_nr_soil_budget
-- 58_peatland, 59_som, 71_disagg_lvst, 80_optimization
+**Direct consumers of `vm_land`** (10 modules — authoritative list in `cross_module/modification_safety_guide.md:54-55`):
+- 22_land_conservation, 29_cropland, 30_croparea, 31_past, 32_forestry, 34_urban, 35_natveg, 50_nr_soil_budget, 58_peatland, 59_som
+
+`11_costs` consumes `vm_cost_land_transition`, and `39_landconversion` consumes `vm_landexpansion`/`vm_landreduction` — NOT `vm_land` itself. `13_tc`/`14_yields`/`44_biodiversity`/`56_ghg_policy`/`71_disagg_lvst`/`80_optimization` are affected only indirectly via other Module-10 interface variables (see the 18-module union in the safety guide). Verified: 11/14/39/71/80 contain zero `vm_land(` references in any `.gms` file (origin/develop ee98739fd).
 
 **Why vm_land is So Critical**: It's the fundamental spatial allocation that determines:
 - How much land available for production
@@ -341,7 +341,7 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 ✅ **3. Calculates Expansion and Reduction** (`equations.gms:30-38`)
 - Expansion = land gained from other types
 - Reduction = land lost to other types
-- Used by modules 35, 39, 58, 59 for impacts
+- `vm_landexpansion` used by modules 35, 39, 58, 59; `vm_landreduction` by modules 39, 58 (35 and 59 do not consume reduction)
 
 ✅ **4. Applies Transition Restrictions** (`presolve.gms:10-23`)
 - **No plantation forestry on primary forest** (`vm_lu_transitions.fx(j,"primforest","forestry") = 0`)

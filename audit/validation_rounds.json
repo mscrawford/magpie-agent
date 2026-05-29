@@ -48,7 +48,8 @@
         23,
         25,
         26,
-        27
+        27,
+        29
       ],
       "drift_observed": false
     },
@@ -71,7 +72,8 @@
         23,
         25,
         26,
-        27
+        27,
+        29
       ],
       "drift_observed": false,
       "r26_note": "Drifted at R26 (populator-list recurrence). Doc root-cause fixed in R26 (module_56.md + module_52.md -> 29/31/32/34/35/59); expect recovery next re-measure.",
@@ -4010,15 +4012,236 @@
           "notes": "First exercise since R24. Verified vs .cache/sources/magpie4/R/getReport.R @ a360d8c9ec: flat unconditional tryList, NO control arg, NO grepl gating, 106 unique report* / 117 call lines (11 diff = 9 multi-arg fns), tryList block 62-181, file 235 lines. Info = answerer relied on helper rather than opening the pinned file (values correct, tagged Documented). Latent-doc check: helper correctly states 106 and retires stale 108 -> NO doc bug. No drift."
         }
       ]
+    },
+    {
+      "round": 29,
+      "date": "2026-05-29",
+      "commit_before": "ad5ca54",
+      "commit_after": "pending (R29 doc fixes recorded together with this round entry)",
+      "answerer_model": "claude-sonnet-4-6 (Agent model:sonnet, magpie-helper)",
+      "auditor_model": "claude-opus-4-8 (Agent model:opus, general-purpose)",
+      "type": "targeted",
+      "scope": "Autonomous run (user away, delegated; nothing pushed). Targeted at the LEAST-RELIABLE non-module docs (chosen by agent: scored lowest on first validation -- cross-module conservation R7=6.9, helpers R11=7.6 incl debugging_infeasibility 5/10 -- and ~3 months un-revalidated while module docs were the R14-28 focus). 5 probes: land/water/nitrogen-food conservation (cross_module/), modification-safety guide (cross_module/), infeasibility-debugging helper + regression anchors G1+G2 (rotated back from R28's G3/G4). Develop-drift NOT the driver (only M21+M32 code changed since 2026-05-11 sync, both dedup-locked). Verification source = clean origin/develop worktree /tmp/magpie-develop-r29 (ee98739fd).",
+      "summary": {
+        "total_bugs_reported_by_auditors": 17,
+        "auditor_false_positives_withdrawn": 0,
+        "total_bugs_net": 17,
+        "bugs_by_severity": {
+          "critical": 1,
+          "major": 2,
+          "minor": 12,
+          "informational": 2
+        },
+        "bugs_by_root_cause": {
+          "doc_error": 5,
+          "doc_error_answerer_beat_it": 2,
+          "answerer_confabulation": 9,
+          "ambiguous": 1
+        },
+        "mean_score": 7.9,
+        "doc_quality_mean": 7.8,
+        "n_questions_doc_quality": 5,
+        "doc_quality_mean_method": "Raw mean=(7+8+8+6+8+10+8)/7=7.86~7.9. doc_quality excludes Q2 (8; answerer citation only, docs clean) and Q7/G2 (8; answerer citation-range only, docs clean); keeps Q1/Q3/Q4/Q5 (doc_error or latent) + Q6/G1 (clean): (7+8+6+8+10)/5=7.8.",
+        "score_range": [
+          6,
+          10
+        ],
+        "regression_anchors": {
+          "G1": {
+            "score": 10.0,
+            "drift_observed": false,
+            "trend": "Stable R22/23/25/26/27/29 = 10.0. managementcalib_aug19 + 2 equations, verbatim."
+          },
+          "G2": {
+            "score": 8.0,
+            "drift_observed": false,
+            "trend": "HOLDS R27 recovery (was 7@R26, 9@R27, 8@R29). Declaration site + populator set correct; the 2 Minor are answerer citation-range imprecision, NOT doc/populator drift. No regression."
+          }
+        },
+        "gate_summary": "No numeric gate. Mean 7.9 vs R28's 8.4 -- CONFIRMS the targeting hypothesis: non-module docs are less reliable than the saturated module docs. The real finds were cross-module CONSUMER-ATTRIBUTION errors (Pattern D / R20-anchor class): module_10.md's vm_land consumer list wrong (Q4, score 6 -- lowest), and the vm_landreduction attribution wrong in 2 docs (Q1). All fixed. The historically-worst helper (debugging_infeasibility, R11 5/10) is much improved -- all named slack vars now exist -- with only a stale count fixed.",
+        "bugs_fixed_this_session": 5,
+        "bugs_fixed_detail": "(1) module_10.md:315-318 'Critical Consumers of vm_land' -- removed 11/14/39/71/80 (verified 0 vm_land( refs in any .gms), corrected count, listed the safety-guide's verified 10 + SSOT pointer. (2) module_10.md:344 -- split the bundled expansion/reduction attribution (expansion {35,39,58,59}; reduction {39,58}). (3) cross_module/land_balance_conservation.md:228 -- vm_landreduction {35,39,58,59}->{39,58}. (4) agent/helpers/debugging_infeasibility.md:99 -- removed the unverified '13 slack variables' (>=9 exist; neither 13 nor the auditor's '6' verified), named the extra slack vars, marked the table non-exhaustive. (5) module_21.md:127 -- k_notrade expanded to all 8 members + sets.gms:12 cite (applied by the Q3 auditor mid-audit; independently verified + kept).",
+        "bugs_deferred": 4,
+        "not_fixed_detail": "DEFERRED (need a focused pass, risk of new error if rushed): (a) module_10.md:295-313 PROVIDES-TO table rows that list vm_land for 14/71/80 (the 'provides to' vs 'consumes' semantics need careful per-module reconciliation against Module_Dependencies.md). (b) land_balance_conservation.md:207 primforest->other causal gloss (Q1-B2, ambiguous). (c) debugging_infeasibility.md slack-variable table completeness (could add v29_treecover_missing/v30_betr_missing/v32_ndc_area_missing/v38_relax_CES_lp rows -- needs penalty/module verification). (d) Q5-DOC2 v29 penalty-is-settable nuance. No doc fix needed for the answerer-confabulation Minors (Q2 x2, Q4-B2/B3, Q5-B1/B2/B3, Q7 x2): docs verified correct.",
+        "validators": "validate_consistency.sh 40/42 (2 pre-existing advisory unit warnings) -- UNCHANGED from baseline before and after fixes; no regression.",
+        "run_context": "Autonomous interactive run 2026-05-29 ~18:00-19:00 Berlin (after the M21 follow-up commit ad5ca54). User delegated; commits LOCAL ONLY, nothing pushed. Verification = clean detached origin/develop worktree (ee98739fd). IMPORTANT METHOD NOTE: consumer attribution required OPEN-PAREN greps (vm_land( not vm_land) -- substring greps gave false positives (vm_landreduction matched vm_landreduction_forestry; M32 wrongly appeared as a reduction consumer). Both the DOCS and the Opus AUDITORS were imprecise on the exact consumer sets; the orchestrator re-verified every attribution against develop before editing. Aggregate-count markers: N/A (R7 consolidation retired them).",
+        "highlights": [
+          "Hypothesis confirmed: mean dropped 8.4 (R28 module docs) -> 7.9 (R29 non-module docs); the cross-module CONSUMER-ATTRIBUTION docs are the genuine weak spot.",
+          "Found + fixed the R20-anchor-class bug recurring in cross-module docs: module_10.md listed 15 vm_land consumers ('11 total') incl 5 modules with ZERO vm_land refs; corrected to the safety-guide's verified 10.",
+          "vm_landreduction attribution corrected in 2 docs ({35,39,58,59}->{39,58}); even the auditors mis-stated this -- only open-paren grep against develop settled it.",
+          "debugging_infeasibility.md (R11's worst doc, 5/10) is much healthier: every named slack var/switch now EXISTS; only a stale aggregate count remained.",
+          "G1 stable (10), G2 holds its R27 recovery (8, no drift). The OFF-default and conservation-law spines were all correct.",
+          "Process note: a Q3 auditor agent overstepped and edited module_21.md:127 itself; the edit was correct + isolated, independently re-verified and kept, but auditors should audit, not mutate docs."
+        ]
+      },
+      "questions": [
+        {
+          "id": "R29-Q1",
+          "archetype": "conservation law",
+          "modules_tested": [
+            10,
+            29,
+            30,
+            31,
+            32,
+            34,
+            35,
+            59
+          ],
+          "question": "How does MAgPIE enforce conservation of total land area, and what prevents double-counting when land moves between uses? Exact constraint, variable(s), transition matrix, which pools, is land lost/created?",
+          "score": 7,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 1,
+          "bugs_informational": 0,
+          "phase_gate": "Spine correct: q10_land_area =e= strict equality (eq:13-15), q10_transition_to/from row/column interlock, off-diagonal q10_landexpansion/reduction, 7-pool set, net-not-gross. No invented names.",
+          "notes": "R29-Q1-B1 Major doc_error: land_balance_conservation.md:228 + module_10.md:344 over-claimed vm_landreduction consumers as {35,39,58,59}; verified (open-paren grep, develop) reduction=consumers {39,58}, expansion={35,39,58,59}. FIXED both. R29-Q1-B2 Minor ambiguous: primforest->other causal gloss (land_balance_conservation.md:207) not fully code-grounded -- DEFERRED.",
+          "doc_errors_latent": [
+            "land_balance_conservation.md:228 + module_10.md:344 vm_landreduction attribution (Major) -- FIXED to {39,58}."
+          ]
+        },
+        {
+          "id": "R29-Q2",
+          "archetype": "conservation law",
+          "modules_tested": [
+            42,
+            43,
+            41
+          ],
+          "question": "How does MAgPIE balance water supply and demand? Equality or inequality+buffer? Constraint equation(s), supply/demand vars, default sectors, unused water?",
+          "score": 8,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 2,
+          "bugs_informational": 0,
+          "phase_gate": "Excellent: q43_water =l= inequality, v43_watavail (surface-only default), vm_watdem 5 sectors (ag endogenous q42_water_demand, 3 exo, ecosystem), and the FOSSIL-GROUNDWATER infeasibility buffer (presolve.gms:14-16, x1.01, watdem_exo only, ag has no buffer) all verified exact. water_balance_conservation.md is code-consistent on every load-bearing point.",
+          "notes": "Both Minor = answerer_confabulation (citation imprecision, docs CLEAN): config cite line 1317->1319 (adjacent comment); module.gms path one dir level off. EXCLUDED from doc_quality_mean."
+        },
+        {
+          "id": "R29-Q3",
+          "archetype": "conservation + supply=demand",
+          "modules_tested": [
+            15,
+            16,
+            17,
+            21,
+            50,
+            51
+          ],
+          "question": "(a) Which module/equation enforces food/material supply>=demand? (b) Cropland soil-N budget equation, inputs/outputs, and how surplus N becomes emissions?",
+          "score": 8,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 2,
+          "bugs_informational": 0,
+          "phase_gate": "All load-bearing verified: q15_food_demand (15:10-14), q16_supply_crops =e=, q21_trade_glo =g= (binding global supply>=demand) + q21_notrade superregional, q17_prod_reg; q50_nr_bal_crp =g= (50:14-16), inputs/withdrawals/surplus, M51 NUE-rescaled emission eqs, vm_emissions_reg. nitrogen_food_balance.md code-consistent on load-bearing claims.",
+          "notes": "Minor (answer, doc-rooted) Q3-B2: 'residues' collapsed 3 k_notrade members; root = module_21.md:127. Q3-L1 latent: module_21.md:127 said '8 commodities' but listed 6 umbrella names -- FIXED (expanded to all 8 + sets.gms:12 cite) [NOTE: applied by the Q3 auditor agent mid-audit; independently verified correct + isolated, kept].",
+          "doc_errors_latent": [
+            "module_21.md:127 k_notrade list (8 claimed, 6 listed) -- FIXED."
+          ]
+        },
+        {
+          "id": "R29-Q4",
+          "archetype": "safety / modification impact",
+          "modules_tested": [
+            10,
+            29,
+            31,
+            32,
+            35,
+            50
+          ],
+          "question": "Which modules are highest-centrality/riskiest to modify? For ONE, what breaks downstream if its main interface variable changed -- name the interface var and its ACTUAL consumer modules/equations.",
+          "score": 6,
+          "bugs_found": 4,
+          "bugs_critical": 0,
+          "bugs_major": 1,
+          "bugs_minor": 2,
+          "bugs_informational": 0,
+          "phase_gate": "Core ask verified: the 6 primary vm_land consumer equations (q29_cropland, q31_prod, q35_land_secdforest/other, q32_land, q50_nr_inputs_pasture) all read vm_land at the cited file:line. Lowest score of the round -- non-module consumer-attribution is the weak spot.",
+          "notes": "R29-Q4-B1 Major doc_error(inherited): answer claimed M71+M80 are vm_land consumers; verified ZERO vm_land( refs in 71/80 (any .gms). Root = module_10.md:312-318. R29-Q4-B2/B3 Minor answerer_confabulation: pm_land_start provenance + wrong-module cite; vm_land decl line :14 vs :19.",
+          "doc_errors_latent": [
+            "Q4-D1 (Critical by future-reader harm, doc_error): module_10.md:315-318 'Critical Consumers of vm_land (11 modules total)' listed 15 modules incl 11/14/39/71/80 (verified 0 vm_land refs). FIXED: corrected to the safety-guide's verified 10 direct consumers {22,29,30,31,32,34,35,50,58,59} + count + SSOT pointer."
+          ]
+        },
+        {
+          "id": "R29-Q5",
+          "archetype": "edge case / failure mode",
+          "modules_tested": [
+            10,
+            21,
+            29,
+            32,
+            43,
+            44,
+            60,
+            73
+          ],
+          "question": "Most common causes of MAgPIE infeasibility, how to diagnose/fix. Name the constraint/variable/switch per cause. Are there slack variables, which equations/modules?",
+          "score": 8,
+          "bugs_found": 3,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 2,
+          "bugs_informational": 1,
+          "phase_gate": "R11 fabricated-slack failure mode REMEDIATED: all 6 named slack vars + 2 switches EXIST with exact names in default realizations (v73_prod_heaven_timber, v44_bii_missing, v32_land_missing, v32_ndc_area_missing, v21_import_for_feasibility, v29_fallow_missing; s56_cprice_red_factor, s32_free_land_cost). Constraint claims (q10 =e=, q43 ag-unbuffered, q21_notrade, q60 hard floor, no food slack, p80_modelstat) all verified.",
+          "notes": "R29-Q5-B1/B2 Minor answerer: v21_import_for_feasibility index k_notrade->k_trade; q60_bioenergy_reg(h2,k_trade)->(i2). B3 Info: M73 cite range off-by-8.",
+          "doc_errors_latent": [
+            "Q5-DOC1 (Minor, doc_error_answerer_beat_it): debugging_infeasibility.md:99 said '13 slack variables' but table lists 5; verified >=9 slack/relaxation vars exist (incl v38_relax_CES_lp, v29_treecover_missing, v30_betr_missing). FIXED: removed the unverified '13', named the extra vars, marked the table non-exhaustive (avoided asserting a new exact count). Q5-DOC2 (Info): v29 penalty $615 is settable via s29_fallow_penalty -- noted, not changed."
+          ]
+        },
+        {
+          "id": "R29-G1",
+          "archetype": "regression_question_calibration_anchor",
+          "modules_tested": [
+            14
+          ],
+          "question": "What is the default realization of module 14 (yields)? List the equations defined in its equations.gms.",
+          "score": 10,
+          "bugs_found": 0,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 0,
+          "bugs_informational": 0,
+          "drift_observed": false,
+          "notes": "Anchor stable: managementcalib_aug19, exactly 2 equations q14_yield_crop (14-16) + q14_yield_past (35-39), no phantom q14_yieldcalib. Verified verbatim vs develop. R22/23/25/26/27/29 all 10.0. No drift."
+        },
+        {
+          "id": "R29-G2",
+          "archetype": "regression_question_calibration_anchor",
+          "modules_tested": [
+            52,
+            56,
+            29,
+            31,
+            32,
+            34,
+            35,
+            59
+          ],
+          "question": "Walk through how vm_carbon_stock is computed in Module 52 and where it enters the GHG-policy cost in Module 56. Cite equations and file:line.",
+          "score": 8,
+          "bugs_found": 2,
+          "bugs_critical": 0,
+          "bugs_major": 0,
+          "bugs_minor": 2,
+          "bugs_informational": 0,
+          "drift_observed": false,
+          "notes": "Anchor HOLDS its R27 recovery (no regression). Declaration site (M56 price_aug22/declarations.gms:34) correct; populator set {29,31,32,34,35,59} correct (answer's 7-module refinement incl M30 croparea-helper is a correct elaboration); M52 reader q52_emis_co2_actual + M56 chain all exact; default c56_carbon_stock_pricing=actualNoAcEst. 2 Minor = answerer citation-range imprecision (emis_land set range under-covers members; im_pollutant_prices range overshoots EOF) -- docs CLEAN, EXCLUDED from doc_quality_mean."
+        }
+      ]
     }
   ],
   "cumulative_stats": {
-    "total_rounds": 28,
+    "total_rounds": 29,
     "total_docs_validated": 85,
     "module_docs_validated": 46,
     "non_module_docs_validated": 33,
-    "total_bugs_found": 520,
-    "total_bugs_fixed": 336,
+    "total_bugs_found": 537,
+    "total_bugs_fixed": 341,
     "validator_checks": 28,
     "validator_sub_checks": 43,
     "gams_variables_verified": 953,
@@ -4026,6 +4249,6 @@
     "gams_realizations_verified": 75,
     "file_line_citations_verified": 2598,
     "last_validation_date": "2026-05-29",
-    "mean_score_trend": "6.7→8.2→5.8→8.6→7.2→8.7→6.9→6.0→7.5→7.0→7.6→7.3→8.6→7.8→7.7→8.0→8.2→8.0→8.67→9.0→7.5→8.93→8.2→7.1→8.4"
+    "mean_score_trend": "6.7→8.2→5.8→8.6→7.2→8.7→6.9→6.0→7.5→7.0→7.6→7.3→8.6→7.8→7.7→8.0→8.2→8.0→8.67→9.0→7.5→8.93→8.2→7.1→8.4→7.9"
   }
 }
