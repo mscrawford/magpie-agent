@@ -23,13 +23,13 @@ from pathlib import Path
 AGENT_DIR = Path(__file__).resolve().parent.parent
 
 HEDGE_RE = re.compile(
-    r'\b(inferred|assumed|presumably|likely|should be|standard MAgPIE|typically|typical)\b',
+    r'\b(inferred|assumed|presumably)\b',
     re.IGNORECASE)
 # Interface identifier appearing INSIDE an inline-code span (the load-bearing surface).
 # Start narrow: vm_/pm_/im_/fm_/pcm_/sm_ interface vars + q<N>_ equations. The id may sit
 # mid-expression (e.g. `sum(j2, vm_cost_transp(j2,k))`), so we scan inside backtick spans
 # rather than requiring the id to be backtick-adjacent.
-# Empirical (2026-05-29 corpus): this narrow id set + the hedge set above flags ~15 lines.
+# R7: hedge set narrowed to high-signal words (inferred/assumed/presumably) -- the broad set
 # Widening the id set to module-internal vars (v<N>_/p<N>_/s<N>_/c<N>_) raises it to ~30;
 # kept narrow by default for precision - cross-module interface hedges do the most harm
 # (the M40 "inferred sum(j2, vm_cost_transp)" bug was exactly this). Widen if more coverage

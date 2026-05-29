@@ -1,9 +1,9 @@
 # Plan: get the bomb rate under control + clean up the doc surface
 
-> **Historical campaign record (R24 bomb-rate, created 2026-05-24).** Phases 0-3 are complete; only **R26** remains (see §Phase 3). Live open-work tracking is now in `audit/BACKLOG.md` — this file is kept at the `audit/` top level only as the R26 charter, and moves to `archive/plans/` once R26 closes.
+> **Historical campaign record (R24 bomb-rate, created 2026-05-24).** Phases 0-3 are complete; R26 and R27 ran 2026-05-29 (see `audit/validation_rounds.json`). Live open-work is in `audit/BACKLOG.md`. This file is a frozen campaign record, archive-ready (move to `archive/plans/`) -- deferred to an R7 follow-up.
 
 **Created**: 2026-05-24 (post-R24 conversation)
-**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☑ Phase 2 (2026-05-25)  ◐ Phase 3 (R25 done, R26 pending)  ⏸ Phase 4 (deep-shelf as of 2026-05-25)
+**Status**: ☑ Phase 0 (2026-05-25)  ☑ Phase 1 (2026-05-25)  ☑ Phase 2 (2026-05-25)  ☑ Phase 3 (R25/R26/R27 done 2026-05-29)  ⏸ Phase 4 (deep-shelf; PR scaffolds removed R7)
 **Target completion (Phases 0-3)**: ~3-4 focused sessions over 1-2 weeks
 
 ## Executive summary

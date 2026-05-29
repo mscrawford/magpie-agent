@@ -1,6 +1,6 @@
 # magpie-agent — Backlog
 
-**Single source of truth for open work.** Completed campaigns and per-round artifacts live in `archive/`. Append-only logs: `validation_rounds.json` (semantic flywheel, R1-R25) and `pipeline_audit_rounds.json` (structural audits, R1-R6). System-wide lessons: `global/agent_lessons.md`.
+**Single source of truth for open work.** Completed campaigns and per-round artifacts live in `archive/`. Append-only logs: `validation_rounds.json` (semantic flywheel) and `pipeline_audit_rounds.json` (structural audits). System-wide lessons: `global/agent_lessons.md`.
 
 **Last reconciled**: 2026-05-28 (audit/ consolidation — superseded `next_session_plan.md`, now in `archive/plans/`).
 
@@ -8,14 +8,14 @@
 
 ## Active
 
-- **R26 re-measure** (scheduled 2026-05-28 evening) — re-probe the R25-swept modules (M30, M80, M11) to confirm the R25 citation-line fixes are clean and introduced no regressions. Run via `/validate-semantic`; ~3h / 1 round. Full charter: `get_under_control_plan.md` §Phase 3 (R26 row + the "What R25 specifically must check" criteria carry over). Gate: mean >= 8.5 sustained; 0 bombs in M30/M80/M11.
+- **Bomb-rate follow-up** — R26 (mean 8.2) and R27 (7.1) ran 2026-05-29 (logged in `validation_rounds.json`), both below the R24 campaign's >= 8.5 target. The re-measure is done; the goal is NOT durably met. Decide whether a further targeted sweep (e.g. M20 + the R27-flagged docs) is warranted, or accept the current mean and close the campaign.
 
 ## Validator hardening (open mechanization gaps)
 
 Classes of drift not yet caught prospectively, or checks that fire too loosely. Bias: raise precision of existing checks over adding new ones — syntactic audits are saturated (< 1 bug per angle).
 
 - **Citation-fingerprint sensitivity** (`scripts/check_gams_citations_impl.py`) — in R25 it did not pre-flag 5 adjacent-line citation drifts (too tolerant of similar-content neighbors). Tighten the content-fingerprint match within the search window.
-- **`probe_dedup_check.py` append-on-completion** — spec (`agent/commands/validate-semantic.md` Step 5c) says the script appends new probe names to `probe_dedup_ledger.json`; current impl only warns. Ledger is updated by hand each round until fixed.
+- **`probe_dedup_check.py` append-on-completion** — CLOSED 2026-05-29 (`--append-latest` + a TTY guard + `--self-test` added; Step 5c now appends to `probe_dedup_ledger.json` automatically).
 - **`check_consumer_attribution.py` FP-generators** (documented in `archive/plans/pattern_d2_omission_backlog.md`) — (1) long lines with multiple backticked vars cross-attribute consumers; (2) bullet-aggregation cannot bridge `**bold-header**` paragraph breaks; (3) `input.gms` `table` declarations do not register as producer (e.g. `pm_climate_class` / M45).
 - **`check_units.py` FP rate** (~40% on first run) — advisory tier. Add a contrastive-phrase filter or unit-token denylist before considering wiring as error.
 - **Dead skip-globs in `validate_consistency.sh`** (lines ~381, ~422-425, ~631) — reference pre-consolidation top-level paths (`next_session_plan.md`, `pipeline_audit_round*.md`, `round*_answers/`) now covered by the `audit/archive/*` exclusion. Harmless no-ops; trim the next time the validator is touched. (Left in place during the 2026-05-28 consolidation to keep that change purely structural.)

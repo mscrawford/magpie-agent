@@ -99,7 +99,7 @@ Follow `AGENT.md` — it contains the full workflow:
 5. State limitations explicitly
 6. Verify in raw GAMS code for high-stakes claims
 
-Doc-vs-code accuracy is mechanically guarded by `scripts/validate_consistency.sh` (40 checks). Semantic accuracy is probed by the flywheel rounds in `audit/validation_rounds.json`.
+Doc-vs-code accuracy is mechanically guarded by `scripts/validate_consistency.sh` (run it; the summary prints the live check count). Semantic accuracy is probed by the flywheel rounds in `audit/validation_rounds.json`.
 
 ---
 
@@ -110,9 +110,9 @@ Doc-vs-code accuracy is mechanically guarded by `scripts/validate_consistency.sh
 Open work is tracked in one place:
 
 - `audit/BACKLOG.md` — single source of truth for open work (active / deferred / won't-fix)
-- `audit/get_under_control_plan.md` — R24 bomb-rate campaign (Phases 0-3 done; kept for the R26 charter)
-- `audit/validation_rounds.json` — semantic-flywheel round log (R1-R25+)
-- `audit/pipeline_audit_rounds.json` — structural pipeline audit log (R1-R6+)
+- `audit/get_under_control_plan.md` — R24 bomb-rate campaign (Phases 0-3 done; R26/R27 complete; archive-ready)
+- `audit/validation_rounds.json` — semantic-flywheel round log
+- `audit/pipeline_audit_rounds.json` — structural pipeline audit log
 - `audit/global/agent_lessons.md` — system-wide lessons
 - `audit/archive/` — completed plans (`plans/`) and per-round artifacts (`rounds/`)
 
@@ -136,7 +136,7 @@ ls -1 modules/module_*.md | wc -l
 # Verify equation count for module XX
 grep "^[ ]*qXX_" ../modules/XX_*/*/declarations.gms | wc -l
 
-# Run the consistency validator (40 checks)
+# Run the consistency validator
 bash scripts/validate_consistency.sh
 
 # Sync with MAgPIE develop
