@@ -3,21 +3,26 @@ export const meta = {
   description: 'One hybrid doc-improvement round for magpie-agent: per-doc Opus full-doc audit + (Sonnet answer -> Opus question-audit), then Sonnet gated fixes, then syntactic gate. Disk-first; returns a compact synthesis.',
   phases: [
     { title: 'Audit' },
+    { title: 'Verify' },
     { title: 'Fix' },
     { title: 'Gate' },
   ],
 }
 
 // ---- args (passed at invocation) ----
-// args.round       : int (30/31/32)
-// args.mode        : 'hybrid' | 'doccentric'
-// args.docs        : [{ path, label, klass, ground_truth, probe_question, baseline_advisory? }]
+// args.round       : int
+// args.mode        : 'hybrid' (doc-audit + question-probe) | 'doccentric' (doc-audit only)
+// args.verify      : bool -- if true, an adversarial verifier tries to REFUTE each confirmed
+//                    consumer/populator-set finding (grepping BOTH NAME( and NAME.) before the fixer applies it
+// args.docs        : [{ path, label, klass, probe_question?, baseline_advisory? }]
 //                    klass in: module | cross_module | core | reference | helper | magpie4
+//                    probe_question required when mode='hybrid'
 // args.anchors     : [{ id, question, ground_truth, expected }]
 // args arrives as a JSON-encoded STRING from the harness -> parse it
 const A = (typeof args === 'string') ? JSON.parse(args) : (args || {})
 const R = A.round
 const MODE = A.mode || 'hybrid'
+const VERIFY = A.verify === true   // adversarial consumer/populator-set refute pass before fixing
 const DOCS = A.docs || []
 const ANCHORS = A.anchors || []
 
@@ -35,6 +40,7 @@ const GREP_GUARD = `CRITICAL grep rules (a verified false-positive source in thi
   - rg (ripgrep) IS available here; prefer it: rg -n 'PATTERN' ${DEV}/modules/   (rg also exits 1 on no-match -> isolate it).
   - ALWAYS cross-check a zero/absence result with a SECOND method, AND run a POSITIVE CONTROL: grep a known-present sibling token (an adjacent parameter/variable) to prove the search works in that dir before concluding 'X is absent'.
   - Co-located names: a module number cited for an ADJACENT parameter on the same doc line is NOT a consumer of THIS parameter (this exact pattern produced a false advisory on module_52.md:291).
+  - SOLUTION-LEVEL reads: a module can consume a variable via its attributes (NAME.l/.lo/.up/.fx/.m) in presolve/postsolve, which a 'NAME(' grep MISSES. Always grep BOTH 'NAME(' AND 'NAME.' (e.g. rg 'vm_area\\.') before concluding a module does/does not consume NAME (R33 near-miss: module 32 reads vm_area.l/.lo in presolve.gms:17 for afforestation potential - invisible to a 'vm_area(' grep, which nearly deleted a correct consumer listing as a phantom).
 A "module does NOT consume X" / "zero consumers" claim is the highest-risk false positive: confirm twice + positive control before calling a documented consumer a phantom (and before adding an 'omitted' consumer, confirm it truly references the variable, not a look-alike).`
 
 const MANDATES = `Apply the verifiers.md MANDATEs (read ${VERIFIERS} if unsure), especially:
@@ -108,6 +114,29 @@ const ANCHOR_SCHEMA = {
   properties: {
     id: { type: 'string' }, score: { type: 'number' },
     drift_observed: { type: 'boolean' }, notes: { type: 'string' }, report_file: { type: 'string' }
+  }
+}
+const VERIFY_SCHEMA = {
+  type: 'object', additionalProperties: false,
+  required: ['doc', 'verdicts', 'notes', 'report_file'],
+  properties: {
+    doc: { type: 'string' },
+    verdicts: {
+      type: 'array',
+      items: {
+        type: 'object', additionalProperties: false,
+        required: ['bug_id', 'class_is_consumer_set', 'verdict', 'corrected_set', 'evidence'],
+        properties: {
+          bug_id: { type: 'string', description: 'the audit bug id this verdict refers to' },
+          class_is_consumer_set: { type: 'boolean' },
+          verdict: { type: 'string', enum: ['UPHELD', 'REFUTED', 'CORRECTED', 'NOT_CONSUMER_SET'] },
+          corrected_set: { type: 'string', description: 'if CORRECTED: the precise corrected claim/set to apply instead; else ""' },
+          evidence: { type: 'string', description: 'exact grep/rg cmds run (BOTH NAME( and NAME. forms) + positive control, with results' }
+        }
+      }
+    },
+    notes: { type: 'string', description: 'short, <=300 chars' },
+    report_file: { type: 'string' }
   }
 }
 const FIX_SCHEMA = {
@@ -191,6 +220,32 @@ Classify each bug's root cause: doc_error | doc_error_answerer_beat_it | answere
 OUTPUT: write the full audit to ${ARC}/round${R}_audits/${doc.label}.md; return the schema (notes <=300 chars).`
 }
 
+function verifyPrompt(doc, confirmedBugs) {
+  return `You are an ADVERSARIAL VERIFIER (model: highest capability) in the magpie-agent doc flywheel. An auditor produced the "confirmed" bugs below for ${doc.label}. Independently try to REFUTE each CONSUMER / POPULATOR / DEPENDENCY-SET finding against develop code, defaulting to skepticism. Consumer-set claims are the highest-FP class here, and even strong auditors over- and under-count them (R33: an auditor tried to add module 32 to vm_area's consumers; M32 actually reads vm_area.l/.lo in presolve, so the listing needed clarification not deletion).
+
+TARGET DOC: ${AGENT_DIR}/${doc.path}
+${groundTruthClause(doc)}
+
+${GREP_GUARD}
+
+CONFIRMED BUGS TO VERIFY (from the auditor):
+${JSON.stringify(confirmedBugs.map(b => ({ id: b.id, severity: b.severity, bug_class: b.bug_class, doc_line: b.doc_line, claim_in_doc: b.claim_in_doc, reality_in_code: b.reality_in_code, file_evidence: b.file_evidence, proposed_fix: b.proposed_fix })), null, 1)}
+
+METHOD, for EACH bug:
+1. class_is_consumer_set = true iff the finding asserts WHICH modules consume / populate / depend-on an interface variable or parameter (phantom member, omitted member, wrong producer/consumer set, direct-vs-transitive). Else false.
+2. If false -> verdict NOT_CONSUMER_SET (it passes to the fixer unchanged; spend no effort).
+3. If true -> INDEPENDENTLY re-derive the true set from code in ${DEV}. You MUST:
+   - grep BOTH the equation form 'NAME(' AND the attribute form 'NAME.' (.l/.lo/.up/.fx/.m) - a solution-level read in presolve/postsolve is a real consume that 'NAME(' misses;
+   - run a POSITIVE CONTROL (grep a known-present sibling token in each candidate module dir to prove the search works there) before calling any member a phantom;
+   - apply the co-located-name caveat; distinguish DIRECT from TRANSITIVE (MANDATE 17).
+   Return UPHELD (auditor's correction is right), REFUTED (auditor is wrong / the doc was already correct / the fix would introduce an error -> drop it), or CORRECTED (auditor partially right -> put the precise corrected claim/set to apply in corrected_set).
+4. Put the exact grep/rg commands you ran (both forms + positive control) WITH results in "evidence".
+
+Default to REFUTED/CORRECTED when the auditor's evidence does not reproduce. A false fix that looks freshly-verified is worse than leaving the doc unchanged.
+
+OUTPUT: write your full verification to ${ARC}/round${R}_verify/${doc.label}.md; return the schema (notes <=300 chars).`
+}
+
 function anchorAnswerPrompt(a) {
   return `Answer using ONLY the magpie-agent AI documentation files under ${AGENT_DIR}. Do NOT read raw GAMS code. Cite variable/equation/realization names and doc files. Write to ${ARC}/round${R}_answers/anchor_${a.id}.md and return the answer.
 
@@ -215,20 +270,38 @@ function fixPrompt(r) {
   const da = r.docAudit || {}
   const confirmed = (da.bugs || []).filter(b => b && b.confirmed)
   const latent = (r.qProbe && r.qProbe.doc_errors_latent) || []
-  return `You are a careful documentation FIXER (Sonnet). Apply ONLY code-verified fixes to ONE doc. Do not re-audit; the evidence is given.
+  const verdicts = (r.verify && r.verify.verdicts) || []
+  const vmap = {}
+  verdicts.forEach(v => { if (v && v.bug_id) vmap[v.bug_id] = v })
+  const annotated = confirmed.map(b => {
+    const v = vmap[b.id] || null
+    return {
+      bug_id: b.id, doc_line: b.doc_line, claim: b.claim_in_doc, reality: b.reality_in_code,
+      evidence: b.file_evidence, proposed_fix: b.proposed_fix,
+      adversarial_verdict: v ? v.verdict : (verdicts.length ? 'NOT_REVIEWED' : 'NO_VERIFY_PASS'),
+      corrected_set: (v && v.verdict === 'CORRECTED') ? v.corrected_set : null
+    }
+  })
+  return `You are a careful documentation FIXER (Sonnet). Apply ONLY verified fixes to ONE doc. Do not re-audit; the evidence is given.
 
 TARGET DOC: ${AGENT_DIR}/${r.doc}
 
-CONFIRMED DOC BUGS (from the doc-audit; each has reproducible evidence):
-${JSON.stringify(confirmed.map(b => ({ doc_line: b.doc_line, claim: b.claim_in_doc, reality: b.reality_in_code, evidence: b.file_evidence, fix: b.proposed_fix })), null, 1)}
+Each bug carries an adversarial_verdict from an independent verifier. OBEY it:
+  - UPHELD / NOT_CONSUMER_SET / NO_VERIFY_PASS -> apply proposed_fix as given.
+  - CORRECTED -> apply the corrected_set (verifier's corrected claim) INSTEAD of proposed_fix.
+  - REFUTED -> DO NOT APPLY; add to deferred (the auditor was likely wrong; do not introduce the change).
+  - NOT_REVIEWED -> apply proposed_fix ONLY if it has concrete file:line/code evidence; else defer.
+
+CONFIRMED DOC BUGS (with verdicts):
+${JSON.stringify(annotated, null, 1)}
 
 LATENT DOC ERRORS (from the question-probe; apply ONLY if the entry includes a concrete file:line/code reality — otherwise defer):
 ${JSON.stringify(latent, null, 1)}
 
 RULES:
-- Apply each fix as a minimal, exact edit (correct the wrong name/citation/consumer-set/default; keep surrounding prose intact). Match MAgPIE doc conventions; no em-dashes; preserve any conceptual-form labels.
+- Apply each applicable fix as a minimal, exact edit (correct the wrong name/citation/consumer-set/default; keep surrounding prose intact). Match MAgPIE doc conventions; no em-dashes; preserve any conceptual-form labels.
 - After each edit, RE-READ the changed lines to confirm the edit landed and is internally consistent. Set self_check_ok accordingly.
-- If any item lacks concrete code evidence or is ambiguous, do NOT edit it; add it to "deferred".
+- REFUTED items, and anything lacking concrete code evidence or ambiguous -> "deferred", do NOT edit.
 - Do NOT touch other docs. Do NOT run git.
 RETURN the schema: files_fixed (relative to magpie-agent/), n_edits, applied (doc_line+change), deferred, self_check_ok, notes.`
 }
@@ -261,7 +334,15 @@ const docResults = await parallel(DOCS.map((doc) => async () => {
       })()
     : Promise.resolve(null)
   const [docAudit, qProbe] = await Promise.all([daP, qaP])
-  return { doc: doc.path, label: doc.label, klass: doc.klass, docAudit, qProbe }
+  // adversarial verify: independently try to REFUTE each confirmed consumer/populator-set finding before it is fixed
+  let verify = null
+  if (VERIFY && docAudit) {
+    const conf = (docAudit.bugs || []).filter(b => b && b.confirmed)
+    if (conf.length) {
+      verify = await agent(verifyPrompt(doc, conf), { label: `verify:${doc.label}`, phase: 'Verify', schema: VERIFY_SCHEMA }).catch(() => null)
+    }
+  }
+  return { doc: doc.path, label: doc.label, klass: doc.klass, docAudit, qProbe, verify }
 }))
 
 const anchorResults = await parallel(ANCHORS.map((a) => async () => {
@@ -295,24 +376,41 @@ function daCounts(b) {
   const by = (s) => a.filter(x => x.severity === s).length
   return { critical: by('Critical'), major: by('Major'), minor: by('Minor'), informational: by('Informational'), confirmed: a.filter(x => x.confirmed).length, total: a.length }
 }
-const perDoc = docResults.map(r => ({
-  label: r.label, klass: r.klass, doc: r.doc,
-  dropped: !r.docAudit,
-  doc_audit: r.docAudit ? { counts: daCounts(r.docAudit.bugs), deferred: r.docAudit.deferred || [], report_file: r.docAudit.report_file, summary: r.docAudit.summary } : null,
-  q_probe: r.qProbe ? { score: r.qProbe.score, c: r.qProbe.bugs_critical, ma: r.qProbe.bugs_major, mi: r.qProbe.bugs_minor, info: r.qProbe.bugs_informational, latent: r.qProbe.doc_errors_latent || [], root_causes: r.qProbe.root_causes || [], notes: r.qProbe.notes, report_file: r.qProbe.report_file } : null
-}))
+const perDoc = docResults.map(r => {
+  const verdicts = (r.verify && r.verify.verdicts) || []
+  return {
+    label: r.label, klass: r.klass, doc: r.doc,
+    dropped: !r.docAudit,
+    doc_audit: r.docAudit ? { counts: daCounts(r.docAudit.bugs), deferred: r.docAudit.deferred || [], report_file: r.docAudit.report_file, summary: r.docAudit.summary } : null,
+    q_probe: r.qProbe ? { score: r.qProbe.score, c: r.qProbe.bugs_critical, ma: r.qProbe.bugs_major, mi: r.qProbe.bugs_minor, info: r.qProbe.bugs_informational, latent: r.qProbe.doc_errors_latent || [], root_causes: r.qProbe.root_causes || [], notes: r.qProbe.notes, report_file: r.qProbe.report_file } : null,
+    verify: r.verify ? {
+      refuted: verdicts.filter(v => v && v.verdict === 'REFUTED').map(v => v.bug_id),
+      corrected: verdicts.filter(v => v && v.verdict === 'CORRECTED').map(v => ({ bug_id: v.bug_id, corrected_set: v.corrected_set })),
+      upheld: verdicts.filter(v => v && v.verdict === 'UPHELD').length,
+      consumer_set_reviewed: verdicts.filter(v => v && v.class_is_consumer_set).length,
+      report_file: r.verify.report_file, notes: r.verify.notes
+    } : null
+  }
+})
+const verifyAgg = {
+  docs_verified: perDoc.filter(d => d.verify).length,
+  refuted: perDoc.reduce((n, d) => n + (d.verify ? d.verify.refuted.length : 0), 0),
+  corrected: perDoc.reduce((n, d) => n + (d.verify ? d.verify.corrected.length : 0), 0),
+  upheld: perDoc.reduce((n, d) => n + (d.verify ? d.verify.upheld : 0), 0)
+}
 const qScores = perDoc.map(d => d.q_probe && d.q_probe.score).filter(s => typeof s === 'number')
 const anchorScores = (anchorResults.filter(Boolean)).map(a => ({ id: a.id, score: a.score, drift: a.drift_observed, notes: a.notes }))
 const mean_inputs = qScores.concat(anchorScores.map(a => a.score))
 const mean_score = mean_inputs.length ? +(mean_inputs.reduce((x, y) => x + y, 0) / mean_inputs.length).toFixed(2) : null
 
 return {
-  round: R, mode: MODE,
+  round: R, mode: MODE, verify: VERIFY,
   n_docs: DOCS.length,
   dropped: perDoc.filter(d => d.dropped).map(d => d.label),
   per_doc: perDoc,
   anchors: anchorScores,
   mean_score,
+  verify_summary: VERIFY ? verifyAgg : null,
   fixes: fixes.filter(Boolean).map(f => ({ doc: f.doc, files_fixed: f.files_fixed, n_edits: f.n_edits, deferred: f.deferred, self_check_ok: f.self_check_ok })),
   edited_files: editedFiles,
   gate
