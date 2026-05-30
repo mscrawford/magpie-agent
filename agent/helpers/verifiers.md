@@ -1,6 +1,6 @@
 # Verifiers — MANDATEs for anti-confabulation
 
-**Purpose**: 17 binding rules that prevent the recurring confabulation patterns identified across the semantic-validation rounds (see `audit/validation_rounds.json.cumulative_stats` for current bug and round totals). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
+**Purpose**: 20 binding rules that prevent the recurring confabulation patterns identified across the semantic-validation rounds (see `audit/validation_rounds.json.cumulative_stats` for current bug and round totals). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
 
 **Auto-load**: this file is loaded automatically when the user asks about specific GAMS modules, variables, equations, realizations, or default values. See `AGENT.md` Auto-Loading Context Helpers table.
 
@@ -16,7 +16,7 @@
 
 ## Origin (read once)
 
-Semantic validation across many rounds (R1 began 2026-03-07; see `audit/validation_rounds.json` for the current count and dates) revealed that **~56% of bugs are plausible confabulations** — the agent invents correct-sounding but wrong details. Scores improved from 6.7→8.2 after rules 1-6 were drafted, but R3 showed an 85% confabulation rate when probing less-familiar modules. R16 added rules 10-12 (set-sum expansion, range truncation, label generalization) after critical confabulations recurred. R20 added rules 13-16 (interface-parameter consumer grep, deprecated-name italics, post-rename grep, citation full-path) after 13 line-drift bugs and a Major consumer-omission bug in a single sync.
+Semantic validation across many rounds (R1 began 2026-03-07; see `audit/validation_rounds.json` for the current count and dates) revealed that **~56% of bugs are plausible confabulations** — the agent invents correct-sounding but wrong details. Scores improved from 6.7→8.2 after rules 1-6 were drafted, but R3 showed an 85% confabulation rate when probing less-familiar modules. R16 added rules 10-12 (set-sum expansion, range truncation, label generalization) after critical confabulations recurred. R20 added rules 13-16 (interface-parameter consumer grep, deprecated-name italics, post-rename grep, citation full-path) after 13 line-drift bugs and a Major consumer-omission bug in a single sync. R33-R37 (the 35-doc high-centrality sweep) added rules 18-20 (producer/declaration attribution; realization-structure from the SPECIFIC realization's files; solution-level `.l/.lo` grep) and extended rule 16 (citation CONTENT, not just range) after the dominant residual vein proved to be DECLARED-vs-POPULATED-vs-READ confusion + correlated cross-realization confabulation + paren-restricted greps missing `.l` reads.
 
 These are NOT preferences. They are evidence-derived rules. Violating them silently was the failure mode the rules close.
 
@@ -253,9 +253,11 @@ python3 scripts/check_gams_variables.py  # confirm zero stale references
 
 **Also**: draft line numbers from the FINAL merged code (post `git pull`), NOT from diff output during triage.
 
-**Worked example** (R20, Major × 13): line numbers drafted from diff context drifted from final merged code by 5-20 lines. The citation checker flagged 13 drifted citations after the doc landed. The fix: always re-read the merged file post-merge and update line numbers.
+**Content (R33-R37)**: the cited line MUST CONTAIN the claimed identifier/token — confirm by reading the EXACT line, not merely that the file and line-range exist. A line that exists but lacks the claimed content is a mis-sourced citation; a file that does not exist is a fabricated one. Both are unsafe.
 
-**Verified by**: `scripts/check_gams_citations.sh` + `scripts/check_gams_citations_impl.py` — line-range validity only (against EOF). **Coverage gaps** (R1 Cluster 2): (a) range end-line not checked; (b) content match within ±5 of cited line not verified; (c) bare-basename ambiguity silently resolved by walk-order. See R1 Cluster 2 for the planned extension to close Pattern 12.
+**Worked example** (R20, Major × 13): line numbers drafted from diff context drifted from final merged code by 5-20 lines. The citation checker flagged 13 drifted citations after the doc landed. The fix: always re-read the merged file post-merge and update line numbers. **R34 module_21**: an auditor's proposed fix pointed at lines 97-99 of the bilateral22 equations file, which is only 91 lines long (out of range), and named a presolve file that does not hold the claim — both fabricated/mis-sourced. Only the out-of-range case tripped the gate (by luck); the content check is what catches an in-range-but-wrong-content citation.
+
+**Verified by**: `scripts/check_gams_citations.sh` + `scripts/check_gams_citations_impl.py` — line-range validity (error) + a Pattern-12 content-mismatch advisory. The engine's adversarial verifier now performs the content check per-bug PRE-fix (Step A → `CITATION_FAILED` → fixer defers), which is the proactive guard against the module_21 class. **Coverage gap remaining**: the gate's content check stays advisory (FP-prone on multi-line constructs); the verifier is the authoritative content gate.
 
 ---
 
@@ -280,6 +282,51 @@ If `vm_FOO` is **not** directly grep-hit in M_X's files but M_X reads an aggrega
 
 ---
 
+## MANDATE 18 — Producer / declaration attribution (DECLARED vs POPULATED vs READ)
+
+**Trigger**: any claim about which module DECLARES or PRODUCES/POPULATES an interface variable or parameter (`vm_*`, `pm_*`, `im_*`) — "X comes from M_Y", "M_Y provides X", "X is declared in M_Y".
+
+**Rule**: NEVER attribute the source of an interface variable without checking the THREE distinct roles separately. A variable is often DECLARED in one module, POPULATED by several others, and READ by yet others — conflating them is the dominant R33-R37 error vein.
+- **DECLARED**: the `name(...)` declaration line in a module's `declarations.gms`.
+- **POPULATED**: assigned on an equation LHS, or via `.fx`/`.l` assignment, in that module.
+- **READ**: appears on an equation RHS in that module.
+
+**Verification commands**:
+```bash
+grep -rn "<name>(" ../modules/*/*/declarations.gms        # DECLARED (which module)
+grep -rln "<name>" ../modules/*/*/equations.gms            # POPULATED (LHS) / READ (RHS) — inspect each
+```
+
+**Worked examples** (R33-R37): `vm_prod_reg` documented "from Module 70" but DECLARED in M17 (M70 only reads it); `im_maccs_mitigation` attributed to M56 but DECLARED in M57; `pm_prod_init` attributed to M30 but declared+populated in M17; `vm_p_fert_costs` routed M54→M38→M11 but wired DIRECTLY into M11. The `vm_carbon_stock` G2 pattern is the canonical case: DECLARED in M56, POPULATED by M29/31/32/34/35/59, READ by M52. Generalizes MANDATE 9 (cost variables) to ALL interface variables.
+
+**Verified by**: the engine's adversarial verifier (`producer_declaration` class) re-derives DECLARED/POPULATED/READ mechanically against develop; human review otherwise. See also MANDATE 20 (grep both `name(` and `name.` forms).
+
+---
+
+## MANDATE 19 — Realization structure from the SPECIFIC realization's files
+
+**Trigger**: any claim about a NON-DEFAULT realization's structure — its equation COUNT, which equations it defines, or which files it contains.
+
+**Rule**: NEVER describe a realization's structure by pattern-completing from a sibling/family realization. Read THAT realization's ACTUAL files: `ls ../modules/XX_name/<realization>/` and read its `equations.gms` directly. Sibling realizations in the same family (e.g., `selfsuff_reduced` vs `selfsuff_reduced_bilateral22`) routinely DROP or ADD equations and files; those differences are exactly what gets confabulated. ALWAYS label non-default realization claims: "(realization NAME, non-default; default is X)".
+
+**Worked example** (R34, Critical regression): an auditor claimed the non-default `selfsuff_reduced_bilateral22` trade realization had 9 equations including an active `q21_cost_trade_feasibility` and NO presolve.gms — pattern-completing from the sibling `selfsuff_reduced`, which DOES define that equation. Ground truth: bilateral22 has 8 equations, no `q21_cost_trade_feasibility` (it fixes the penalty to 0 in its presolve.gms, which DOES exist). A fresh agent independently reproduced the SAME wrong claim — these confabulations are CORRELATED across LLM agents, so more agents/voters do NOT help; only MECHANICAL verification (`ls` + `wc -l` + read the specific file) is reliable.
+
+**Verified by**: the engine's adversarial verifier (`realization_structure` class) reads the specific realization's files mechanically; human review otherwise.
+
+---
+
+## MANDATE 20 — Solution-level (`.l`/`.lo`) reads in consumer/producer greps
+
+**Trigger**: any grep to determine whether a module consumes or produces an interface variable.
+
+**Rule**: a paren-restricted grep (`name(`) MISSES solution-level reads (`name.l`, `name.lo`, `name.up`, `name.fx`, `name.m`) in presolve/postsolve. ALWAYS grep BOTH the equation form `name(` AND the attribute form `name.` before concluding consume/not-consume. A module reading only `name.l` is a REAL consumer that the equation-form grep reports as a phantom.
+
+**Worked example** (R33): module 32 reads `vm_area.l`/`.lo` in `modules/32_forestry/dynamic_may24/presolve.gms:17` (afforestation potential) — invisible to a `vm_area(` grep, which nearly caused a correct consumer listing to be deleted as a phantom. Applies to MANDATEs 13, 17, and 18.
+
+**Verified by**: the engine's `GREP_GUARD` requires both forms; see project memory `bash-grep-r-unreliable-magpie`; human review otherwise.
+
+---
+
 ## Verification one-liner
 
 After writing any answer that references GAMS code, run (from the magpie-agent directory):
@@ -296,6 +343,7 @@ This invokes the variable, equation, realization, and citation checkers. Any fai
 
 - **2026-05-23 (origin)**: hoisted from AGENT.md Step 1d. 16 MANDATEs preserved verbatim from the prior in-place version, with binding language tightened and worked examples drawn from the rounds named in each rule's text. R1-R21 validation history is the empirical foundation.
 - **2026-05-25 (R6 Phase 1 1c)**: added MANDATE 17 (one-hop reads / direct vs transitive consumer). Motivating bug: R24 Q4-B3 (Major doc_error) — `module_30.md:360` claimed `vm_carbon_stock_croparea` is directly consumed by M52/M56; actual chain is M30 → M29 aggregate → M52/M56. Mechanization via `check_consumer_attribution.py` extension is Phase 1 1c follow-up.
+- **2026-05-30 (R33-R37 high-centrality sweep + consolidation)**: added MANDATE 18 (producer/declaration DECLARED-vs-POPULATED-vs-READ), 19 (realization-structure from the specific realization's files), 20 (solution-level `.l/.lo` grep); extended MANDATE 16 with the citation-CONTENT rule. Motivating bugs: the module_21 cross-realization regression (a fresh forensics agent reproduced the auditor's exact error — correlated confabulation, only mechanical checks catch it), the `vm_prod_reg`/`im_maccs_mitigation`/`pm_prod_init` producer mis-attributions, and the `vm_area.l` solution-level near-miss. Mechanized by the engine's adversarial verifier (`producer_declaration` + `realization_structure` classes + the Step-A citation check) and `scripts/check_scaling.py` (the 10eN-vs-1eN class). Total now 20 MANDATEs.
 
 
 ---

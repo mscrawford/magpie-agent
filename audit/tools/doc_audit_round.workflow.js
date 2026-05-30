@@ -125,13 +125,14 @@ const VERIFY_SCHEMA = {
       type: 'array',
       items: {
         type: 'object', additionalProperties: false,
-        required: ['bug_id', 'class_is_consumer_set', 'verdict', 'corrected_set', 'evidence'],
+        required: ['bug_id', 'class', 'citation_ok', 'verdict', 'corrected_set', 'evidence'],
         properties: {
           bug_id: { type: 'string', description: 'the audit bug id this verdict refers to' },
-          class_is_consumer_set: { type: 'boolean' },
-          verdict: { type: 'string', enum: ['UPHELD', 'REFUTED', 'CORRECTED', 'NOT_CONSUMER_SET'] },
+          class: { type: 'string', enum: ['consumer_set', 'producer_declaration', 'realization_structure', 'other'], description: 'what kind of claim the bug makes' },
+          citation_ok: { type: 'boolean', description: 'MECHANICAL check: file_evidence (and any file:line in proposed_fix) exists, line is in range, AND the line contains the claimed token' },
+          verdict: { type: 'string', enum: ['UPHELD', 'REFUTED', 'CORRECTED', 'CITATION_FAILED', 'NOT_REVIEWABLE'] },
           corrected_set: { type: 'string', description: 'if CORRECTED: the precise corrected claim/set to apply instead; else ""' },
-          evidence: { type: 'string', description: 'exact grep/rg cmds run (BOTH NAME( and NAME. forms) + positive control, with results' }
+          evidence: { type: 'string', description: 'exact cmds: the citation check (test -f / wc -l / read the line) AND, for attribution/realization claims, BOTH NAME( and NAME. greps + positive control, with results' }
         }
       }
     },
@@ -194,6 +195,7 @@ OUTPUT:
 function answerPrompt(doc) {
   return `You are answering an expert-level question about MAgPIE's inner workings, as a normal user of the magpie-agent would receive it.
 Answer using ONLY the magpie-agent AI documentation files under ${AGENT_DIR} (modules/, core_docs/, cross_module/, reference/, agent/helpers/). Do NOT read raw GAMS source code or the develop worktree.
+You have NO tools in this mode - you read only the AI docs. NEVER fabricate a command output (no "grep gives N", no invented counts or greps). If a doc states a count or value, cite it VERBATIM and do NOT recompute or override it; if the docs are silent or you are unsure, say so explicitly rather than inventing a number. (Guards the G4-class confabulation: an answerer once overrode the correct documented count of 106 with a fabricated "grep gives 101".)
 Cite specific variable names (vm_*, pm_*), equation names (q*), realization names, and doc file references. End with the epistemic-hierarchy closing per AGENT.md.
 Write your answer to ${ARC}/round${R}_answers/${doc.label}.md as well as returning it.
 
@@ -221,7 +223,7 @@ OUTPUT: write the full audit to ${ARC}/round${R}_audits/${doc.label}.md; return 
 }
 
 function verifyPrompt(doc, confirmedBugs) {
-  return `You are an ADVERSARIAL VERIFIER (model: highest capability) in the magpie-agent doc flywheel. An auditor produced the "confirmed" bugs below for ${doc.label}. Independently try to REFUTE each CONSUMER / POPULATOR / DEPENDENCY-SET finding against develop code, defaulting to skepticism. Consumer-set claims are the highest-FP class here, and even strong auditors over- and under-count them (R33: an auditor tried to add module 32 to vm_area's consumers; M32 actually reads vm_area.l/.lo in presolve, so the listing needed clarification not deletion).
+  return `You are an ADVERSARIAL VERIFIER (model: highest capability) in the magpie-agent doc flywheel. For EVERY confirmed bug below you FIRST run a MECHANICAL citation check; then you adversarially adjudicate the ATTRIBUTION and REALIZATION-STRUCTURE claims. Default to skepticism. Auditors over/under-count consumer AND producer sets, and they CONFABULATE non-default realization structure by pattern-completing the realization family (R33: an auditor claimed the bilateral22 trade realization had an active q21_cost_trade_feasibility equation that in fact only the sibling selfsuff_reduced defines - and a fresh agent independently reproduced the same error). These confabulations are CORRELATED across LLM agents, so your only reliable tool is MECHANICAL verification (test -f, wc -l, read the exact line, isolated grep + positive control) - NOT your own recall.
 
 TARGET DOC: ${AGENT_DIR}/${doc.path}
 ${groundTruthClause(doc)}
@@ -231,23 +233,20 @@ ${GREP_GUARD}
 CONFIRMED BUGS TO VERIFY (from the auditor):
 ${JSON.stringify(confirmedBugs.map(b => ({ id: b.id, severity: b.severity, bug_class: b.bug_class, doc_line: b.doc_line, claim_in_doc: b.claim_in_doc, reality_in_code: b.reality_in_code, file_evidence: b.file_evidence, proposed_fix: b.proposed_fix })), null, 1)}
 
-METHOD, for EACH bug:
-1. class_is_consumer_set = true iff the finding asserts WHICH modules consume / populate / depend-on an interface variable or parameter (phantom member, omitted member, wrong producer/consumer set, direct-vs-transitive). Else false.
-2. If false -> verdict NOT_CONSUMER_SET (it passes to the fixer unchanged; spend no effort).
-3. If true -> INDEPENDENTLY re-derive the true set from code in ${DEV}. You MUST:
-   - grep BOTH the equation form 'NAME(' AND the attribute form 'NAME.' (.l/.lo/.up/.fx/.m) - a solution-level read in presolve/postsolve is a real consume that 'NAME(' misses;
-   - run a POSITIVE CONTROL (grep a known-present sibling token in each candidate module dir to prove the search works there) before calling any member a phantom;
-   - apply the co-located-name caveat; distinguish DIRECT from TRANSITIVE (MANDATE 17).
-   Return UPHELD (auditor's correction is right), REFUTED (auditor is wrong / the doc was already correct / the fix would introduce an error -> drop it), or CORRECTED (auditor partially right -> put the precise corrected claim/set to apply in corrected_set).
-4. Put the exact grep/rg commands you ran (both forms + positive control) WITH results in "evidence".
-
-Default to REFUTED/CORRECTED when the auditor's evidence does not reproduce. A false fix that looks freshly-verified is worse than leaving the doc unchanged.
+For EACH bug:
+STEP A - MECHANICAL CITATION CHECK (ALL bugs, whatever the class): for the bug's file_evidence AND any modules/.../file.gms:LINE inside proposed_fix, run test -f <file> (exists?), wc -l <file> (is LINE in range?), and read that exact line (does it contain the claimed identifier/token?). If the file does NOT exist, the line is OUT OF RANGE, or the line does NOT contain the claimed content -> citation_ok=false, verdict=CITATION_FAILED (fabricated or mis-sourced; the fix is unsafe). Record the exact commands + results in evidence. This is the defense against the cross-realization confabulation class.
+STEP B - CLASSIFY 'class': consumer_set (which modules CONSUME/read a var/param); producer_declaration (which module DECLARES it = appears in that module's declarations.gms, or POPULATES it = equation LHS / .fx / assignment; READ = equation RHS); realization_structure (a realization's equation COUNT / which equations it defines / a file's existence); other (formula/value/prose/count).
+STEP C - ADJUDICATE (only if citation_ok=true):
+  - consumer_set OR producer_declaration: INDEPENDENTLY re-derive the true set from ${DEV}. grep BOTH 'NAME(' AND 'NAME.' (.l/.lo/.up/.fx/.m) + positive control + co-located-name caveat + DIRECT-vs-TRANSITIVE (MANDATE 17); for producer/declaration explicitly grep declarations.gms (DECLARED) and equation LHS/.fx (POPULATED). Verdict UPHELD / REFUTED / CORRECTED (corrected_set = the precise claim to apply).
+  - realization_structure: read the SPECIFIC realization's ACTUAL files (ls the dir; wc -l + read the cited equations.gms) and confirm eq count / eq presence / file existence MECHANICALLY against THAT realization, NEVER the sibling. Verdict UPHELD / REFUTED / CORRECTED.
+  - other: verdict NOT_REVIEWABLE (citation already validated in Step A; pass to fixer unchanged).
+Default to REFUTED / CORRECTED / CITATION_FAILED whenever the auditor's evidence does not reproduce. A false fix that looks freshly-verified is worse than leaving the doc unchanged.
 
 OUTPUT: write your full verification to ${ARC}/round${R}_verify/${doc.label}.md; return the schema (notes <=300 chars).`
 }
 
 function anchorAnswerPrompt(a) {
-  return `Answer using ONLY the magpie-agent AI documentation files under ${AGENT_DIR}. Do NOT read raw GAMS code. Cite variable/equation/realization names and doc files. Write to ${ARC}/round${R}_answers/anchor_${a.id}.md and return the answer.
+  return `Answer using ONLY the magpie-agent AI documentation files under ${AGENT_DIR}. Do NOT read raw GAMS code. You have NO tools in this mode - NEVER fabricate a command output (no "grep gives N", no invented counts); if a doc states a count or value, cite it VERBATIM and do not recompute/override it; if unsure, say so. (Guards the G4-class confabulation.) Cite variable/equation/realization names and doc files. Write to ${ARC}/round${R}_answers/anchor_${a.id}.md and return the answer.
 
 QUESTION (${a.id}): ${a.question}`
 }
@@ -287,9 +286,10 @@ function fixPrompt(r) {
 TARGET DOC: ${AGENT_DIR}/${r.doc}
 
 Each bug carries an adversarial_verdict from an independent verifier. OBEY it:
-  - UPHELD / NOT_CONSUMER_SET / NO_VERIFY_PASS -> apply proposed_fix as given.
+  - UPHELD / NOT_REVIEWABLE / NO_VERIFY_PASS -> apply proposed_fix as given (citation already mechanically validated where a verifier ran).
   - CORRECTED -> apply the corrected_set (verifier's corrected claim) INSTEAD of proposed_fix.
   - REFUTED -> DO NOT APPLY; add to deferred (the auditor was likely wrong; do not introduce the change).
+  - CITATION_FAILED -> DO NOT APPLY; add to deferred (the cited file:line does not resolve to the claimed content -> the finding is unsafe, likely a fabricated/mis-sourced citation).
   - NOT_REVIEWED -> apply proposed_fix ONLY if it has concrete file:line/code evidence; else defer.
 
 CONFIRMED DOC BUGS (with verdicts):
@@ -386,8 +386,9 @@ const perDoc = docResults.map(r => {
     verify: r.verify ? {
       refuted: verdicts.filter(v => v && v.verdict === 'REFUTED').map(v => v.bug_id),
       corrected: verdicts.filter(v => v && v.verdict === 'CORRECTED').map(v => ({ bug_id: v.bug_id, corrected_set: v.corrected_set })),
+      citation_failed: verdicts.filter(v => v && v.verdict === 'CITATION_FAILED').map(v => v.bug_id),
       upheld: verdicts.filter(v => v && v.verdict === 'UPHELD').length,
-      consumer_set_reviewed: verdicts.filter(v => v && v.class_is_consumer_set).length,
+      attribution_reviewed: verdicts.filter(v => v && (v.class === 'consumer_set' || v.class === 'producer_declaration' || v.class === 'realization_structure')).length,
       report_file: r.verify.report_file, notes: r.verify.notes
     } : null
   }
@@ -396,6 +397,7 @@ const verifyAgg = {
   docs_verified: perDoc.filter(d => d.verify).length,
   refuted: perDoc.reduce((n, d) => n + (d.verify ? d.verify.refuted.length : 0), 0),
   corrected: perDoc.reduce((n, d) => n + (d.verify ? d.verify.corrected.length : 0), 0),
+  citation_failed: perDoc.reduce((n, d) => n + (d.verify ? d.verify.citation_failed.length : 0), 0),
   upheld: perDoc.reduce((n, d) => n + (d.verify ? d.verify.upheld : 0), 0)
 }
 const qScores = perDoc.map(d => d.q_probe && d.q_probe.score).filter(s => typeof s === 'number')

@@ -68,7 +68,7 @@ check_error() {
 # the denominator lives (R7: replaced the 28 hardcoded "/28" literals, which had
 # no self-check and drifted). The legacy first arg ("N/M") is now ignored.
 SECTION_NUM=0
-SECTION_TOTAL=27
+SECTION_TOTAL=28
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1018,6 +1018,24 @@ if [ -f "$HEDGED_SCRIPT" ]; then
     fi
 else
     check_warning "Hedged-claims checker not found: $HEDGED_SCRIPT"
+fi
+
+print_section "" "Checking doc .scale-value claims vs scaling.gms canonical (advisory)..."
+
+SCALING_SCRIPT="$AGENT_DIR/scripts/check_scaling.py"
+if [ -f "$SCALING_SCRIPT" ]; then
+    SCALING_OUTPUT=$(python3 "$SCALING_SCRIPT" --summary 2>&1)
+    SCALING_COUNT=$(echo "$SCALING_OUTPUT" | grep -oE "[0-9]+ mismatch" | grep -oE "[0-9]+" | head -1)
+    [ -z "$SCALING_COUNT" ] && SCALING_COUNT=0
+    if [ "$SCALING_COUNT" = "0" ]; then
+        check_pass "Doc .scale-value claims match canonical scaling.gms"
+    else
+        # Advisory: catches the 10eN-vs-1eN (10x) doc error class. Reviewer triages
+        # (realization-specific .scale values can legitimately differ).
+        check_warning "$SCALING_COUNT doc scaling-value claim(s) differ from canonical (advisory; run scripts/check_scaling.py)"
+    fi
+else
+    check_warning "Scaling checker not found: $SCALING_SCRIPT"
 fi
 
 # ============
