@@ -352,9 +352,10 @@ solve model using nlp minimizing cost;
 
 **Solver tuning** (for MIP):
 ```gams
-* Use Cplex tuning tool
+* Use the Cplex parameter tuning tool (a Cplex SOLVER option, set in cplex.opt)
 option mip = cplex;
-option tuning = 1;
+model.optfile = 1;        * tells Cplex to read cplex.opt
+* cplex.opt contains:  tuning 1
 solve model using mip minimizing cost;
 ```
 

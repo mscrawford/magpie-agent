@@ -46,8 +46,8 @@ term $ logical_condition
 Non-zero values are `TRUE`; zero is `FALSE`:
 
 ```gams
-b $ (2*a - 4) = 7;          * Assign b=7 if 2*a-4 is non-zero
-b $ cos(a) = 7;             * Functions permitted
+b $ (2*a - 4) = 7;          !! Assign b=7 if 2*a-4 is non-zero
+b $ cos(a) = 7;             !! Functions permitted
 ```
 
 **Important**: Variables cannot appear in conditions, but variable attributes (`.l`, `.m`, `.lo`, `.up`) are allowed.
@@ -57,14 +57,18 @@ b $ cos(a) = 7;             * Functions permitted
 Standard comparisons: `<`, `<=`, `=`, `<>`, `>=`, `>` (or `lt`, `le`, `eq`, `ne`, `ge`, `gt`)
 
 ```gams
-b $ (a < 0) = 10;           * Assign if a is negative
-t(i) $ (a <> 0) = t(i) + 1; * Increment if a is non-zero
+b $ (a < 0) = 10;           !! Assign if a is negative
+t(i) $ (a <> 0) = t(i) + 1; !! Increment if a is non-zero
 ```
 
-**MAgPIE example** (`modules/70_livestock/fbask_jan16/presolve.gms:120`):
+**MAgPIE example** (`modules/70_livestock/fbask_jan16/presolve.gms:52-58`):
 ```gams
 if (ord(t)>1,
-  p70_cattle_stock_proxy(t,i) = p70_cattle_stock_proxy(t-1,i);
+   p70_incr_cattle(t,i) = ( (p70_cattle_feed_pc_proxy(t,i,"livst_rum")  + 10**(-6))* (p70_cattle_stock_proxy(t,i)/p70_cattle_stock_proxy(t-1,i))
+                                          +  (p70_cattle_feed_pc_proxy(t,i,"livst_milk") + 10**(-6)) * (p70_milk_cow_proxy(t,i)/p70_milk_cow_proxy(t-1,i)) )
+                                        / sum(kli_rd, p70_cattle_feed_pc_proxy(t,i,kli_rd) + 10**(-6));
+else
+   p70_incr_cattle(t,i) = 1;
 );
 ```
 
@@ -83,7 +87,7 @@ u(i) $ (not s(i)) = v(i);
 u(i) $ (s(i) and u(i) and t(i)) = s(i);
 ```
 
-**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:34`):
+**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:13`):
 ```gams
 v56_emis_pricing.fx(i,emis_oneoff,pollutants)$(not sameas(pollutants,"co2_c")) = 0;
 ```
@@ -99,20 +103,19 @@ This fixes emissions pricing to zero for all pollutants except CO2.
 - `ord(set_name)` — ordinal position in ordered sets (1-indexed)
 
 ```gams
-b = sum((i,j)$sameas(i,j), 1);      * Sum only diagonal elements
-x.fx(i) $ (ord(i) = 1) = 3;          * Fix first element to 3
+b = sum((i,j)$sameas(i,j), 1);      !! Sum only diagonal elements
+x.fx(i) $ (ord(i) = 1) = 3;          !! Fix first element to 3
 ```
 
-**MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:13-16`):
+**MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:35-38`):
 ```gams
-q10_land_from(j2,land_from) ..
-    v10_lu_transitions(j2,land_from,"crop")
-    =e=
-    sum(land_to$(not sameas(land_from,land_to)),
-        v10_lu_transitions(j2,land_from,land_to));
+ q10_landreduction(j2,land_from) ..
+        vm_landreduction(j2,land_from) =e=
+        sum(land_to$(not sameas(land_from,land_to)),
+        vm_lu_transitions(j2,land_from,land_to));
 ```
 
-The `$(not sameas(land_from,land_to))` excludes diagonal transitions (land type to itself).
+The `$(not sameas(land_from,land_to))` excludes diagonal transitions (land type reducing to itself).
 
 ### 1.3 Dollar on Left vs Right
 
@@ -126,14 +129,13 @@ rho(i) $ (sig(i) <> 0) = (1./sig(i)) - 1;
 
 If `sig(i) = 0`, `rho(i)` is **not modified** (avoids division by zero).
 
-**MAgPIE example** (`modules/35_natveg/pot_forest_may24/presolve.gms:82`):
+**MAgPIE example** (`modules/35_natveg/pot_forest_may24/presolve.gms:116`):
 ```gams
 p35_maturesecdf(t,j,ac)$(not sameas(ac,"acx")) =
-    (s35_natveg_harvest_secdforest * sum(ac_est, p35_secdforest(t,j,ac_est)))
-    / (sum(ac_sub, 1$(not sameas(ac_sub,"acx"))) * s35_natveg_harvest_secdforest + (1-s35_natveg_harvest_secdforest));
+      p35_land_other(t,j,"youngsecdf",ac)$(pm_carbon_density_secdforest_ac_uncalib(t,j,ac,"vegc") > 20);
 ```
 
-Only assigns for age classes that are not "acx".
+Only assigns for age classes that are not "acx"; the dollar on the right means zero is assigned when the carbon density condition is not met.
 
 #### 1.3.2 Dollar on Right (Ternary-Like Behavior)
 
@@ -156,11 +158,11 @@ Each term contributes only when its condition is true, summing the results.
 Restrict summation and aggregation using dollar conditions:
 
 ```gams
-tsupc = sum(i $ (supc(i) <> inf), supc(i));        * Sum non-infinite values
-y(r) = sum(s $ corr(r,s), income(s));              * Sum only correlated elements
+tsupc = sum(i $ (supc(i) <> inf), supc(i));        !! Sum non-infinite values
+y(r) = sum(s $ corr(r,s), income(s));              !! Sum only correlated elements
 ```
 
-**MAgPIE example** (`modules/70_livestock/fbask_jan16/presolve.gms:70`):
+**MAgPIE example** (`modules/70_livestock/fbask_jan16/presolve.gms:16`):
 ```gams
 if (ord(t) = smax(t2, ord(t2)$(t_past(t2))) AND card(t) > sum(t_all$(t(t_all) and t_past(t_all)), 1),
 ```
@@ -179,13 +181,12 @@ mb(i).. x(i) =g= y(i) + (e(i) - m(i)) $ t(i);
 
 The term `(e(i) - m(i))` is included only if `t(i)` is TRUE (non-zero or set membership).
 
-**MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:13`):
+**MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:30-33`):
 ```gams
-q10_land_from(j2,land_from) ..
-    v10_lu_transitions(j2,land_from,"crop")
-    =e=
-    sum(land_to$(not sameas(land_from,land_to)),
-        v10_lu_transitions(j2,land_from,land_to));
+ q10_landexpansion(j2,land_to) ..
+        vm_landexpansion(j2,land_to) =e=
+        sum(land_from$(not sameas(land_from,land_to)),
+        vm_lu_transitions(j2,land_from,land_to));
 ```
 
 #### 1.5.2 Domain Restriction (Before ..)
@@ -198,14 +199,15 @@ gple(w,wp,te) $ ple(w,wp).. yw(w,te) - yw(wp,te) =l= dpack;
 
 **Read as**: "Generate constraint `gple(w,wp,te)` only for combinations where `ple(w,wp)` is true."
 
-**MAgPIE example** (`modules/32_forestry/dynamic_may24/preloop.gms:65`):
+**MAgPIE example** (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:34-37`):
 ```gams
-loop(ac$(ord(ac) > 1),
-  p32_carbon_density_ac(t,j,"acx",ag_pools) = p32_carbon_density_ac(t,j,ac,ag_pools);
-);
+q71_feed_balanceflow_nlp(j2)$(s71_lp_fix=0) ..
+             sum(kforage, v71_feed_balanceflow(j2,kforage)) =e=
+             sum((ct,cell(i2,j2),kli_rum,kforage), vm_feed_balanceflow(i2,kli_rum,kforage)
+             * (vm_prod(j2,kli_rum) / (vm_prod_reg(i2,kli_rum))));
 ```
 
-Loop executes only for age classes with ordinal position > 1.
+The constraint `q71_feed_balanceflow_nlp` is only generated when `s71_lp_fix=0`; when the scalar is non-zero the constraint instances are suppressed entirely.
 
 ### 1.6 Nested Dollar Conditions
 
@@ -357,28 +359,30 @@ else
 
 #### First Timestep Initialization
 
-**Example** (`modules/17_production/flexreg_apr16/presolve.gms:13`):
+**Example** (`modules/17_production/flexreg_apr16/presolve.gms:12-18`):
 ```gams
 if (ord(t) = 1,
-  im_demandshare_reg.l(i,kall) = f17_prod_init(i,kall)/sum(i2,f17_prod_init(i2,kall));
-);
+
+$ifthen "%c17_prod_init%" == "on"
+vm_prod.l(j,kcr) = pm_prod_init(j,kcr);
+$endif
+
+    );
 ```
 
-Initializes regional demand shares only in the first timestep.
+Initializes production levels to calibrated starting values only in the first timestep, and only when the `c17_prod_init` switch is set to `"on"`.
 
 #### Historical-to-Projection Transition
 
-**Example** (`modules/70_livestock/fbask_jan16/presolve.gms:69-75`):
+**Example** (`modules/70_livestock/fbask_jan16/presolve.gms:16-19`):
 ```gams
-if (ord(t) = smax(t2, ord(t2)$(t_past(t2))) AND card(t) > sum(t_all$(t(t_all) and t_past(t_all)), 1),
-    p70_cattle_stock_proxy(t,i) =  im_pop(t,i)
-                                  * pm_gdp_pc_ppp(t,i)
-                                  / sum(i_to_iso(i,iso), im_pop_iso("y1995",iso))
-                                  * sum(i_to_iso(i,iso), im_gdp_pc_ppp_iso("y1995",iso));
-);
+   if (ord(t) = smax(t2, ord(t2)$(t_past(t2))) AND card(t) > sum(t_all$(t(t_all) and t_past(t_all)), 1),
+      p70_endo_scavenging_flag(i,kli_rum) = - fm_feed_balanceflow(t-1,i,kli_rum,"pasture")/pc70_dem_feed_pasture(i,kli_rum);
+      p70_endo_scavenging_flag(i,kli_rum)$(p70_endo_scavenging_flag(i,kli_rum) < s70_scavenging_ratio) = 0;
+   );
 ```
 
-**Explanation**: At the transition from historical (`t_past`) to projection period, calculate cattle stock proxy based on population and GDP per capita.
+**Explanation**: At the last historical timestep before the projection period, calculate the scavenging flag ratio from the pasture feed balance.
 
 **Breaking down the condition**:
 - `ord(t) = smax(t2, ord(t2)$(t_past(t2)))` — Current timestep is the **last historical** timestep
@@ -386,14 +390,18 @@ if (ord(t) = smax(t2, ord(t2)$(t_past(t2))) AND card(t) > sum(t_all$(t(t_all) an
 
 #### Time-Conditional Parameter Updates
 
-**Example** (`modules/70_livestock/fbask_jan16/presolve.gms:119-121`):
+**Example** (`modules/70_livestock/fbask_jan16/presolve.gms:52-58`):
 ```gams
 if (ord(t)>1,
-  p70_cattle_stock_proxy(t,i) = p70_cattle_stock_proxy(t-1,i);
+   p70_incr_cattle(t,i) = ( (p70_cattle_feed_pc_proxy(t,i,"livst_rum")  + 10**(-6))* (p70_cattle_stock_proxy(t,i)/p70_cattle_stock_proxy(t-1,i))
+                                          +  (p70_cattle_feed_pc_proxy(t,i,"livst_milk") + 10**(-6)) * (p70_milk_cow_proxy(t,i)/p70_milk_cow_proxy(t-1,i)) )
+                                        / sum(kli_rd, p70_cattle_feed_pc_proxy(t,i,kli_rd) + 10**(-6));
+else
+   p70_incr_cattle(t,i) = 1;
 );
 ```
 
-For all timesteps after the first, carry forward the previous value.
+For all timesteps after the first, compute the cattle increment ratio relative to the previous timestep; initialize to 1 in the first timestep.
 
 ### 2.6 Nesting If Statements
 
@@ -525,7 +533,7 @@ loop((i,j),
 );
 ```
 
-**MAgPIE example** (`modules/80_optimization/nlp_par/solve.gms:52-53`):
+**MAgPIE example** (`modules/80_optimization/nlp_par/solve.gms:40`):
 ```gams
 loop(i2,
     j2(j)$cell(i2,j) = yes;
@@ -544,14 +552,14 @@ loop(i,
 );
 ```
 
-**MAgPIE example** (`modules/32_forestry/dynamic_may24/preloop.gms:65-67`):
+**MAgPIE example** (`modules/32_forestry/dynamic_may24/preloop.gms:22-24`):
 ```gams
 loop(ac$(ord(ac) > 1),
-  p32_carbon_density_ac(t,j,"acx",ag_pools) = p32_carbon_density_ac(t,j,ac,ag_pools);
-);
+  p32_carbon_density_ac_marg(t_all,j,ac) = (p32_carbon_density_ac_forestry(t_all,j,ac) - p32_carbon_density_ac_forestry(t_all,j,ac-1))/5;
+  );
 ```
 
-Nested within an outer time loop, this copies carbon density for age classes with ordinal > 1.
+Iterates over age classes with ordinal > 1 to compute the marginal change in carbon density between consecutive age classes.
 
 ### 3.6 Conditional Loop (Dollar Filter)
 
@@ -561,7 +569,7 @@ loop(i$(condition),
 );
 ```
 
-**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:82`):
+**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:96`):
 ```gams
 loop(t_all$(m_year(t_all) > max(m_year("%c56_mute_ghgprices_until%"),s56_fader_start*s56_ghgprice_fader)),
     im_pollutant_prices(t_all,i,pollutants_ghgp) = ...;
@@ -583,7 +591,7 @@ loop(active,
 );
 ```
 
-**MAgPIE example** (`modules/80_optimization/nlp_par/solve.gms:46`):
+**MAgPIE example** (`modules/80_optimization/nlp_par/solve.gms:50`):
 ```gams
 loop(h$p80_handle(h),
     * Solve for this handle
@@ -702,14 +710,14 @@ while(error > 0.001,
 
 **Problem**:
 ```gams
-while(i <> 2.6,  * May never be exactly 2.6 due to floating point
+while(i <> 2.6,  !! May never be exactly 2.6 due to floating point
     i = i + 0.1;
 );
 ```
 
 **Solution**:
 ```gams
-while(round(i,2) <> 2.6,  * Stable comparison
+while(round(i,2) <> 2.6,  !! Stable comparison
     i = i + 0.1;
 );
 ```
@@ -754,7 +762,7 @@ Displays values 1, 2, 3, 4, 5.
 **GAMS documentation**: "The number of passes in a while statement may be restricted using the command line parameter or option forlim"
 
 ```gams
-option forlim = 1000;  * Maximum 1000 iterations
+option forlim = 1000;  !! Maximum 1000 iterations
 ```
 
 **Safety**: Prevents infinite loops from hanging execution.
@@ -900,7 +908,7 @@ continue;
 **Example**:
 ```gams
 loop(i,
-    continue$(mod(ord(i),2) = 0);  * Skip even-numbered elements
+    continue$(mod(ord(i),2) = 0);  !! Skip even-numbered elements
     cnt = cnt + 1;
 );
 ```
@@ -1042,7 +1050,7 @@ abort$(pm_interest_rate(t,i) < 0)
 
 **Poor abort message**:
 ```gams
-abort$(error_flag) "Error";  * Too vague!
+abort$(error_flag) "Error";  !! Too vague!
 ```
 
 ---

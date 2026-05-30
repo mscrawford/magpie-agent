@@ -36,7 +36,7 @@ MAgPIE uses GAMS `modelstat` codes to detect infeasibility. Three optimization r
 | 1 | Optimal | ✅ Accept, save GDX |
 | 2 | Locally optimal | ✅ Accept, save GDX |
 | 3–6 | Infeasible / unbounded | ❌ Retry loop, then abort |
-| 7 | Intermediate infeasible | ⚠️ **Tolerated** — no abort |
+| 7 | Feasible (not proven optimal) | ⚠️ **Tolerated** — no abort |
 | 13 | Error / no solution | ❌ Retry loop, then abort |
 | NA | Not available | Forced to 13, then retry |
 
@@ -51,7 +51,7 @@ modules/80_optimization/nlp_apr17/solve.gms:103-106
   3. abort "no feasible solution found!"         ← line 106
 ```
 
-Key: `modelstat = 7` is **exempted** from aborting. The model continues with a suboptimal solution.
+Key: `modelstat = 7` (a feasible but not provably-optimal solution) is **exempted** from aborting. The model keeps this feasible solution.
 
 ### 1.3 Key Status Parameters
 
@@ -172,7 +172,7 @@ q10_land_area(j2) ..
 q43_water(j2) ..
   sum(wat_dem, vm_watdem(wat_dem,j2)) =l= sum(wat_src, v43_watavail(wat_src,j2));
 ```
-**Why critical**: Hard physical cap. No inter-cluster water transfer. Only 1 of 5 demand sectors is endogenous (agriculture). Default: 50% of water reserved for manufacturing (`s42_reserved_fraction = 0.5`).
+**Why critical**: Hard physical cap. No inter-cluster water transfer. Only 1 of 5 demand sectors is endogenous (agriculture). In the default all_sectors_aug13 realization, non-agricultural water demands (manufacturing, electricity, domestic, ecosystem) are read per-sector from input data, not a flat reserve. The flat 50%-reserved-for-manufacturing rule (`s42_reserved_fraction = 0.5`) applies only to the non-default agr_sector_aug13 realization (`modules/42_water_demand/agr_sector_aug13/input.gms:9`, `modules/42_water_demand/agr_sector_aug13/presolve.gms:37-38`).
 **Partial safety valve**: Presolve hack inflates groundwater for exogenous demand exceedance (`modules/43_water_availability/total_water_aug13/presolve.gms:14-16`), but does NOT protect against combined agricultural+exogenous overuse.
 
 #### Rank 3: `q60_bioenergy_reg` — Regional Bioenergy Demand
@@ -182,7 +182,7 @@ q60_bioenergy_reg(i2) ..
   sum(kbe60, v60_2ndgen_bioenergy_dem_dedicated(i2,kbe60)) =g=
   sum(ct, i60_bioenergy_dem(ct,i2)) * c60_biodem_level;
 ```
-**Why critical**: Hard demand floor, **active by default** (`c60_biodem_level = 1`). Every region MUST produce its bioenergy — no inter-regional trade. Minimum floor of 1 mio. GJ/yr per region (`modules/60_bioenergy/1st2ndgen_priced_feb24/presolve.gms:62`).
+**Why critical**: Hard demand floor, **active by default** (`c60_biodem_level = 1`). Every region MUST produce its bioenergy — no inter-regional trade. Minimum floor of 1 mio. GJ/yr per region (`modules/60_bioenergy/1st2ndgen_priced_feb24/presolve.gms:64`).
 
 #### Rank 4: `q21_notrade` — Non-Tradable Commodities Autarky
 ```gams
@@ -216,7 +216,7 @@ q21_trade_reg(h2,k_trade) ..
 
 #### `q32_establishment_hvarea` — Replanting ≥ Harvest (Module 32)
 ```gams
-# modules/32_forestry/dynamic_may24/equations.gms:204-208
+# modules/32_forestry/dynamic_may24/equations.gms:213-217
 ```
 Active when `s32_hvarea = 2` (default). **No slack.** But conditional on establishment dynamics switch.
 
@@ -228,7 +228,7 @@ Requires agricultural/forestry land → secondary forest. **No slack.**
 
 #### `q35_min_forest` — NPI/NDC Forest Minimum (Module 35)
 ```gams
-# modules/35_natveg/pot_forest_may24/equations.gms:75-77
+# modules/35_natveg/pot_forest_may24/equations.gms:78-80
 ```
 
 #### `q32_aff_pol` — NDC Afforestation Target (Module 32)
@@ -267,7 +267,7 @@ Requires agricultural/forestry land → secondary forest. **No slack.**
 | `v29_fallow_missing(j)` | 29 | 615/ha | Fallow land minimum share | Conditional |
 | `v30_penalty(j,rota30)` | 30 | 123–615/ha | Crop rotation violations | No (default: rule-based) |
 | `v30_penalty_max_irrig(j,rotamax30)` | 30 | 123–615/ha | Irrigated crop rotation max | Always |
-| `v71_additional_mon(j)` | 71 | 15,000/tDM | Monogastric spatial limits | Yes |
+| `v71_additional_mon(j,kli_mon)` | 71 | 15,000/tDM | Monogastric spatial limits | Yes |
 
 ### Cost Flow to Objective
 
@@ -308,7 +308,7 @@ readGDX("fulldata.gdx", "ov21_import_for_feasibility", field = "level")  # If no
 | `s30_annual_max_growth` | 30_croparea | `Inf` | Any small finite value | Hard `.up()` bound on regional cropland growth rate |
 | `c22_protect_scenario` | 22_conservation | `"none"` | `"GSN_HalfEarth"`, `"PBL_HalfEarth"` | Protects ~50% of land → lower bounds exceed cluster area |
 | `c50_scen_neff` | 50_nr_soil | varies | Aggressive targets (e.g., `max75`) | NUE is hard-fixed via `vm_nr_eff.fx()` → N balance unsatisfiable |
-| `s44_bii_target` | 44_biodiversity | `0` (OFF) | ≥ 0.78 | Forces massive land-use change. `config/default.cfg:1414` warns values ~0.7 already cause "very strong land-use changes" |
+| `s44_bii_target` | 44_biodiversity | `0` (OFF) | ≥ 0.78 | Forces massive land-use change. `config/default.cfg:1443` notes that values >= 0.78 drive a (very) strong increase of global BII accomplished by high conversion of pasture to non-forest natural land (values < 0.7 still permit continued BII decrease) |
 | `s56_cprice_red_factor` | 56_ghg_policy | `1` | Negative values | Emissions rewarded → objective unbounded |
 | `s56_fader_start > s56_fader_end` | 56_ghg_policy | `2030`/`2050` | Inverted → negative fader | Negative GHG prices → unbounded |
 
@@ -325,7 +325,7 @@ readGDX("fulldata.gdx", "ov21_import_for_feasibility", field = "level")  # If no
 
 | Switch | Module | Default | Dangerous Value | Why |
 |---|---|---|---|---|
-| `c21_trade_liberalization` | 21_trade | `"l909090r808080"` | SSP3: `"l909595r809090"` | Near-autarky for food. `config/default.cfg:1613` notes PkBudg650 is "not feasible for SSP3" |
+| `c21_trade_liberalization` | 21_trade | `"l909090r808080"` | SSP3: `"l909595r809090"` | Near-autarky for food. `config/default.cfg:1648` notes PkBudg650 is "not feasible for SSP3" |
 | `s32_max_aff_area` + `s32_aff_prot=1` | 32_forestry | `Inf` / `1` | Low area + `aff_prot=1` | Permanently fixes ALL afforestation. If target < existing → infeasible |
 | `c60_2ndgen_biodem` + `c60_biodem_level` | 60_bioenergy | varies / `1` | `"PkBudg650"` + `1` | Stringent per-region bioenergy demand, no trade, hard `=g=` |
 | `s35_natveg_harvest_shr` | 35_natveg | `1` | Near `0` | Locks nearly all forest as `vm_land.lo() = (1-shr) × current_area` |
@@ -371,7 +371,7 @@ c21_trade_liberalization = "l909595r809090"  ← near-autarky
 + c60_2ndgen_biodem = "PkBudg650"            ← massive bioenergy demand
 + c60_biodem_level = 1                        ← per-region enforcement
 + high CO2 prices
-→ DOCUMENTED as "not feasible for SSP3" in config/default.cfg:1613
+→ DOCUMENTED as "not feasible for SSP3" in config/default.cfg:1648
 ```
 
 ### Combination 4: "Interest Rate Cascade"
@@ -527,7 +527,7 @@ Use the tables in Section 5 to identify which switches are most likely causing t
 | Crop area can't grow | Growth cap active | Increase `s30_annual_max_growth` |
 
 #### Step 6: Check for Known Infeasible Combinations
-- SSP3 + PkBudg650 = documented infeasible (`config/default.cfg:1613`)
+- SSP3 + PkBudg650 = documented infeasible (`config/default.cfg:1648`)
 - `s13_max_gdp_shr = 0.002` = documented infeasibility causer (`config/default.cfg:302`)
 
 #### Step 7: Progressive Relaxation
@@ -570,8 +570,8 @@ The first relaxation that makes the model feasible identifies the binding constr
 | `80_optimization/nlp_par/solve.gms` | 139 | `"No feasible solution found!"` | max(modelstat) > 2, ≠ 7 |
 | `15_food/anthro_iso_jun22/presolve.gms` | 264 | `"Food Demand Model infeasible during init"` | food modelstat > 2, ≠ 7 |
 | `15_food/anthro_iso_jun22/intersolve.gms` | 69 | `"Food Demand Model became infeasible"` | food modelstat > 2, ≠ 7 |
-| `13_tc/exo/presolve.gms` | 43 | `"tau value of 0 detected"` | Zero technology coefficient |
-| `38_factor_costs/per_ton_fao_may22/presolve.gms` | 9 | `"cannot handle labor prod ≠ 1"` | Configuration mismatch |
+| `13_tc/exo/presolve.gms` | 43 | `"tau value of 0 detected"` | Zero technology coefficient (non-default; default is endo_jan22) |
+| `38_factor_costs/per_ton_fao_may22/presolve.gms` | 9 | `"cannot handle labor prod ≠ 1"` | Configuration mismatch (non-default; default is sticky_feb18) |
 | `44_biodiversity/bii_target/preloop.gms` | 20 | `"Start year for BII target..."` | Invalid scenario config |
 
 ### 9.2 Optimization Input Parameters

@@ -616,7 +616,7 @@ vm_land.lo(j,land) = 0;
 
 Ensures land allocation is non-negative (though `positive variable` already enforces this).
 
-**Example - Non-zero lower bound**:
+**Example - Non-zero lower bound** (illustrative; `vm_production` is not a real MAgPIE variable):
 ```gams
 vm_production.lo(i,"wheat") = min_production(i);
 ```
@@ -642,7 +642,7 @@ variable_name.up(indices) = expression;
 vm_land.up(j,land) = pm_land_start(j,land) * 1.5;
 ```
 
-**Example - Unbounded**:
+**Example - Unbounded** (illustrative; `vm_trade` is not a real MAgPIE variable):
 ```gams
 vm_trade.up(i,k) = Inf;  * Explicitly set to infinity (default for positive variables)
 ```
@@ -660,7 +660,7 @@ vm_trade.up(i,k) = Inf;  * Explicitly set to infinity (default for positive vari
 variable_name.fx(indices) = expression;
 ```
 
-**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:34`):
+**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:13`):
 ```gams
 v56_emis_pricing.fx(i,emis_oneoff,pollutants)$(not sameas(pollutants,"co2_c")) = 0;
 ```
@@ -741,6 +741,7 @@ For all historical timesteps, fix land allocation to observed data.
 
 #### Soft Fixing with Narrow Bounds
 
+(Illustrative; `vm_production` is not a real MAgPIE variable.)
 ```gams
 vm_production.lo(i,k) = target(i,k) * 0.95;
 vm_production.up(i,k) = target(i,k) * 1.05;
@@ -928,12 +929,14 @@ $(ord(i) = card(i))           * Last element
 $(ord(ac) > 1)                * All except first
 ```
 
-**MAgPIE example** (`modules/70_livestock/fbask_jan16/presolve.gms:119`):
+**MAgPIE example** (`modules/70_livestock/fbask_jan16/presolve.gms:52`):
 ```gams
 if (ord(t)>1,
-  p70_cattle_stock_proxy(t,i) = p70_cattle_stock_proxy(t-1,i);
+   p70_incr_cattle(t,i) = ( ... * (p70_cattle_stock_proxy(t,i)/p70_cattle_stock_proxy(t-1,i)) ... );
 );
 ```
+
+Uses the lag `t-1` to compute the cattle stock growth ratio relative to the previous timestep.
 
 #### card(set) - Cardinality
 
@@ -973,10 +976,10 @@ $(sameas(i, "USA"))              * Only for USA
 $(not sameas(land_from, land_to)) * Exclude diagonal
 ```
 
-**MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:16`):
+**MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:37`):
 ```gams
 sum(land_to$(not sameas(land_from,land_to)),
-    v10_lu_transitions(j2,land_from,land_to))
+    vm_lu_transitions(j2,land_from,land_to))
 ```
 
 Sums all land transitions **except** self-transitions.
@@ -1035,11 +1038,9 @@ loop(active,
 );
 ```
 
-**MAgPIE example** (`modules/80_optimization/nlp_par/solve.gms:52-53`):
+**MAgPIE example** (`modules/80_optimization/nlp_par/solve.gms:40`):
 ```gams
-loop(i2,
-    j2(j)$cell(i2,j) = yes;  * Dynamically activate cells for region i2
-);
+loop(i2, j2(j)$cell(i2,j) = yes);
 ```
 
 ### 4.5 Set Attributes
@@ -1100,10 +1101,12 @@ forecast(t) = projection(t+1);          * Next timestep (lead)
 multi_year(t) = baseline(t-5);          * Five steps back
 ```
 
-**MAgPIE example** (`modules/70_livestock/fbask_jan16/presolve.gms:120`):
+**MAgPIE example** (`modules/70_livestock/fbask_jan16/presolve.gms:53`):
 ```gams
-p70_cattle_stock_proxy(t,i) = p70_cattle_stock_proxy(t-1,i);
+p70_cattle_stock_proxy(t,i)/p70_cattle_stock_proxy(t-1,i)
 ```
+
+Uses `t-1` lag inside a growth-ratio calculation (guarded by `if (ord(t)>1, ...)`).
 
 **Important**: Lag/lead only work with **ordered sets**.
 
@@ -1128,12 +1131,14 @@ if (t.first,
 parameter(t)$(ord(t) = 1) = initial_value;
 ```
 
-**MAgPIE example** (`modules/17_production/flexreg_apr16/presolve.gms:13`):
+**MAgPIE example** (`modules/17_production/flexreg_apr16/presolve.gms:14`):
 ```gams
-if (ord(t) = 1,
-  im_demandshare_reg.l(i,kall) = f17_prod_init(i,kall)/sum(i2,f17_prod_init(i2,kall));
-);
+$ifthen "%c17_prod_init%" == "on"
+vm_prod.l(j,kcr) = pm_prod_init(j,kcr);
+$endif
 ```
+
+Inside an `if (ord(t) = 1, ...)` block; initializes production levels from pre-computed initial values on the first timestep.
 
 ### 5.4 Last Timestep Patterns
 
@@ -1204,7 +1209,7 @@ $(m_year(t) > 2030)
 $(m_year(t) >= 2020 and m_year(t) <= 2050)
 ```
 
-**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:82`):
+**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:96`):
 ```gams
 loop(t_all$(m_year(t_all) > max(m_year("%c56_mute_ghgprices_until%"),
                                  s56_fader_start*s56_ghgprice_fader)),

@@ -187,7 +187,7 @@ If all match → **Full verification not needed immediately**
 
 **Action**: Document errors, reject module, start fresh verification.
 
-**See**: `archive/MODULE_59_ERRORS_FOUND.md` for example
+**See**: `modules/module_59_notes.md` for example
 
 ---
 
@@ -196,8 +196,8 @@ If all match → **Full verification not needed immediately**
 ### File References
 
 ✅ **Correct** (always full-path `modules/NN_name/realization/file.gms:N`):
-- `modules/22_biodiversity/bv_btc_mar21/equations.gms:45` (single line)
-- `modules/22_biodiversity/bv_btc_mar21/equations.gms:45-52` (range)
+- `modules/44_biodiversity/bv_btc_mar21/equations.gms:11` (single line)
+- `modules/44_biodiversity/bv_btc_mar21/equations.gms:11-13` (range)
 - `modules/14_yields/managementcalib_aug19/presolve.gms:123-145`
 
 ❌ **Wrong**:
@@ -209,13 +209,15 @@ If all match → **Full verification not needed immediately**
 
 ✅ **Correct**:
 ```markdown
-The biodiversity intactness index is calculated in equation `q22_bii`:
+The biodiversity stock cost is calculated in equation `q44_cost_bv_loss`:
 
 ```gams
-q22_bii(j) .. vm_bii(j) =e= sum(land, pm_land_start(j,land) * f22_bii(land)) / sum(land, pm_land_start(j,land));
+q44_cost_bv_loss(j2) .. vm_cost_bv_loss(j2)
+         =e=
+         v44_bv_loss(j2) * sum(ct, p44_price_bv_loss(ct));
 ```
 
-(Source: `modules/22_biodiversity/bv_btc_mar21/equations.gms:12-14`)
+(Source: `modules/44_biodiversity/bv_btc_mar21/equations.gms:11-13`)
 ```
 
 ❌ **Wrong**:
@@ -228,8 +230,8 @@ The BII is calculated by averaging land-type BII values.
 
 ✅ **Correct**:
 ```markdown
-`f22_bii(land)` - BII factor by land type (unitless, 0-1)
-Source: `input/f22_bii.csv`, loaded in `modules/22_land_conservation/area_based_apr22/input.gms:34`
+`f44_bii_coeff` - BII coefficient by land type/state (unitless)
+Source: `modules/44_biodiversity/bv_btc_mar21/input/f44_bii_coeff.cs3`, loaded in `modules/44_biodiversity/bv_btc_mar21/input.gms:17`
 ```
 
 ❌ **Wrong**:
@@ -245,17 +247,17 @@ BII factors are loaded from input files.
 ### 1. Confusing Ecological Facts with Model Implementation
 
 ❌ **Wrong**: "Forests sequester atmospheric carbon through photosynthesis"
-✅ **Right**: "Carbon stocks are tracked via `pm_carbon_density(t,j,"forestry",c_pools)` with growth derived from `im_growing_stock(t,j,ac,land_timber)` (formerly *pm_timber_yield* before PR #869 rename on 2026-04-20)"
+✅ **Right**: "Carbon stocks are tracked via `p32_carbon_density_ac_forestry(t,j,ac)` with growth derived from `im_growing_stock(t,j,ac,"forestry")` (formerly *pm_timber_yield* before PR #869 rename on 2026-04-20)"
 
 ### 2. Assuming Features Exist
 
 ❌ **Wrong**: "MAgPIE models fire dynamics in natural vegetation"
-✅ **Right**: "Fire impacts are NOT dynamically modeled; carbon loss from fire is parameterized via `f35_fire_loss(t,j)` (modules/35_natveg/pot_forest_may24/input.gms:45)"
+✅ **Right**: "Fire impacts are NOT dynamically modeled; area damage from fire is parameterized via `f35_forest_lost_share(i,driver_source)` (`modules/35_natveg/pot_forest_may24/input.gms:32`)"
 
 ### 3. Vague Interface Variable Claims
 
 ❌ **Wrong**: "The module receives land area from Module 10"
-✅ **Right**: "Receives `vm_land(j,land)` from Module 10 (land), declared in `modules/10_land/*/declarations.gms:67`"
+✅ **Right**: "Receives `vm_land(j,land)` from Module 10 (land), declared in `modules/10_land/landmatrix_dec18/declarations.gms:19`"
 
 ### 4. Invented Numerical Examples
 

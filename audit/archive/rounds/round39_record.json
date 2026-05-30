@@ -1,0 +1,27 @@
+{
+  "round": 39,
+  "type": "doc_centric_audit + verify (non-module: reference docs)",
+  "mode": "doccentric",
+  "verify": true,
+  "date": "2026-05-30",
+  "scope": "Focused non-module audit: 6 un-audited code/gams-checkable reference docs (GAMS_Advanced_Features, GAMS_Best_Practices, GAMS_Control_Structures, GAMS_Functions_Operations, Infeasibility_Debugging_Guide, Verification_Protocol). klass=reference (gams.com + develop).",
+  "develop_sha": "ee98739fd",
+  "workflow_run_id": "wf_6d086beb-38a",
+  "outcome": "HIGH yield (35 confirmed bugs, 5 Critical) - the low-yield prediction was WRONG",
+  "cap_probe": {"max_inter_message_gap_min": 2.23, "capped": false, "wall_clock_min": 26.7, "n_agents": 19, "subagent_tokens": 1436050},
+  "verify_summary": {"docs_verified": 6, "upheld": 30, "corrected": 3, "refuted": 0, "citation_failed": 0},
+  "totals": {"confirmed_bugs": 35, "critical": 5, "major": 22, "minor": 8, "edits": 53},
+  "per_doc": [
+    {"label": "GAMS_Advanced_Features", "c": 1, "ma": 4, "mi": 1, "edits": 9, "key": "GAMS-language content all correct (gams.com). All 6 bugs in MAgPIE example citations: Critical fabricated im_demandshare_reg+f17_prod_init (M17); v10_lu_transitions->vm_lu_transitions; M56/M80 line drift; vm_production/vm_trade fabricated."},
+    {"label": "GAMS_Best_Practices", "c": 0, "ma": 0, "mi": 1, "edits": 1, "key": "Cleanest. 1 Minor: 'option tuning=1' invalid GAMS (CPLEX tuning is cplex.opt via .optfile=1). pm_population/pm_total_land pedagogical placeholders -> deferred (not flagged)."},
+    {"label": "GAMS_Control_Structures", "c": 3, "ma": 7, "mi": 0, "edits": 22, "key": "GAMS semantics correct. 3 Critical fabricated example code (q10_land_from/v10_lu_transitions; im_demandshare_reg/f17_prod_init; p35_maturesecdf FORMULA [name is real]); 6 citation drifts (several OOR); 1 Major: inline 'code; * comment' is multiplication not comment. Verifier CORRECTED the comment-fix scope (GCS-B1)."},
+    {"label": "GAMS_Functions_Operations", "c": 1, "ma": 3, "mi": 0, "edits": 4, "key": "Critical: hallucinated v10_lu_transitions x2 (real=vm_lu_transitions); 3 Major (line drift; fabricated indexed-op quote; equations.gms:32->37). GAMS semantics/operator tables OK."},
+    {"label": "Infeasibility_Debugging_Guide", "c": 0, "ma": 5, "mi": 4, "edits": 10, "key": "7/10. Semantic: modelstat 7 = Feasible not 'Intermediate infeasible' (self-contradicts at 9.5). 3 config:line drifts; eq-cite to wrong equation; non-default mechanism as default. Verifier CORRECTED INFEAS-B7 (line 62->64) + INFEAS-B9 (tc default config:2293->293, auditor cited s80_optfile's line)."},
+    {"label": "Verification_Protocol", "c": 0, "ma": 3, "mi": 2, "edits": 7, "key": "Process body sound; the worked examples that teach '100% accuracy' contain 3 Major + 2 Minor: wrong module name (22 vs 44 for bv_btc), OOR cite, content-mismatch f22_bii cite, broken ref, fabricated vars in gold-standard examples. Ironic but real."}
+  ],
+  "key_finding": "The reference/GAMS docs' GAMS-LANGUAGE content is correct (gams.com-verified), but their MAgPIE EXAMPLE code was never code-verified and is full of fabricated identifiers (im_demandshare_reg, v10_lu_transitions->vm_lu_transitions, q10_land_from, f17_prod_init, vm_production/vm_trade) + citation drift. Meta-checked: those 3 fabrications confirmed ABSENT in develop; vm_lu_transitions real (M29/M59); p35_maturesecdf is a REAL param (the Critical was its fabricated FORMULA, not the name).",
+  "prediction_correction": "I (the agent) predicted these docs LOW-yield; they were HIGH-yield (35 bugs / 5 Critical). Lesson: 'reference' docs that embed domain EXAMPLES need the same code-verification as substance docs - the examples drift and hallucinate identifiers even when the language content they teach is correct. The worked examples in process docs (Verification_Protocol) that teach accuracy were themselves inaccurate.",
+  "verifier_performance": "30 upheld + 3 CORRECTED (GCS-B1 comment-fix scope; INFEAS-B7 62->64; INFEAS-B9 caught the auditor citing config:2293=s80_optfile instead of the real tc default :293) + 0 refuted + 0 citation_failed. The producer/declaration + citation-content machinery validated again in production.",
+  "gate": {"clean": true, "validate_consistency_errors": 0, "self_healed": "1 bare-basename cite (Infeasibility_Debugging_Guide:175 -> full path 42_water_demand/agr_sector_aug13/presolve.gms:37-38)", "reverted_files": []},
+  "pushed": false
+}

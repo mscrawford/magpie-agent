@@ -288,7 +288,7 @@ active(i) $ (not excluded(i)) = yes;
 result = (a > 0 and b > 0) or (c < 10 and d < 10);
 ```
 
-**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:82`):
+**MAgPIE example** (`modules/56_ghg_policy/price_aug22/preloop.gms:96`):
 ```gams
 loop(t_all$(m_year(t_all) > max(m_year("%c56_mute_ghgprices_until%"),
                                  s56_fader_start*s56_ghgprice_fader)),
@@ -428,10 +428,10 @@ if (sameas(scenario, "SSP2"),
 );
 ```
 
-**MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:32`):
+**MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:37`):
 ```gams
 sum(land_to$(not sameas(land_from,land_to)),
-    v10_lu_transitions(j2,land_from,land_to))
+    vm_lu_transitions(j2,land_from,land_to))
 ```
 
 ### 3.5 diag(element1, element2) - Numeric Identity
@@ -459,7 +459,7 @@ weighted_sum = sum((i,j), value(i,j) * diag(i,j));  * Diagonal elements only
 
 ### 4.1 Overview
 
-**Official GAMS Documentation**: "The indexed operators available are: sum, prod, smin, smax" ([UG_Parameters](https://www.gams.com/latest/docs/UG_Parameters.html))
+**Official GAMS Documentation**: GAMS provides six indexed operations -- sum, prod, smin, smax, plus sand (set conjunction) and sor (set disjunction) ([UG_Parameters](https://www.gams.com/latest/docs/UG_Parameters.html))
 
 **Indexed operations** aggregate values over sets.
 
@@ -516,7 +516,7 @@ future_total = sum(t$(m_year(t) > 2030 and m_year(t) <= 2050), annual_value(t));
 **MAgPIE example** (`modules/10_land/landmatrix_dec18/equations.gms:32`):
 ```gams
 sum(land_from$(not sameas(land_from,land_to)),
-    v10_lu_transitions(j2,land_from,land_to))
+    vm_lu_transitions(j2,land_from,land_to))
 ```
 
 Sum transitions **except** self-transitions.

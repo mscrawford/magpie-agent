@@ -109,3 +109,22 @@ Cap-probe clean (1.48 min). 0 Critical — peripheral hubs (40,54,80,20) markedl
 **State:** commit stack `ac06848..HEAD` on `main` = **8 commits, NOT pushed**. Lock removed; merge backup removed. Develop worktree `/tmp/magpie_develop_ro` left mounted for review (`git -C ../magpie worktree remove /tmp/magpie_develop_ro` when done). `validation_rounds.json` merged to 37 rounds (schema 1.4), round-trip validated, final gate 0 errors.
 
 **Awaiting explicit go to push to mscrawford** (only mscrawford, never pik-piam).
+
+---
+
+# CONSOLIDATION + NON-MODULE AUDIT (R38-R39) — 2026-05-30 (same session)
+
+**User-directed after the sweep**: consolidate (harden the infra against the residual failure modes) before widening to non-module docs. Root-cause finding: the worst auditor errors (the module_21 regression) were CORRELATED cross-realization confabulations — a fresh forensics agent reproduced the exact error — so more LLM verifiers don't help; only mechanical checks do ([[feedback_correlated_confabulation_mechanical_checks]]).
+
+**Consolidation (committed `2b43eb4`, pushed):**
+- Engine verifier extended to producer/declaration (DECLARED/POPULATED/READ) + realization-structure + a mechanical citation-content check (`CITATION_FAILED`) on every confirmed bug. Answerer + anchor anti-fabrication rule (the G4 confab).
+- New `scripts/check_scaling.py` (the 10eN-vs-1eN class); `--self-test` PASS, wired into validate_consistency.sh (SECTION_TOTAL 27→28).
+- `verifiers.md` MANDATEs 18 (producer/declaration), 19 (realization-structure), 20 (`.l/.lo` grep) + MANDATE 16 citation-content extension; AGENT.md index → 20, deployed copies synced (Check-10 clean).
+
+**R38 smoke-test (committed `286006e`, pushed):** hardening VALIDATED end-to-end — mean 10, G4 confab FIXED (cites 106 verbatim, no fabricated grep), producer/realization/citation verifier classes all work, module_21 regression did NOT recur. + 5 residual fixes (module_21, module_52).
+
+**R39 non-module audit (reference docs):** 35 confirmed bugs, 5 Critical, 53 edits across 6 reference/GAMS docs. KEY FINDING: GAMS-language content correct (gams.com-verified), but the MAgPIE EXAMPLE code was never code-verified — fabricated identifiers (`im_demandshare_reg`, `v10_lu_transitions`→`vm_lu_transitions`, `q10_land_from`, `f17_prod_init`, `vm_production`/`vm_trade`) + citation drift throughout, even in the worked examples of Verification_Protocol that teach "100% accuracy". (The agent's low-yield prediction was WRONG; reference-doc examples are high-yield.) Verifier: 30 upheld / 3 corrected / 0 false; cap-probe clean (2.23 min).
+
+**Cumulative this session — R33-R39: ~191 confirmed doc bugs fixed (15 Critical) across 35 module + 6 reference docs, plus a hardened, validated adversarial-verifier engine + 3 new MANDATEs + check_scaling.py.** `validation_rounds.json` merged through R39. Develop worktree removed at finalize.
+
+**Queued initiative**: use-time debugging-learning flywheel — capture real debugging-session lessons back into the shared docs, accuracy-gated by the MANDATEs (see project memory `project_magpie_agent_initiatives`).
