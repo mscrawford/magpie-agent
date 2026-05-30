@@ -257,15 +257,18 @@ sum((awms_conf,kli),
 
 **To Module 50 (NR Soil Budget)**:
 - `vm_manure_recycling(i,npk)`: Manure nutrients recycled to cropland (Mt N/P/K) (`equations.gms:84`)
+- `vm_manure(i,kli,"stubble_grazing",npk)`: Stubble-grazing manure N to cropland N inputs (q50_nr_inputs, `equations.gms:28`)
+- `vm_manure(i,kli,"grazing",npk)`: Grazing manure N to pasture N inputs (q50_nr_inputs_pasture, `equations.gms:77`)
 
 **To Module 51 (Nitrogen)**:
 - `vm_manure_confinement(i,kli,awms_conf,npk)`: Manure in confinement by management system (Mt N) (`equations.gms:76`)
 - `vm_manure(i,kli,awms_prp,npk)`: Manure from pasture/range/paddock systems (Mt N) (`equations.gms:69`)
   - `awms_prp` = {grazing, stubble_grazing} (`sets.gms:13-14`)
+- `vm_manure_recycling(i,npk)`: Manure-on-cropland N for emission calculations (q51_emissions_man_crop, `equations.gms:25`)
 
 **To Module 53 (Methane)**:
-- `vm_manure_confinement(i,kli,awms_conf,npk)`: Manure in confinement (anaerobic conditions → CH₄ emissions)
-- `vm_manure(i,kli,awms,npk)`: Total manure by AWMS (for enteric fermentation and manure CH₄ calculations)
+- `vm_manure(i,kli,"confinement",npk)`: Confinement-managed manure N read via q53_emissionbal_ch4_awms (equations.gms:50); M53 reads the vm_manure variable's confinement element directly, NOT the separate vm_manure_confinement variable
+  - Note: enteric-fermentation CH4 in M53 uses vm_feed_intake (q53_emissionbal_ch4_ent_ferm, equations.gms:21-29), not manure
 
 ---
 
@@ -506,9 +509,12 @@ AWMS_share = Scenario_share × Region_share + Fallback_share × (1 - Region_shar
 | Module | Variables | Purpose |
 |--------|-----------|---------|
 | **50** (NR Soil Budget) | `vm_manure_recycling(i,npk)` | Manure nutrients applied to cropland |
+| **50** (NR Soil Budget) | `vm_manure(i,kli,"stubble_grazing",npk)` | Stubble-grazing manure N to cropland inputs (q50_nr_inputs) |
+| **50** (NR Soil Budget) | `vm_manure(i,kli,"grazing",npk)` | Grazing manure N to pasture inputs (q50_nr_inputs_pasture) |
 | **51** (Nitrogen) | `vm_manure_confinement(i,kli,awms_conf,npk)` | Confinement manure for N emission calculations |
 | **51** (Nitrogen) | `vm_manure(i,kli,awms_prp,npk)` | Pasture/stubble manure for N emission calculations |
-| **53** (Methane) | `vm_manure_confinement(i,kli,awms_conf,npk)` | Confinement manure for CH₄ emission calculations |
+| **51** (Nitrogen) | `vm_manure_recycling(i,npk)` | Manure-on-cropland N for emission calculations (q51_emissions_man_crop) |
+| **53** (Methane) | `vm_manure(i,kli,"confinement",npk)` | Confinement manure N for AWMS CH4 calculations (q53_emissionbal_ch4_awms); NOT vm_manure_confinement |
 
 ### Critical Hub Status
 

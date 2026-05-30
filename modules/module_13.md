@@ -100,7 +100,7 @@ q13_tau(j2,tautype)..
         (1-p13_cropland_consv_shr(ct,j2)) * v13_tau_core(h2,tautype) 
         + p13_cropland_consv_shr(ct,j2) * v13_tau_consv(h2,tautype));
 ```
-*Source*: `modules/13_tc/endo_jan22/equations.gms:52-58`
+*Source*: `modules/13_tc/endo_jan22/equations.gms:52-53`
 
 **Formula Breakdown**:
 - `p13_cropland_consv_shr(ct,j2)`: Share of cropland in conservation priority areas at cluster j
@@ -149,10 +149,10 @@ q13_tau_consv(h2,tautype)$(c13_croparea_consv_tau_increase = 1 OR sum(ct, m_year
 
 | Variable | Consumer | Purpose | Source |
 |----------|----------|---------|--------|
-| `vm_tau(j,tautype)` | Module 14 (Yields), Module 38 (Factor Costs) | Land use intensity factor at cluster level | declarations.gms:13 |
+| `vm_tau(j,tautype)` | Module 14 (Yields) | Land use intensity factor at cluster level | declarations.gms:13 |
 | `vm_tech_cost(i)` | Module 11 (Costs) | Annualized technology costs for objective function | `modules/13_tc/endo_jan22/declarations.gms:10` |
 
-**Critical Role**: `vm_tau` is the central mechanism linking intensification investments (Module 13) to yield improvements (Module 14) and production costs (Module 38), creating the core tradeoff between land expansion and intensification.
+**Critical Role**: `vm_tau` is the central mechanism linking intensification investments (Module 13) to yield improvements (Module 14), creating the core tradeoff between land expansion and intensification. Production costs in Module 38 respond only indirectly, via vm_yld (M14) -> vm_prod, not via vm_tau directly.
 
 **Spatial Level Change**: As of f_btc2, `vm_tau` is defined at cluster level (j) rather than super-region level (h), enabling spatial heterogeneity in intensification rates based on conservation area shares.
 
@@ -368,8 +368,8 @@ vm_tech_cost.l(i) = vm_tech_cost.up(i)
 
 **Downstream** (provides to these modules):
 - Module 14 (Yields): Receives `vm_tau` to multiply biophysical yields
-- Module 38 (Factor Costs): Receives `vm_tau` to adjust production costs
 - Module 11 (Costs): Receives `vm_tech_cost` for objective function
+- Module 38 (Factor Costs): NOT a direct consumer of `vm_tau`; factor costs respond only transitively through vm_yld (M14) -> vm_prod
 
 **Circular Dependencies**: None direct, but participates in land-intensification feedback loop (demand → land allocation → intensification costs → tau → yields → production → demand).
 
@@ -415,7 +415,7 @@ Tau factor multiplies biophysical yields from LPJmL, directly increasing crop an
 ## Verification Summary
 
 - **Equations verified**: 5/5 (100%) - q13_cost_tc, q13_tech_cost, q13_tech_cost_sum, q13_tau, q13_tau_consv
-- **Interface variables verified**: 6/6 (vm_tau, vm_tech_cost, v13_tau_core, v13_tau_consv, pm_interest, pcm_land, pm_land_conservation)
+- **Interface + imported + internal variables verified**: 7/7 (vm_tau, vm_tech_cost, v13_tau_core, v13_tau_consv, pm_interest, pcm_land, pm_land_conservation)
 - **Input files catalogued**: 6
 - **Configuration switches verified**: 9 (including new conservation switches)
 - **Limitations identified**: 15
@@ -436,7 +436,7 @@ Module 13 does **not directly participate** in conservation laws, but **indirect
 ### Dependency Chains
 **Centrality**: High (critical yield modifier, part of production system)
 - **Depends on**: Modules 09 (GDP), 10 (land), 12 (interest rate)
-- **Provides to**: Modules 11 (costs), 14 (yields), 38 (factor costs)
+- **Provides to**: Modules 11 (costs), 14 (yields)
 - **Role**: **Intensification driver** - determines agricultural productivity growth
 
 **Key variable**: `vm_tau` - **THE** technological change factor that scales all yields

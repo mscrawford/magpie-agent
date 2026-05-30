@@ -809,10 +809,10 @@ Material demand is relatively **small** compared to food and feed:
 
 ## File Structure Summary
 
-**Total lines**: ~296 lines (9 files)
+**Total lines**: ~303 lines (10 files)
 
 **Files**:
-1. `module.gms` (26 lines): Module description, realization selection
+1. `module.gms` (26 lines): Module description, realization selection (parent dir `62_material/`, not realization dir)
 2. `realization.gms` (29 lines): Realization description, phase includes
 3. `sets.gms` (27 lines): Scenario sets, commodity set definition
 4. `declarations.gms` (40 lines): Scalars, parameters, variables, equations, output declarations
@@ -821,6 +821,7 @@ Material demand is relatively **small** compared to food and feed:
 7. `preloop.gms` (31 lines): Bioplastic demand calculation (historical baseline, logistic growth), biomass substrate conversion
 8. `presolve.gms` (46 lines): Historical switch, scaling factor calculation, double-counting correction
 9. `postsolve.gms` (34 lines): Memory update (lastcalibyear parameters), output definitions
+10. `scaling.gms` (7 lines): Scaling boilerplate (all `.scale` assignments commented out - inactive)
 
 **Input data files** (referenced, not counted):
 1. `modules/62_material/input/f62_dem_material.cs3`: FAO historical material demand (3D: time × region × commodity)
@@ -831,7 +832,7 @@ Material demand is relatively **small** compared to food and feed:
 
 ## Verification Summary
 
-**Source files read**: 9/9 ✓
+**Source files read**: 10/10 (incl. scaling.gms boilerplate) ✓
 - module.gms ✓
 - realization.gms ✓
 - sets.gms ✓
@@ -841,6 +842,7 @@ Material demand is relatively **small** compared to food and feed:
 - preloop.gms ✓
 - presolve.gms ✓
 - postsolve.gms ✓
+- scaling.gms ✓ (inactive boilerplate)
 
 **Equation count verified**: 2/2 ✓
 - q62_dem_material (`declarations.gms:29`, `equations.gms:22-30`)
@@ -896,7 +898,7 @@ Material demand is relatively **small** compared to food and feed:
 
 **Centrality**: Medium (demand provider)
 **Provides to**: Modules affecting forestry and crop production
-**Depends on**: Module 09 (drivers) for population and GDP
+**Depends on**: Module 09 (drivers) for population (im_pop); Module 15 (food) for vm_dem_food.l; Module 73 (timber) for pm_demand_forestry
 
 ### Circular Dependencies
 

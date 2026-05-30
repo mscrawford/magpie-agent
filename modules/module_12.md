@@ -12,7 +12,7 @@
 
 **Key Output**:
 - `pm_interest(t,i)` - Regional interest rate (fraction per year, e.g., 0.10 = 10%)
-  - Used by: Module 13 (TC), Module 39 (Land Conversion), Module 41 (Irrigation)
+  - Used by: Module 13 (TC), 29 (cropland), 32 (forestry), 38 (factor costs), 39 (land conversion), 41 (irrigation), 56 (GHG policy), 58 (peatland), 70 (livestock - only in the non-default fbask_jan16_sticky realization)
   - Effect: Amortizes capital costs over investment lifetimes
 
 **Two Operating Modes**:
@@ -171,8 +171,14 @@ p12_reg_shr(t,i) = sum(i_to_iso(i,iso), p12_country_switch(iso) * im_pop_iso(t,i
 
 **Usage in MAgPIE**:
 - **Module 13 (TC - Technical Change)**: Amortizes TC investment costs
+- **Module 29 (Cropland)**: Amortizes cropland-related capital costs
+- **Module 32 (Forestry)**: Discount factor for Faustmann rotation calculations
+- **Module 38 (Factor Costs)**: Amortizes factor cost capital components
 - **Module 39 (Land Conversion)**: Amortizes land conversion establishment costs
 - **Module 41 (Irrigation)**: Amortizes irrigation infrastructure costs
+- **Module 56 (GHG Policy)**: Discount factor for CDR-reward annuity calculations
+- **Module 58 (Peatland)**: Amortizes peatland-related investment costs
+- **Module 70 (Livestock)**: Amortizes livestock capital costs (non-default fbask_jan16_sticky realization only; the default fbask_jan16 does not use it)
 
 ---
 
@@ -318,7 +324,7 @@ Where:
 
 ---
 
-#### **PROVIDES TO (3 modules)** - **CRITICAL OUTPUTS**:
+#### **PROVIDES TO (9 modules)** - **CRITICAL OUTPUTS**:
 
 **1. Module 13 (TC - Technical Change)** - **PRIMARY CONSUMER**:
    - **Variable provided**: `pm_interest(t,i)`
@@ -326,17 +332,48 @@ Where:
    - **Mechanism**: Converts upfront TC costs to annualized costs
    - **Impact**: Higher interest rates → higher annualized TC costs → less TC investment
 
-**2. Module 39 (Land Conversion)** - **SECONDARY CONSUMER**:
+**2. Module 29 (Cropland)**:
+   - **Variable provided**: `pm_interest(t,i)`
+   - **Purpose**: Amortizes cropland-related capital costs
+   - **Evidence**: `modules/29_cropland/detail_apr24/equations.gms:111`
+
+**3. Module 32 (Forestry)**:
+   - **Variable provided**: `pm_interest(t,i)`
+   - **Purpose**: Discount factor for Faustmann rotation calculations
+   - **Evidence**: `modules/32_forestry/dynamic_may24/equations.gms:171`
+
+**4. Module 38 (Factor Costs)**:
+   - **Variable provided**: `pm_interest(t,i)`
+   - **Purpose**: Amortizes factor cost capital components
+   - **Evidence**: `modules/38_factor_costs/sticky_feb18/presolve.gms:25`
+
+**5. Module 39 (Land Conversion)**:
    - **Variable provided**: `pm_interest(t,i)`
    - **Purpose**: Amortization of land conversion establishment costs
    - **Mechanism**: Converts one-time conversion costs to annualized costs over land lifetime
    - **Impact**: Higher interest rates → higher annualized conversion costs → less land expansion
 
-**3. Module 41 (Irrigation - Area Equipped for Irrigation)** - **TERTIARY CONSUMER**:
+**6. Module 41 (Irrigation - Area Equipped for Irrigation)**:
    - **Variable provided**: `pm_interest(t,i)`
    - **Purpose**: Amortization of irrigation infrastructure investment
    - **Mechanism**: Spreads irrigation capital costs over infrastructure lifetime
    - **Impact**: Higher interest rates → higher annualized irrigation costs → less irrigation expansion
+
+**7. Module 56 (GHG Policy)**:
+   - **Variable provided**: `pm_interest(t,i)`
+   - **Purpose**: Discount factor for CDR-reward annuity calculations
+   - **Evidence**: `modules/56_ghg_policy/price_aug22/equations.gms:52`
+
+**8. Module 58 (Peatland)**:
+   - **Variable provided**: `pm_interest(t,i)`
+   - **Purpose**: Amortizes peatland-related investment costs
+   - **Evidence**: `modules/58_peatland/v2/equations.gms:80`
+
+**9. Module 70 (Livestock) - non-default realization only**:
+   - **Variable provided**: `pm_interest(t,i)`
+   - **Purpose**: Amortizes livestock capital costs
+   - **Evidence**: `modules/70_livestock/fbask_jan16_sticky/presolve.gms:80`
+   - **Note**: Used ONLY in the non-default `fbask_jan16_sticky` realization. The default `fbask_jan16` realization explicitly lists `pm_interest` in `not_used.txt` ("Since no capital stocks are implemented there is no need to consider interest rates").
 
 ---
 
@@ -395,8 +432,14 @@ Module 12 has **NO circular dependencies** because:
 ❌ **2. Does NOT Vary by Sector or Investment Type**:
 - Same `pm_interest` applies to ALL investments:
   - Technical change (Module 13)
+  - Cropland capital (Module 29)
+  - Forestry rotation (Module 32)
+  - Factor costs capital (Module 38)
   - Land conversion (Module 39)
   - Irrigation infrastructure (Module 41)
+  - GHG policy CDR rewards (Module 56)
+  - Peatland investments (Module 58)
+  - Livestock capital (Module 70, non-default fbask_jan16_sticky realization only)
 - No differentiation for:
   - Agricultural vs. industrial investments
   - Risky vs. safe investments
@@ -752,7 +795,7 @@ if(all_countries_selected) {
 
 **Critical Output**:
 - `pm_interest(t,i)`: **Discount factor** for investment amortization
-  - Used by: Module 13 (TC), Module 39 (Land Conversion), Module 41 (Irrigation)
+  - Used by: Module 13 (TC), 29 (cropland), 32 (forestry), 38 (factor costs), 39 (land conversion), 41 (irrigation), 56 (GHG policy), 58 (peatland), 70 (livestock - only in the non-default fbask_jan16_sticky realization)
   - Effect: Higher interest rates → higher annualized costs → less investment
 
 **Default Values**:
@@ -762,7 +805,7 @@ if(all_countries_selected) {
 
 **Dependencies**:
 - **Receives from**: Module 09 (Drivers) - development state, population
-- **Provides to**: 9 consumer modules (verified 2026-05-23 R3): Module 13 (TC), 29 (cropland), 32 (forestry — Faustmann rotation discount), 38 (factor costs), 39 (Land Conversion), 41 (Irrigation), 56 (GHG policy — CDR-reward annuity), 58 (peatland), 70 (livestock). Earlier list missed 29, 32, 38, 56, 58, 70.
+- **Provides to**: 9 consumer modules (verified 2026-05-23 R3): Module 13 (TC), 29 (cropland), 32 (forestry — Faustmann rotation discount), 38 (factor costs), 39 (Land Conversion), 41 (Irrigation), 56 (GHG policy — CDR-reward annuity), 58 (peatland), 70 (livestock - only in the non-default fbask_jan16_sticky realization; the default fbask_jan16 does not use it). Earlier list missed 29, 32, 38, 56, 58, 70.
 - **Circular**: None (runs in preloop, purely exogenous)
 
 **Limitations**:
@@ -822,7 +865,7 @@ This section shows Module 12's role in system-level mechanisms. For complete det
 
 ### Conservation Laws
 
-Module 12 participates **indirectly** in conservation laws through cost calculations that affect land-use decisions. Interest rates (`pm_interest`) scale annualized capital costs in Modules 13 (TC), 39 (land conversion), and 41 (irrigation). Higher interest rates raise conversion costs, favouring conservation; lower rates incentivize expansion.
+Module 12 participates **indirectly** in conservation laws through cost calculations that affect land-use decisions. Interest rates (`pm_interest`) scale annualized capital costs in Modules 13 (TC), 29 (cropland), 32 (forestry), 38 (factor costs), 39 (land conversion), 41 (irrigation), 56 (GHG policy), 58 (peatland), and 70 (livestock, non-default realization only). Higher interest rates raise conversion costs, favouring conservation; lower rates incentivize expansion.
 
 Module 12 does NOT directly allocate, trade, or balance any physical resources (land, water, carbon, nitrogen).
 
@@ -832,7 +875,7 @@ Module 12 does NOT directly allocate, trade, or balance any physical resources (
 
 **Depends on**: Module 09 (`im_development_state`) — GDP-based development classification.
 
-**Provides to** (10 modules via `pm_interest`): Module 13 (TC cost amortization), Module 39 (land conversion annuities), Module 41 (irrigation investment annuities), Module 56 (CDR reward discounting), and downstream cost modules.
+**Provides to** (9 modules via `pm_interest`): Module 13 (TC cost amortization), 29 (cropland capital), 32 (forestry Faustmann rotation), 38 (factor costs capital), 39 (land conversion annuities), 41 (irrigation investment annuities), 56 (CDR reward discounting), 58 (peatland investments), 70 (livestock capital - non-default fbask_jan16_sticky realization only).
 
 **Cost aggregation chain**: `12 → 13 → 14 → 17 → 71 → 11` (see `core_docs/Module_Dependencies.md`).
 

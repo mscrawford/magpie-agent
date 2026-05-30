@@ -1,0 +1,216 @@
+{
+ "round": 31,
+ "date": "2026-05-30",
+ "type": "hybrid_doc_audit_PARTIAL_cap_degraded",
+ "scope": "coverage-gap + fragile module docs (09,12,13,55,45,62,28,58,53,57)",
+ "commit_before": "2c627e2",
+ "commit_after": null,
+ "answerer_model": "claude-sonnet-4-6",
+ "auditor_model": "claude-opus-4-8",
+ "verification_source": "origin/develop @ee98739fd",
+ "cap_event": {
+  "wall_min": 202,
+  "max_gap_min": 187.8,
+  "note": "rolling rate-limit cap hit ~23:00-02:30 Berlin; 5 doc-audits + all 10 q-probes dropped to null; completed work preserved by disk-first + .catch isolation"
+ },
+ "completed_docs": [
+  "module_09",
+  "module_12",
+  "module_13",
+  "module_55",
+  "module_62"
+ ],
+ "dropped_docs": [
+  "module_45",
+  "module_28",
+  "module_58",
+  "module_53",
+  "module_57"
+ ],
+ "q_probes_lost": true,
+ "summary": {
+  "mean_score_note": "mean_score field=10 reflects ONLY the 2 surviving anchors (all q-probes nulled); not a doc-quality figure",
+  "doc_audit_bugs": {
+   "critical": 5,
+   "major": 3,
+   "minor": 5
+  },
+  "total_edits": 29,
+  "gate": {
+   "clean": true,
+   "validate_consistency_errors": 0,
+   "new_errors": [],
+   "reverted_files": [],
+   "check_units_advisories": 5,
+   "check_consumer_advisories": 9,
+   "notes": "validate_consistency.sh: 42 total checks, 40 passed, 0 errors, 2 warnings. Warnings are both advisory unit-claim differences (checks 26 + 27 advisory family). This matches the stated baseline (0 errors, 2 warnings) exactly -- no new errors introduced by this round's edits to modules 09/12/13/55/62. No reverts needed.\n\ncheck_units.py: 5 mismatches (all advisory): module_60.md:557 (vm_dem_bioen 'GJ'), module_57.md:375 (s57_step_length 'USD17/tC-eq'), module_12.md:868 (pm_interest 'TC'), module_56.md:1031 (vm_cdr_aff), module_39.md:578 (vm_cost_landcon 'mio USD/yr'). 45 doc claims scanned against 1301 canonical identifiers.\n\ncheck_consumer_attribution.py: 9 advisory items total = 8 Pattern D prose-attribution modules (listed but not direct consumers; e.g. module_52.md:4 pm_carbon_density_plantation_ac lists M35, pm_carbon_density_secdforest_ac lists M32; module_52.md:291) + 1 Pattern D2 omission (module_16.md:568 vm_supply omits M70 livestock). 22 consumer-count claims scanned, all match recomputed value; Pattern D3 clean (no phantom populators).\n\nFLAG (informational, not actionable): one units advisory -- module_12.md:868 (pm_interest claims 'TC' but canonical is '% per yr') -- sits on a file edited this round (module_12.md). It is advisory-only and validate_consistency.sh passes clean, so per task instructions (warnings/advisories OK) I did not revert. The 'TC' string likely refers to technological-change context in surrounding prose rather than a literal unit declaration for pm_interest; worth a human glance if pm_interest unit prose was touched this round, but not a syntactic-gate failure."
+  },
+  "anchors": [
+   {
+    "id": "G1",
+    "score": 10,
+    "drift": false,
+    "notes": "All load-bearing claims verified vs /tmp/magpie_develop_ro: default=only realization managementcalib_aug19 (default.cfg:354); exactly 2 eqs q14_yield_crop (eq.gms:14) + q14_yield_past (eq.gms:35); no phantom q14_yieldcalib (rg+Read, positive control vm_yld passed). s14_yld_past_switch=0.25 (input.gms:20). Cited line ranges 14-20/24-39 are the wider \"eq+comment\" variant (tight=14-16/35-39); both present in module_14.md, defensible convention, not a bug. Anchor STABLE, no drift. 10/10."
+   },
+   {
+    "id": "G4",
+    "score": 10,
+    "drift": false,
+    "notes": "10/10, no drift. Reproduced from pinned clone: 117 call lines, 106 unique (grep), 9 multi-called fns match exactly (WageDev/FactorCostShares x3, 7 others x2). No control arg/grepl gating (4 ifs all post-processing; the grepl is unit validation; positive control passed). Signature, line ranges (tryList 62-182, full 235), pin v2.70.0@a360d8c9 all confirmed. Zero content bugs; only Informational (no inline epistemic badges, weight 0). G4 has no doc surface (reads source directly)."
+   }
+  ]
+ },
+ "doc_centric_audit": [
+  {
+   "label": "module_09",
+   "doc": "modules/module_09.md",
+   "counts": {
+    "critical": 0,
+    "major": 2,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 3,
+    "total": 3
+   },
+   "deferred": [
+    "Data-source attributions (IIASA/KC&Lutz 2017, World Bank, OECD/IMF, WHO, UN, van Vuuren 2018, O'Neill/Riahi 2017) - external literature, not code-checkable.",
+    "SSP2EU: input.gms comments (lines 9,13,17) list it as an option but the pop_gdp_scen09 set (sets.gms:10-11) excludes it; a develop-code comment/set inconsistency, NOT a doc error - the doc correctly describes the 9-member set.",
+    "'249 ISO countries' / '12 MAgPIE regions' (lines 20,132,147,189): standard MAgPIE counts from i_to_iso mapping / H12 resolution set at preprocessing, not module-09 GAMS code; not verified.",
+    "Per-capita code snippets (lines 177-181, 213-218) omit the '=0' init and '$(...>0)' division guard at preloop.gms:23-24,29-30; a simplification, but cited line ranges are correct and div-by-zero guard is noted separately at line 473. Borderline Informational; not recorded.",
+    "Section 12.2 lines 869 (M42 'non-ag water from population/GDP'), 872 (M56 'policy ambition scaled by income'), 873 (M60 'from economic scenarios'), 876 (M73 'construction activity (GDP)'): loose but defensible prose; too imprecise to call clearly wrong.",
+    "Footer 'Last Verified 2025-10-13': metadata, not a content claim."
+   ],
+   "summary": "module_09.md spine correct (8 vars, all citations, 216 lines, 9-scenario set, switching logic, verified 14-module consumer set in sec 5.2). 3 mechanism bugs: B1(Major) M13 'GDP drives tech adoption' = actually Inf-default-OFF spending CAP (R30 advisory CONFIRMED); B2(Major) sec12.2:870 M50 wrong var+phantom 'atmospheric N deposition'; B3(Minor) sec12.2 M18/36/62/70 drivers contradict verified sec5.2.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_09.md"
+  },
+  {
+   "label": "module_12",
+   "doc": "modules/module_12.md",
+   "counts": {
+    "critical": 1,
+    "major": 1,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 3,
+    "total": 3
+   },
+   "deferred": [
+    "Module-09 development-state formula (doc lines 295-301): doc shows development_state=(GDP_pc-GDP_min)/(GDP_max-GDP_min) as 'Calculation (in Module 09)'. In GAMS, M09 only READS im_development_state from input file f09_development_state (modules/09_drivers/aug17/preloop.gms:45,54); no such in-GAMS formula. But it plausibly describes the R-preprocessing normalization, which I cannot read here, and it is a secondary cross-module aside, not a load-bearing M12 interface claim. Not flagged.",
+    "f12_interest_fader.csv and f12_interest_rate_coupling.csv example values (doc lines 250-258, 535-557, 583-589): actual CSVs absent from develop worktree (only input/files manifest lists them - downloaded input data). Doc labels values 'Example'; timing 2025->2050 IS verified against realization.gms:15-16. Exact fader curve unverifiable.",
+    "$ondelim/$offdelim directives omitted from the doc's reproduced fader/coupling GAMS blocks (doc lines 238-243, 271-277) vs actual input.gms:49-55,57-63. Illustrative-snippet simplification, borderline Informational; noting not flagging.",
+    "Units label/value duality: code canonical string is '% per yr' (declarations.gms:9) but stored values are fractions (0.1=10%). Doc line 809 '% per yr' matches code exactly (correct, do NOT change); lines 14/170 'fraction per year (1)' describe value semantics. Standard MAgPIE label-vs-value mismatch, defensible documentation, not a code-checkable error."
+   ],
+   "summary": "Critical: 4 sections (lines 15,173-176,321,396-399) list only 3 pm_interest consumers (13/39/41); code has 9 (13,29,32,38,39,41,56,58,70) and doc's own line 765 has the right list -- stale-after-partial-update (R20 anchor). Major: line 835 says '10' vs real 9. Minor: M70 caveat (sticky-only). Units advisory on line 825 REFUTED -- 'TC'=Technical Change abbrev, not a unit.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_12.md"
+  },
+  {
+   "label": "module_13",
+   "doc": "modules/module_13.md",
+   "counts": {
+    "critical": 1,
+    "major": 0,
+    "minor": 1,
+    "informational": 1,
+    "confirmed": 3,
+    "total": 3
+   },
+   "deferred": [
+    "1995 vs 2000 initial-tau year: module_13.md says 1995 (:178,:265) which MATCHES code (fm_tau1995, index 'y1995', preloop.gms:18); upstream endo_jan22/realization.gms:23 prose says 'year 2000' and is internally inconsistent with its own filename. module_13.md is the more code-accurate -> NOT a doc bug; flag realization.gms for maintainers, no edit.",
+    "Circular-dependency narrative (:446-470): chain '...-> pm_yields_semi_calib [14] -> Feeds back to tau calculation' is a system-level narrative cross-ref to circular_dependency_resolution.md; M13 tau equations do not directly read pm_yields_semi_calib (M13 reads pcm_land, pm_interest, pm_land_conservation, GDP/pop only). Doc hedges '(via past production patterns)'. Too ambiguous to flag as a direct-read MANDATE-2 violation without overreach. pm_yields_semi_calib does exist (M14).",
+    "endo_apr13/equations.gms cited without full modules/41_.../ path (:70): MANDATE-16 prefers full paths, but it is a verified-correct cross-module aside in a contrast box. Informational-at-most; not flagged.",
+    "realization.gms:8-33 cited for the '15-year shift' claim (:18): that range is the @description block (general Dietrich-2014 implementation) and does not literally contain '15 years' (that is equations.gms:23/26-32, also cited elsewhere). General-reference citation, acceptable; not flagged."
+   ],
+   "summary": "module_13.md is mostly accurate (all 5 eqns verbatim, all input.gms defaults line-exact, input-side interfaces correct). 1 Critical: Module 38 phantom vm_tau consumer in 4 places (real consumers = M14, M11 only; M38 link is transitive via vm_yld -> MANDATE 17). 1 Minor citation overshoot (q13_tau 52-58 -> 52-53). 1 Info count mismatch (6/6 lists 7). GDP-cap advisory REFUTED: doc already correct.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_13.md"
+  },
+  {
+   "label": "module_55",
+   "doc": "modules/module_55.md",
+   "counts": {
+    "critical": 3,
+    "major": 0,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 4,
+    "total": 4
+   },
+   "deferred": [
+    "Doc L203 'Sum constraint: sum(awms_conf, ic55_awms_shr)=1' is presented as an input-data property, not a coded equation (no such constraint exists in M55 equations.gms); likely true of f55_awms_shr.cs4 but unverifiable without reading the .cs4 file. Not edited.",
+    "Illustrative numeric ranges (Appendix AWMS-characteristics table L805-817; worked example L725-799; recycling/slaughter-share example values L170/321) are explicitly labeled illustrative and are not code-checkable.",
+    "SSP narrative characterizations (L659-689) are conceptual and explicitly labeled not-quantitative; actual trajectories are in .cs4 input data.",
+    "Doc L277 options list omits 'sdp' while the scen_conf55 set (L350) includes it; this matches the code comment input.gms:11-13 which also omits sdp, so left as-is (not a clear error)."
+   ],
+   "summary": "module_55.md is accurate on equations/formulas/citations/sets/defaults/phases but its downstream consumer mapping (Outputs prose + Dependencies table) has 3 Critical wrong-consumer-set errors (R20 class) sharing one root cause: vm_manure_confinement conflated with vm_manure(...,confinement,...). 55-B1 M53 phantom-consumes vm_manure_confinement (really reads vm_manure); 55-B2 M50 omitted from vm_manure; 55-B3 M51 omitted from vm_manure_recycling. Plus 1 Minor (vm_manure enteric-fermentation purpose wrong). All confirmed.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_55.md"
+  },
+  {
+   "label": "module_62",
+   "doc": "modules/module_62.md",
+   "counts": {
+    "critical": 0,
+    "major": 0,
+    "minor": 1,
+    "informational": 1,
+    "confirmed": 2,
+    "total": 2
+   },
+   "deferred": [
+    "Input-data temporal coverage: historical material demand 'y1965-y2010' (doc 47/140/354) and bioplastic 'y1965-y2020' (doc 363) \u2014 presolve.gms:9 comment says 'y1965 to y2010' and the y2020 bioplastic cutoff is code-consistent, but exact first/last years require reading f62_dem_material.cs3 / f62_hist_dem_bioplastic.csv (not present in worktree; only the 'files' manifest exists).",
+    "Magnitude claims (~5-10% material share, ~85-90% food/feed, conversion ratios, Mio tDM totals) \u2014 all explicitly labeled illustrative/pedagogical; not real-data claims, not code-checkable.",
+    "realization.gms:13-14 citation scope (doc 175): the percentages and income-elasticity bullets are the doc's gloss on top of the verbatim 'minor importance of non-bioenergy material usage' justification, which IS present at 13-14. Loose attribution but no false claim; left unflagged.",
+    "'rice' vs set member 'rice_pro' in the illustrative parenthetical at doc 444 \u2014 clearly an 'etc.' example, not the authoritative set (39-member set is correctly described). MANDATE-12-adjacent but in explicitly-illustrative context; left unflagged.",
+    "min() cap at presolve.gms:31 on p62_bioplastic_substrate_lastcalibyear \u2014 a nuance the doc omits but does not misstate.",
+    "'Centrality: Medium' / 'MEDIUM RISK' (doc 897/907) \u2014 cross-doc judgment pointing to Module_Dependencies.md, not a module-62 code claim."
+   ],
+   "summary": "module_62.md is accurate (9/10). All equations, formulas, defaults (s62_include_bioplastic=1 ON, NOT inverted), citations, the 39-commodity set, and full dependency set (consumer=M16 only; upstream M09/M15/M73) verify against develop. 2 issues: B1 (Minor) footer wrongly lists GDP as an M09 dependency (module reads only im_pop); B2 (Informational) File Structure Summary omits scaling.gms.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_62.md"
+  }
+ ],
+ "fixes": [
+  {
+   "doc": "module_09.md fixes: corrected 4 confirmed doc bugs across 9 edit sites. Module 13 (tc) no longer described as GDP-driven technology adoption -- replaced with accurate cap-on-spending description (s13_max_gdp_shr, default Inf = off). Module 50 no longer attributes atmospheric N deposition to development state -- replaced with correct population-weighting for NUE shares. Modules 18, 36, 62, 70 in section 12.2 aligned to the verified section 5.2 entries (development state for M18, MER GDP per capita for M36, regional population only for M62, population only for M70).",
+   "files_fixed": [
+    "modules/module_09.md"
+   ],
+   "n_edits": 9,
+   "deferred": [],
+   "self_check_ok": true
+  },
+  {
+   "doc": "modules/module_12.md",
+   "files_fixed": [
+    "modules/module_12.md"
+   ],
+   "n_edits": 8,
+   "deferred": [],
+   "self_check_ok": true
+  },
+  {
+   "doc": "modules/module_13.md",
+   "files_fixed": [
+    "modules/module_13.md"
+   ],
+   "n_edits": 6,
+   "deferred": [],
+   "self_check_ok": true
+  },
+  {
+   "doc": "modules/module_55.md",
+   "files_fixed": [
+    "modules/module_55.md"
+   ],
+   "n_edits": 3,
+   "deferred": [],
+   "self_check_ok": true
+  },
+  {
+   "doc": "module_62.md",
+   "files_fixed": [
+    "modules/module_62.md"
+   ],
+   "n_edits": 3,
+   "deferred": [],
+   "self_check_ok": true
+  }
+ ]
+}

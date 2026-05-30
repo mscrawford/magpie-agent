@@ -36,7 +36,7 @@
 **Role in MAgPIE**:
 - **Pure data provider** - no optimization involvement
 - **Foundation for demand** - population drives food, timber, bioenergy demand
-- **Foundation for economics** - GDP drives income-elastic demand, technology adoption
+- **Foundation for economics** - GDP drives income-elastic demand, technology-cost caps (Module 13, off by default)
 - **Foundation for policy** - development state affects policy constraints
 
 ---
@@ -205,7 +205,7 @@ i09_gdp_pc_mer_raw(t_all,i,pop_gdp_scen09)$(i09_pop_raw(t_all,i,pop_gdp_scen09) 
 
 **Use cases**:
 - Income-elastic food demand (Module 15)
-- Technology adoption (Module 13)
+- Tech-cost GDP-share cap (Module 13, default off)
 - Timber demand elasticity (Module 73)
 - Factor costs (Module 38)
 
@@ -335,7 +335,7 @@ i09_gdp_pc_ppp_iso_raw(t_all,iso,pop_gdp_scen09)$(i09_gdp_pc_ppp_iso_raw(t_all,i
    - Interest rates vary by development level; population used in regional aggregation
 
 2. **Module 13 (tc - technological change)** ← `im_gdp_pc_ppp_iso`, `im_pop_iso`
-   - Technology adoption driven by income; population for ISO-level scaling
+   - Regional GDP optionally caps tech-investment spending (vm_tech_cost.up) via s13_max_gdp_shr (default Inf = no cap, post-2025 only); population enters the same regional-GDP product
 
 3. **Module 15 (food)** ← `im_pop_iso`, `im_pop`, `im_gdp_pc_ppp_iso`, `im_gdp_pc_mer_iso`, `im_demography`, `im_physical_inactivity`
    - Food demand = population × per capita consumption (income-elastic) × age/sex structure
@@ -861,18 +861,18 @@ Module 09 does **not directly participate** in any conservation laws:
 
 **Modules that depend on 09**:
 - Module 12 (interest_rate): Economic development drives interest rates
-- Module 13 (tc): GDP affects technology adoption rates
+- Module 13 (tc): regional GDP (im_gdp_pc_ppp_iso x im_pop_iso) can CAP endogenous tech-investment cost via s13_max_gdp_shr; OFF by default (s13_max_gdp_shr = Inf). Technology intensity itself is endogenous, not income-driven.
 - Module 15 (food): Population + income drive food demand
-- Module 18 (residues): Population affects residue demand
-- Module 36 (employment): Labor productivity from development state
+- Module 18 (residues): development state splits residue burning between income groups
+- Module 36 (employment): hourly labor costs scale with GDP per capita MER (im_gdp_pc_mer_iso)
 - Module 38 (factor_costs): Wages based on GDP per capita
 - Module 42 (water_demand): Non-agricultural water from population/GDP
-- Module 50 (nr_soil_budget): Atmospheric N deposition scaled by development
+- Module 50 (nr_soil_budget): population (im_pop_iso) weights country influence in regional nitrogen-use-efficiency shares
 - Module 55 (awms): Animal waste management by development state
 - Module 56 (ghg_policy): Policy ambition scaled by income
 - Module 60 (bioenergy): Bioenergy demand from economic scenarios
-- Module 62 (material): Material demand from population/GDP
-- Module 70 (livestock): Livestock demand from population/income
+- Module 62 (material): bioplastic material demand scales with regional population (im_pop)
+- Module 70 (livestock): livestock product demand scales with population (im_pop/im_pop_iso)
 - Module 73 (timber): Timber demand from construction activity (GDP)
 
 ### 12.3 Circular Dependencies

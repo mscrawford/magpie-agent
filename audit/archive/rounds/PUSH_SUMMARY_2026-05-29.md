@@ -17,8 +17,10 @@
 | Round | Scope | State | mean / doc_quality | bugs (C/Ma/Mi) | commit |
 |------|-------|-------|--------------------|----------------|--------|
 | R30 | hub + cross-module | ✅ done, committed (local) | 7.0 / ~7.0 (anchors G2,G3=10, no drift) | doc-audit 2C/17Ma/19Mi confirmed+fixed (51 edits, 10 docs); gate clean | local |
-| R31 | coverage-gap modules | ▶️ running (hybrid) | — | — | — |
-| R32 | reference/helpers | pending (mode set by post-R31 re-probe) | — | — | — |
+| R31 | coverage-gap modules | ⚠️ partial, committed (CAP-degraded) | anchors G1,G4=10 no-drift (q-probes lost to cap) | doc-audit 5C/3Ma/5Mi fixed in 5/10 docs (29 edits); 5 docs dropped → recovered in R32 pass | local |
+| R32 | ref/helpers + R31-recovery | ▶️ doc-centric (cap-adaptive), 15 docs | — | — | — |
+
+**R31 highlights:** consumer-set Criticals keep coming — module_55 (3 Critical: vm_manure_confinement vs vm_manure conflation, M50/M51 omissions), module_12 (Critical: pm_interest listed 3 consumers, code has 9), module_13 (Critical: M38 phantom vm_tau consumer, transitive via vm_yld). module_09 M13 "GDP drives adoption" gloss confirmed+fixed. Two fed advisories correctly REFUTED (module_12 'TC'=abbreviation not unit; module_13 already correct) — good false-positive discipline.
 
 **R30 highlights:** module_10.md had 8 more consumer-set/citation bugs beyond R29's 2 (5 Major). Data_Flow.md DF-1 Critical: phantom M56 + omitted M14 in carbon-system consumer set. modification_safety_guide.md: 1 Critical centrality claim. Core_Architecture doc-audit found it clean, but the question-probe caught 2 latent doc errors it missed (hybrid value). Spot-check: modules 14/71/80 confirmed zero vm_land refs in develop (module_10 table fix correct).
 
@@ -27,6 +29,12 @@
 - **Max inter-message gap: 1.62 min** (< 5 min) → **r30_capped = FALSE**. No rate-limit wait; headroom ample.
 - Extrapolation: 3 hybrid rounds ≈ 108 min, projected finish ~00:45 Berlin (large margin before morning). R30's ~10.6M did not approach the rolling window cap.
 - **DECISION: R31 = hybrid. Re-probe after R31; trim R32 to doc-centric-only only if R31 shows capping.** (Even if a cap hits later, it pauses+resumes with the host kept awake; completion stays intact.)
+
+### Re-probe after R31 — CAP HIT (this is why the mid-cycle test matters)
+- R31 wall-clock **202 min** (vs R30's 36), max inter-message gap **187.8 min** — a single ~3h rate-limit wait. The rolling window was exhausted (R30 ~10.6M + R31's start), agents that ran later errored to null.
+- Damage: 5/10 doc-audits dropped, all 10 q-probes lost. Anchors survived (ran early). The disk-first + .catch isolation meant the 5 completed doc-audits + fixes + anchors were preserved and committed — **zero completed work lost**, exactly the cap-resilience design goal.
+- Window appears to have reset ~02:00-02:30 Berlin (the 3h wait ended at 02:33). 
+- **ADAPTIVE DECISION: R32 → doc-centric-only (no q-probe: the cap-vulnerable, lower-value half), and FOLD IN R31's 5 dropped docs.** One lean 15-doc-audit workflow instead of two hybrid rounds — minimizes agents under the cap while recovering all dropped coverage. Anchors skipped (all four G1-G4 already exercised clean across R30+R31).
 
 ## Decisions / deferrals
 - R31 = hybrid (10 module docs: 09,12,13,55,45,62,28,58,53,57). R32 mode set by the post-R31 re-probe.
