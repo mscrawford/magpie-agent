@@ -1,0 +1,34 @@
+{
+  "round": 38,
+  "type": "consolidation smoke-test (doc-centric + verify, HARDENED engine)",
+  "mode": "doccentric",
+  "verify": true,
+  "date": "2026-05-30",
+  "scope": "Validate the consolidation hardening end-to-end on the two exact bug-class cases (module_21 realization-structure, module_52 producer/declaration) + all four anchors. NOT new coverage.",
+  "develop_sha": "ee98739fd",
+  "workflow_run_id": "wf_20c51913-fb4",
+  "outcome": "HARDENING VALIDATED - mean_score 10, 0 dropped, gate clean",
+  "cap_probe_skipped": "16 min wall-clock, 15 agents, clean (no cap concern at this size)",
+  "validation_results": {
+    "engine_runs_new_schema": "YES - class / citation_ok / attribution_reviewed / citation_failed all populated; no runtime schema error",
+    "producer_declaration_mandate18": "WORKS - module_52 vm_carbon_stock DECLARED M56 / POPULATED 29,31,32,34,35,59 / READ M52 correctly adjudicated; M34 populates via .fx (solution-level, MANDATE 20) - caught",
+    "realization_structure_mandate19": "WORKS - module_52 M31 fm_carbon_density cited via non-default 'static' vs default 'endo_jun13' (caught); module_21 bilateral22 regression did NOT recur (auditor got 8 eqs / no q21_cost_trade_feasibility / presolve-fixes-it all correct)",
+    "citation_content_stepA": "WORKS - all citations citation_ok=true, citation_failed=0; verifier ran test-f / wc / read-line checks",
+    "qa_antifab_G4": "FIXED - G4=10, no drift; answerer cited the helper's 106 verbatim, did NOT fabricate a grep count (contrast the R34 '101 via grep' confab)",
+    "anchors_no_drift": "G1=10, G2=10, G3=10, G4=10 - all no-drift",
+    "gate": "clean (43 checks, 40 passed, 0 errors, 3 advisory warnings)"
+  },
+  "verify_summary": {"docs_verified": 2, "upheld": 5, "corrected": 0, "refuted": 0, "citation_failed": 0},
+  "per_doc": [
+    {"label": "module_21", "critical": 0, "major": 3, "minor": 1, "edits": 4, "key": "R34 bilateral22 regression confirmed ABSENT. Fixed residuals the R34-revert left: k_trade count 38->33 (Major, verifier mechanical+cross-check); 2 citation drifts (trade_pools.png realization.gms:20->31; bilateral input.gms:45-57->71-83); false 'reads vm_land' parenthetical (Minor; verifier: vm_land absent from all 28 M21 .gms via rg+grep+2 positive controls)."},
+    {"label": "module_52", "critical": 0, "major": 0, "minor": 1, "edits": 1, "key": "Among the cleanest docs audited - substance fully matches develop. G2/MANDATE-18 producer/declaration all correct. 1 Minor: M31 fm_carbon_density consumer cited via non-default 'static' instead of default 'endo_jun13' (verifier-upheld). Provenance metadata (PR#869, SHAs) deferred - shallow develop clone."}
+  ],
+  "anchors": [
+    {"id": "G1", "score": 10, "drift": false},
+    {"id": "G2", "score": 10, "drift": false},
+    {"id": "G3", "score": 10, "drift": false},
+    {"id": "G4", "score": 10, "drift": false, "note": "Q&A anti-fab fix confirmed: cited 106 verbatim, no fabricated grep"}
+  ],
+  "verdict": "Consolidation hardening VALIDATED end-to-end. The hardened engine (producer/declaration + realization-structure + mechanical citation-content verifier, Q&A anti-fab) runs correctly and catches the exact classes that motivated it. Ready for the non-module-doc audit.",
+  "pushed": false
+}

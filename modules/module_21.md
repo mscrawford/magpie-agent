@@ -31,7 +31,7 @@ Module 21 implements **agricultural trade among world regions** using a **dual-p
 
 ### Two-Pool Trade System
 
-**Diagram**: `realization.gms:20` references `trade_pools.png`
+**Diagram**: `realization.gms:31` references `trade_pools.png`
 
 Module 21 splits demand into two pools controlled by trade balance reduction factor `i21_trade_bal_reduction(t,k_trade)`:
 
@@ -67,7 +67,7 @@ res_cereals, res_fibrous, res_nonfibrous - Residues (not traded)
 begr, betr  - Bioenergy (biomass traded in REMIND, not MAgPIE)
 ```
 
-**Tradable Commodities** (`k_trade`, 38 items):
+**Tradable Commodities** (`k_trade`, 33 items):
 - **Crops**: tece, maiz, trce, rice_pro, soybean, rapeseed, groundnut, sunflower, puls_pro, potato, cassav_sp, sugr_cane, sugr_beet, others, cottn_pro
 - **Processed**: oils, oilcakes, sugar, molasses, alcohol, ethanol, distillers_grain, brans, scp, fibres
 - **Livestock**: livst_rum, livst_pig, livst_chick, livst_egg, livst_milk, fish
@@ -412,7 +412,7 @@ k_import21(k_trade) = / wood, woodfuel /
 | `f21_trade_margin_bilat.cs5` | `f21_trade_margin` | Transport + admin costs | (i_ex,i_im,k) | USD17MER/tDM |
 | `f21_trade_tariff_bilat.cs5` | `f21_trade_tariff` | Specific duty tariffs | (i_ex,i_im,k) | USD17MER/tDM |
 
-**Source**: `modules/21_trade/selfsuff_reduced_bilateral22/input.gms:45-57`
+**Source**: `modules/21_trade/selfsuff_reduced_bilateral22/input.gms:71-83`
 
 **Note**: Files are in realization-specific subdirectory (`modules/21_trade/selfsuff_reduced_bilateral22/input/`)
 
@@ -609,7 +609,7 @@ Module 21 implements the **regional trade balance mechanism** that ensures globa
 - **Cross-Module Reference**: `cross_module/nitrogen_food_balance.md` (Part 2, Section 2.4)
 
 **Other Conservation Laws**:
-- Land Balance: ❌ Does NOT participate (reads `vm_land` but doesn't affect land allocation)
+- Land Balance: ❌ Does NOT participate (does not read `vm_land`; trade operates on production/supply aggregates, not land allocation)
 - Water Balance: ❌ Does NOT participate (no direct water demand)
 - Carbon Balance: ❌ Does NOT participate (trade flows are carbon-neutral in accounting)
 - Nitrogen Tracking: ❌ Does NOT explicitly participate (N-embodied in trade is implicit)

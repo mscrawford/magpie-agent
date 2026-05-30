@@ -266,7 +266,7 @@ Analogous to Step 3, with these differences. The age distribution comes from Mod
 - Module 14 (Yields) — `modules/14_yields/managementcalib_aug19/presolve.gms:35`
 - Module 29 (Cropland) — `modules/29_cropland/detail_apr24/equations.gms:41`
 - Module 30 (Croparea) — `modules/30_croparea/simple_apr24/equations.gms:51`
-- Module 31 (Past) — `modules/31_past/static/presolve.gms:16`
+- Module 31 (Past) — `modules/31_past/endo_jun13/equations.gms:24`
 - Module 32 (Forestry) — `modules/32_forestry/dynamic_may24/presolve.gms:176`
 - Module 35 (Natveg) — `modules/35_natveg/pot_forest_may24/equations.gms:44`
 - Module 56 (GHG Policy) — `modules/56_ghg_policy/price_aug22/preloop.gms:10`
