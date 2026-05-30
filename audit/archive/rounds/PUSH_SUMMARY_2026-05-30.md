@@ -35,3 +35,18 @@ module_11, 14, 15, 16, 17, 29, 30, 32, 50, 52, 56, 70. Anchors: G1 (M14 default 
 **DECISION RULE: TRIGGERED** (6.17 confirmed bugs/doc ≫ 2.0; 4 Critical ≥ 2). Hypothesis confirmed hard — the dominant vein (wrong consumer/populator sets + citation drift) is pervasive in the high-centrality hubs, at a rate exceeding the prior push's ~3.7/doc. → Proceed to sweep the 23 remaining un-audited modules (pacing/scope per user steer, this session).
 
 Anchors stable (G1=9, G2=9, no drift) → Round 1 fixes are trustworthy. Fixer discipline good (module_32 refused invalid 'affexp' option; several advisories correctly refuted).
+
+## Engine enhancement (between rounds) — commit `231ac2e`
+Per user steer (broaden toward quality + agent-performance), added an **adversarial consumer-set VERIFIER** to the engine (gated by `args.verify`): per doc, after the audit, an independent Opus verifier tries to REFUTE each confirmed consumer/populator/dependency-set finding before the fixer applies it (verdicts UPHELD / REFUTED / CORRECTED / NOT_CONSUMER_SET; fixer obeys — REFUTED→skip, CORRECTED→use corrected_set). Also hardened GREP_GUARD: grep BOTH `NAME(` AND `NAME.` (`.l/.lo/.up/.fx/.m` solution-level reads) before concluding consume/not-consume — root-cause fix for the R33 M32 near-miss. Syntax verified (async-wrapped node --check).
+
+## Round 2 (R34) — sweep batch 1 (11 docs, HYBRID + VERIFY)
+Highest-centrality first: module_21, 35, 38, 59, 31, 22, 60, 73, 71, 41, 42. Anchors: **G3** (magpie4 version pin) + **G4** (getReport dispatch) — overdue, rotated in. Mode = hybrid (re-adds question-probes for agent-Q&A performance) + verify (adversarial consumer-set refute pass).
+**R34 run:** task `wjw4rvcys`, run `wf_d43cec53-75c`. Transcript dir (cap-probe): `.../subagents/workflows/wf_d43cec53-75c`. This is the **measured batch** — probe its token cost + max gap on completion, then size batch 2 (12 docs: 18,20,34,36,37,39,40,43,44,51,54,80) to glide under the rolling wall.
+Sweep-doc leads fed: module_60:557 vm_dem_bioen unit (GJ→mio.tDM/yr); module_35:9/:917 consumer advisories (co-located-FP caveat); module_39:578 vm_cost_landcon unit (batch 2).
+
+| Round | docs | confirmed bugs (C/Ma/Mi) | verify (refuted/corrected) | edits | dropped | anchors | gate | commit |
+|-------|------|--------------------------|----------------------------|-------|---------|---------|------|--------|
+| R34 (batch 1) | 11 → **3 done / 8 dropped** | m38: 0/1/0, m59: 0/1/4 (kept); m21 REVERTED (auditor regression) | verify: **never ran (cap)** | 7 kept | 8 | G3=10, G4=8 (**drift**) | clean (0 err; reverted m21) | _local_ |
+
+**⚠️ R34 CAPPED — single ~2h rate-limit wait (max inter-message gap 123 min).** The hybrid+verify config (44 agents/11 docs) saturated the rolling 5h window on top of R33. 8 doc-audits dropped to null; the Verify phase never executed (adversarial verifier still UNTESTED). Survivors: module_38 (1 edit, pm_prod_init→M17, spot-checked) + module_59 (6 edits, vm_area producer→M30, spot-checked); module_21 auto-reverted by the gate (auditor regressed bilateral22 eq-count/feasibility-penalty — pre-round doc was correct). Anchors G3=10; G4=8 **drift** (agent confabulated 101 unique report* funcs vs correct 106 — agent-perf miss caught by the q-probe, not a doc bug).
+**Binding constraint = 5h rolling RATE, not total budget.** Recovery: 8 dropped docs → fresh leaner round (doc-centric + verify, no q-probes), paced to glide under the rolling rate. Pacing under user discussion (cap hit at the window's edge, 12:30 CEST).

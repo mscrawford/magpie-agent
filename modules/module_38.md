@@ -349,7 +349,7 @@ find ../modules -name '*.gms' -exec grep -l 'pm_factor_cost_shares' {} \;
 - **Module 09 (Drivers)**: `im_gdp_pc_ppp_iso(t,iso)` — GDP per capita PPP, drives capital-share regression (`modules/38_factor_costs/sticky_feb18/preloop.gms:9-12`)
 - **Module 12 (Interest Rate)**: `pm_interest(t,i)` — used in capital cost annuitization and per-ton capital need (`modules/38_factor_costs/sticky_feb18/presolve.gms:25-26`, `modules/38_factor_costs/sticky_feb18/equations.gms:23`)
 - **Module 17 (Production)**: `vm_prod_reg(i,kall)` (regional production) and `vm_prod(j,k)` (cellular production) — both drive the labor and capital cost equations (`modules/38_factor_costs/sticky_feb18/equations.gms:16, 35, 43`)
-- **Module 30 (Croparea)**: `pm_prod_init(j,kcr)` — initial production used for first-period capital stock estimation (`modules/38_factor_costs/sticky_feb18/presolve.gms:31-32`)
+- **Module 17 (Production)**: `pm_prod_init(j,kcr)` — initial production used for first-period capital stock estimation (`modules/38_factor_costs/sticky_feb18/presolve.gms:31-32`)
 - **Module 36 (Employment)**: `pm_hourly_costs(t,i,"scenario")` and `pm_hourly_costs(t,i,"baseline")` — wage-scaling ratio in labor cost; `pm_productivity_gain_from_wages(t,i)` — productivity divisor in labor cost (`modules/38_factor_costs/sticky_feb18/equations.gms:16`)
 - **Module 37 (Labor Productivity)**: `pm_labor_prod(t,j)` — REQUIRED to be 1 in `sticky_feb18` (abort otherwise; `modules/38_factor_costs/sticky_feb18/presolve.gms:8-10`). In `sticky_labor` this is consumed actively.
 

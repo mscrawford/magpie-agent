@@ -11,13 +11,13 @@
 
 **Core Method**:
 - IPCC 2019 stock change factors for cropland carbon equilibrium
-- 15% annual convergence toward equilibrium (44% in 5 yrs, 80% in 10 yrs, 96% in 20 yrs)
+- 15% annual convergence toward equilibrium (56% in 5 yrs, 80% in 10 yrs, 96% in 20 yrs)
 - Crop-specific, climate-specific, and management-specific factors
 - Tracks land-use transitions using carbon densities
 
 **Dependencies**: MEDIUM (8 connections) - **MODERATE modification risk**
 - **Provides to**: Module 51 (nitrogen), Module 11 (costs)
-- **Receives from**: Modules 10 (land), 17 (production - via vm_area), 29 (crop management)
+- **Receives from**: Modules 10 (land), 30 (croparea - via vm_area), 29 (crop management)
 - **Interfaces with**: Module 52 (carbon - via vm_carbon_stock)
 
 **Key Variables**:
@@ -36,7 +36,7 @@
 ---
 
 > ⚙️ **Default Realization**: `cellpool_jan23`
-> Confirmed in `config/default.cfg`: `cfg$gms$som <- "cellpool_jan23"`. Alternative: `static_jan19` (static SOC without dynamics). Note: `cellpool_aug16` directory exists but has been removed from the model (no code files, not listed in `module.gms`).
+> Confirmed in `config/default.cfg`: `cfg$gms$som <- "cellpool_jan23"`. Alternative: `static_jan19` (static SOC without dynamics). Only these two realizations exist (`module.gms`).
 
 
 ### 1. Core Purpose
@@ -334,7 +334,7 @@ q59_cost_scm(j2) ..
 
 #### 4.3 IPCC Stock Change Factors
 
-**f59_cratio_landuse(i,climate59,kcr)** - Land use factor (1)
+**f59_cratio_landuse(i,climate59_2019,kcr)** - Land use factor (1)
 - **File**: `input.gms:43-46` → `f59_ch5_F_LU_2019reg.cs3`
 - **Source**: IPCC 2019 Chapter 5
 - **Dimensions**: Region × climate × crop
@@ -554,7 +554,7 @@ pc59_carbon_density(j,land) = pc59_som_pool(j,land) / land_area;
 - Used in: q59_nr_som_fertilizer2
 - Purpose: Limit nitrogen uptake to expanded cropland area
 
-**From Module 17 (Production)** via `vm_area(j,kcr,w)`:
+**From Module 30 (Croparea)** via `vm_area(j,kcr,w)`:
 - Used in: q59_som_target_cropland, q59_cost_scm
 - Purpose: Cropland area by crop and irrigation type
 
@@ -1016,7 +1016,7 @@ Key input variables from other modules are documented in the Dependencies sectio
 **Centrality**: Medium (SOM calculator)
 **Hub Type**: Soil Carbon Dynamics
 **Provides to**: Module 52 (carbon stocks for topsoil component)
-**Depends on**: Modules 10 (land), 29 (cropland), 35 (natveg)
+**Depends on**: Modules 10 (land), 30 (croparea), 29 (cropland). (Module 35 natveg is a conceptual upstream driver of land transitions via Module 10, not a direct interface dependency.)
 
 ### Circular Dependencies
 

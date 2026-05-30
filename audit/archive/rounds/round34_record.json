@@ -1,0 +1,41 @@
+{
+  "round": 34,
+  "type": "doc_centric_audit + hybrid + verify (CAPPED)",
+  "mode": "hybrid",
+  "verify": true,
+  "date": "2026-05-30",
+  "scope": "Sweep batch 1 (11 highest-centrality of the 23 remaining); measured batch to probe the heavier config's cost.",
+  "develop_sha": "ee98739fd",
+  "workflow_run_id": "wf_d43cec53-75c",
+  "outcome": "CAP HIT - 8/11 doc-audits dropped to null",
+  "cap_probe": {
+    "max_inter_message_gap_min": 123.19,
+    "capped": true,
+    "wall_clock_min": 139.4,
+    "run_window_utc": "08:08 - 10:28",
+    "n_agents": 44,
+    "subagent_tokens": 1184385,
+    "note": "Single ~2h rate-limit wait. The hybrid+verify config (~4-6 agents/doc: docaudit + answer + qaudit + verify) saturated the rolling 5h window on top of R33 (~40 min earlier). The Verify phase never ran on ANY doc - the adversarial verifier remains UNTESTED in production. Lesson: this config is too heavy for back-to-back rounds; the binding constraint is the 5h rolling RATE, not total budget."
+  },
+  "completed": ["module_21", "module_38", "module_59"],
+  "dropped": ["module_35", "module_31", "module_22", "module_60", "module_73", "module_71", "module_41", "module_42"],
+  "per_doc_completed": [
+    {"label": "module_21", "critical": 0, "major": 3, "minor": 1, "confirmed": 4, "outcome": "REVERTED by gate. The auditor REGRESSED the doc: claimed non-default bilateral22 has 9 eqs incl an active q21_cost_trade_feasibility. Code disproves all prongs (bilateral22 = 8 eqs; q21_cost_trade_feasibility only in selfsuff_reduced; bilateral22 HAS presolve.gms which sets the penalty .fx=0). Pre-round doc was CORRECT. Gate caught the out-of-range citation (equations.gms:97-99 in a 91-line file) and reverted module_21.md. NET: no change.", "lesson": "Auditor over-claimed on a NON-DEFAULT realization. NOT a consumer-set error, so the (cap-killed) consumer-set verifier would NOT have caught it; the gate's citation-range check did - and only because the bad claim happened to produce an out-of-range line. A regression citing a valid-but-wrong line would slip the gate."},
+    {"label": "module_38", "critical": 0, "major": 1, "minor": 0, "confirmed": 1, "outcome": "FIXED (1 edit) + SPOT-CHECKED CORRECT. pm_prod_init is declared+populated in M17 (17_production/flexreg_apr16/declarations.gms:18 + presolve.gms:10); M38 only READS it. Doc's M30 attribution corrected to M17. Default sticky_feb18 + CES + vm_cost_prod_crop consumer set (M11+M36) all verified; advisory refuted."},
+    {"label": "module_59", "critical": 0, "major": 1, "minor": 4, "confirmed": 5, "outcome": "FIXED (6 edits). Major: vm_area producer = M30 (confirmed declared in 30_croparea), doc said M17 - corrected at 2 sites. cellpool_jan23 default + vm_carbon_stock populator role + OUTPUT consumer set (M51/M50/M11/M52) verified accurate. 4 Minor (44%-vs-56% self-contradiction, climate59 naming, M35-vs-M30 dep, false dir note)."}
+  ],
+  "anchors": [
+    {"id": "G3", "score": 10, "drift": false, "note": "magpie4 v2.70.0 @ a360d8c9 from project/version_pins.json; renv.lock verified as upstream; workspace clone correctly flagged not-SoT (v2.75.1). Perfect."},
+    {"id": "G4", "score": 8, "drift": true, "note": "DRIFT. Answer claimed 101 unique report* funcs; actual = 106 (helper value correct). answerer_confabulation (fabricated 'grep gives 101' + misapplied a pitfall cite). Off-by-5 = Major. NOT a doc/helper bug -> no fix; agent-performance regression flagged. The q-probe/anchor catching this is the value of the hybrid half."}
+  ],
+  "verify_summary": {"docs_verified": 0, "refuted": 0, "corrected": 0, "upheld": 0, "note": "Verify phase never executed (cap killed it before any doc reached it). Adversarial verifier UNTESTED."},
+  "gate": {"clean": true, "validate_consistency_errors": 0, "reverted_files": ["modules/module_21.md"], "note": "module_21 fully reverted (substantive regression, not a citation typo). module_38 + module_59 triggered no errors, kept. Baseline (0 errors, 2 warnings) restored."},
+  "fixes_kept": {"module_38": 1, "module_59": 6},
+  "key_learnings": [
+    "BINDING CONSTRAINT = 5h rolling RATE, not total budget. The heavy hybrid+verify config (~44 agents/11 docs) tripped a 2h wall on top of R33. Strategy: lean doc-centric+verify (drop q-probes), fewer docs/round, steady cadence - spread usage rather than burst.",
+    "Auditor regressions are real and not confined to consumer-sets (module_21 eq-count/realization regression). The consumer-set-only verifier would not catch them; the gate's citation-range check is the backstop, but only for citation-bearing regressions with out-of-range lines.",
+    "G4: hybrid q-probe caught an agent confabulation (101 vs 106) the doc-audit alone would not - confirms the agent-performance value of the q-probe half, separate from doc fixing."
+  ],
+  "recovery_plan": "8 dropped docs -> fresh leaner round (doc-centric + verify, no q-probes, no anchors) once the rolling window recovers. We are at the window's edge (~12:30 CEST; wait ended ~12:28). resumeFromRunId NOT used (config change makes a fresh round cleaner). Pacing under user discussion.",
+  "pushed": false
+}
