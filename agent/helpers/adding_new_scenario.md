@@ -48,7 +48,7 @@ cfg$gms$c09_pal_scenario  <- "SSP2"    # Physical activity level: SSP1-5
 
 #### Food Demand & Diets (Module 15)
 ```r
-cfg$gms$s15_exo_diet  <- 0             # 0=off, 1=EAT-Lancet, 3=new EAT-Lancet realization
+cfg$gms$s15_exo_diet  <- 0             # 0=off, 1=EAT-Lancet (deprecated), 2=NIN-India+EAT-RoW, 3=new EAT-Lancet realization
 cfg$gms$c15_EAT_scen  <- "FLX"         # FLX, FLX_hmilk, PSC, VGN, VEG, etc.
 cfg$gms$c15_kcal_scen <- "healthy_BMI" # healthy_BMI, no_underweight, etc.
 cfg$gms$s15_exo_waste <- 0             # 0=off, 1=on (exogenous waste reduction)
@@ -215,7 +215,7 @@ When MAgPIE starts, the `cfg$gms` list is written to a GAMS-readable file. The s
 
 2. **Scalar/categorical parameters** — switches with `s` or `c` prefixes are passed as GAMS scalars or set elements that conditional logic reads inside the GAMS code.
 
-The `_noselect` variants (e.g., `cfg$gms$c22_protect_scenario_noselect`) apply to countries NOT in the `select_countries` list, enabling country-specific policies:
+The `_noselect` variants (e.g., `cfg$gms$c22_protect_scenario_noselect`) apply to countries NOT in that module's policy-country list (module-specific: `scen_countries15` for module 15, `policy_countries22`/`policy_countries29`/`policy_countries56`/etc. for other modules; there is no single global `select_countries` list), enabling country-specific policies:
 ```r
 cfg$gms$scen_countries15 <- "IND"                  # Apply diet change to India only
 cfg$gms$s15_exo_diet <- 1                          # Diet change for selected countries
@@ -354,7 +354,7 @@ cfg$gms$s29_snv_scenario_target <- 2050
 ### ⚠️ Forgetting Dependent Switches
 
 - **`c56_pollutant_prices` needs matching `c60_2ndgen_biodem`** — in coupled scenarios, the carbon price and bioenergy demand trajectories should come from the same REMIND scenario (same `R34M410-SSP2-...` prefix).
-- **`c56_mute_ghgprices_until`** — defaults to `"y2030"`. If you set a carbon price but mute until 2150, you effectively have no land-based carbon pricing. The scenario CSV sets this to `"y2150"` for the `BASE` preset intentionally.
+- **`c56_mute_ghgprices_until`** — defaults to `"y2030"`. If you set a carbon price but mute until 2150, you effectively have no land-based carbon pricing. (Note: c56_mute_ghgprices_until is NOT set by any preset in config/scenario_config.csv; the y2150 mute value appears only in the emulator coupling CSV config/scenario_config_emulator.csv, column no_ghgprices_land_until, for the Base/NDC ghgtax rows.)
 - **`_noselect` variants** — if you use country-specific policies (e.g., `cfg$gms$scen_countries15`), remember to set BOTH the main switch AND the `_noselect` variant, or non-selected countries will use the default value.
 - **Climate input data** — `cc`/`nocc`/`nocc_hist` switches across modules (14, 42, 43, 52, 59) should be consistent. The `cc`, `nocc`, and `nocc_hist` presets in `scenario_config.csv` handle this automatically. If overriding manually, set ALL of: `c14_yields_scenario`, `c42_watdem_scenario`, `c43_watavail_scenario`, `c52_carbon_scenario`, `c59_som_scenario`.
 

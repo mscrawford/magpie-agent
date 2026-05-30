@@ -60,7 +60,7 @@ Total water demand ≤ Total water available, enforced **per cell** as an inequa
 | `s42_efp_startyear` | `2025` | year | EFP policy ramp-up start |
 | `s42_efp_targetyear` | `2040` | year | EFP policy full implementation |
 | `s42_pumping` | `0` | `0`=off, `1`=on | Activate pumping cost for irrigation |
-| `s42_reserved_fraction` | `0.5` | 0–1 | Fraction of available water reserved (not withdrawn) |
+| `s42_reserved_fraction` | `0.5` | 0–1 | Fraction of available water reserved for non-agricultural use -- only active in the `agr_sector_aug13` realization (no effect under the default `all_sectors_aug13`); assigned to manufacturing withdrawal |
 
 ### Module 43 — Water Availability
 
@@ -154,7 +154,7 @@ cfg$gms$c42_env_flow_policy        <- "on"    # Enforce environmental flows
 cfg$gms$s42_env_flow_scenario      <- 2       # Smakhtin algorithm
 ```
 
-⚠️ **Note**: Pumping costs are currently parameterized primarily for India (`f42_pumping_cost`). Results outside India may not reflect real-world groundwater costs. The groundwater infeasibility buffer in Module 43 (`modules/42_water_demand/all_sectors_aug13/presolve.gms:14-16`) adds free groundwater when exogenous demands exceed supply — this is NOT penalized even with `s42_pumping = 1`.
+⚠️ **Note**: Pumping costs are currently parameterized primarily for India (`f42_pumping_cost`). Results outside India may not reflect real-world groundwater costs. The groundwater infeasibility buffer in Module 43 (`modules/43_water_availability/total_water_aug13/presolve.gms:14-16`) adds free groundwater when exogenous demands exceed supply -- this is NOT penalized even with `s42_pumping = 1`.
 
 ---
 
@@ -236,7 +236,7 @@ Formula: `v42_irrig_eff = 1 / (1 + 2.718282^((-22160 - GDP_pc) / 37767))`
 
 2. **Mismatched climate scenarios**: Setting `c42_watdem_scenario = "cc"` but `c43_watavail_scenario = "nocc"` (or vice versa) creates an inconsistent water balance. Both should typically use the same climate scenario to avoid artifacts.
 
-3. **Disabling water constraints entirely**: Setting `s42_env_flow_scenario = 0` removes environmental flow demands, but the `q43_water` constraint still exists. To fully remove water constraints, you must switch to the `agr_sector_aug13` realization, which excludes non-agricultural sectors — but this still enforces agricultural water limits.
+3. **Disabling water constraints entirely**: Setting `s42_env_flow_scenario = 0` removes environmental flow demands, but the `q43_water` constraint still exists. To change how water constraints are applied, you can switch to the `agr_sector_aug13` realization. It does NOT remove water constraints: it still enforces `q43_water` and agricultural water limits, but instead of modeling domestic/manufacturing/electricity demand explicitly it RESERVES a fixed fraction of available water for non-agricultural use (`s42_reserved_fraction`, default 0.5, assigned to manufacturing; electricity and domestic set to 0). This generally makes LESS water available to agriculture, not more.
 
 4. **No inter-cell water transfer**: Water availability is enforced per cell (`j2`). There is no mechanism for water trade or transfer between cells. Arid cells with high agricultural potential may be infeasible even if neighboring cells have surplus water.
 

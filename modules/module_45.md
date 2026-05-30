@@ -140,18 +140,18 @@ pm_climate_class("CAZ_1",other) = 0.20  → 20% other climate types
    Climate-weighted BEF: `sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))` (1-D, uniform across land_timber types)
 
 2. **Module 52 (Carbon)** - Climate-weighted growth parameters for Chapman-Richards equation, and climate-weighted wood density for growing-stock calibration
-   `modules/52_carbon/normal_dec17/start.gms:17-35` and `modules/52_carbon/normal_dec17/preloop.gms:22-31` (NEW 2026-04-20)
+   `modules/52_carbon/normal_dec17/start.gms:17-48` and `modules/52_carbon/normal_dec17/preloop.gms:21-30` (NEW 2026-04-20)
    k parameter: `sum(clcl, pm_climate_class(j,clcl) * f52_growth_par(clcl,"k",forest_type))`
    m parameter: `sum(clcl, pm_climate_class(j,clcl) * f52_growth_par(clcl,"m",forest_type))`
    wood density: `sum((cell(i,j), clcl), pm_climate_class(j,clcl) * f52_volumetric_conversion(clcl)) / sum(cell(i,j), 1)` → `im_vol_conv(i)`
 
 3. **Module 58 (Peatland)** - Simplified climate mapping
-   `v2/preloop.gms:~50`
-   Maps 31 climate types → 6 aggregated peatland climate zones
+   `modules/58_peatland/v2/preloop.gms:36`
+   Maps 31 climate types → 3 peatland climate zones (tropical, temperate, boreal)
 
 4. **Module 59 (SOM)** - Soil organic matter climate parameters
    `modules/59_som/cellpool_jan23/preloop.gms:16-89`
-   Maps 31 climate types → 3 SOM climate categories
+   Maps 31 climate types → 4 SOM climate categories (temperate_dry, temperate_moist, tropical_dry, tropical_moist)
 
 **Usage patterns**: Modules 14 and 52 use climate-weighted averaging:
 ```gams
@@ -202,7 +202,7 @@ calcOutput(type = "ClimateClass",
 
 **Purpose**: Climate-weighted growth parameters for Chapman-Richards equation
 
-**Usage Location**: `modules/52_carbon/normal_dec17/start.gms:17-35`
+**Usage Location**: `modules/52_carbon/normal_dec17/start.gms:17-48`
 
 **Mechanism**:
 - Plantation vegetation carbon: `pm_carbon_density_plantation_ac(t,j,ac,"vegc")`
@@ -222,7 +222,7 @@ calcOutput(type = "ClimateClass",
 
 **Purpose**: Climate-specific IPCC Biomass Expansion Factor (BEF)
 
-**Usage Location**: `modules/14_yields/managementcalib_aug19/presolve.gms:27-62`, and `modules/52_carbon/normal_dec17/preloop.gms:27`
+**Usage Location**: `modules/14_yields/managementcalib_aug19/presolve.gms:27-62`, and `modules/52_carbon/normal_dec17/preloop.gms:26`
 
 **Mechanism** (updated 2026-04-20): Climate-weighted BEF, 1-D (uniform across land_timber types)
 `sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))`
@@ -233,11 +233,11 @@ _Prior to 2026-04-20, this was a 2-D table *f14_ipcc_bce(clcl, forest_type)* wit
 
 ### 3. Module 58 (Peatland) - Peatland Climate Zones
 
-**Purpose**: Map 31 Köppen-Geiger types to 6 simplified peatland climate zones
+**Purpose**: Map 31 Köppen-Geiger types to 3 peatland climate zones (tropical, temperate, boreal)
 
-**Usage Location**: `modules/58_peatland/v2/preloop.gms:~50`
+**Usage Location**: `modules/58_peatland/v2/preloop.gms:36`
 
-**Mapping**: Sets.gms comment notes "mappings to simplified climate regions exist in 58_peatland" (sets.gms:8)
+**Mapping**: clcl58 defined in modules/58_peatland/v2/sets.gms:45
 
 **Aggregation**: `p58_mapping_cell_climate(j,clcl58) = sum(clcl_mapping(clcl,clcl58), pm_climate_class(j,clcl))`
 
@@ -249,7 +249,7 @@ _Prior to 2026-04-20, this was a 2-D table *f14_ipcc_bce(clcl, forest_type)* wit
 
 **Usage Location**: `modules/59_som/cellpool_jan23/preloop.gms:16-89`
 
-**Mapping**: 31 Köppen-Geiger types → 3 SOM climate categories (sets.gms:8)
+**Mapping**: 31 Köppen-Geiger types → 4 SOM climate categories (temperate_dry, temperate_moist, tropical_dry, tropical_moist) (modules/59_som/cellpool_jan23/sets.gms:22,27)
 
 **Mechanism**: Climate-weighted C:N ratios for cropland
 `sum(clcl_climate59(clcl,climate59), pm_climate_class(j,clcl)) * f59_cratio_landuse(i,climate59,kcr)`
@@ -285,7 +285,7 @@ $offdelim;
 
 **During Simulation**: pm_climate_class **never changes** - completely static across all timesteps t
 
-**No climate dynamics**: Future climate change **not represented** in climate classification (though downstream modules may use time-varying parameters indexed by climate class)
+**No climate dynamics**: Future climate change **not represented** in climate classification; under the default config, downstream climate-indexed parameters (e.g., f52_growth_par) are also static and carry no time dimension
 
 **Implication**: A cell classified as "Dfb" (warm-summer humid continental) in 2020 remains "Dfb" in 2100, even if real-world climate shifts would reclassify it.
 
@@ -306,7 +306,7 @@ $offdelim;
 - Underestimates subtropical dry zones (which expand)
 - Misses climate-induced vegetation shifts (e.g., Mediterranean expansion)
 
-**Workaround**: Downstream modules (e.g., Module 52) can use time-varying climate-indexed parameters to implicitly capture climate change effects, but zone boundaries remain static.
+**Workaround**: Under the default config there is no workaround via Module 45 -- climate-indexed parameters in Module 52 also carry no time dimension. Climate-change effects on yields enter through LPJmL-processed inputs to Module 14, not through reclassification or time-varying climate parameters here.
 
 ### 2. **Historical Baseline Period (1976-2000)**
 
@@ -404,21 +404,21 @@ $offdelim;
 
 **Consequence**: Cannot directly represent climate change scenarios via reclassification (though downstream parameter changes can implicitly capture warming effects).
 
-**Current approach**: Modules like 52 (Carbon) use time-varying parameters indexed by static climate classes (e.g., f52_growth_par(clcl) changes over time while pm_climate_class(j,clcl) stays fixed).
+**Current approach**: Under the default config the climate-indexed parameters are also static -- f52_growth_par(clcl,chap_par,forest_type) and fm_ipcc_bef(clcl) carry no time dimension. This path does NOT capture climate-change effects on growth. Climate-change impacts on yields enter via LPJmL-processed inputs in Module 14, not via reclassification here.
 
 ### 10. **Simplified Peatland/SOM Mappings**
 
 **Full system**: 31 Köppen-Geiger climate types (Module 45)
 
-**Module 58 (Peatland)**: Maps to 6 peatland climate zones (sets.gms:8)
+**Module 58 (Peatland)**: Maps to 3 peatland climate zones (tropical, temperate, boreal) (modules/58_peatland/v2/sets.gms:45)
 
-**Module 59 (SOM)**: Maps to 3 SOM climate categories (sets.gms:8)
+**Module 59 (SOM)**: Maps to 4 SOM climate categories (temperate_dry, temperate_moist, tropical_dry, tropical_moist) (modules/59_som/cellpool_jan23/sets.gms:22,27)
 
 **Aggregation necessary**: Peatland/SOM processes don't require full 30-type detail
 
 **Information loss**:
 - Peatland mapping: Loses distinction between similar temperate types (Cfa vs. Cfb)
-- SOM mapping: Loses most climate detail (31 types → 3 categories)
+- SOM mapping: Loses most climate detail (31 types → 4 categories)
 
 **Consequence**: Within-category climate heterogeneity ignored for peatland and SOM calculations (acceptable simplification given data/process uncertainty).
 

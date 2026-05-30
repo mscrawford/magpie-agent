@@ -48,7 +48,7 @@ Every GAMS model follows a logical progression:
 7. DISPLAY     → Show results
 ```
 
-This order is not just convention—it's enforced by GAMS. You **must** declare entities before using them.
+GAMS does not enforce this block ordering -- it is convention. What GAMS does enforce is declaration-before-use: every identifier must be declared before it is referenced (a variable may be declared before a set, etc.).
 
 ### 1.3 Terminology Mapping
 
@@ -497,7 +497,7 @@ Parameters
 
 **MAgPIE example**:
 ```gams
-Scalar s70_scavenging_ratio     Scavenging ratio / 0.15 /;
+Scalar s70_scavenging_ratio     Scavenging ratio (1) / 0.385 /;
 ```
 
 #### Method 2: Table Format
@@ -1226,34 +1226,38 @@ Total land this timestep = total land previous timestep
 
 #### Mass Balance (Equality)
 ```gams
-*' Food balance (Module 16):
-q16_food_supply(i,kall) ..
-  vm_supply(i,kall) =e=
-    vm_prod_reg(i,kall)
-    + vm_trade_import(i,kall)
-    - vm_trade_export(i,kall)
-    - vm_seed_demand(i,kall)
-    - vm_processing(i,kall);
+*' Supply balance for crops (Module 16):
+q16_supply_crops(i2,kcr) ..
+  vm_supply(i2,kcr) =e=
+    vm_dem_food(i2,kcr)
+    + sum(kap4, vm_dem_feed(i2,kap4,kcr))
+    + vm_dem_processing(i2,kcr)
+    + vm_dem_material(i2,kcr)
+    + vm_dem_bioen(i2,kcr)
+    + vm_dem_seed(i2,kcr)
+    + v16_dem_waste(i2,kcr)
+    + sum(ct, f16_domestic_balanceflow(ct,i2,kcr));
 ```
-Supply = Production + Imports − Exports − Seed − Processing
+Supply = food + feed + processing + material + bioenergy + seed + waste + balance flow
 
-#### Resource Constraints (Inequality ≤)
+#### Resource Constraints (Inequality <=)
 ```gams
 *' Water availability (Module 43):
-q43_water_availability(i) ..
-  sum(water_use, vm_water_withdrawal(i,water_use)) =l=
-  pm_water_available(i);
+q43_water(j2) ..
+  sum(wat_dem, vm_watdem(wat_dem,j2)) =l=
+  sum(wat_src, v43_watavail(wat_src,j2));
 ```
-Total water use ≤ available water
+Total water demand (all sectors) <= available water (all sources)
 
-#### Demand Satisfaction (Inequality ≥)
+#### Demand Satisfaction (Inequality >=)
 ```gams
-*' Minimum food demand (Module 15):
-q15_food_demand(i,kall) ..
-  vm_supply(i,kall) =g=
-  pm_demand_min(i,kall);
+*' Food demand in kcal (Module 15):
+q15_food_demand(i2,kfo) ..
+  (vm_dem_food(i2,kfo) + sum(ct, f15_household_balanceflow(ct,i2,kfo,"dm")))
+  * sum(ct, (fm_nutrition_attributes(ct,kfo,"kcal") * 10**6)) =g=
+  sum(ct, im_pop(ct,i2) * p15_kcal_pc_calibrated(ct,i2,kfo)) * 365;
 ```
-Food supply ≥ minimum required demand
+Food use (dm) converted to kcal >= population * per-capita kcal demand * 365 days
 
 #### Cost Aggregation (Equality)
 ```gams

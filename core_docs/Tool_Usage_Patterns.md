@@ -41,7 +41,7 @@ ls /path/to/magpie/magpie-agent/core_docs/
 
 # ✅ BUILD FROM KNOWN BASE:
 # If working directory is /magpie/magpie-agent/:
-ls $(pwd)/core_docs/AGENT.md
+ls $(pwd)/core_docs/Response_Guidelines.md
 
 # ✅ For files in parent MAgPIE repo:
 ls /path/to/magpie/modules/50_nr_soil_budget/
@@ -55,7 +55,7 @@ pwd
 # Output: /path/to/magpie/magpie-agent
 
 # THEN use relative paths
-ls core_docs/AGENT.md  # ✅ Now safe
+ls core_docs/Response_Guidelines.md  # ✅ Now safe
 ```
 
 #### ✅ SOLUTION 3: Avoid cd Commands
@@ -79,7 +79,7 @@ ls /foo/bar/files/
 
 ```bash
 # Command fails
-wc -l core_docs/AGENT.md
+wc -l core_docs/Response_Guidelines.md
 # Error: No such file or directory
 
 # ❌ WRONG CONCLUSION:
@@ -645,11 +645,11 @@ Edit(old_string="    some code here", ...)
 
 ### Example 1: The Directory Navigation Error (2024-10-24)
 
-**What happened**: Failed to find `core_docs/AGENT.md`
+**What happened**: Failed to find `core_docs/Response_Guidelines.md` (at the time named `core_docs/AI_Agent_Behavior_Guide.md`; later consolidated into `Response_Guidelines.md`)
 
 **Mistake**:
 ```bash
-wc -l core_docs/AGENT.md
+wc -l core_docs/Response_Guidelines.md
 # Error: No such file or directory
 # Concluded: "File doesn't exist"
 ```
@@ -662,15 +662,15 @@ wc -l core_docs/AGENT.md
 **Correct approach**:
 ```bash
 # Method 1: Absolute path
-wc -l /path/to/magpie-agent/core_docs/AGENT.md
+wc -l /path/to/magpie-agent/core_docs/Response_Guidelines.md
 
 # Method 2: Verify location first
 pwd  # Shows: /magpie (not expected /magpie-agent)
 # Now understand why relative path failed
 
 # Method 3: Find it
-find . -name "AGENT.md"
-# Shows: ./magpie-agent/core_docs/AGENT.md
+find . -name "Response_Guidelines.md"
+# Shows: ./magpie-agent/core_docs/Response_Guidelines.md
 # (The ./magpie-agent/ prefix reveals you're in parent dir)
 ```
 

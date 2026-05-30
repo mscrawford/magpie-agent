@@ -76,9 +76,9 @@ Start by relaxing the most likely constraint (based on marginals) and re-run.
 | Configuration | Why it's dangerous |
 |---|---|
 | SSP3 + PkBudg650 | High population + tight carbon budget = impossible |
-| `s13_max_gdp_shr` at finite values | Caps agricultural GDP share — documented infeasibility trigger |
+| `s13_max_gdp_shr` at finite values | Caps technological-change (TC) investment cost as a share of regional GDP; a tight cap can make yield targets unreachable — documented infeasibility trigger |
 | `c22_protect_scenario = "GSN_HalfEarth"` + high BII target | >50% land locked + biodiversity floor |
-| Very high `s56_cprice_red_factor` with early start year | Aggressive carbon price + no CDR option |
+| `s56_cprice_red_factor` > 1 (price amplified) with limited CDR | Amplified CO2 price forces land-use changes that conflict with food/conservation |
 
 ### Configuration switches most likely to cause infeasibility
 
@@ -86,7 +86,7 @@ Start by relaxing the most likely constraint (based on marginals) and re-run.
 |---|---|---|---|
 | `s22_conservation_start` | 22 | ≥ 2025 | Early years with high targets |
 | `s32_aff_plantation` | 32 | 0-1 | > available land |
-| `s56_cprice_red_factor` | 56 | 0-0.5 | > 0.8 with early start |
+| `s56_cprice_red_factor` | 56 | 1 (default = full scenario CO2 price) | >1 amplifies the CO2 price above the scenario path (more infeasibility risk); <1 reduces it. No code-based safe/dangerous cutoff -- risk depends on the scenario price path. |
 | `s13_max_gdp_shr` | 13 | Inf (default) | Any finite value |
 | `c21_trade_liberalization` | 21 | "regionalized" | "fragmented" removes trade flexibility |
 | `c60_2ndgen_biodem` | 60 | low demand scenario | high demand scenario with limited land |
@@ -96,7 +96,7 @@ Start by relaxing the most likely constraint (based on marginals) and re-run.
 
 ## Built-In Slack Variables (Safety Valves)
 
-MAgPIE has several slack variables with high penalty costs. When they activate, the model "pays" a huge cost to relax a constraint. **Non-zero slack = constraint strain.** The table below lists the main high-penalty safety valves; it is not exhaustive (e.g. `v32_ndc_area_missing`, `v29_treecover_missing`, `v30_betr_missing`, and the CES relaxation `v38_relax_CES_lp` also exist).
+MAgPIE has several slack variables with high penalty costs. When they activate, the model "pays" a huge cost to relax a constraint. **Non-zero slack = constraint strain.** The table below lists the main high-penalty safety valves; it is not exhaustive (e.g. `v32_ndc_area_missing`, `v29_treecover_missing`, `v30_betr_missing`, and the CES relaxation `v38_relax_CES_lp` (only in the non-default `sticky_labor` factor-costs realization) also exist).
 
 | Slack Variable | Module | Penalty | What it relaxes |
 |---|---|---|---|
@@ -129,8 +129,8 @@ MAgPIE has several slack variables with high penalty costs. When they activate, 
 
 ### 4. Trade restrictions too tight
 **Symptom**: Regional infeasibility (some regions can't self-supply)
-**Cause**: `c21_trade_liberalization = "autarky"` or low self-sufficiency ratios
-**Fix**: Use "regionalized" or "free" trade settings
+**Cause**: `c21_trade_liberalization = "fragmented"` (low trade liberalization) or low self-sufficiency ratios
+**Fix**: Use a more liberal setting such as `regionalized` or `globalized`
 
 ### 5. Carbon price + limited CDR
 **Symptom**: Infeasibility under ambitious climate policy

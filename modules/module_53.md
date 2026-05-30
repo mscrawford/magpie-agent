@@ -54,7 +54,7 @@ Module 53 calculates **methane (CH4) emissions** from **4 agricultural sources**
 - FAO statistics for calibration (equations.gms:45,57)
 
 **MACC technical mitigation**:
-- 3 of 4 sources include `(1 - im_maccs_mitigation(...))` term (equations.gms:29, 52, 63 — for ent_ferm, awms, rice). Residue burning (q53_emissionbal_ch4_resid_burn) is the exception — see §326 — and is mitigated only via reducing the burned amount itself, not by MACC technical mitigation.
+- 3 of 4 sources include `(1 - im_maccs_mitigation(...))` term (equations.gms:29, 52, 63 — for ent_ferm, awms, rice). Residue burning (`q53_emissions_resid_burn`) is the exception — see §326 — and is mitigated only via reducing the burned amount itself, not by MACC technical mitigation.
 - Mitigation fractions from Module 57 (MACCs)
 - Represents adoption of technical mitigation measures (e.g., feed additives, manure digesters, alternate wetting/drying for rice)
 
@@ -393,15 +393,15 @@ Module 53 uses interface variables declared in other modules.
 - **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:23, 25, 27)
 - **Provider**: Module 70 (Livestock) calculates feed demand based on livestock productivity
 
-**2. fm_attributes** (Core data)
-- **Declaration**: `fm_attributes(attributes,kall)` (Core declarations or Module 09)
+**2. fm_attributes** (Module 16: Demand)
+- **Declaration**: `fm_attributes(attributes,kall)` (Module 16: modules/16_demand/sector_may15/input.gms:20)
 - **Description**: Attributes of commodities (ge=gross energy, nr=nitrogen, dm=dry matter, etc.)
 - **Usage**: Equation q53_emissionbal_ch4_ent_ferm (equations.gms:24, 26, 28)
 - **Unit**: GJ/tDM for gross energy
-- **Provider**: Core data files, potentially Module 09 (Drivers)
+- **Provider**: Module 16 (Demand): fm_attributes(attributes,kall) is an fm_ file-interface table read model-wide
 
 **3. vm_manure** (Module 55: AWMS)
-- **Declaration**: `vm_manure(i,kli,awms,npk)` (Module 55 declarations.gms:19) — the set is `awms` (animal waste management systems, 11 elements). The subset `awms_conf` exists separately and is used only as a domain restriction in some equations; M53 references only the `"confinement"` element of `awms`.
+- **Declaration**: `vm_manure(i,kli,awms,npk)` (Module 55 declarations.gms:19) — the set is `awms` (animal waste management systems, 4 elements: grazing, stubble_grazing, fuel, confinement). The subset `awms_conf` (9 confinement sub-systems) exists separately and is used only as a domain restriction in some equations; M53 references only the `"confinement"` element of `awms`.
 - **Description**: Manure by livestock type, management system, and nutrient (tN or tP or tK per year)
 - **Usage**: Equation q53_emissionbal_ch4_awms (equations.gms:48)
 - **Provider**: Module 55 (AWMS) calculates manure from feed intake minus animal products
@@ -435,7 +435,7 @@ Module 53 uses interface variables declared in other modules.
   - `emis_source`: ent_ferm, awms, rice, resid_burn (sets.gms:22-23)
   - `pollutants`: "ch4" (methane)
 - **Unit**: tCH4 per year (Tg = 1 Mt = 1000 kt = 1,000,000 t, so tCH4 reported, converted to Tg in Module 56)
-- **Consumers**: Module 56 (GHG Policy) for carbon pricing (CH4 converted to CO2-eq via GWP), Module 11 (Costs) for GHG cost in objective function
+- **Consumers**: Module 56 (GHG Policy), which reads vm_emissions_reg for carbon pricing (CH4 converted to CO2-eq via GWP). Module 11 (Costs) is a transitive consumer via Module 56's vm_emission_costs (it does not read vm_emissions_reg directly).
 
 **Note on unit consistency**:
 - Module 53 calculations in **tCH4 per year**
@@ -554,7 +554,7 @@ Module 53 **reads from** these modules:
 - Nitrogen in confinement manure
 - Used for AWMS CH4 calculation
 
-**3. Module 30 (Croparea) or Module 17 (Production)**: `vm_area(j,"rice_pro",w)`
+**3. Module 30 (Croparea)**: `vm_area(j,"rice_pro",w)`
 - Rice cultivation area
 - Used for rice CH4 calculation
 
@@ -566,7 +566,7 @@ Module 53 **reads from** these modules:
 - Technical mitigation fractions
 - Used for all 4 CH4 sources (except residue burning has no mitigation in equation)
 
-**6. Module 09 (Drivers) or Core**: `fm_attributes("ge",kall)`
+**6. Module 16 (Demand)**: `fm_attributes("ge",kall)` (modules/16_demand/sector_may15/input.gms:20)
 - Gross energy content of feed types
 - Used for enteric fermentation calculation
 
@@ -949,9 +949,9 @@ vm_emissions_reg(i2,"resid_burn","ch4") =e=
 - Both follow IPCC methodology
 - Both include MACC technical mitigation
 - Both write to `vm_emissions_reg` (Module 56)
-- Both have 4 equations
 
 **Differences**:
+- Module 53 has 4 equations; Module 51 (rescaled_jan21) has 8 equations
 - Module 51 tracks 7 N emission sources (including soil N2O, indirect N2O)
 - Module 51 includes NUE rescaling (links N budgets to emissions)
 - Module 53 simpler emission factors (no budget rescaling)
@@ -1028,10 +1028,10 @@ vm_emissions_reg(i2,"resid_burn","ch4") =e=
 
 ### 9. GWP Choice Matters
 
-- CH4 GWP = 25 (AR4 100-year) vs. 84 (AR4 20-year)
+- CH4 100-year GWP = 28 (AR5, as used by MAgPIE; the AR4 value was 25) vs. 84 (20-year)
 - **Short-term climate targets** (2030, 2050) favor CH4 reduction (high 20-year GWP)
 - **Long-term targets** (2100) less sensitive to CH4 (decays to CO2 levels by century end)
-- MAgPIE uses 100-year GWP (AR4), may undervalue near-term CH4 mitigation
+- MAgPIE uses the 100-year GWP = 28 (AR5 WG1 Ch08 Table 8.7; modules/56_ghg_policy/price_aug22/preloop.gms:78,80), which may undervalue near-term CH4 mitigation relative to the 20-year horizon.
 
 ### 10. Data Gaps and Priorities
 
@@ -1054,7 +1054,7 @@ vm_emissions_reg(i2,"resid_burn","ch4") =e=
 - q53_emissions_resid_burn: Formula exact match (equations.gms:70-72)
 
 **Interface variables**: Confirmed ✅
-- Reads: vm_feed_intake (Module 70), vm_manure (Module 55), vm_area (Module 30/17), vm_res_ag_burn (Module 18), im_maccs_mitigation (Module 57), fm_attributes (Core/Module 09)
+- Reads: vm_feed_intake (Module 70), vm_manure (Module 55), vm_area (Module 30), vm_res_ag_burn (Module 18), im_maccs_mitigation (Module 57), fm_attributes (Module 16)
 - Writes: vm_emissions_reg(i,"ent_ferm/awms/rice/resid_burn","ch4") (Module 56)
 
 **Data inputs**: Confirmed ✅

@@ -3,7 +3,7 @@
 **Module**: 58_peatland
 **Realizations**: `off`, `v2`
 **Default**: v2
-**Lines of Code**: 608 (v2 realization)
+**Lines of Code**: 609 (v2 realization)
 **Authors**: Florian Humpenöder, Debbora Leip
 **Documentation Status**: ✅ Verified against source code
 
@@ -51,7 +51,7 @@ Module 58 calculates GHG emissions from peatlands and tracks peatland area chang
 ### 2.2 Realization: `v2` (Default)
 
 **Files**: 8 (sets, declarations, input, preloop, presolve, equations, postsolve, realization)
-**Lines**: 608 total
+**Lines**: 609 total
 - sets.gms: 85 lines
 - declarations.gms: 85 lines
 - input.gms: 78 lines
@@ -59,7 +59,7 @@ Module 58 calculates GHG emissions from peatlands and tracks peatland area chang
 - presolve.gms: 77 lines
 - equations.gms: 94 lines
 - postsolve.gms: 104 lines
-- realization.gms: 42 lines
+- realization.gms: 43 lines
 
 **Methodology**: Based on Humpenöder et al. 2020 peatland methodology
 **Data Sources**:
@@ -723,16 +723,16 @@ vm_emissions_reg(i2,"peatland",poll58) =e=
 
 ### 9.2 Declarations Phase
 **File**: `declarations.gms` (85 lines)
-1. Declare 25 parameters (state tracking, scaling factors, costs, policies)
-2. Declare 11 equations
+1. Declare 16 parameters (state tracking, scaling factors, costs, policies)
+2. Declare 13 equations
 3. Declare 3 free variables (v58_peatlandChange, vm_peatland_cost, v58_peatland_emis)
 4. Declare 7 positive variables (state, managed land, balance, cost annuity)
-5. Declare 84 output parameters (ov_*, oq_* for reporting)
+5. Declare 23 output parameters (ov_*/oq_*; 92 type-indexed assignments)
 
 ### 9.3 Input Phase
 **File**: `input.gms` (78 lines)
-1. Define 12 scalar switches (costs, targets, limits) (lines 8-26)
-2. Define policy_countries58 set (all 195 ISO codes) (lines 31-56)
+1. Define 17 scalar switches (costs, targets, limits) (lines 8-26)
+2. Define policy_countries58 set (all 249 ISO codes) (lines 31-56)
 3. Load f58_peatland_area(j,land58) from .cs3 file (lines 60-63)
 4. Load f58_peatland_area_iso(iso,land58) from .cs3 file (lines 67-70)
 5. Load f58_ipcc_wetland_ef(clcl58,land58,emis58) from .cs3 file (lines 74-78)
@@ -807,7 +807,7 @@ vm_emissions_reg(i2,"peatland",poll58) =e=
    - Upper bounds
    - Lower bounds
 
-**Total Output Parameters**: 84 (21 variables × 4 types)
+**Total Output Parameters**: 23 output-parameter declarations (10 ov_* + 13 oq_*), 4 type-values each -> 92 postsolve assignments
 
 ---
 
@@ -827,7 +827,7 @@ vm_emissions_reg(i2,"peatland",poll58) =e=
 - **File**: `modules/58_peatland/input/f58_peatland_area_iso.cs3`
 - **Format**: .cs3 (comma-separated, 2D: iso × land58)
 - **Purpose**: Calculate regional weights for exogenous policies (preloop.gms:19-20)
-- **Countries**: 195 ISO codes
+- **Countries**: 249 ISO codes
 
 ### 10.2 Emission Factor Data
 
@@ -1288,7 +1288,7 @@ peatland <- off
 **Impact**:
 - All peatland emissions = 0
 - vm_peatland_cost = 0
-- Faster solve time (11 fewer equations × 200 cells)
+- Faster solve time (13 fewer equations × 200 cells)
 
 ### 15.2 Advanced Modifications
 
@@ -1766,8 +1766,8 @@ display p_emis_intensity;
 ### 20.3 Code References
 
 **Module Files**:
-- `modules/58_peatland/module.gms` (18 lines)
-- `modules/58_peatland/v2/realization.gms` (42 lines)
+- `modules/58_peatland/module.gms` (17 lines)
+- `modules/58_peatland/v2/realization.gms` (43 lines)
 - `modules/58_peatland/v2/sets.gms` (85 lines)
 - `modules/58_peatland/v2/declarations.gms` (85 lines)
 - `modules/58_peatland/v2/input.gms` (78 lines)
@@ -1790,7 +1790,7 @@ display p_emis_intensity;
 
 | Metric | Count |
 |--------|-------|
-| **Total lines** | 608 |
+| **Total lines** | 609 |
 | Sets | 10 |
 | Subsets | 4 |
 | Mappings | 4 |
@@ -1798,7 +1798,7 @@ display p_emis_intensity;
 | Equations | 13 |
 | Free variables | 3 |
 | Positive variables | 7 |
-| Scalar switches | 12 |
+| Scalar switches | 17 |
 | Input files | 3 |
 | Interface variables (in) | 13 |
 | Interface variables (out) | 2 |

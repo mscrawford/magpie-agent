@@ -157,7 +157,7 @@ ac_est(ac) = yes$(ord(ac) <= (m_yeardiff_forestry(t)/5))
 - ord(ac) ≤ 10/5 = 2
 - ac_est = {ac0, ac5, ac10} (forests 0-10 years old)
 
-**Usage in Module 32**: Establishment age-classes **cannot be harvested or reduced** (dynamic_may24/presolve.gms:~280):
+**Usage in Module 32**: Establishment age-classes **cannot be harvested or reduced** (modules/32_forestry/dynamic_may24/presolve.gms:9-10):
 ```gams
 v32_hvarea_forestry.fx(j,ac_est) = 0
 v32_land_reduction.fx(j,type32,ac_est) = 0
@@ -179,7 +179,7 @@ ac_sub(ac) = yes$(ord(ac) > (m_yeardiff_forestry(t)/5))
 - ord(ac) > 10/5 = 2
 - ac_sub = {ac15, ac20, ..., acx} (forests 15+ years old)
 
-**Usage in Module 32**: Sub-rotation age-classes can be harvested or face disturbance losses (dynamic_may24/presolve.gms:~285):
+**Usage in Module 32**: Sub-rotation age-classes can be harvested or face disturbance losses (modules/32_forestry/dynamic_may24/presolve.gms:75):
 ```gams
 p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
   pc32_land(j,"aff",ac_sub) * f32_forest_shock(t,"%c32_shock_scenario%") * m_timestep_length
@@ -225,6 +225,8 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 
    Purpose: Initialize secondary forest area distribution at model start (year 1995 or user-specified). GFAD provides historical age-class structure for natural regrowth forests.
 
+2. **Module 52 (Carbon)** - directly reads im_forest_ageclass to compute the area-weighted secondary-forest growing stock for Chapman-Richards k calibration (modules/52_carbon/normal_dec17/preloop.gms:53-59).
+
 **NOT used by Module 32 (Forestry)**: Plantations start from scratch (zero initial area), do not inherit GFAD age distribution.
 
 #### 2. ac_est(ac) - Establishment age-classes (dynamic set)
@@ -234,7 +236,7 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 **Time-varying**: Recomputed each timestep based on m_yeardiff_forestry(t)
 
 **Used by**:
-1. **Module 32 (Forestry)** - Plantation dynamics
+1. **Module 32 (Forestry)** - Plantation establishment/harvest bounds
    `modules/32_forestry/dynamic_may24/presolve.gms:9-10`
 
    Key uses:
@@ -245,6 +247,14 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 
    **Rationale**: Forests planted during current timestep (ac_est) cannot be harvested within same timestep (minimum rotation constraint).
 
+2. **Module 35 (NatVeg)** - Secondary-forest and other-land establishment equations and forest-recovery redistribution
+   `modules/35_natveg/pot_forest_may24/equations.gms:228,231`
+   `modules/35_natveg/pot_forest_may24/presolve.gms:36,269-272`
+
+3. **Module 29 (Cropland)** - Tree-cover establishment
+   `modules/29_cropland/detail_apr24/equations.gms:122`
+   `modules/29_cropland/detail_apr24/presolve.gms:79-80`
+
 #### 3. ac_sub(ac) - Sub-rotation age-classes (dynamic set)
 
 **Declaration**: Set, defined dynamically in presolve phase (presolve.gms:12-13)
@@ -253,14 +263,22 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 
 **Used by**:
 1. **Module 32 (Forestry)** - Plantation dynamics
-   `dynamic_may24/presolve.gms:~285-320`
+   `modules/32_forestry/dynamic_may24/presolve.gms:75,78,144`
 
    Key uses:
-   - Calculate disturbance losses: `p32_disturbance_loss_ftype32(t,j,"aff",ac_sub)`
+   - Calculate disturbance losses: `p32_disturbance_loss_ftype32(t,j,"aff",ac_sub)` (modules/32_forestry/dynamic_may24/presolve.gms:75)
    - Allow harvesting: `v32_hvarea_forestry.fx(j,ac_sub)` unbounded (unless overridden)
-   - Fix NDC afforestation: `v32_land.fx(j,"ndc",ac_sub)` (permanent protection)
+   - Fix NDC afforestation: `v32_land.fx(j,"ndc",ac_sub)` (permanent protection) (modules/32_forestry/dynamic_may24/presolve.gms:144)
 
    **Rationale**: Forests established in previous timesteps (ac_sub) are eligible for harvest or face natural disturbances.
+
+2. **Module 35 (NatVeg)** - Secondary-forest disturbance losses, reduction equations, and protection bounds
+   `modules/35_natveg/pot_forest_may24/equations.gms:104,112`
+   `modules/35_natveg/pot_forest_may24/presolve.gms:14,275-281`
+
+3. **Module 29 (Cropland)** - Tree-cover carbon stock and fixed bounds for sub-rotation age-classes
+   `modules/29_cropland/detail_apr24/equations.gms:42,117`
+   `modules/29_cropland/detail_apr24/presolve.gms:81`
 
 ---
 
@@ -283,7 +301,7 @@ p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
 
 **Coverage**: Global terrestrial forests (excluding very sparse woodlands)
 
-**Age-Class Structure**: 15 classes (14 ten-year classes + 1 open-ended 140+ class)
+**Age-Class Structure**: 15 classes (14 ten-year classes + 1 open-ended 150+ class)
 
 **Data Processing**: `madrat` R package (version 3.24.1) + `mrmagpie` (version 1.61.0)
 **Processing Command** (forestageclasses.cs3:4):
@@ -337,26 +355,26 @@ p35_secdf_ageclass(j,ac) = im_forest_ageclass(j,ac)
 
 #### Key Uses of ac_est (Establishment Age-Classes):
 
-**1. Prevent premature harvesting** (presolve.gms:~280):
+**1. Prevent premature harvesting** (modules/32_forestry/dynamic_may24/presolve.gms:9):
 ```gams
 v32_hvarea_forestry.fx(j,ac_est) = 0
 ```
 Cannot harvest forests planted during current timestep (minimum rotation enforcement).
 
-**2. Prevent land reduction** (presolve.gms:~281):
+**2. Prevent land reduction** (modules/32_forestry/dynamic_may24/presolve.gms:10):
 ```gams
 v32_land_reduction.fx(j,type32,ac_est) = 0
 ```
 Cannot abandon/convert newly established plantations within same timestep.
 
-**3. Allow new establishment** (presolve.gms:~295):
+**3. Allow new establishment** (modules/32_forestry/dynamic_may24/presolve.gms:138-139):
 ```gams
 v32_land.lo(j,"plant",ac_est) = 0
 v32_land.up(j,"plant",ac_est) = Inf
 ```
 Plantation expansion occurs in ac_est (unbounded upper bound).
 
-**4. Disturbance redistribution** (presolve.gms:~286):
+**4. Disturbance redistribution** (modules/32_forestry/dynamic_may24/presolve.gms:76):
 ```gams
 pc32_land(j,"aff",ac_est) = pc32_land(j,"aff",ac_est) +
   sum(ac_sub, p32_disturbance_loss_ftype32(t,j,"aff",ac_sub)) / card(ac_est2)
@@ -365,27 +383,27 @@ Forest area lost to disturbances in older age-classes (ac_sub) redistributed equ
 
 #### Key Uses of ac_sub (Sub-Rotation Age-Classes):
 
-**1. Calculate disturbance losses** (presolve.gms:~285):
+**1. Calculate disturbance losses** (modules/32_forestry/dynamic_may24/presolve.gms:75):
 ```gams
 p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) =
   pc32_land(j,"aff",ac_sub) * f32_forest_shock(t,"%c32_shock_scenario%") * m_timestep_length
 ```
 Forest shocks (fires, storms, pests) applied only to older forests (ac_sub), not newly established (ac_est).
 
-**2. Subtract disturbance losses** (presolve.gms:~287):
+**2. Subtract disturbance losses** (modules/32_forestry/dynamic_may24/presolve.gms:78):
 ```gams
 pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) -
   p32_disturbance_loss_ftype32(t,j,"aff",ac_sub)
 ```
 Reduce forest area in affected age-classes.
 
-**3. Fix NDC afforestation** (presolve.gms:~300):
+**3. Fix NDC afforestation** (modules/32_forestry/dynamic_may24/presolve.gms:144):
 ```gams
 v32_land.fx(j,"ndc",ac_sub) = pc32_land(j,"ndc",ac_sub)
 ```
 NDC-committed afforestation areas fixed in ac_sub (permanent protection), only ac_est allowed to vary (new commitments).
 
-**4. Allow harvesting** (presolve.gms:~290):
+**4. Allow harvesting** (modules/32_forestry/dynamic_may24/presolve.gms:110):
 ```gams
 v32_hvarea_forestry.fx(j,ac_sub) = 0  [conditional, depends on harvest age]
 ```
@@ -418,10 +436,10 @@ Module 28 is a **reference data module** with zero equations and zero optimizati
 
 - **Land Balance**: ❌ Does NOT participate (provides age-class structure, not land amounts)
 - **Water Balance**: ❌ Does NOT participate (no water-related parameters)
-- **Carbon Balance**: ⚠️ **INDIRECT** - Age-classes used in Module 52 carbon growth calculations
+- **Carbon Balance**: ⚠️ **DIRECT** - Module 52 consumes both the ac set and the im_forest_ageclass parameter
   - Chapman-Richards vegetation growth uses `ac` (age-class set) for carbon density progression
   - Carbon stocks vary by age: `pm_carbon_density_secdforest_ac(t,j,ac,ag_pools)` / `pm_carbon_density_plantation_ac(t,j,ac,ag_pools)`
-  - Module 28 provides the age-class indexing structure
+  - Module 52 directly reads im_forest_ageclass to compute area-weighted secondary-forest growing stock for k calibration (modules/52_carbon/normal_dec17/preloop.gms:53-59)
   - **Reference**: `cross_module/carbon_balance_conservation.md` (Section 6, Chapman-Richards Growth)
 - **Food Balance**: ❌ Does NOT participate (age-classes don't affect production directly)
 - **Nitrogen**: ❌ Does NOT participate (no nitrogen parameters)
@@ -433,13 +451,14 @@ Module 28 is a **reference data module** with zero equations and zero optimizati
 ### Dependency Chains
 
 **Centrality Rank**: ~25 of 46 modules (low centrality)
-**Total Connections**: 3 (provides to 3 modules, depends on 0)
+**Total Connections**: 4 (provides to 4 modules, depends on 0)
 **Hub Type**: **Pure Data Provider** (single realization, no equations, no optimization)
 
-**Provides To** (3 modules):
-1. **Module 35 (NatVeg)** - Forest age-class distribution (`ac`, `ac_sub`)
+**Provides To** (4 modules):
+1. **Module 35 (NatVeg)** - Forest age-class distribution (`ac`, `ac_est`, `ac_sub`) for initialization, establishment equations, disturbance, and harvest bounds
 2. **Module 32 (Forestry)** - Age-class definitions for plantation rotation (`ac_est`, `ac_sub`)
-3. **Module 52 (Carbon)** - Age-class index for carbon density lookups (`ac`, `ac_sub`)
+3. **Module 52 (Carbon)** - ac age-class set + im_forest_ageclass for the secondary-forest growing-stock / Chapman-Richards k calibration (modules/52_carbon/normal_dec17/preloop.gms:53-59)
+4. **Module 29 (Cropland)** - (`ac_est`, `ac_sub`) for tree-cover establishment equations and bounds
 
 **Depends On**: ZERO modules (pure input data from GFAD)
 
@@ -477,9 +496,9 @@ Module 28 is a **reference data module** with zero equations and zero optimizati
 **Safe Modifications**:
 - ✅ Changing age-class granularity (e.g., 1-year instead of 5-year classes)
 - ✅ Updating GFAD input data with newer forest age observations
-- ✅ Modifying dynamic age-class sets (`ac_sub`, `ac_est`, `ac_ff`) generation logic
+- ✅ Modifying dynamic age-class sets (`ac_sub`, `ac_est`) generation logic
 - ✅ Adding new age-class categories for specific analyses
-- ✅ Changing the number of age-classes (currently 15 classes covering 0-75+ years)
+- ✅ Changing the number of age-classes (MAgPIE uses 62 five-year ac classes spanning 0-300 years plus acx; GFAD input has 15 ten-year bands)
 
 **Dangerous Modifications**:
 - ⚠️ Removing age-class sets → breaks Modules 32, 35, 52 (compilation errors)

@@ -164,7 +164,7 @@ vm_maccs_costs(i2,"capital") =e=
 
 **Convert GHG prices to MACC step indices** (1-201)
 
-**N₂O Conversion** (`preloop.gms:25`):
+**N₂O Conversion** (`preloop.gms:24`):
 ```gams
 i57_mac_step_n2o = min(201, ceil(Price_N2O / 298 * 28/44 * 44/12 / Step_length) + 1)
 ```
@@ -178,7 +178,7 @@ i57_mac_step_n2o = min(201, ceil(Price_N2O / 298 * 28/44 * 44/12 / Step_length) 
   3. `×44/12`: N₂O → C (molecular weight adjustment)
   4. `/Step_length`: Price → MACC step (6.15 or 22.4 USD17/tC-eq per step)
 
-**CH₄ Conversion** (`preloop.gms:26`):
+**CH₄ Conversion** (`preloop.gms:25`):
 ```gams
 i57_mac_step_ch4 = min(201, ceil(Price_CH4 / 25 * 44/12 / Step_length) + 1)
 ```
@@ -274,15 +274,13 @@ Assume CH₄ mitigation curve:
 
 Baseline emissions: 1 Mt CH₄
 
-Integral at Step 4:
-= (0.15-0.14) × 1 × 6.15 × (12/44) × (1/25)
-  + (0.15-0.15) × 1 × 12.3 × (12/44) × (1/25)
-  + (0.16-0.15) × 1 × 18.45 × (12/44) × (1/25)
-= 0.01 × 6.15 × 0.01091 + 0 + 0.01 × 18.45 × 0.01091
-= 0.000671 + 0 + 0.002013
-= 0.002684 million USD17 per Mt CH₄
+Integral at Step 4 (after unit conversion *12/44*25, per preloop.gms:110):
+step 1                        0 million USD17   cumulative: 0
+step 2  (0.15-0.14) x 1 tCH4 x 6.15 USD/tC-eq x 12/44 x 25  = 0.4193 million USD17
+step 3  (0.15-0.15) x 1 tCH4 x 12.3 USD/tC-eq x 12/44 x 25  = 0
+step 4  (0.16-0.15) x 1 tCH4 x 18.45 USD/tC-eq x 12/44 x 25 = 1.2580 million USD17
 
-(Note: Conversions 12/44 and 1/25 convert tC-eq pricing to tCH₄ costs)
+(Note: Conversion x12/44 converts tC-eq pricing to tCH4 pricing; x25 applies CH4 GWP (AR4), per preloop.gms:110)
 ```
 
 **Implementation** (`preloop.gms:86-106`):
@@ -323,7 +321,7 @@ p57_maccs_costs_integral(t,i,emis_source,"ch4") =
 
 ### Outputs (to other modules)
 
-**To Module 56 (GHG Policy)** or **Module 11 (Costs)**:
+**To Module 11 (Costs) and Module 36 (Employment)**:
 - `vm_maccs_costs(i,factors)`: Mitigation costs by factor (labor, capital) (million USD17/yr) (`declarations.gms:25`)
 
 **To Emission Modules (51, 53, 50)** (preprocessed in preloop):
@@ -374,7 +372,7 @@ p57_maccs_costs_integral(t,i,emis_source,"ch4") =
 
 **`s57_step_length`**: Price increment per MACC step (USD17/tC-eq)
 - **PBL_2007**: 6.15 (fine resolution, 201 steps cover 0-1,230 USD17/tC-eq)
-- **PBL_2019/2022**: 22.4 (coarser resolution, 201 steps cover 0-4,502 USD17/tC-eq)
+- **PBL_2019/2022**: 22.4 (coarser resolution, 201 steps cover 0-4,480 USD17/tC-eq)
 
 ### MACC Tables
 
@@ -451,7 +449,7 @@ p57_maccs_costs_integral(t,i,emis_source,"ch4") =
 
 ### scaling (`scaling.gms:8`)
 
-**Variable Scaling**: `vm_maccs_costs.scale(i,factors) = 10e4`
+**Variable Scaling**: `vm_maccs_costs.scale(i,factors) = 1e4`
 - Purpose: Numerical conditioning (costs typically 10⁴-10⁶ range)
 
 ### postsolve (`postsolve.gms:10-23`)
@@ -654,6 +652,7 @@ Total integral at step 3 = 0 + 0.3075 + 0.369 = 0.6765 USD per unit emission ✓
 | Module | Variables | Purpose |
 |--------|-----------|---------|
 | **11** (Costs) | `vm_maccs_costs(i,factors)` | MACC costs enter objective function |
+| **36** (Employment) | `vm_maccs_costs(i,"labor")` | Labor share of MACC costs feeds agricultural-employment accounting (q36_employment_maccs) |
 | **51, 53, 50** (Emissions) | `im_maccs_mitigation(t,i,emis_source,pollutants)` | Mitigation fractions reduce baseline emissions |
 
 ### Critical Hub Status
@@ -661,7 +660,7 @@ Total integral at step 3 = 0 + 0.3075 + 0.369 = 0.6765 USD per unit emission ✓
 Module 57 is a **cost bridge** between GHG policy and emission modules:
 - Receives prices from Module 56 (policy)
 - Provides mitigation fractions to Modules 51/53/50 (preloop)
-- Provides mitigation costs to Module 11 (optimization)
+- Provides mitigation costs to Module 11 (optimization) and the labor share to Module 36 (employment accounting)
 - **No feedback loops** during optimization (MACC calculations in preloop, not equations)
 
 ---

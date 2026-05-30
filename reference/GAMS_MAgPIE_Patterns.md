@@ -42,7 +42,7 @@ modules/[NN]_[name]/[realization]/
 
 ### 1.2 Standard Module Files
 
-**Every MAgPIE module realization contains these files**:
+**Most MAgPIE module realizations contain these files. Required: `realization.gms`, `declarations.gms`, `equations.gms`. Present only when needed: `sets.gms`, `preloop.gms`, `scaling.gms`, `start.gms`.**
 
 | File | Purpose | When Executed |
 |------|---------|---------------|
@@ -323,8 +323,8 @@ scalars
 | `kcr` | Crop products |
 | `kli` | Livestock products |
 | `kap` | Animal products |
-| `kve` | Veg etables/fruits |
-| `kfo` | Forestry products |
+| `kve` | Land-use activities (crops + pasture + bioenergy/fodder; defined in module 14) |
+| `kfo` | Food-relevant products (all products considered as food; module 15). Note: forestry products use the separate set `kforestry`. |
 
 #### Land Types
 
@@ -365,14 +365,14 @@ scalars
 
 **Example**: `vm_land(j,land)`
 - **Defined**: Module 10 (Land)
-- **Used by**: Modules 14 (Yields), 17 (Production), 30 (Croparea), 31 (Pasture), 32 (Forestry), 35 (Natural vegetation), 52 (Carbon), etc.
+- **Used by**: Modules 29 (cropland), 30 (croparea), 31 (pasture), 32 (forestry), 34 (urban), 35 (natural vegetation), 50 (nitrogen budget), 58 (peatland), 59 (SOM). Note: yields/production/carbon read `vm_area`/`vm_yld`/`vm_carbon_stock`, not `vm_land` directly.
 
 ### 3.2 Common Interface Variables
 
 | Variable | Module | Used By | Purpose |
 |----------|--------|---------|---------|
 | `vm_land(j,land)` | 10 | Many | Land allocation by type |
-| `vm_prod(j,k)` | 17 | 20, 21, 70 | Production by product |
+| `vm_prod(j,k)` | 17 | 18, 30, 31, 38, 40, 42, 71, 73 | Production by product (cell-level); 20/21/70 consume the regional aggregate `vm_prod_reg` |
 | `vm_carbon_stock(j,land,c_pools,stockType)` | 56 | 52, 32, 35 | Carbon stocks |
 | `vm_watdem(wat_dem,j)` | 42 | 43 | Water demand |
 | `vm_cost_glo` | 11 | - | Global costs (objective) |
@@ -393,12 +393,9 @@ scalars
 
 **Module 56 (GHG policy)**:
 ```gams
-* In equations.gms — carbon pricing creates incentive
-q56_emis_pricing_co2(i2) ..
-    vm_emission_costs(i2) =e=
-    sum((emis_source, pollutants_co2),
-        vm_emissions_reg(i2,emis_source,pollutants_co2)
-        * sum(ct, im_pollutant_prices(ct,i2,pollutants_co2,emis_source)));
+* Conceptually: carbon pricing turns emissions into costs via vm_emissions_reg x im_pollutant_prices
+* (The actual q56_emis_pricing_co2 computes one-off CO2 costs from carbon-stock differences;
+*  the annual emission cost equation, q56_emission_cost_annual, accumulates pricing over time.)
 ```
 
 **Module 32 (Forestry)**:
@@ -558,22 +555,20 @@ t_all = t_past + t          (all = historical + future)
 
 **Pattern**: Bridge calibration to simulation.
 
-**Example** (Module 70, lines 69-75):
+**Example** (Module 70, modules/70_livestock/fbask_jan16/presolve.gms:32-33):
 
 ```gams
-if (ord(t) = smax(t2, ord(t2)$(t_past(t2))) AND card(t) > sum(t_all$(t(t_all) and t_past(t_all)), 1),
-    * This is last historical timestep AND there are future timesteps
-    p70_cattle_stock_proxy(t,i) =  im_pop(t,i)
-                                  * pm_gdp_pc_ppp(t,i)
-                                  / sum(i_to_iso(i,iso), im_pop_iso("y1995",iso))
-                                  * sum(i_to_iso(i,iso), im_gdp_pc_ppp_iso("y1995",iso));
-);
+* Unconditional — runs every timestep in presolve.gms
+p70_cattle_stock_proxy(t,i) = im_pop(t,i)
+                              * pm_kcal_pc_initial(t,i,"livst_rum")
+                              / i70_livestock_productivity(t,i,"sys_beef");
 ```
 
 **Breakdown**:
-- `ord(t) = smax(t2, ord(t2)$(t_past(t2)))` — Is this the last historical timestep?
-- `card(t) > sum(...)` — Are there future timesteps?
-- If both TRUE: Initialize projection using historical calibration
+- `im_pop(t,i)` — Regional population
+- `pm_kcal_pc_initial(t,i,"livst_rum")` — Per-capita initial kcal from ruminant livestock
+- `i70_livestock_productivity(t,i,"sys_beef")` — Livestock productivity for beef system
+- Assignment is unconditional (no historical/future guard); runs every timestep
 
 ### 4.7 Time Macros
 

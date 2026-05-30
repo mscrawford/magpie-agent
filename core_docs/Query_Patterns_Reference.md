@@ -110,16 +110,16 @@ s29_treecover_target = 0  ! Disabled by default
 > **1. Module 29 (Cropland)** - Tree cover optimization:
 > - Variable: `v29_treecover(j,ac)` by age class
 > - Equation: `q29_treecover` aggregates to `vm_treecover(j)`
-> - Location: `modules/59_som/cellpool_jan23/equations.gms:83-84`
+> - Location: `modules/29_cropland/detail_apr24/equations.gms:83-84`
 >
 > **2. Module 59 (SOM)** - SOM equilibrium:
 > - Uses: `vm_treecover` in cropland SOM target
 > - Formula: `vm_treecover × i59_cratio_treecover × f59_topsoilc_density`
 > - Where: `i59_cratio_treecover = 1.0` (100% of natural carbon)
 >
-> **3. Module 52 (Carbon)** - Stock aggregation:
-> - Aggregates SOM into total soil carbon
-> - Reports: `vm_carbon_stock(j,"crop","soilc")`
+> **3. Module 59 (SOM) populates -> Module 52 (Carbon) reads** - Stock accounting:
+> - Module 59 writes the soil-carbon pool of the interface variable: `vm_carbon_stock(j,land,"soilc",stockType)` (modules/59_som/cellpool_jan23/equations.gms:62)
+> - Module 52 READS `vm_carbon_stock` in `q52_emis_co2_actual` to compute CO2 emissions (modules/52_carbon/normal_dec17/equations.gms:16-19); it does not aggregate SOM into the stock
 >
 > **Net Effect**: Trees restore SOM to 100% of natural levels (vs. typical cropland at 60-80%)."
 
@@ -142,8 +142,8 @@ Value: vm_land(j,"forest") × f59_topsoilc_density(ct,j)
 
 **2. Transition Mechanism** (the event):
 ```
-Transition: Forest → cropland via land-use transition matrix
-Tracked by: vm_lu_transitions(j,"forest","crop")
+Transition: Secondary forest -> cropland via land-use transition matrix
+Tracked by: vm_lu_transitions(j,"secdforest","crop")
 Location: Module 10 (Land), used in Module 59
 ```
 

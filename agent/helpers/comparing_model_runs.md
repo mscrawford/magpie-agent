@@ -7,7 +7,7 @@
 
 ## Quick Reference
 
-MAgPIE stores each run in a separate folder under `output/`. The folder name follows the pattern `<title>_<YYYY-MM-DD_HH.MM.SS>` (configured via `cfg$results_folder` in `config/default.cfg:2298`, which defaults to `"output/:title::date:"`). The run title comes from `cfg$title` (`config/default.cfg:17`, default: `"default"`).
+MAgPIE stores each run in a separate folder under `output/`. The folder name follows the pattern `<title>_<YYYY-MM-DD_HH.MM.SS>` (configured via `cfg$results_folder` in `config/default.cfg:2351`, which defaults to `"output/:title::date:"`). The run title comes from `cfg$title` (`config/default.cfg:17`, default: `"default"`).
 
 **Key files per run:**
 
@@ -244,7 +244,7 @@ Trade variables are available in the report.mif under `Trade|` prefixed variable
 
 3. **Comparing runs with different base years**: If `cfg$gms$c_past` or input data vintages differ, the calibration baseline changes, making absolute comparisons misleading. Compare *differences from baseline* or percentage changes instead of absolute values.
 
-4. **GDX variable naming**: Output parameters use `ov_` prefix (variables) and `oq_` prefix (equations). Raw GAMS variables use `vm_` (global), `v_` (local). In `fulldata.gdx`, `ov_*` parameters have all timesteps (via `t` dimension), but `vm_*` variables only have the last timestep's values.
+4. **GDX variable naming**: Output parameters use `ov_*` prefix (interface variables, e.g. `ov_land`) or `ov<NN>_*` (module-local variables, e.g. `ov21_trade`), and `oq<NN>_` prefix (equations, e.g. `oq21_notrade`). Raw GAMS variables use `vm_` (global), `v_` (local). In `fulldata.gdx`, `ov_*` parameters have all timesteps (via `t` dimension), but `vm_*` variables only have the last timestep's values.
 
 5. **Unit consistency**: All production is in dry matter (`million tDM`), NOT fresh weight. Costs are `million USD17MER/yr` (2017 market exchange rate). Land is `million ha`. Carbon stocks are `million tC`. Confusing units across different data sources is a common error.
 

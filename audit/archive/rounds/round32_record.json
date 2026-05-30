@@ -1,0 +1,364 @@
+{
+ "round": 32,
+ "date": "2026-05-30",
+ "type": "doc_centric_audit (cap-adaptive; folds in R31 recovery)",
+ "scope": "R31-recovery (5 dropped module docs) + reference/helper/core docs",
+ "commit_before": "7512f5d",
+ "commit_after": null,
+ "auditor_model": "claude-opus-4-8",
+ "fixer_model": "claude-sonnet-4-6",
+ "answerer_model": null,
+ "verification_source": "origin/develop @ee98739fd; reference docs vs gams.com; magpie4_reference vs pinned clone",
+ "note": "doc-centric only (no question-probes) per the post-R31 cap-adaptive decision. 0 dropped, 22.6 min wall, fresh rate-limit window.",
+ "summary": {
+  "n_docs": 15,
+  "doc_audit_bugs": {
+   "critical": 1,
+   "major": 35,
+   "minor": 24
+  },
+  "total_edits": 86,
+  "clean_docs": [
+   "magpie4_reference",
+   "maintenance_protocol"
+  ],
+  "gate": {
+   "clean": true,
+   "validate_consistency_errors": 0,
+   "new_errors": [
+    "module_28.md & module_45.md: Check 17 (file:line citations) flagged 1 bundled error = 10 sub-problems (7 LINE out-of-range + 3 FILE bare/wrong-realization hints). Cause: this round's edits turned approximate '~280' citations into precise line numbers but wrote them as BARE basenames ('presolve.gms:75') or wrong-module-realization hints ('dynamic_may24/presolve.gms:75', 'v2/preloop.gms:36'). The validator resolves bare 'presolve.gms' against the HOST module's own realization (28_ageclass/oct24/presolve.gms = 13 lines; 45_climate/static has no preloop.gms), so module-32 and module-58 usage citations appeared out-of-range/unresolvable. Verified all cited lines are CORRECT against actual source (32_forestry/dynamic_may24/presolve.gms 231 lines; 58_peatland/v2/preloop.gms 43 lines) -> fixed by prefixing full 'modules/XX_name/realization/' path, no revert needed."
+   ],
+   "reverted_files": [],
+   "check_units_advisories": 5,
+   "check_consumer_advisories": 4,
+   "notes": "FIXED, not reverted. 13 targeted citation-format edits across 2 files; all cited line numbers were verified correct against GAMS source, only the path prefix was missing. module_45.md: 1 edit (v2/preloop.gms:36 -> modules/58_peatland/v2/preloop.gms:36; the other occurrence at line 240 already had full path). module_28.md: 12 edits adding 'modules/32_forestry/dynamic_may24/' prefix to module-32 USAGE citations of ac_est/ac_sub at presolve.gms lines 9,10,75,76,78,110,138-139,144. Module 28's own SET-DEFINITION citations (presolve.gms:9-10, 12-13, resolving correctly to oct24/presolve.gms) were intentionally left untouched. Also added full path to two in-range bare module-32 citations (presolve.gms:9 and :10 in the 'Key Uses of ac_est' subsection) for internal consistency, since they were unflagged only by coincidence of being <=13 lines but semantically point at module 32. Re-run: Check 17 now 2914/2914 valid; Total checks 42, Passed 40, Warnings 2, Errors 0. The 2 warnings are pre-existing baseline advisories: check_units 5 unit-claim mismatches (modules 60/57/12/56/39, all pre-existing, NOT in this round's edited set) and consumer-attribution 3 Pattern-D1 'no grep-hit' (module_52.md pm_carbon_density_plantation_ac/secdforest_ac/plantation_ac_uncalib) + 1 Pattern-D2 omission (module_16.md vm_supply omits M70). All advisories unchanged from baseline. Not committed, not pushed."
+  }
+ },
+ "doc_centric_audit": [
+  {
+   "label": "module_53",
+   "doc": "modules/module_53.md",
+   "origin_round": 31,
+   "counts": {
+    "critical": 0,
+    "major": 4,
+    "minor": 3,
+    "informational": 0,
+    "confirmed": 7,
+    "total": 7
+   },
+   "deferred": [
+    "module_53.md:955 'Module 51 tracks 7 N emission sources' -- plausibly off (M51 has 8 equations + an emis_source_n51 set), but counting distinct sources vs equations needs deeper M51 set analysis; comparative/tangential; left unverified to avoid a false positive.",
+    "The 'Tg per yr vs tCH4' unit-mismatch discussion (L437/442) -- interpretive commentary on M56's declaration label (declarations.gms:40 does say 'Tg per yr'); not a discrete code-checkable claim.",
+    "Various '% of agricultural CH4' shares (L972/985/992/998/1007-1008) and real-world Ym/mitigation-efficacy ranges -- domain/literature claims, not MAgPIE-code claims (correctly framed as such in the doc)."
+   ],
+   "summary": "module_53 core is solid (4 eqs verbatim, all set counts, 0.0027 scalar, all interface decls). R27 GWP=28 fix HELD at L443/860/866 but was INCOMPLETE: L1031/1034 still say AR4/GWP=25 (contradicts code+doc). Plus awms \"11 elements\" (is 4), M51 \"4 equations\" (is 8), wrong eq name q53_emissionbal_ch4_resid_burn. 4 Major + 3 Minor.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/module_53.md"
+  },
+  {
+   "label": "module_57",
+   "doc": "modules/module_57.md",
+   "origin_round": 31,
+   "counts": {
+    "critical": 1,
+    "major": 2,
+    "minor": 2,
+    "informational": 0,
+    "confirmed": 5,
+    "total": 5
+   },
+   "deferred": [
+    "Pre-run units advisory (module_57.md:375 s57_step_length 'USD17/tC-eq' vs declarations.gms:9 'USD17MER'): REFUTED, not a bug. preloop.gms:17-18 code comment says 'USD17MER per tC eq' -- the doc's USD17/tC-eq is the dimensionally-complete form and is code-supported (module_12 'TC'-abbreviation pattern). No edit.",
+    "10 Limitations/Assumptions (669-785): prose interpretation, broadly consistent with code; not individually code-checkable.",
+    "Mitigation Technology Examples (593-637): explicitly labeled conceptual; .cs3 MACC inputs not human-readable here -> per-technology mix unverifiable.",
+    "im_pollutant_prices dim annotation (314) shows 't' (read-form in preloop) vs declared 't_all' in M56 declarations.gms:9; doc uses the read-form, not a fabrication. Informational only.",
+    "GWP rationale (548-554): model values 25/298 verified (preloop:20-21); AR5/AR6 comparison numbers are general climate-science knowledge, not model claims.",
+    "Header self-counts ('110+ citations'): unauditable; 'Equations: 2' is verified correct.",
+    "im_maccs_mitigation consumer set {50,51,53} CONFIRMED CORRECT (not a bug) -- noted here for completeness; M50 macceff_aug22, M51 rescaled_jan21, M53 ipcc2006_aug22 all default and all read it."
+   ],
+   "summary": "module_57.md MOSTLY ACCURATE. 5 bugs: 1 Critical (vm_maccs_costs consumer set wrong - phantom M56 + omitted M36 employment, both default realizations), 2 Major (scaling 10e4 vs 1e4; trapezoid example conversion 1/25 contradicts code x25), 2 Minor (off-by-one preloop cites; step-range 4502 vs 4480). Units advisory REFUTED. im_maccs_mitigation {50,51,53} correct.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/module_57.md"
+  },
+  {
+   "label": "module_28",
+   "doc": "modules/module_28.md",
+   "origin_round": 31,
+   "counts": {
+    "critical": 0,
+    "major": 6,
+    "minor": 2,
+    "informational": 0,
+    "confirmed": 8,
+    "total": 8
+   },
+   "deferred": [
+    "forestageclasses.cs3 is not in the worktree (only a 'files' manifest; .cs3 downloaded at runtime), so all cs3-sourced claims are unverifiable here: file size '206 lines' (L300,796), 'GFAD v1.1' header (L833), tool versions 'madrat 3.24.1 + mrmagpie 1.61.0' (L60,288,834), the calcOutput(type='AgeClassDistribution',...) command (L289-296), 'circa 2000' period -> route to preproc-agent.",
+    "'~200 cells', '0.5 deg native resolution', cluster aggregation (L216,282,669-671): runtime/clustering config, not GAMS-verifiable.",
+    "'Centrality Rank ~25 of 46' (L435): derived metric, not directly code-checkable.",
+    "Poulter et al. (2019) GFAD methodology details (L274-284): external literature, not code.",
+    "DECLARED-vs-POPULATED nuance: ac_est/ac_sub are DECLARED in core/sets.gms:277,279 and only POPULATED in module 28 presolve.gms:9-13. Doc says 'defined dynamically in presolve phase' (L232,250) which is defensible (populated there) and cites the right file; not recording as a bug, but the declaration site is core, not module 28."
+   ],
+   "summary": "R16 age-class-range advisory REFUTED: doc correctly states 62-element ac0..ac300+acx set. 8 confirmed bugs: 6 Major (3 consumer-set omissions on ac_est/ac_sub/im_forest_ageclass missing M29/M35/M52; M32 citations to nonexistent lines ~280-320 in a 231-line file; fabricated set ac_ff; wrong '15 classes/0-75yr' vs 62/0-300) + 2 Minor (GFAD '140+' vs code '150+'; phantom ac_sub tag on M52).",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/module_28.md"
+  },
+  {
+   "label": "module_58",
+   "doc": "modules/module_58.md",
+   "origin_round": 31,
+   "counts": {
+    "critical": 0,
+    "major": 3,
+    "minor": 4,
+    "informational": 0,
+    "confirmed": 7,
+    "total": 7
+   },
+   "deferred": [
+    "module.gms:12 cited for v2 methodology (doc:72); line 12 is the @authors line, methodology prose is at realization.gms:8-17 \u2014 coarse-pointer drift, borderline Minor, not edited.",
+    "\u00a721.1 set breakdown 'Sets 10 / Subsets 4 / Mappings 4' (=18) overcounts vs 12 named set objects + 1 alias, but subset-vs-mapping categorization is a judgment call, not cleanly code-checkable.",
+    "'200 spatial clusters / x 200 cells' (doc:822,1135,1837,1843) is run-time clustering config, not fixed in module 58; doc hedges '~200' \u2014 not module-58-code-checkable.",
+    "\u00a721.2 illustrative table: 'Typical EF (tropical)' rewetted '-0.06' does not match tropical rewetted CO2 (=0 in cs3), but table is explicitly labeled illustrative; per-state EFs elsewhere are correct \u2014 Informational.",
+    "M57 (MACCs) reads vm_emissions_reg generically (on_aug22/equations.gms:38,40,48,50); doc lists only M56 as M58's output consumer. NOT a bug \u2014 doc documents M58's output target (56 prices the peatland slice) and makes no 'zero other consumers' claim; tracing whether MACC sources include 'peatland' is out of scope.",
+    "Stale metadata footers (doc:8 'Verified', :1943-1945 'Accuracy 100% / 0 unverified', :1974) are now inaccurate given B1-B7; footer metadata, not a content bug \u2014 flagging for maintainer to soften."
+   ],
+   "summary": "module_58 is highly accurate on the load-bearing surface: every variable/equation/realization name, file:line citation into v2/*.gms, scalar default, and EF value checked is correct; default v2 + dynamics-on confirmed. 7 bugs, all Class-6 count drift (1 root cause: \u00a79/\u00a721 summary counts not re-derived from code). Worst: policy_countries58 \"195\" vs actual 249. No Critical/wrong-consumer/inverted-default. Advisory refuted.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/module_58.md"
+  },
+  {
+   "label": "module_45",
+   "doc": "modules/module_45.md",
+   "origin_round": 31,
+   "counts": {
+    "critical": 0,
+    "major": 3,
+    "minor": 3,
+    "informational": 0,
+    "confirmed": 6,
+    "total": 6
+   },
+   "deferred": [
+    "koeppen_geiger.cs3 not in develop worktree (only input/files manifest): cannot verify '205 lines', '4 header + 1 column header + ~200 data rows', '~200 cells', or the calcOutput(...) command at cs3:3 (doc :183-195) -> route to preproc-agent.",
+    "madrat v3.24.1 / mrcommons v1.63.0 version pins (doc :182): not GAMS-checkable; needs renv.lock / preproc pin.",
+    "Historical 2-D f14_ipcc_bce(clcl, forest_type) dimensionality + PR #869 / 'renamed 2026-04-20' (doc :230): current code only confirms f14_ipcc_bce is gone and fm_ipcc_bef is 1-D; prior 2-D shape is deleted-code history, correctly framed -> no edit.",
+    "Doc :417 'full 30-type detail' vs 31: loose round-down, trivial prose, not a bug."
+   ],
+   "summary": "module_45 spine correct (static default, 31 clcl types, 0 eq/var, direct-consumer set {14,52,58,59} complete; M35 correctly excluded). 3 Major: M58 mapping count 6->3, M59 count 3->4, and f52_growth_par claimed time-varying but is time-invariant (climate fully static under default). 3 Minor citation drifts. Score 6/10.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/module_45.md"
+  },
+  {
+   "label": "GAMS_MAgPIE_Patterns",
+   "doc": "reference/GAMS_MAgPIE_Patterns.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 6,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 7,
+    "total": 7
+   },
+   "deferred": [
+    "\u00a72.1 lists kcr as a 'Global set' example (line 278) though it is defined in module 14 (kcr(kve)); also listed as module-specific (line 279). Internally inconsistent classification, but kcr is used model-wide and the \u00a72.3 'Crop products' gloss is conceptually fine. Borderline, not flagged.",
+    "\u00a72.3 i='Regions (10-14 aggregated regions)' and j='default ~200 clusters' are config-dependent soft claims (hedged with ~/resolution-dependent); within tolerance, not flagged.",
+    "\u00a72.3 i2/j2 labeled 'Aliases' \u2014 i2(i) is actually a dynamic subset ('World regions (dynamic set)', sets.gms:122), not a pure alias. Minor imprecision; intent close enough; not flagged (Informational at most).",
+    "\u00a71.3/\u00a74.1 solve shown inside loop(t,...) 'in main.gms': literal solve is generated via $batinclude include.gms solve from core/calculations.gms inside a while(sm_intersolve=0,...) intersolve loop. Objective vm_cost_glo and nlp solver are correct; loop/location is a pedagogical simplification. Not flagged (conceptually accurate).",
+    "All GAMS-language semantic claims (singleton ct set, $macro compile-time substitution, .fx/.lo/.up/.l suffixes, $() conditions, =e=/=l=/=g=) verified consistent with gams.com (UG_FlowControl confirms equation defs illegal inside loops, justifying the ct pattern) and with real core/macros.gms; no bug."
+   ],
+   "summary": "7 bugs (6 Major, 1 Minor; 0 Critical). kve/kfo set meanings wrong (kve=land-use activities not veg/fruit; kfo=food set not forestry). vm_land & vm_prod consumer sets list phantom/wrong modules (transitive + cell-vs-regional). \u00a73.4 & \u00a74.6 fabricate equation algebra as real code (\u00a74.6 uses nonexistent pm_gdp_pc_ppp + invalid line cite). Prefixes/file-layout/defaults/macros/GAMS-language all accurate.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/GAMS_MAgPIE_Patterns.md"
+  },
+  {
+   "label": "debugging_infeasibility",
+   "doc": "agent/helpers/debugging_infeasibility.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 2,
+    "minor": 2,
+    "informational": 0,
+    "confirmed": 4,
+    "total": 4
+   },
+   "deferred": [
+    "line 78 'SSP3 + PkBudg650 = impossible' is an empirical scenario-combination outcome claim, not verifiable from a single GAMS file (plausible).",
+    "line 91 'Safe range = regionalized' for c21_trade_liberalization: 'regionalized' is a valid option but NOT the default (default l909090r808080); doc says 'Safe range' not 'default', so defensible - left as-is to avoid over-reach.",
+    "readGDX object names in snippets (lines 29-35,48,59-61) use solver-variable names (v73_..., ov_land, oq10_land_area); all GAMS objects exist, so the R/gdx2 read-name choice is a runtime nuance not a GAMS-code fact - not flagged.",
+    "line 109 plain '$' formatting vs USD17MER units - units-precision nuance, not a code error."
+   ],
+   "summary": "MOSTLY ACCURATE (~7/10). All 5 slack-var names+penalties, 4 note slacks, q10/q43/q60/q21 constraint types, modelstat logic, GSN_HalfEarth, food-slack absence: CORRECT. Bugs: (Major) s13_max_gdp_shr caps TC cost not 'ag GDP share'; (Major) s56_cprice_red_factor 0-0.5/>0.8 thresholds fabricated, default is 1; (Minor) c21 'autarky'/'free' invalid options; (Minor) v38_relax_CES_lp non-default. R29 '13 slacks' advisory REFUTED (stale).",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/debugging_infeasibility.md"
+  },
+  {
+   "label": "GAMS_Fundamentals",
+   "doc": "reference/GAMS_Fundamentals.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 3,
+    "minor": 2,
+    "informational": 0,
+    "confirmed": 5,
+    "total": 5
+   },
+   "deferred": [
+    "f10_land_initial(j,land) + ./input/f10_land_initial.csv (lines 525-529): real M10 input is f10_land(t_ini10,j,land) from avl_land_t.cs3 (modules/10_land/landmatrix_dec18/input.gms:8-12), BUT f10_land_initial is explicitly allowlisted in doc header line 3 as a deliberate placeholder and the Table-load syntax shown is correct -> NOT a bug, noting only",
+    "s_interest_rate / 0.05 / (line 472) and s_start_year / 1995 / (line 473): allowlisted/generic scalar-syntax illustrations, not verified as real defaults, presented as syntax not behavior -> deferred",
+    "vm_x1, v70_feed (allowlisted line 3): deliberate bad-name/generic placeholders -> not bugs",
+    "Module 15/16 exact default-realization cfg keys: grep cfg$gms$food / cfg$gms$demand returned no match under those keys; not needed for the \u00a75.10 findings (equation names wrong regardless of realization, real equations read directly) -> cfg key left unverified, not a bug",
+    "ADVISORY RE-CHECK: all three R12 flags resolved/refuted -- inline/eol comment syntax (lines 126-127) CORRECT per gams.com; power() non-integer-exponent claim NOT PRESENT (only generic line-1376 prose); reversed .prior priority NOT PRESENT (no .prior in doc)"
+   ],
+   "summary": "Verdict MOSTLY ACCURATE. GAMS-language + Module-10 examples verbatim-correct; all 3 R12-flagged areas resolved/refuted (comment syntax correct per gams.com; power/.prior absent). 5 confirmed bugs: 3 Major in \u00a75.10 (invented eqn names q16_food_supply/q43_water_availability, invented vars vm_water_withdrawal/pm_water_available/etc, fabricated formulas); 2 Minor (s70_scavenging_ratio 0.15->0.385; declaration block-order 'enforced').",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/GAMS_Fundamentals.md"
+  },
+  {
+   "label": "magpie4_reference",
+   "doc": "agent/helpers/magpie4_reference.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0,
+    "informational": 0,
+    "confirmed": 0,
+    "total": 0
+   },
+   "deferred": [
+    "GAMS modelstat label mapping 1/2/7 = optimal/locally-optimal/feasible (doc line 67) is standard GAMS/CONOPT convention; magpie4 code documents only the NA-fill mechanism (getReport.R:194, @param at 12-15), not the labels. Consistent with convention, not contradicted by code -> not a bug, but the precise label semantics live in GAMS solver docs, not this clone.",
+    "getReport.R:62-181 citation (doc line 45) is off by one line from the tryList closing paren (open=62, last arg `level=level`=181, closing `)`=182). NOT flagged as a bug: the rubric's own G4 immutable anchor sanctions 'tryList block ~62-181', the doc snippet is explicitly illustrative (`# ... 114 more calls ...`), and 62-181 accurately bounds the dispatch content. Flagging would be a false positive against an anchor."
+   ],
+   "summary": "Full audit of magpie4_reference.md vs SHA-pinned clone (v2.70.0 @ a360d8c9ec, exact match). 0 confirmed bugs, 10/10. All 106 named report* functions exist (0 phantoms); getReport 117 calls/106 unique, signature, version pins, arg signatures, cross-ref modules all verified. Pre-run advisory refuted: doc is correct.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/magpie4_reference.md"
+  },
+  {
+   "label": "maintenance_protocol",
+   "doc": "agent/helpers/maintenance_protocol.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0,
+    "informational": 0,
+    "confirmed": 0,
+    "total": 0
+   },
+   "deferred": [
+    "Line 236: core_docs/README.md listed as an 'e.g.' subordinate-README example but that file does not exist (the other 3 in the list do); reference is a prescriptive class-member illustration, not an existence claim -> below flagging threshold, no edit proposed.",
+    "R3/R6 drift magnitudes ('5+ helpers behind', 'one helper behind') are historical prior-round states, corroborated by helpers/README.md narration but not verifiable against develop.",
+    "Line 37 'unit-rendering FPs' for check_param_defaults is mild prose imprecision (one of two allowlist entries is percent-rendering, not unit) \u2014 prose, not a code token.",
+    "Cadence/time-budget figures and semantic-score thresholds (>=8.0/>=9.0, ~2min, 15-30min) are operational estimates, not code-derivable.",
+    "Decision-tree/priority-rules prose (Sec 4) is advisory; the GAMS filenames it references are standard MAgPIE conventional names."
+   ],
+   "summary": "Clean. Process/workflow doc, no GAMS-semantic claims. All code-checkable items verified: 6 scripts, 3 commands+files, ~12 cross-ref paths, advisory_allowlist.json contents+functional wiring (both checkers read it; schema matches), R6 G1 anecdote (magpie4_ref add-date 2026-05-24 exact; project/README now 4 files), recovery shell cmds (git -C ..->parent; cp targets exist), '46 modules' (develop=46). Pre-run advisory REFUTED. 0 bugs.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/maintenance_protocol.md"
+  },
+  {
+   "label": "adding_new_scenario",
+   "doc": "agent/helpers/adding_new_scenario.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 1,
+    "minor": 1,
+    "informational": 1,
+    "confirmed": 3,
+    "total": 3
+   },
+   "deferred": [
+    "doc:105/263/328 - exact validity of REMIND strings R34M410-SSP2-PkBudg1000 / R34M410-SSP1-PkBudg650: input-data names not enumerated in default.cfg; default R34M410-SSP2-NPi2025 confirmed, PkBudg* variants plausible but unverifiable without input .tgz.",
+    "doc:306 - c50_scen_neff='baseeff_add3_add15_add25_max75': baseeff_add*_max* family is real (default baseeff_add3_add5_add10_max65) but this exact alternate string not enumerated in default.cfg comment block.",
+    "doc:234 - 'modelstat should be 1 (optimal) or 2 (locally optimal)': general GAMS convention, not MAgPIE-code-specific.",
+    "doc:242 - 'Total land area stays constant (~13,000 Mha)': sanity heuristic, not verifiable from config without a model run.",
+    "doc:73 - c30_bioen_water options comment 'rainfed, all' omits 'irrigated' (default.cfg:902 lists rainfed/irrigated/all); parenthetical not an options enumeration - borderline, not flagged.",
+    "doc:71 - header 'Cropland (Module 30)': module 30 is 30_croparea (Cropland is module 29); the cfg$gms$cropland SWITCH name is real and correctly used, so header-label imprecision only, no false code claim follows."
+   ],
+   "summary": "Mostly accurate (largest never-validated helper). ~52 claims verified: all ~50 cfg$gms switches+defaults, realization names, setScenario/start_run signatures, emulator CSV columns, 80-row count - clean. 1 Major: line 357 fabricates 'scenario CSV sets c56_mute_ghgprices_until=y2150 for BASE preset' (y2150 is in emulator CSV, not scenario_config.csv; BASE sets 6 other switches). 1 Minor (select_countries generic name), 1 Info (s15_exo_diet omits option 2).",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/adding_new_scenario.md"
+  },
+  {
+   "label": "comparing_model_runs",
+   "doc": "agent/helpers/comparing_model_runs.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 1,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 2,
+    "total": 2
+   },
+   "deferred": [
+    "magclass::write.mif() namespace (doc:86) \u2014 call is bare write.mif() on a quitte object with library(quitte) loaded (merge_report.R:48,18); cf. rds_report.R:43 uses magclass::write.report() for the magclass path. LIKELY should be quitte::write.mif() but the quitte/magclass NAMESPACE is not in the GAMS ground truth (no renv/library installed) \u2014 cannot confirm with code evidence.",
+    "magpie4 function names/signatures/units: land/croparea/modelstat/getReport/Kcal are USED in develop output scripts (corroborates existence + land level= arg); costs/emissions/demand/production not called in any develop script \u2014 names/levels/units unverified here. Route to magpie4_reference.md.",
+    "mip::validationpdf signature & style=\"comparison\" deep semantics (doc:160-162) \u2014 call + arg confirmed in comparison_validation.R:46; package internals not in ground truth.",
+    "report.mif IAMC variable strings & units (doc:207-235, e.g. Land Cover|Cropland, Emissions|CO2|Land Mt CO2/yr) \u2014 produced by magpie4 report* functions, not GAMS; only 'million USD17MER' is corroborated in GAMS declarations.",
+    "full.log described as 'GAMS listing/log output' (doc:20) \u2014 full.log is the GAMS log (-lf=full.log, submit.R:36); the listing is full.lst (submit.R:45). Mild wording conflation, both files real; not a path bug.",
+    "modelstat_<project>.csv (doc:93) \u2014 code writes modelstat_<basename(getwd())>.csv (modelstat.R:45); <project> is a reasonable gloss, not flagged."
+   ],
+   "summary": "Score 8/10, MOSTLY ACCURATE (high). 1 Major: cfg$results_folder cited config/default.cfg:2298, actually 2351 (2298 is s80_optfile); value correct. 1 Minor: oq_ prefix is really oq<NN>_ (oq21_notrade). All script-behavior/output-file/GAMS-prefix/config-switch claims verified vs develop ee98739fd. R-package claims (magpie4/quitte/mip) deferred; magclass::write.mif likely should be quitte::.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/comparing_model_runs.md"
+  },
+  {
+   "label": "water_scarcity_scenarios",
+   "doc": "agent/helpers/water_scarcity_scenarios.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 2,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 3,
+    "total": 3
+   },
+   "deferred": [
+    "vm_water_cost units: doc says 'mio. USD17MER/yr' but code declaration (all_sectors_aug13/declarations.gms:31) says 'USD17MER per m^3'. The equation q42_water_cost (equations.gms:16-17) and its direct entry into the Module-11 objective are dimensionally mio USD/yr, so the doc matches the equation; the code's own declaration label is the inconsistent artifact. Flag the code, not the doc.",
+    "'Pumping costs parameterized primarily for India' (doc lines 157, 247): f42_pumping_cost is a real parameter (input.gms:126, loaded from .cs4), but the India-centricity is a data-file claim not parseable from GAMS source.",
+    "f43_wat_avail index: doc ASCII (line 187) writes f43_wat_avail(t,j) but the declared index is t_all (total_water_aug13/input.gms:16). Cosmetic ASCII imprecision, not load-bearing."
+   ],
+   "summary": "Mostly accurate, code-grounded helper (~7/10). All var/eq/realization/switch NAMES and config defaults verified correct (advisory refuted). 2 Major: WS-1 agr_sector_aug13 RESERVES water for non-ag, does not 'exclude non-ag sectors'; WS-2 groundwater-buffer citation points at M42 irrig-efficiency lines, buffer is in M43. 1 Minor: s42_reserved_fraction only active in non-default realization.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/water_scarcity_scenarios.md"
+  },
+  {
+   "label": "Tool_Usage_Patterns",
+   "doc": "core_docs/Tool_Usage_Patterns.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 0,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 1,
+    "total": 1
+   },
+   "deferred": [
+    "Generic tool/harness behavior assertions (Read needs absolute paths; Edit requires prior in-session Read; Read line-prefix format; Grep/Glob path-param semantics; Glob is glob-not-regex) describe the tool contract, not MAgPIE code -- out of scope for a code audit.",
+    "All path-discipline best-practice prose (absolute paths, pwd checks, subshell (cd ...), space-quoting, && vs ;, multi-method existence checks) -- not code-checkable.",
+    "/path/to/... and /foo/bar placeholders are intentionally generic, not real-path claims.",
+    "Doc-status footer 'Updated 2025-11-29 (model-agnostic refactor)' is metadata, not verifiable against MAgPIE code."
+   ],
+   "summary": "Tool_Usage_Patterns.md is a tool-usage meta-doc: advisory CONFIRMED, almost nothing GAMS-checkable. No consumer/default/citation claims (Critical/Major surfaces absent). 9 concrete claims verified (dir diagram, macceff_aug22 path, vm_nr_eff example, referenced files all correct). 1 Minor bug: 7x 'core_docs/AGENT.md' is a non-existent path (AGENT.md is at repo root; real incident was about AI_Agent_Behavior_Guide.md). Score 9/10.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/Tool_Usage_Patterns.md"
+  },
+  {
+   "label": "Query_Patterns_Reference",
+   "doc": "core_docs/Query_Patterns_Reference.md",
+   "origin_round": 32,
+   "counts": {
+    "critical": 0,
+    "major": 2,
+    "minor": 1,
+    "informational": 0,
+    "confirmed": 3,
+    "total": 3
+   },
+   "deferred": [
+    "Pattern advice prose (trace-the-full-chain, '80% of complex queries', response-structure tips) - methodology, not code-checkable",
+    "Pattern 5 modelstat codes 4/3/13/1-2 - standard GAMS solver conventions, correct but not a MAgPIE-source claim",
+    "Illustrative magnitudes '60-80% of natural level' / 'no-tillage +10-22% SOM' (lines 51,124,165) - IPCC/literature framing, not pinned to a single readable .gms parameter (input .cs3/.cs4 unreadable)",
+    "Pattern 3 convergence percentages (5y:44%,10y:80%,20y:96%) - arithmetic of 1-0.85^n illustration, internally consistent, not a code claim",
+    "Pseudocode `vm_carbon(j,ac)=e= f_chapman_richards(A,k,m,ac)` line 242 - explicitly illustrative pseudocode (no real f_chapman_richards function), MANDATE-5 framing OK; not flagged"
+   ],
+   "summary": "3 bugs in Query_Patterns_Reference.md. 2 Major: B1 treecover citation points at wrong module path (59_som vs correct 29_cropland/detail_apr24/equations.gms:83-84, line nums coincide); B2 attributes soil-C stock production to M52 when M59 populates and M52 only reads vm_carbon_stock. 1 Minor: B3 non-existent land label \"forest\" (use secdforest). Pattern-4 mechanistic/parameterized appendix and all Pattern-1 SOM citations verified accurate.",
+   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round32_docaudits/Query_Patterns_Reference.md"
+  }
+ ]
+}
