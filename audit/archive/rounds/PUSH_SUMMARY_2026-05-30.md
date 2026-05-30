@@ -63,3 +63,15 @@ User chose "lean + verify, small probe now." 4 consumer-set-rich dropped docs: m
 **Criticals (all validated):** module_22 ×2 (pm_land_conservation M10-phantom + M29/M13-omit, R20-anchor class); module_35 ×1 (age-class ac150→ac300/62-elem, R16-anchor class).
 Correctly-refuted leads: module_60 `vm_dem_bioen` 'GJ' (doc right — the in-code `declarations.gms:14` 'GHJ' is the defect); module_35 M52/M22 phantoms.
 Continuing the sweep at this lean config; re-probe each batch to glide under the rolling rate.
+
+## Round 4 (R36) — sweep batch (8 docs, doc-centric + VERIFY) — CLEAN
+4 R34-dropped (73, 71, 41, 42) + 4 new (18, 39, 44, 51).
+
+| Round | docs | confirmed bugs (C/Ma/Mi) | verify (upheld/corrected/refuted) | edits | dropped | gate | commit |
+|-------|------|--------------------------|-----------------------------------|-------|---------|------|--------|
+| R36 | 8 | **3C / 13Ma / 17Mi** (33 conf) | 8 / 0 / 0 (8 verified) | 67 | 0 | clean (0 err; self-healed 8 citations) | _local_ |
+
+**Cap-probe: CLEAN** (max gap 1.62 min, 30 min, 1.87M) → lean config sustainable at 8 docs.
+**Criticals (verifier-upheld + meta-checked by hand):** module_18 ×2 (`vm_prod_reg(kres)` external consumer = M21-only via k_notrade `selfsuff_reduced/equations.gms:19`; 6 wrongly-listed modules read kcr/kap/kli_rum slices — slice-conflation; `vm_res_biomass_ag/bg` mislabeled Internal though M50 reads them); module_51 ×1 (`im_maccs_mitigation` declared M57 `on_aug22/declarations.gms:13`, doc said M56). Both confirmed against develop.
+Recurring vein: **DECLARED-vs-POPULATED-vs-READ** producer/declaration errors (vm_prod_reg "from M70"→M17; im_maccs_mitigation "M56"→M57; vm_carbon_stock "M52"→M56). Refuted leads: module_73 R33-advisory (q73 populate — doc correct); module_51 "M51 reads vm_area" (that was M32).
+**Sweep is the sustainable config.** R37 = final 8 (20,34,36,37,40,43,54,80) → then all 35 unaudited module docs covered.

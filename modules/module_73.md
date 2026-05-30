@@ -23,24 +23,24 @@
 8. **Slack variable** (v73_prod_heaven_timber) for technical feasibility at very high cost
 
 **What Module 73 does NOT do**:
-- ❌ Does NOT determine timber demand endogenously (`realization.gms:16`)
+- ❌ Does NOT determine timber demand endogenously (`realization.gms:22`)
 - ❌ Does NOT model timber trade explicitly (uses regional demand aggregation)
 - ❌ Does NOT distinguish between different wood species
 - ❌ Does NOT model timber processing industries (sawmills, pulp mills)
 - ❌ Does NOT track timber products over time (no stock accumulation)
 - ❌ Does NOT model wood substitution effects (e.g., wood vs. concrete in construction)
 - ❌ Does NOT include demand for non-timber forest products
-- ❌ Residue recovery rate (~52%, from Thiffault 2015) is fixed, not region-specific. The model uses a 15% residue-ratio scalar (`s73_residue_ratio = 0.15` at `input.gms:20`) which is the product of ~30% theoretical roundwood-residue potential × ~52% technical recovery rate.
+- ❌ Residue recovery rate (~52%, from Thiffault 2015) is fixed, not region-specific. The model uses a 15% residue-ratio scalar (`s73_residue_ratio = 0.15` at `input.gms:20`) which is the product of 27% theoretical roundwood-residue potential × ~52% technical recovery rate.
 
 ---
 
 ### 2. Production Aggregation System
 
-**VERIFIED**: Module 73 aggregates timber production from two sources (`equations.gms:35-53`):
+**VERIFIED**: Module 73 aggregates timber production from two sources (`equations.gms:43-61`):
 
 #### 2.1 Industrial Roundwood (wood)
 
-**Location**: `equations.gms:35-42`
+**Location**: `equations.gms:43-50`
 
 ```gams
 q73_prod_wood(j2)..
@@ -72,7 +72,7 @@ q73_prod_wood(j2)..
 
 #### 2.2 Woodfuel Production (woodfuel)
 
-**Location**: `equations.gms:44-53`
+**Location**: `equations.gms:52-61`
 
 ```gams
 q73_prod_woodfuel(j2)..
@@ -98,12 +98,14 @@ q73_prod_woodfuel(j2)..
 q73_prod_residues(j2)..
   v73_prod_residues(j2)
   =l=
-  vm_prod(j2,"wood") * s73_residue_ratio
+  (sum(kforestry, vm_prod_forestry(j2,kforestry))
+  + sum((land_natveg,kforestry), vm_prod_natveg(j2,land_natveg,kforestry)))
+  * s73_residue_ratio
   ;
 ```
 
 **VERIFIED Residue Numbers** (derivation cited in `equations.gms` comment block 63-73):
-- USDA reports ~30% of roundwood harvested are residues (Oswalt et al. 2019)
+- USDA reports 27% of roundwood harvested are residues (Oswalt et al. 2019)
 - ~52% residue recovery assumed (Thiffault et al. 2015)
 - Result: 15% residue ratio used in model (`s73_residue_ratio = 0.15` at `input.gms:20`)
 
@@ -180,7 +182,7 @@ p73_timber_demand_gdp_pop(t_all,i,kforestry) = sum((i_to_iso(i,iso),kforestry_to
 
 #### 3.5 Unit Conversion (updated 2026-04-20)
 
-**Location**: `preloop.gms:46-48`
+**Location**: `preloop.gms:49-51`
 
 ```gams
 pm_demand_forestry(t_ext,i,kforestry) = round(p73_timber_demand_gdp_pop("y2150",i,kforestry) * im_vol_conv(i),3);
@@ -195,7 +197,7 @@ pm_demand_forestry(t_all,i,kforestry) = round(p73_timber_demand_gdp_pop(t_all,i,
 
 **Prior to 2026-04-20**: conversion used a per-kforestry file *f73_volumetric_conversion.csv* (now removed). See PR #869 for migration details.
 
-**Post-2150 Behavior**: Demand held constant at 2150 levels (`preloop.gms:46`)
+**Post-2150 Behavior**: Demand held constant at 2150 levels (`preloop.gms:49`)
 
 ---
 
@@ -238,7 +240,7 @@ if(s73_expansion > 0,
 - `s73_expansion = 1.0` → 100% increase (doubling) by 2100
 - Fraction held constant after 2100
 
-**Integration** (`preloop.gms:76-77`):
+**Integration** (`preloop.gms:83`):
 ```gams
 pm_demand_forestry(t_all,i,"wood") = pm_demand_forestry(t_all,i,"wood") + p73_demand_constr_wood(t_all,i);
 ```
@@ -271,11 +273,11 @@ $endif
 > Base scalars `s73_timber_prod_cost_wood` and `s73_timber_prod_cost_woodfuel` changed units (USD17MER/tDM → USD17MER/m3) and values (148→89, 74→44).
 > Scalar typo *s73_reisdue_removal_cost* corrected to `s73_residue_removal_cost`.
 
-**VERIFIED** (2026-04-20): Module 73 calculates total timber production costs (`equations.gms:16-27`).
+**VERIFIED** (2026-04-20): Module 73 calculates total timber production costs (`equations.gms:23-31`).
 
 #### 5.1 Cost Equation
 
-**Location**: `equations.gms:16-27`
+**Location**: `equations.gms:23-31`
 
 ```gams
 q73_cost_timber(i2)..
@@ -293,9 +295,9 @@ q73_cost_timber(i2)..
 
 1. **Base production cost** (all timber pays `im_timber_prod_cost(i,kforestry)` per tDM):
    - Source scalars (USD17MER per **m3**, not per tDM):
-     - `s73_timber_prod_cost_wood` = 89 USD17MER/m3 (`input.gms:15`) — UNECE roundwood price (60 EUR/m3 × 1.23)
+     - `s73_timber_prod_cost_wood` = 89 USD17MER/m3 (`input.gms:15`) — UNECE roundwood price (72 EUR/m3 × 1.23)
      - `s73_timber_prod_cost_woodfuel` = 44 USD17MER/m3 (`input.gms:16`) — half of roundwood (LUKE 2025: energywood ~50% sawlog price)
-   - **Conversion to regional tDM cost** (`preloop.gms:89-90`):
+   - **Conversion to regional tDM cost** (`preloop.gms:90-91`):
      `im_timber_prod_cost(i, kforestry) = s73_timber_prod_cost_<k> / im_vol_conv(i)`
      where `im_vol_conv(i)` is regional basic wood density (tDM/m3) provided by Module 52.
 
@@ -411,7 +413,7 @@ woodfuel . (wood_fuel)
 
 #### 7.1 q73_cost_timber (Regional Production Cost)
 
-**Location**: `equations.gms:16-27`
+**Location**: `equations.gms:23-31`
 **Purpose**: Calculate total timber production costs including base production, natveg premium, residue removal, and slack
 
 **Formula** (4 terms):
@@ -428,7 +430,7 @@ vm_cost_timber(i) = Σ(vm_prod × im_timber_prod_cost(i))
 
 #### 7.2 q73_prod_wood (Wood Production Balance)
 
-**Location**: `equations.gms:35-42`
+**Location**: `equations.gms:43-50`
 **Purpose**: Aggregate industrial roundwood from plantations, natural forests, and emergency slack
 
 **Formula**:
@@ -440,7 +442,7 @@ vm_prod(j,"wood") = vm_prod_forestry(j,"wood") + Σ(vm_prod_natveg(j,land_natveg
 
 #### 7.3 q73_prod_woodfuel (Woodfuel Production Balance)
 
-**Location**: `equations.gms:44-53`
+**Location**: `equations.gms:52-61`
 **Purpose**: Aggregate woodfuel from plantations, natural forests, residues, and emergency slack
 
 **Formula**:
@@ -454,7 +456,7 @@ vm_prod(j,"woodfuel") = vm_prod_forestry(j,"woodfuel") + Σ(vm_prod_natveg(j,lan
 
 #### 7.4 q73_prod_residues (Residue Availability Constraint)
 
-**Location**: `equations.gms:72-79` (rewritten 2026-04-20)
+**Location**: `equations.gms:75-81` (rewritten 2026-04-20)
 **Purpose**: Limit residue recovery to 15% of **all real timber harvest** (plantation + natveg, both wood + woodfuel)
 
 **Formula**:
@@ -484,7 +486,7 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 
 | Parameter | Default | Unit | Description | Location |
 |-----------|---------|------|-------------|----------|
-| `s73_timber_prod_cost_wood` | 89 | USD17MER/**m3** | Base price for industrial roundwood (UNECE, 60 EUR/m3 × 1.23). Converted to regional USD17MER/tDM in preloop via `im_vol_conv(i)`. | input.gms:15 |
+| `s73_timber_prod_cost_wood` | 89 | USD17MER/**m3** | Base price for industrial roundwood (UNECE, 72 EUR/m3 × 1.23). Converted to regional USD17MER/tDM in preloop via `im_vol_conv(i)`. | input.gms:15 |
 | `s73_timber_prod_cost_woodfuel` | 44 | USD17MER/**m3** | Base price for woodfuel (half of wood; LUKE 2025). Converted to regional USD17MER/tDM via `im_vol_conv(i)`. | input.gms:16 |
 | `s73_free_prod_cost` | 1,000,000 | USD17MER/tDM | Emergency slack cost | input.gms:17 |
 | `s73_timber_demand_switch` | 1 | 1/0 | Turn timber demand on (1) or off (0) | input.gms:18 |
@@ -529,8 +531,8 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 **🔄 Changed 2026-04-20 (PR #869):** The former file *f73_volumetric_conversion.csv* (`kforestry` → tDM/m³) has been **removed**. Conversion is now driven by the regional wood density `im_vol_conv(i)` (tDM/m³) computed in Module 52's preloop. See the cross-module-coupling note in section 5 above for inputs and downstream consumers.
 
 **Where used in M73**:
-- `preloop.gms:44-48`: convert `p73_timber_demand_gdp_pop` (mio. m³) → `pm_demand_forestry` (mio. tDM) using `im_vol_conv(i)`
-- `preloop.gms:89-90`: convert m3-priced scalars → `im_timber_prod_cost(i, kforestry)` per tDM
+- `preloop.gms:49-51`: convert `p73_timber_demand_gdp_pop` (mio. m³) → `pm_demand_forestry` (mio. tDM) using `im_vol_conv(i)`
+- `preloop.gms:90-91`: convert m3-priced scalars → `im_timber_prod_cost(i, kforestry)` per tDM
 
 **Rationale**: The new climate-class-based wood density is more physically justified (basic wood density varies with climate/species composition) than the former flat per-kforestry values, and it's shared with M52's growing-stock calibration.
 
@@ -578,11 +580,11 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 
 3. **Module 32 (forestry)** → 1 variable:
    - `vm_prod_forestry(j,kforestry)` - Plantation timber production (mio. tDM/yr)
-   - **Use**: Aggregate into total production (`equations.gms:38, 47`)
+   - **Use**: Aggregate into total production (`equations.gms:46, 55`)
 
 4. **Module 35 (natveg)** → 1 variable:
    - `vm_prod_natveg(j,land_natveg,kforestry)` - Natural forest harvest (mio. tDM/yr)
-   - **Use**: Aggregate into total production (`equations.gms:40, 49`)
+   - **Use**: Aggregate into total production (`equations.gms:48, 57`)
 
 #### 10.2 Provides To (Sends Variables To)
 
@@ -633,17 +635,17 @@ Natural Forests
 **VERIFIED implementations with file:line references**:
 
 1. ✅ **Aggregates production from two sources**:
-   - Managed plantations (Module 32): `equations.gms:38, 47`
-   - Natural forests (Module 35): `equations.gms:40, 49`
+   - Managed plantations (Module 32): `equations.gms:46, 55`
+   - Natural forests (Module 35): `equations.gms:48, 57`
 
 2. ✅ **Calculates future demand using Lauri et al. 2019**:
    - Population × Income growth with elasticities: `preloop.gms:20-28`
    - Income elasticity threshold at 10,000 USD17PPP: `preloop.gms:15`
 
 3. ✅ **Tracks harvest residues**:
-   - 15% of industrial roundwood available: `input.gms:24`, `equations.gms:66`
-   - Can be used for woodfuel: `equations.gms:51`
-   - Removal cost 2.5 USD17MER/tDM: `input.gms:25`, `equations.gms:21`
+   - 15% of timber harvest available: `input.gms:20`, `equations.gms:75-81`
+   - Can be used for woodfuel: `equations.gms:59`
+   - Removal cost 2.7 USD17MER/tDM: `input.gms:21`, `equations.gms:29`
 
 4. ✅ **Construction wood scenarios**:
    - Churkina et al. 2020 demand: `preloop.gms:67`, `input.gms:53-57`
@@ -659,17 +661,14 @@ Natural Forests
    - Future = projected from historical base: `preloop.gms:20-28`
 
 7. ✅ **Emergency slack variable**:
-   - Cost 1 million USD17MER/tDM: `input.gms:21`, `equations.gms:22`
-   - Ensures model feasibility: `equations.gms:10-15`
+   - Cost 1 million USD17MER/tDM: `input.gms:17`, `equations.gms:30`
+   - Ensures model feasibility: `equations.gms:10-21`
 
 8. ✅ **Unit conversion m³ → tDM**:
-   - Volumetric conversion factors: `input.gms:47-52`
-   - Applied to demand: `preloop.gms:43-45`
+   - Wood density `im_vol_conv(i)` from Module 52; conversion at `preloop.gms:49-51`
 
 9. ✅ **Production cost accounting**:
-   - Wood: 89 USD17MER/m3 (`s73_timber_prod_cost_wood` at `input.gms:15`); woodfuel: 44 USD17MER/m3 (`input.gms:16`)
-   - Woodfuel: 74 USD17MER/tDM: `input.gms:20`
-   - Residues: 2.5 USD17MER/tDM: `input.gms:25`
+   - Wood: 89 USD17MER/m3 (`input.gms:15`); Woodfuel: 44 USD17MER/m3 (`input.gms:16`); Residues: 2.7 USD17MER/tDM (`input.gms:21`)
 
 10. ✅ **Post-2150 demand**:
     - Held constant at 2150 levels: `preloop.gms:43, 79`
@@ -687,7 +686,7 @@ Natural Forests
 
 **VERIFIED limitations with file:line references**:
 
-1. ❌ **NOT endogenous demand** (`realization.gms:16`):
+1. ❌ **NOT endogenous demand** (`realization.gms:22`):
    - Demand calculated exogenously from GDP/population projections
    - NO price-responsive demand curves
    - NO substitution between wood and other materials
@@ -719,7 +718,7 @@ Natural Forests
    - NO biomass vs. fossil fuels tradeoff
 
 7. ❌ **NO region-specific residues**:
-   - Fixed 15% ratio globally (`input.gms:24`)
+   - Fixed 15% ratio globally (`input.gms:20`)
    - Fixed 50% recovery rate
    - NO variation by forest type or technology
 
@@ -838,14 +837,14 @@ s73_timber_prod_cost_woodfuel = 100 * Higher woodfuel cost
 **How**:
 ```gams
 s73_residue_ratio = 0.25             * 25% of roundwood available (up from 15%)
-s73_reisdue_removal_cost = 1.0       * Lower removal cost (down from 2.5)
+s73_residue_removal_cost = 1.0       * Lower removal cost (down from 2.7)
 ```
 **Effect**:
 - More woodfuel available from residues
 - Less pressure on natural forests for woodfuel
 - Lower total production costs
 
-**File**: `input.gms:24-25`, `equations.gms:21, 66`
+**File**: `input.gms:20-21`, `equations.gms:29, 75-81`
 
 ---
 
@@ -1031,7 +1030,7 @@ constr_demand <- readGDX(gdx, "p73_demand_constr_wood")
 
 **Changed 2026-04-20 (PR #869):** `im_timber_prod_cost` is now dimensioned on `(i, kforestry)` — previously just `(kforestry)`. Regional variation enters via `im_vol_conv(i)` from Module 52.
 
-**Module-local but interface-like:** `i73_timber_prod_cost_natveg(i, kforestry)` — natveg timber cost including 15% premium (`input.gms:23`, `preloop.gms:93-94`). Not a `pm_` or `im_` — used only within M73's `q73_cost_timber` equation.
+**Module-local but interface-like:** `i73_timber_prod_cost_natveg(i, kforestry)` — natveg timber cost including 15% premium (`input.gms:23`, `preloop.gms:94-95`). Not a `pm_` or `im_` — used only within M73's `q73_cost_timber` equation.
 
 **Source**: `declarations.gms` (verified against GAMS code on origin/develop 2026-04-20)
 

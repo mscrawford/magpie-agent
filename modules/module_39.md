@@ -29,13 +29,13 @@ Module 39 calculates the costs associated with converting land from one use to a
 
 ### 2.1 Land Types Covered
 
-**File**: `modules/39_landconversion/calib/input.gms:9-14`
+Conceptually (cost scalar values from `modules/39_landconversion/calib/input.gms:9-13`):
 
 ```gams
-s39_cost_establish_crop       = 12300  ! Cropland (USD17MER/ha)
-s39_cost_establish_past       = 9840   ! Pasture (USD17MER/ha)
-s39_cost_establish_forestry   = 1230   ! Forestry (USD17MER/ha)
-s39_cost_establish_urban      = 12300  ! Urban (USD17MER/ha)
+s39_cost_establish_crop       Cost for cropland expansion before calibration (USD17MER per hectare) / 12300 /
+s39_cost_establish_past       Cost for pasture land expansion (USD17MER per hectare)                / 9840  /
+s39_cost_establish_forestry   Cost for forestry land expansion (USD17MER per hectare)               / 1230  /
+s39_cost_establish_urban      Cost for urban land expansion (USD17MER per hectare)                  / 12300 /
 ```
 
 **Cost Ranking** (highest to lowest):
@@ -405,7 +405,7 @@ vm_cost_landcon(j,land)   ! Land conversion costs (mio. USD17MER/yr)
 
 5. **Uses fixed global costs** for pasture (9,840 USD/ha), forestry (1,230 USD/ha), and urban (12,300 USD/ha) land without regional variation (`presolve.gms:14-16`, `input.gms:11-13`)
 
-6. **Converges calibration to baseline** by enforcing minimum calibration factor of 1.0 by 2050 (all regions pay at least base cost eventually)
+6. **Receives calibration factors** (input data f39_calib.csv) constructed to converge to a minimum of 1.0 by 2050; this convergence is a property of the calibration data, not GAMS-side enforcement (no min/year logic in the calib .gms files; the realization.gms:14 comment documents it)
 
 7. **Allows testing without calibration** via s39_ignore_calib switch, setting uniform costs globally (`preloop.gms:13-16`)
 
@@ -575,7 +575,7 @@ s39_cost_establish_forestry = 3690  ! Was: 1230 (3× increase)
 **Objective**: Verify costs match formula and sign convention
 
 **GDX Variables**:
-- `vm_cost_landcon` - Total costs (mio USD/yr)
+- `vm_cost_landcon` - Total costs (mio. USD17MER per yr)
 - `vm_landexpansion` - Expansion (mio ha)
 - `vm_landreduction` - Reduction (mio ha)
 - `pm_interest` - Interest rate

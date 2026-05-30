@@ -124,7 +124,7 @@ q42_water_cost(i2) ..
 
 ## Water Demand Components
 
-Module 42 distinguishes between endogenous and exogenous water demand (sets.gms:9-13):
+Module 42 distinguishes endogenous (agriculture) from exogenous water demand; the exogenous subsets are at sets.gms:9-13 (`watdem_exo`, `watdem_ineldo`), while the full `wat_dem` set is in `core/sets.gms:247`:
 
 ### Endogenous: Agriculture
 
@@ -310,7 +310,7 @@ p42_efp(t_all,"off") = 0;
 sets
   EFP_countries(iso) countries to be affected by EFP / ABW,AFG,AGO,... /
 ```
-- Default: All 195 countries included
+- Default: All 249 countries included
 - User can modify set to target specific countries
 
 **Regional weighting** (presolve.gms:69-74):
@@ -439,7 +439,7 @@ positive variables
   vm_watdem(wat_dem,j)  Amount of water needed in different sectors (mio. m^3 per yr)
 ```
 
-**Sectors** (sets.gms:9-10):
+**Sectors** (full set `wat_dem` in `core/sets.gms:247`; the module sets.gms:9-10 defines only the exogenous subset `watdem_exo`):
 - `"agriculture"`: Endogenous (from q42_water_demand equation)
 - `"domestic"`: Exogenous (fixed from WATERGAP)
 - `"manufacturing"`: Exogenous (fixed from WATERGAP)
@@ -649,7 +649,7 @@ $if "%c42_watdem_scenario%" == "nocc_hist" f42_wat_req_kve(t_all,j,kve)$(m_year(
 
 #### Country Targeting
 
-- `EFP_countries(iso)`: Set of countries affected by EFP (input.gms:52-76, default: all 195)
+- `EFP_countries(iso)`: Set of countries affected by EFP (input.gms:52-76, default: all 249)
 
 ---
 
@@ -856,7 +856,7 @@ Regional EFP share = (100+50) / (100+50+50) = 150/200 = **0.75** (75%)
 
 ### 11. Country Selection for EFP
 
-**Issue**: Default includes all 195 countries (input.gms:52-76)
+**Issue**: Default includes all 249 countries (input.gms:52-76)
 
 **Limitations**:
 - Cannot easily exclude countries (must manually edit set)
@@ -901,7 +901,7 @@ Regional EFP share = (100+50) / (100+50+50) = 150/200 = **0.75** (75%)
 - **EFR scenarios**: 3 (none/fraction/LPJmL)
 - **Irrigation efficiency scenarios**: 3 (global static/regional static/GDP-driven)
 - **EFP policy modes**: 3 (off/on/mixed)
-- **Countries**: 195 (default EFP coverage)
+- **Countries**: 249 (default EFP coverage)
 - **Lines of code**: ~250 (all_sectors_aug13 realization)
 
 ---
@@ -1017,7 +1017,7 @@ Module 42 participates in **indirect circular dependencies** through the Cropare
 **Safe Modifications**:
 - ✅ Change SSP scenario for non-agricultural demands (`s42_watdem_nonagr_scenario`)
 - ✅ Adjust irrigation efficiency assumptions (`s42_irrig_eff_*` scalars)
-- ✅ Modify pumping cost parameters (`s42_watdem_nonagr_*`)
+- ✅ Modify pumping cost parameters (`s42_pumping`, `s42_multiplier`, `s42_multiplier_startyear`)
 - ✅ Change environmental flow scenarios (`s42_env_flow_scenario`)
 
 **High-Risk Modifications**:

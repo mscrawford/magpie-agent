@@ -690,16 +690,19 @@ vm_cost_AEI.fx(i) = 0;
 **vm_cost_AEI scaling** (endo_apr13/scaling.gms:8):
 
 ```
-vm_cost_AEI.scale(i) = 10e4;
+vm_cost_AEI.scale(i) = 1e4;
 ```
 
 **Purpose**:
 - Improve numerical stability in GAMS solver
-- Variable values ~ millions of USD, scaling by 10^5 brings closer to order of magnitude 1
+- Variable values ~ millions of USD, scaling by 10^4 brings closer to order of magnitude 1
 - Helps CONOPT convergence for large regional cost totals
+
+The equation q41_cost_AEI is also scaled (endo_apr13/scaling.gms:10: `q41_cost_AEI.scale(i) = 1e4;`); a third scaling line for q41_area_irrig is present but commented out (scaling.gms:9).
 
 **Sources**:
 - endo_apr13/scaling.gms:8
+- endo_apr13/scaling.gms:10
 
 ---
 
@@ -958,27 +961,27 @@ grep "^[ ]*q41_" modules/41_area_equipped_for_irrigation/static/declarations.gms
 
 ## 17. Summary of File Locations
 
-**Module interface**: `modules/41_area_equipped_for_irrigation/module.gms` (21 lines)
+**Module interface**: `modules/41_area_equipped_for_irrigation/module.gms` (20 lines)
 
 **endo_apr13 realization** (default):
-- realization.gms (40 lines)
-- sets.gms (15 lines)
-- declarations.gms (35 lines)
-- input.gms (26 lines)
-- equations.gms (24 lines)
-- preloop.gms (10 lines)
-- presolve.gms (15 lines)
-- postsolve.gms (28 lines)
-- scaling.gms (9 lines)
+- realization.gms (39 lines)
+- sets.gms (14 lines)
+- declarations.gms (34 lines)
+- input.gms (25 lines)
+- equations.gms (23 lines)
+- preloop.gms (9 lines)
+- presolve.gms (14 lines)
+- postsolve.gms (27 lines)
+- scaling.gms (10 lines)
 
 **static realization**:
-- realization.gms (23 lines)
-- sets.gms (15 lines)
-- declarations.gms (27 lines)
-- input.gms (16 lines)
-- equations.gms (17 lines)
-- presolve.gms (12 lines)
-- postsolve.gms (23 lines)
+- realization.gms (22 lines)
+- sets.gms (14 lines)
+- declarations.gms (26 lines)
+- input.gms (15 lines)
+- equations.gms (16 lines)
+- presolve.gms (11 lines)
+- postsolve.gms (22 lines)
 
 **Input data**:
 - input/avl_irrig.cs3 (shared between realizations)

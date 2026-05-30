@@ -161,7 +161,7 @@ vm_prod(j2,kli_mon) ≤ i71_urban_area_share(j2) × s71_scale_mon × vm_prod_reg
 - `vm_prod(j,kli_mon)`: Monogastric production in cell j (mio. tDM/yr)
 - `i71_urban_area_share(j)`: Cell's share of regional urban area (fraction, calculated in preloop.gms:8-10)
 - `s71_scale_mon`: Flexibility scalar (default: 1.10 = 110%, allows 10% overcapacity)
-- `vm_prod_reg(i,kli_mon)`: Regional monogastric production from Module 70 (mio. tDM/yr)
+- `vm_prod_reg(i,kli_mon)`: Regional monogastric production (declared in Module 17 as sum(cell, vm_prod); its level is driven by Module 70 demand/feed constraints) (mio. tDM/yr)
 - `v71_additional_mon(j,kli_mon)`: Slack variable for excess production beyond urban constraint (mio. tDM/yr)
 
 **Behavior**:
@@ -605,14 +605,14 @@ vm_prod(j,kli_rum) / vm_prod_reg(i,kli_rum)    in q71_feed_balanceflow_nlp
 
 ## Summary Statistics
 
-- **Equations**: 6 (4 active in NLP mode, 4 in LP mode - `q71_feed_balanceflow_nlp` and `q71_feed_balanceflow_lp` mutually exclusive)
+- **Equations**: 6 (5 active in NLP mode, 5 in LP mode - `q71_feed_balanceflow_nlp` and `q71_feed_balanceflow_lp` are mutually exclusive; the other 4 equations are unconditional)
 - **Interface variables provided**: 1 (`vm_costs_additional_mon`)
 - **Interface variables received**: 7 (`vm_prod`, `vm_prod_reg`, `vm_feed_balanceflow`, `im_feed_baskets`, `pm_land_start`, `pcm_land`, `fm_feed_balanceflow`)
 - **Livestock types**: 5 (2 ruminant, 3 monogastric)
 - **Forage types**: 2 (pasture, fodder)
 - **Configuration scalars**: 3
 - **nl_fix/nl_release support**: Yes (foragebased_jul23 only)
-- **Code files**: 7 (realization, sets, declarations, equations, preloop, postsolve, nl_fix, nl_release)
+- **Code files**: 9 in foragebased_jul23/ (realization, sets, declarations, equations, scaling, preloop, postsolve, nl_fix, nl_release; module.gms is the parent dispatcher)
 - **References**: 1 peer-reviewed source
 
 ---

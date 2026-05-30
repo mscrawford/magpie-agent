@@ -241,7 +241,7 @@ sum(pollutant_nh3no2_51,vm_emissions_reg(i2,emis_source_n51,pollutant_nh3no2_51)
 **From Module 59 (SOM)**:
 - `vm_nr_som(j)`: Nitrogen from SOM mineralization at cell level (Mt N) (`equations.gms:58`)
 
-**From Module 56 (GHG Policy)** (input data):
+**From Module 57 (maccs)** (input data):
 - `im_maccs_mitigation(t,i,"awms","n2o_n_direct")`: MACC-based mitigation fraction (0-1) (`equations.gms:71`)
 
 ### Outputs (to other modules)
@@ -455,19 +455,20 @@ Emissions = (N_input / (1 - 0.5)) × (1 - vm_nr_eff) × EF
 | **55** (AWMS) | `vm_manure_recycling`, `vm_manure_confinement`, `vm_manure` | Recycled manure nitrogen + confinement manure + manure-in-management-system stocks |
 | **18** (Residues) | `vm_res_recycling`, `vm_res_ag_burn` | Residue nitrogen flows |
 | **59** (SOM) | `vm_nr_som` | Nitrogen from SOM mineralization |
-| **56** (GHG Policy) | `im_maccs_mitigation` | Mitigation effort for AWMS (input data, not variable) |
+| **57** (maccs) | `im_maccs_mitigation` | MACC-based technical mitigation fraction for AWMS N2O (`modules/57_maccs/on_aug22/declarations.gms:13`) |
 
 ### Downstream Dependencies
 
 | Module | Variables | Purpose |
 |--------|-----------|---------|
 | **56** (GHG Policy) | `vm_emissions_reg` | Emissions for GHG pricing, mitigation targets, reporting |
+| **57** (maccs) | `vm_emissions_reg` | Baseline emissions for MAC-cost integral (`modules/57_maccs/on_aug22/equations.gms:38,48`) |
 
 ### Critical Hub Status
 
 Module 51 is a **terminal calculation node**:
-- Receives nitrogen flows from 5 upstream modules (50, 18, 55, 59, 56)
-- Provides emissions to 1 downstream module (56)
+- Receives nitrogen flows from 5 upstream modules (50, 18, 55, 59, 57)
+- Provides emissions (via vm_emissions_reg) to 2 downstream modules: 56 (GHG pricing) and 57 (MACC cost calculation)
 - **No feedback loops**: Emissions do NOT affect nitrogen budgets or management decisions in current implementation
 - **Potential extension**: Endogenous emission reduction (e.g., NUE response to GHG prices) would require Module 56 → Module 50 feedback
 
@@ -739,7 +740,7 @@ This section shows Module 51's role in system-level mechanisms.
 
 **Provides to**: Module 56 (ghg_policy): N₂O emissions for GHG accounting, Module 11 (costs): via emissions
 
-**Depends on**: Module 50 (nr_soil_budget): Nitrogen inputs, Module 14 (yields): Crop nitrogen content
+**Depends on**: Module 50 (nr_soil_budget): Nitrogen inputs, Module 55 (AWMS): Manure nitrogen, Module 18 (Residues): Residue nitrogen, Module 59 (SOM): SOM mineralization, Module 57 (maccs): MACC mitigation fractions (input data)
 
 **Details**: `core_docs/Module_Dependencies.md`
 

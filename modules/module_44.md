@@ -7,7 +7,7 @@
 ---
 
 > ⚙️ **Default Realization**: `bii_target`
-> Confirmed in `config/default.cfg`: `cfg$gms$biodiversity <- "bii_target"`. Alternatives: `bii_target_apr24` (updated BII formulation), `bv_btc_mar21` (biodiversity value with BTC approach).
+> Confirmed in `config/default.cfg`: `cfg$gms$biodiversity <- "bii_target"`. Only alternative: `bv_btc_mar21` (global optimization of range-rarity weighted biodiversity stock losses/gains via a price). Note: `bii_target_apr24` was removed upstream (identical to `bii_target`; see CHANGELOG).
 
 
 ## Purpose
@@ -221,7 +221,7 @@ vm_bv(j,"manpast",potnatveg) = vm_land(j,"past") × [management share] × fm_bii
 ```
 vm_bv(j,"primforest",potnatveg) = vm_land(j,"primforest") × fm_bii_coeff("primary",potnatveg) × fm_luh2_side_layers(j,potnatveg)
 ```
-`modules/35_natveg/pot_forest_may24/equations.gms:56`
+`modules/35_natveg/pot_forest_may24/equations.gms:59-61`
 
 **General pattern**:
 ```
@@ -507,7 +507,7 @@ c44_bii_decrease = 1        # Allow decrease if needed
 **Configuration**:
 ```
 s44_bii_target = 0.6
-s44_start_year = 2025
+s44_start_year = 2030       # Must be > sm_fix_SSP2 (2025) or preloop aborts
 s44_target_year = 2100
 c44_bii_decrease = 0        # Prevent BII from decreasing
 ```
@@ -618,7 +618,7 @@ BII = (Σ biodiversity_stocks × biome_share) / total_biome_area
 - **Biomes**: 71
 - **Configuration scalars**: 5
 - **Input data files**: 2
-- **Code files**: 7 (realization, sets, declarations, input, equations, preloop, presolve, postsolve)
+- **Code files**: 8 (realization, sets, declarations, input, equations, preloop, presolve, postsolve)
 - **References**: 4 peer-reviewed sources
 
 ---

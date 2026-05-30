@@ -220,7 +220,7 @@ q18_prod_res_reg(i2,kres) ..
 
 **Purpose**: Distributes the regional homogeneous-group residue production across clusters for spatial reporting. The cluster allocation is flexible (no upper bound at cluster level); only the regional sum is constrained.
 
-**Interface variable**: `vm_prod_reg(i,kres)` is consumed by Module 21 (Trade) and Module 16 (Demand), Module 20 (Processing; `modules/20_processing/substitution_may21/equations.gms:41`), Module 38 (Factor Costs; `modules/38_factor_costs/sticky_feb18/equations.gms:16`), Module 50 (Nr Soil Budget; `modules/50_nr_soil_budget/macceff_aug22/equations.gms:39`), Module 70 (Livestock; `modules/70_livestock/fbask_jan16/equations.gms:18`), Module 71 (Disagg Lvst; `modules/71_disagg_lvst/foragebased_jul23/equations.gms:37`). Note: `kres` is a subset of `kall`, so `vm_prod_reg` is the same name reused for residue groups.
+**Interface variable**: `vm_prod_reg(i,kres)` is consumed directly only by Module 21 (Trade) via the `k_notrade` balance (`modules/21_trade/selfsuff_reduced/equations.gms:19`; `k_notrade` includes the three residue groups `res_cereals`, `res_fibrous`, `res_nonfibrous`). Module 16 is the demand-side counterpart but reads `vm_dem_*`/writes `vm_supply(i2,kres)` (`modules/16_demand/sector_may15/equations.gms:51-58`), not `vm_prod_reg(kres)`. Modules 20, 38, 50, 70, and 71 read disjoint slices of `vm_prod_reg` on `kcr`/`kap`/`kli_rum` - those are Module 17's product, not residues. Note: `kres` is a subset of `kall`, so `vm_prod_reg` is the same name reused for residue groups.
 
 ---
 
@@ -269,7 +269,7 @@ q18_res_recycling_pk(i2,pk18) ..
 
 **Set**: `pk18 = {p, k}` (subset of `npk`, excludes nitrogen; defined in `flexreg_apr16/sets.gms:14-15`).
 
-**Interface**: `vm_res_recycling(i,pk18)` -> Module 50 (nutrient budget consumers).
+**Interface**: `vm_res_recycling(i,pk18)` is computed by `q18_res_recycling_pk` but has no downstream consumer in the default configuration (M54 phosphorus is off by default; only the `nr` slice is read by M50 and M51).
 
 ---
 
@@ -398,12 +398,12 @@ v18_res_ag_removal.fx(i,nonused18,attributes) = 0;
 
 | Variable | Description | Dimensions | Units | Used By |
 |----------|-------------|------------|-------|---------|
-| `vm_res_biomass_ag` | AG residue biomass | (i, kcr, attributes) | Mio. tX/yr | Internal (field balance, burning, BG biomass) |
-| `vm_res_biomass_bg` | BG residue biomass | (i, kcr, dm_nr) | Mio. tX/yr | Internal (N recycling) |
+| `vm_res_biomass_ag` | AG residue biomass | (i, kcr, attributes) | Mio. tX/yr | Module 50 (Nr Soil Budget, `q50_nr_withdrawals`, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:40`) + Internal (field balance, burning, BG biomass) |
+| `vm_res_biomass_bg` | BG residue biomass | (i, kcr, dm_nr) | Mio. tX/yr | Module 50 (Nr Soil Budget, `q50_nr_withdrawals`, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:41`) + Internal (N recycling within M18) |
 | `vm_res_ag_burn` | Burned AG residues | (i, kcr, attributes) | Mio. tX/yr | Module 51 (nitrogen emissions from burned residues), Module 53 (CH4 from burning) — verified 2026-05-24 R5 |
-| `vm_res_recycling` | Recycled nutrients | (i, npk) | Mio. tX/yr | Module 50 (nitrogen and P/K budgets) |
+| `vm_res_recycling` | Recycled nutrients | (i, npk) | Mio. tX/yr | Module 50 (`modules/50_nr_soil_budget/macceff_aug22/equations.gms:24`) and Module 51 (`modules/51_nitrogen/rescaled_jan21/equations.gms:45`) - both read the `nr` slice only. The P/K slice `vm_res_recycling(i,pk18)` is computed by `q18_res_recycling_pk` but currently has no downstream consumer (M54 phosphorus is off by default). |
 | `vm_cost_prod_kres` | Residue harvest costs | (i, kres) | Mio. USD17MER/yr | Module 11 (Costs) |
-| `vm_prod_reg` | Regional residue production (kres slice) | (i, kres) | Mio. tDM/yr | Module 21 (Trade), Module 16 (Demand), Module 20 (Processing; `modules/20_processing/substitution_may21/equations.gms:41`), Module 38 (Factor Costs; `modules/38_factor_costs/sticky_feb18/equations.gms:16`), Module 50 (Nr Soil Budget; `modules/50_nr_soil_budget/macceff_aug22/equations.gms:39`), Module 70 (Livestock; `modules/70_livestock/fbask_jan16/equations.gms:18`), Module 71 (Disagg Lvst; `modules/71_disagg_lvst/foragebased_jul23/equations.gms:37`) |
+| `vm_prod_reg` | Regional residue production (kres slice) | (i, kres) | Mio. tDM/yr | Module 21 (Trade; `modules/21_trade/selfsuff_reduced/equations.gms:19` via `k_notrade`). Note: Modules 20/38/50/70/71 read the disjoint `kcr`/`kap`/`kli_rum` slices (Module 17's product, not residues). Module 16 reads `vm_dem_*`/`vm_supply(kres)`, not this variable. |
 
 **Source**: `flexreg_apr16/declarations.gms:9-18`.
 
@@ -473,19 +473,23 @@ Other scaling entries for `vm_res_ag_burn`, `q18_prod_res_bg_reg`, `q18_res_fiel
 1. **Module 11 (Costs)**:
    - `vm_cost_prod_kres(i, kres)` - residue harvest costs (objective function term)
 
-2. **Module 21 (Trade) & Module 16 (Demand)**:
-   - `vm_prod_reg(i, kres)` - regional residue production (supply balance)
+2. **Module 21 (Trade)**:
+   - `vm_prod_reg(i, kres)` - regional residue production, read via `k_notrade` balance (`modules/21_trade/selfsuff_reduced/equations.gms:19`)
 
-3. **Module 50 (Nitrogen Budget)**:
-   - `vm_res_recycling(i, "nr")` - N recycling from residues
+3. **Module 50 (Nitrogen Budget)** and **Module 51 (Nitrogen Emissions, N recycling)**:
+   - `vm_res_recycling(i, "nr")` - N recycling from residues (`nr` slice read by M50 at `modules/50_nr_soil_budget/macceff_aug22/equations.gms:24` and M51 at `modules/51_nitrogen/rescaled_jan21/equations.gms:45`)
 
-4. **Module 50 (Phosphorus/Potassium Budget)**:
-   - `vm_res_recycling(i, pk18)` - P/K recycling from residues
+4. **P/K recycling (no active downstream consumer)**:
+   - `vm_res_recycling(i, pk18)` - computed by `q18_res_recycling_pk` but the `pk18` slice has no downstream consumer in the default configuration (M54 phosphorus is off by default)
 
-5. **Module 51 (Nitrogen Emissions)**:
-   - `vm_res_ag_burn(i, kcr, "nr")` - N from burned residues (used at `modules/51_nitrogen/rescaled_jan21/equations.gms:52`)
+5. **Module 50 (Nr Soil Budget, N withdrawals)**:
+   - `vm_res_biomass_ag(i, kcr, "nr")` - AG residue N biomass (`modules/50_nr_soil_budget/macceff_aug22/equations.gms:40`)
+   - `vm_res_biomass_bg(i, kcr, "nr")` - BG residue N biomass (`modules/50_nr_soil_budget/macceff_aug22/equations.gms:41`)
 
-6. **Module 53 (Methane)**:
+6. **Module 51 (Nitrogen Emissions)**:
+   - `vm_res_ag_burn(i, kcr, "dm")` - DM of burned residues x emission factor `f51_ef_resid_burn` (used at `modules/51_nitrogen/rescaled_jan21/equations.gms:52`)
+
+7. **Module 53 (Methane)**:
    - `vm_res_ag_burn(i, kcr, attributes)` - residue burning CH4 emissions (used at `modules/53_methane/ipcc2006_aug22/equations.gms:72`)
 
 ---
@@ -600,7 +604,7 @@ For the full equation listing of `flexcluster_jul23`, see `modules/18_residues/f
 ### Dependency Chains
 **Centrality**: Low-medium (specialized byproduct handler)
 - **Depends on**: Module 17 (regional crop production), Module 30 (cluster area), Module 09 (development indicator)
-- **Provides to**: Modules 11 (costs), 16 (demand), 21 (trade), 50 (N and P/K budgets), 57 (GHG emissions)
+- **Provides to**: Modules 11 (costs), 21 (trade), 50 (N budget), 51 (N emissions from residue burning), 53 (CH4 from residue burning)
 - **Role**: Residue calculator - determines agricultural byproduct biomass, fate, and nutrient flows
 
 ### Circular Dependencies
