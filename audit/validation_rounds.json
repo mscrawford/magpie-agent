@@ -5229,15 +5229,162 @@
     }
    ],
    "note": "doc-centric only (no question-probes) per the post-R31 cap-adaptive decision. 0 dropped, 22.6 min wall, fresh rate-limit window."
+  },
+  {
+   "round": 33,
+   "date": "2026-05-30",
+   "type": "doc_centric_audit (high-centrality hub sweep)",
+   "scope": "12 highest-centrality hub module docs (11,14,15,16,17,29,30,32,50,52,56,70) - adaptive test arm",
+   "commit_before": "bf06670",
+   "commit_after": "91f5d7b",
+   "answerer_model": null,
+   "auditor_model": "claude-opus-4-8",
+   "verification_source": "origin/develop @ee98739fd",
+   "summary": {
+    "n_docs": 12,
+    "doc_audit_bugs": {
+     "critical": 4,
+     "major": 33,
+     "minor": 33,
+     "informational": 4
+    },
+    "total_edits": 204,
+    "anchors": "G1=9, G2=9, no drift",
+    "cap": "uncapped (max inter-message gap 1.85 min)",
+    "criticals_spotchecked": "all 4 verified vs develop (module_16 vm_supply=M21-only; module_30 vm_area phantom M17/M38 + M32 .l/.lo reader; module_30 vm_carbon_stock_croparea=M29-only)",
+    "note": "Decision rule TRIGGERED (6.17 bugs/doc, 4 Critical) -> proceed to sweep. Thesis (consumer-set + citation drift) confirmed pervasive."
+   }
+  },
+  {
+   "round": 34,
+   "date": "2026-05-30",
+   "type": "hybrid + verify (CAPPED)",
+   "scope": "sweep batch 1: 11 docs (21,35,38,59,31,22,60,73,71,41,42); 8 dropped to the rolling cap",
+   "commit_before": "91f5d7b",
+   "commit_after": "2e73cab",
+   "answerer_model": "claude-sonnet (q-probes all dropped to cap)",
+   "auditor_model": "claude-opus-4-8",
+   "verification_source": "origin/develop @ee98739fd",
+   "summary": {
+    "n_docs": 11,
+    "completed": 3,
+    "doc_audit_bugs_kept": {
+     "critical": 0,
+     "major": 2,
+     "minor": 4
+    },
+    "total_edits": 7,
+    "anchors": "G3=10 (no drift); G4=8 DRIFT (agent confabulated 101 unique report* funcs vs correct 106; answerer_confabulation, no doc bug)",
+    "cap": "CAP HIT - single ~2h rate-limit wait (max gap 123.19 min); 8 doc-audits dropped to null; Verify phase never ran",
+    "kept": [
+     "module_38 (pm_prod_init M30->M17)",
+     "module_59 (vm_area producer M17->M30 + 4 Minor)"
+    ],
+    "reverted": [
+     "module_21 (auditor REGRESSION on non-default bilateral22 eq-count/feasibility-penalty; gate auto-reverted via out-of-range citation; pre-round doc was correct)"
+    ],
+    "note": "8 dropped (35,31,22,60,73,71,41,42) recovered in R35-R36. Binding constraint = 5h rolling RATE."
+   }
+  },
+  {
+   "round": 35,
+   "date": "2026-05-30",
+   "type": "doc_centric_audit + verify (recovery probe)",
+   "scope": "4 R34-dropped docs (35,22,31,60); first live run of the adversarial verifier",
+   "commit_before": "231ac2e",
+   "commit_after": "6d4f581",
+   "answerer_model": null,
+   "auditor_model": "claude-opus-4-8",
+   "verification_source": "origin/develop @ee98739fd",
+   "summary": {
+    "n_docs": 4,
+    "doc_audit_bugs": {
+     "critical": 3,
+     "major": 7,
+     "minor": 7
+    },
+    "total_edits": 32,
+    "verify": {
+     "docs_verified": 4,
+     "upheld": 8,
+     "corrected": 1,
+     "refuted": 0
+    },
+    "cap": "uncapped (max gap 1.45 min) - window recovered",
+    "anchors": "none (G1-G4 exercised earlier)",
+    "criticals": "module_22 x2 (pm_land_conservation M10-phantom + M29/M13-omit, R20-anchor) + module_35 (age-class ac150->ac300/62-elem, R16-anchor); all validated",
+    "note": "Verifier VALIDATED by hand (pm_land_conservation consumers matched independent grep exactly; CORRECTED module_35 eq-name q32_ndc_aff_limit). Engine enhancement at 231ac2e."
+   }
+  },
+  {
+   "round": 36,
+   "date": "2026-05-30",
+   "type": "doc_centric_audit + verify",
+   "scope": "sweep batch: 8 docs (73,71,41,42,18,39,44,51)",
+   "commit_before": "6d4f581",
+   "commit_after": "e861007",
+   "answerer_model": null,
+   "auditor_model": "claude-opus-4-8",
+   "verification_source": "origin/develop @ee98739fd",
+   "summary": {
+    "n_docs": 8,
+    "doc_audit_bugs": {
+     "critical": 3,
+     "major": 13,
+     "minor": 17
+    },
+    "total_edits": 67,
+    "verify": {
+     "docs_verified": 8,
+     "upheld": 8,
+     "corrected": 0,
+     "refuted": 0
+    },
+    "cap": "uncapped (max gap 1.62 min)",
+    "criticals": "module_18 x2 (vm_prod_reg(kres)=M21-only via k_notrade; vm_res_biomass mislabel) + module_51 (im_maccs_mitigation declared M57 not M56); verifier-upheld + hand meta-checked",
+    "note": "Recurring vein: DECLARED-vs-POPULATED-vs-READ producer/declaration errors."
+   }
+  },
+  {
+   "round": 37,
+   "date": "2026-05-30",
+   "type": "doc_centric_audit + verify (final sweep)",
+   "scope": "8 docs (20,34,36,37,40,43,54,80) - completes the 35-module unaudited corpus",
+   "commit_before": "e861007",
+   "commit_after": "ed6324a",
+   "answerer_model": null,
+   "auditor_model": "claude-opus-4-8",
+   "verification_source": "origin/develop @ee98739fd",
+   "summary": {
+    "n_docs": 8,
+    "doc_audit_bugs": {
+     "critical": 0,
+     "major": 9,
+     "minor": 10,
+     "informational": 2
+    },
+    "total_edits": 30,
+    "verify": {
+     "docs_verified": 8,
+     "upheld": 9,
+     "corrected": 0,
+     "refuted": 0
+    },
+    "cap": "uncapped (max gap 1.48 min)",
+    "clean_docs": [
+     "module_80 (9/10)"
+    ],
+    "note": "0 Critical - peripheral hubs cleaner than central. Phantom cost edges (M36/M43/M54 ->M11) the residual vein. Review flags: module_54 D3 populator advisory; module_37 M45 re-label."
+   }
   }
  ],
  "cumulative_stats": {
-  "total_rounds": 32,
+  "total_rounds": 37,
   "total_docs_validated": 85,
   "module_docs_validated": 46,
   "non_module_docs_validated": 33,
-  "total_bugs_found": 648,
-  "total_bugs_fixed": 452,
+  "total_bugs_found": 799,
+  "total_bugs_fixed": 603,
   "validator_checks": 28,
   "validator_sub_checks": 43,
   "gams_variables_verified": 953,
@@ -5245,7 +5392,7 @@
   "gams_realizations_verified": 75,
   "file_line_citations_verified": 2598,
   "last_validation_date": "2026-05-30",
-  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)",
+  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)",
   "doc_push_2026_05_30": {
    "rounds": "R30-R32",
    "docs": 30,
@@ -5258,6 +5405,24 @@
    "edits": 166,
    "anchors": "G1/G2/G3/G4 all exercised, no drift",
    "note": "R31 hit the rolling rate-limit cap (5 docs + all q-probes dropped); recovered in R32 doc-centric pass. All commits local/pending review."
+  },
+  "doc_push_2026_05_30_high_centrality": {
+   "rounds": "R33-R37",
+   "docs": 35,
+   "scope": "all 35 previously-unaudited module docs (completes the 46-module doc-centric corpus)",
+   "confirmed_doc_bugs_fixed": {
+    "critical": 10,
+    "major": 64,
+    "minor": 71,
+    "informational": 6,
+    "total": 151
+   },
+   "total_edits": 340,
+   "engine_enhancement": "added adversarial consumer-set verifier (commit 231ac2e) + .l/.lo solution-level grep rule to GREP_GUARD",
+   "verifier_record": "25 consumer-set findings upheld, 1 corrected, 0 false refutations (R35-R37); validated by hand twice (pm_land_conservation; module_18/51 Criticals)",
+   "cap_event": "R34 (hybrid+verify, 44 agents) hit the 5h rolling cap (123-min wait, 8 docs dropped); recovered via lean doc-centric+verify (R35-R36); module_21 auditor-regression gate-reverted",
+   "anchors": "G1=9, G2=9, G3=10 no drift; G4=8 DRIFT (agent confabulated unique report* count 101 vs 106 - agent-perf miss, helper correct, no doc fix)",
+   "note": "All commits local/pending review (ac06848..ed6324a). NOT pushed."
   }
  }
 }

@@ -75,3 +75,37 @@ Continuing the sweep at this lean config; re-probe each batch to glide under the
 **Criticals (verifier-upheld + meta-checked by hand):** module_18 ×2 (`vm_prod_reg(kres)` external consumer = M21-only via k_notrade `selfsuff_reduced/equations.gms:19`; 6 wrongly-listed modules read kcr/kap/kli_rum slices — slice-conflation; `vm_res_biomass_ag/bg` mislabeled Internal though M50 reads them); module_51 ×1 (`im_maccs_mitigation` declared M57 `on_aug22/declarations.gms:13`, doc said M56). Both confirmed against develop.
 Recurring vein: **DECLARED-vs-POPULATED-vs-READ** producer/declaration errors (vm_prod_reg "from M70"→M17; im_maccs_mitigation "M56"→M57; vm_carbon_stock "M52"→M56). Refuted leads: module_73 R33-advisory (q73 populate — doc correct); module_51 "M51 reads vm_area" (that was M32).
 **Sweep is the sustainable config.** R37 = final 8 (20,34,36,37,40,43,54,80) → then all 35 unaudited module docs covered.
+
+## Round 5 (R37) — final sweep (8 docs, doc-centric + VERIFY) — CLEAN
+20, 34, 36, 37, 40, 43, 54, 80. Completes the 35-module unaudited corpus.
+
+| Round | docs | confirmed bugs (C/Ma/Mi) | verify (upheld/corr/refuted) | edits | dropped | gate | commit |
+|-------|------|--------------------------|------------------------------|-------|---------|------|--------|
+| R37 | 8 | **0C / 9Ma / 10Mi** (+2 Info) | 9 / 0 / 0 (8 verified) | 30 | 0 | clean (0 err, no self-heal) | `ed6324a` |
+
+Cap-probe clean (1.48 min). 0 Critical — peripheral hubs (40,54,80,20) markedly cleaner than central. Residual vein = phantom cost edges (M36/M43/M54 → M11) + M34 omits M56 `vm_carbon_stock` reader (G2 class). Review flags: module_54 D3 populator advisory; module_37 M45 provenance re-label.
+
+---
+
+# FINAL VERDICT — high-centrality doc-centric sweep (R33-R37)
+
+**Hypothesis CONFIRMED, hard.** All **35 previously-unaudited module docs** are now doc-centric-audited → the full 46-module corpus complete (with the 11 prior). Every audited hub carried bugs; the dominant vein is exactly **wrong consumer/populator sets + citation drift**, Critical-prone, and **centrality predicts density** (R33 central hubs: 4 Critical, 6.17 confirmed-bugs/doc; R37 peripheral: 0 Critical, ~2.6/doc).
+
+**Tally (all local, pending review):**
+- **151 confirmed doc bugs fixed** (10 Critical, 64 Major, 71 Minor, 6 Info) in **340 edits** across 34 docs (module_21 audited + correctly left unchanged after a gate-reverted auditor regression).
+- Anchors G1=9, G2=9, G3=10 (no drift); **G4=8 DRIFT** — the agent confabulated "101 unique report* funcs" vs the correct 106 (agent-performance miss; helper is correct, no doc fix).
+- Gate clean every round (0 errors); self-healed bare-path citations 3 rounds; 1 auditor regression auto-reverted (module_21).
+
+**Engine upgrade (durable, committed `231ac2e`):** adversarial consumer-set **verifier** + `.l/.lo` solution-level grep rule. Record: **25 consumer-set findings upheld, 1 corrected, 0 false refutations** (R35-R37); hand-validated twice (pm_land_conservation; module_18/51 Criticals). It caught an auditor eq-name mislabel and re-derived every Critical's consumer set — it scales the by-hand verification.
+
+**Cap event (R34):** heavy hybrid+verify (44 agents) saturated the 5h rolling rate → 2h wait, 8 docs dropped, recovered fully via lean doc-centric+verify (R35-R36), **zero completed work lost**. Lesson: the **5h rolling RATE** (not total budget) is the binding constraint; lean ~8-doc rounds at steady cadence is sustainable.
+
+**Review-worthy items for the user:**
+1. module_54 D3 populator advisory (vm_p_fert_costs / vm_nr_inorg_fert_costs list M18/M50 populators, no grep-hit — verify).
+2. module_37 M45 provenance (verifier flagged: re-label, not delete).
+3. G4 agent-confabulation drift (agent-Q&A signal, not a doc bug).
+4. module_21 reverted to its (correct) pre-round state — confirm OK.
+
+**State:** commit stack `ac06848..HEAD` on `main` = **8 commits, NOT pushed**. Lock removed; merge backup removed. Develop worktree `/tmp/magpie_develop_ro` left mounted for review (`git -C ../magpie worktree remove /tmp/magpie_develop_ro` when done). `validation_rounds.json` merged to 37 rounds (schema 1.4), round-trip validated, final gate 0 errors.
+
+**Awaiting explicit go to push to mscrawford** (only mscrawford, never pik-piam).
