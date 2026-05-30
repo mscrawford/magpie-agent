@@ -138,7 +138,7 @@ vm_carbon_stock(j2,"past",ag_pools,stockType) =e=
 - `litc`: Litter carbon (dead plant material)
 
 **Stock Types** (`stockType`):
-- Actual stocks vs. reference stocks (for carbon accounting)
+- actual (actual carbon stock) and actualNoAcEst (actual stock excluding age-class establishment) - see modules/56_ghg_policy/price_aug22/sets.gms:212-213
 
 **Macro Expansion**: The `m_carbon_stock` macro multiplies land area by carbon density parameters, accounting for pool types and stock types.
 
@@ -307,7 +307,7 @@ vm_bv(j2,"rangeland",potnatveg) =e=
 ---
 
 #### `vm_carbon_stock(j,"past",ag_pools,stockType)` - Pasture Carbon Stocks
-**Source**: Module 52 (Carbon) - but calculated here
+**Declared in**: Module 56 (GHG policy, modules/56_ghg_policy/price_aug22/declarations.gms:34). Populated here (q31_carbon, "past" slice). Read by: Module 52 (q52_emis_co2_actual) and Module 56.
 **Usage**: `equations.gms:23` (calculated by q31_carbon)
 **Dimensions**: `(j,land,c_pools,stockType)` - cells × land types × carbon pools × stock types
 **Units**: mio. tC
@@ -524,7 +524,7 @@ vm_land.lo(j,"past") = sum(consv_type, pm_land_conservation(t,j,"past",consv_typ
 **Centrality**: ~20 of 46 modules, 6 connections (provides to 5-7, depends on 3)
 **Hub Type**: Processing Hub (land allocation + feed production)
 
-**Provides To**: Module 10 (Land), Module 11 (Costs), Module 17 (Production), Module 52 (Carbon), Module 70 (Livestock feed), Module 22 (Conservation)
+**Provides To**: Module 10 (Land), Module 11 (Costs), Module 52 (Carbon), Module 70 (Livestock feed)
 
 **Depends On**: Module 14 (Yields), Module 70 (Feed demand), Module 10 (Land availability)
 
@@ -573,13 +573,13 @@ vm_land.lo(j,"past") = sum(consv_type, pm_land_conservation(t,j,"past",consv_typ
 
 ### 2. static (Inactive)
 
-**Description**: Fixed (exogenous) pasture area, not optimized.
+**Description**: Fixed (exogenous) pasture area; presolve.gms fixes vm_land.fx(j,"past")=pcm_land and correspondingly fixes vm_carbon_stock, vm_bv, vm_cost_prod_past=0.
 
-**Status**: Appears to be deprecated (`modules/31_past/static/not_used.txt` file present).
+**Status**: Functional alternative realization (NOT deprecated; not_used.txt is a standard MAgPIE convention listing unused interface inputs, present in 26 realizations including default ones).
 
-**When Used**: May be useful for sensitivity analysis where pasture area is fixed to historical values.
+**When Used**: Sensitivity analysis with pasture area held at initial Module-10 patterns.
 
-**Files**: Only realization.gms and presolve.gms present (minimal implementation).
+**Files**: realization.gms, presolve.gms (plus conventional not_used.txt).
 
 ---
 
@@ -693,7 +693,7 @@ Module 31 takes yields exogenously from Module 14, missing feedbacks:
 - File:line citations: 50+ (every claim sourced)
 - Equations verified: 5/5 (100%)
 - Interface variables documented: 1 output + 7 input (complete)
-- Realizations documented: 2 (endo_jun13 active, static deprecated)
+- Realizations documented: 2 (endo_jun13 active, static functional alternative)
 - Conservation constraint documented: 1 (protected pasture area)
 
 **Zero errors found**: All equations, variables, and parameters verified against source code.

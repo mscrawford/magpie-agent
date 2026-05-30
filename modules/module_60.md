@@ -491,11 +491,13 @@ i60_1stgen_bioenergy_subsidy(t)$(i60_1stgen_bioenergy_subsidy(t) < s60_bioenergy
 
 ### Variable Fixing (`presolve.gms:8-14`)
 
-**Non-bioenergy products** (food, feed, material):
+**Non-bioenergy products** (pasture, livestock, forestry) fixed to zero (`presolve.gms:8-10`):
 ```
-vm_dem_bioen.fx(i,kap) = 0
+vm_dem_bioen.fx(i,"pasture") = 0    // pasture
+vm_dem_bioen.fx(i,kap)       = 0    // livestock products
+vm_dem_bioen.fx(i,kforestry) = 0    // forestry products
 ```
-All livestock products (`kap`) have zero bioenergy demand (fixed).
+Pasture, all livestock products (`kap`), and all forestry products (`kforestry`) have zero bioenergy demand (fixed).
 
 **Dedicated bioenergy crops**:
 ```
@@ -589,7 +591,7 @@ c60_2ndgen_biodem = "R34M410-SSP2-NPi2025"
 c60_2ndgen_biodem_noselect = "R34M410-SSP2-NPi2025"
 ```
 
-**Options**: 90+ scenarios from REMIND-MAgPIE, SSPDB, PIK (`sets.gms:15-103`)
+**Options**: 88 scenarios from REMIND-MAgPIE, SSPDB, PIK (`sets.gms:15-103`)
 
 **Special modes**:
 - `"coupling"`: Read from external coupling file
@@ -777,7 +779,7 @@ f60_bioenergy_dem(t,i,scen2nd60)  // mio. GJ per yr
 ```
 **Source**: REMIND-MAgPIE coupled model projections, SSPDB scenarios
 
-**Scenarios**: 90+ scenarios covering SSP storylines, climate policies (NDC, carbon budgets), and model variants
+**Scenarios**: 88 scenarios covering SSP storylines, climate policies (NDC, carbon budgets), and model variants
 
 **Usage**: Selected via `c60_2ndgen_biodem` switch, blended with non-selected scenario using population weights (`preloop.gms:30-31`).
 
@@ -831,11 +833,15 @@ scen_countries60(iso)  // Set of 249 countries
 
 ### Variable Scaling
 
-**Bioenergy Utility** (`scaling.gms:8`):
+**Variable Scaling** (`scaling.gms:8-12`) -- five variables scaled for solver numerics:
 ```
-vm_bioenergy_utility.scale(i) = 10e4
+v60_2ndgen_bioenergy_dem_residues.scale(i,kall) = 1e3  // scaling.gms:8
+vm_bioenergy_utility.scale(i)                   = 1e2  // scaling.gms:9
+q60_bioenergy_glo.scale                         = 1e4  // scaling.gms:10
+q60_bioenergy_reg.scale(i)                      = 1e2  // scaling.gms:11
+q60_res_2ndgenBE.scale(i)                       = 1e3  // scaling.gms:12
 ```
-Scale factor of 10^5 improves solver numerics (bioenergy subsidies can be large in absolute terms).
+Scaling improves solver numerics (bioenergy subsidies and demands can span several orders of magnitude).
 
 ### Conditional Constraints
 
@@ -882,7 +888,7 @@ i60_bioenergy_dem(t,i)$(i60_bioenergy_dem(t,i) < s60_2ndgen_bioenergy_dem_min)
 - Load bioenergy demand data based on scenario selection (`preloop.gms:19-36`)
 
 **2. Presolve** (before each solve):
-- Fix non-bioenergy products to zero demand (`presolve.gms:8-10`)
+- Fix pasture, livestock (`kap`), and forestry (`kforestry`) demand to zero (`presolve.gms:8-10`)
 - Release bioenergy crops (betr, begr) and residues (kres) (`presolve.gms:12, 14`)
 - Load 1st generation, 2nd generation residue demands based on scenarios (`presolve.gms:16-28`)
 - Calculate subsidies based on price implementation mode (`presolve.gms:36-57`)
@@ -1030,14 +1036,14 @@ i60_bioenergy_dem(t,i)$(i60_bioenergy_dem(t,i) < s60_2ndgen_bioenergy_dem_min)
 - 5 equations
 - 2 interface variables (outputs): `vm_dem_bioen`, `vm_bioenergy_utility`
 - 1 interface variable (input): `fm_attributes("ge",kall)`
-- 90+ bioenergy demand scenarios (2nd generation dedicated)
+- 88 bioenergy demand scenarios (2nd generation dedicated)
 - 7 SSP scenarios (residues)
 - 3 scenarios (1st generation)
 - 3 price implementation modes (linear, exponential, constant)
 - ~250 lines of code
 
 **Key Parameters**:
-- Bioenergy demand: 90+ scenarios × 10-15 regions × time horizon (thousands of values)
+- Bioenergy demand: 88 scenarios × 10-15 regions × time horizon (thousands of values)
 - Subsidies: 2 types (1st, 2nd generation) × 3 implementation modes
 - Region selection: 249 countries, population-weighted aggregation
 

@@ -1,0 +1,32 @@
+{
+  "round": 35,
+  "type": "doc_centric_audit + verify",
+  "mode": "doccentric",
+  "verify": true,
+  "date": "2026-05-30",
+  "scope": "Recovery probe after R34 cap: 4 consumer-set-rich dropped docs (35, 22, 31, 60), lean config, first live test of the adversarial verifier.",
+  "develop_sha": "ee98739fd",
+  "workflow_run_id": "wf_da439d5c-193",
+  "outcome": "CLEAN - 0 dropped, window recovered, verifier worked",
+  "cap_probe": {"max_inter_message_gap_min": 1.45, "capped": false, "wall_clock_min": 18.0, "n_agents": 13, "subagent_tokens": 976693, "note": "Window fully recovered after the R34 2h wait. Lean doc-centric+verify at 4 docs = ample headroom. Safe to continue."},
+  "verifier_first_run": {
+    "docs_verified": 4, "upheld": 8, "corrected": 1, "refuted": 0,
+    "validated_by_hand": "YES. pm_land_conservation consumer set re-derived independently: declared M22; read by M13(13_tc presolve), M29(cropland eqs), M31(past presolve), M32(forestry presolve), M35(natveg eqs+presolve); ZERO M10 direct hits -> matches verifier exactly (M10 phantom confirmed, M29/M13 omissions confirmed).",
+    "key_catch": "module_35 B2 CORRECTED: auditor's fix had the right module (M73->M32) but mislabeled the equation; verifier corrected it to q32_ndc_aff_limit (32_forestry/dynamic_may24/equations.gms:80). The fixer applied the corrected_set.",
+    "verdict": "Verifier VALIDATED. It scales the by-hand consumer-set check (R33-style) and caught an auditor mislabel a human spot-check of only Criticals might have missed. Going forward: rely on it for consumer-set findings; periodic meta-checks only."
+  },
+  "per_doc": [
+    {"label": "module_35", "critical": 1, "major": 2, "minor": 2, "confirmed": 5, "n_edits": 8, "key": "CRITICAL (validated): age-class range truncated to ac150 vs actual ac0..ac300+acx = 62 elem (core/sets.gms:269-275; R16-anchor class). Major: vm_natforest_reduction consumer M73->M32 (verifier-CORRECTED eq name to q32_ndc_aff_limit); phantom pm_land_start input. Both checker leads (M52, M22) REFUTED by audit."},
+    {"label": "module_22", "critical": 2, "major": 2, "minor": 1, "confirmed": 5, "n_edits": 12, "key": "2 CRITICAL consumer-set (verifier-UPHELD + hand-validated): M10 falsely 'primary' direct consumer of pm_land_conservation (transitive only; MANDATE17/R20 anchor); M29+M13 omitted (real set M13,M29,M31,M32,M35). Major: vm_treecover producer M32->M29; fm_land_iso M09->M10. Cross-lead (M22 reads vm_land_other/v35_secdforest) REFUTED."},
+    {"label": "module_31", "critical": 0, "major": 2, "minor": 2, "confirmed": 4, "n_edits": 5, "key": "Major: static realization mislabeled 'deprecated' (not_used.txt is a 26-realization convention file, not deprecation); 'Provides To M22' is a reversed dep (M22->M31 only, verifier-upheld). Minor: stockType label; vm_carbon_stock Source M52->M56 (G2)."},
+    {"label": "module_60", "critical": 0, "major": 1, "minor": 2, "confirmed": 3, "n_edits": 7, "key": "Major: scaling.gms vm_bioenergy_utility.scale = 1e2 at line 9 (doc cited line 8 = different var, claimed 10e4/10^5). Minor: presolve fix-block product-set label; '90+' scenarios vs verified 88. CHECKER LEAD (vm_dem_bioen 'GJ') REFUTED - doc correct (tDM)."}
+  ],
+  "totals": {"confirmed_bugs": 17, "critical": 3, "major": 7, "minor": 7, "edits": 32},
+  "anchors": "none (G1-G4 all exercised earlier this session; G4 drift noted in R34)",
+  "gate": {"clean": true, "validate_consistency_errors": 0, "self_healed": ["module_22.md (fm_land_iso citation -> full path modules/10_land/landmatrix_dec18/input.gms:25)", "module_31.md (vm_carbon_stock citation -> full path modules/56_ghg_policy/price_aug22/declarations.gms:34)"], "reverted_files": []},
+  "key_learnings": [
+    "Adversarial verifier validated on first live run: independent consumer-set re-derivation matched a by-hand check exactly, and it CORRECTED an auditor equation-name mislabel (module_35 B2). The lean doc-centric+verify config (~13 agents/4 docs) is cap-safe and high-value -> the right sweep config.",
+    "vm_dem_bioen 'GJ' checker advisory REFUTED (doc correctly says tDM) - another correctly-refuted fed lead; the in-code declarations.gms:14 typo 'GHJ' is a CODE defect, not a doc defect."
+  ],
+  "pushed": false
+}

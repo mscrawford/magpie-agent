@@ -50,3 +50,16 @@ Sweep-doc leads fed: module_60:557 vm_dem_bioen unit (GJ→mio.tDM/yr); module_3
 
 **⚠️ R34 CAPPED — single ~2h rate-limit wait (max inter-message gap 123 min).** The hybrid+verify config (44 agents/11 docs) saturated the rolling 5h window on top of R33. 8 doc-audits dropped to null; the Verify phase never executed (adversarial verifier still UNTESTED). Survivors: module_38 (1 edit, pm_prod_init→M17, spot-checked) + module_59 (6 edits, vm_area producer→M30, spot-checked); module_21 auto-reverted by the gate (auditor regressed bilateral22 eq-count/feasibility-penalty — pre-round doc was correct). Anchors G3=10; G4=8 **drift** (agent confabulated 101 unique report* funcs vs correct 106 — agent-perf miss caught by the q-probe, not a doc bug).
 **Binding constraint = 5h rolling RATE, not total budget.** Recovery: 8 dropped docs → fresh leaner round (doc-centric + verify, no q-probes), paced to glide under the rolling rate. Pacing under user discussion (cap hit at the window's edge, 12:30 CEST).
+
+## Round 3 (R35) — recovery probe (4 docs, doc-centric + VERIFY) — CLEAN
+User chose "lean + verify, small probe now." 4 consumer-set-rich dropped docs: module_35, 22, 31, 60. doc-centric (no q-probes) + adversarial verify; no anchors.
+
+| Round | docs | confirmed bugs (C/Ma/Mi) | verify (upheld/corrected/refuted) | edits | dropped | gate | commit |
+|-------|------|--------------------------|-----------------------------------|-------|---------|------|--------|
+| R35 (probe) | 4 | **3C / 7Ma / 7Mi** (17 conf) | 8 / 1 / 0 (4 verified) | 32 | 0 | clean (0 err; self-healed 2 citations) | _local_ |
+
+**Cap-probe: CLEAN** (max gap 1.45 min, 18 min, 0.98M tokens) → rolling window recovered, safe to continue.
+**Verifier VALIDATED on first live run:** independently re-derived module_22 `pm_land_conservation` consumers = {M13,M29,M31,M32,M35}, M10 absent → matches a by-hand grep exactly. CORRECTED module_35 B2 (auditor had the right module M73→M32 but the wrong eq name; verifier → `q32_ndc_aff_limit`). 0 refuted (auditors right on consumer-sets this round). → Rely on the verify layer to scale consumer-set checking; periodic meta-checks only.
+**Criticals (all validated):** module_22 ×2 (pm_land_conservation M10-phantom + M29/M13-omit, R20-anchor class); module_35 ×1 (age-class ac150→ac300/62-elem, R16-anchor class).
+Correctly-refuted leads: module_60 `vm_dem_bioen` 'GJ' (doc right — the in-code `declarations.gms:14` 'GHJ' is the defect); module_35 M52/M22 phantoms.
+Continuing the sweep at this lean config; re-probe each batch to glide under the rolling rate.

@@ -22,7 +22,7 @@
 - **Biodiversity**: BII (Biodiversity Intactness Index) by age class
 
 **Dependencies**: VERY HIGH (central hub) - **HIGH modification risk**
-- **Provides to**: Modules 10 (land), 11 (costs), 32 (forestry), 59 (SOM), 73 (timber) — direct consumers of M35 interface variables (`vm_land_other`, `vm_prod_natveg`, `vm_cost_hvarea_natveg`, `vm_natforest_reduction`, `vm_landdiff_natveg`, `v35_*`), verified 2026-05-23 R3 via `find ../modules -name '*.gms' -exec grep -l '<var>' {} \;`. Modules 22, 28, 52, 56 do NOT directly consume any M35 interface variable — earlier doc claim removed.
+- **Provides to**: Modules 10 (land), 11 (costs), 32 (forestry), 59 (SOM - only in the non-default static_jan19 realization, via vm_land_other; the default cellpool_jan23 consumes no M35 interface variable), 73 (timber) — direct consumers of M35 interface variables (`vm_land_other`, `vm_prod_natveg`, `vm_cost_hvarea_natveg`, `vm_natforest_reduction`, `vm_landdiff_natveg`, `v35_*`), verified 2026-05-23 R3 via `find ../modules -name '*.gms' -exec grep -l '<var>' {} \;`. Modules 22, 28, 52, 56 do NOT directly consume any M35 interface variable — earlier doc claim removed.
 - **Receives from**: Modules 10 (land), 22 (conservation), 28 (age_class), 32 (forestry), 44 (biodiversity)
 
 **Key Variables**:
@@ -131,7 +131,7 @@ p35_maturesecdf(t,j,ac)$(not sameas(ac,"acx")) =
 ### 3. Age-Class System
 
 **Age Classes** (Module 28 defines structure):
-- `ac0`, `ac5`, `ac10`, ..., `ac150`, `acx` (mature, > 150 years)
+- `ac0`, `ac5`, `ac10`, ..., `ac295`, `ac300`, `acx` (62 age classes; `acx` is the mature/absorbing class, >300 years). Defined in `core/sets.gms:269-275`.
 - **Interval**: 5 years
 - **Used for**: Secondary forest and other land (both othertype35)
 
@@ -359,7 +359,7 @@ p35_carbon_density_secdforest(t,j,ac,ag_pools)$(pc35_secdforest(j,ac) > 1e-10) =
 
 ### 6. Key Equations (Complete — 32 Total)
 
-**Full list**: 32 equations in `equations.gms` (229 lines)
+**Full list**: 32 equations in `equations.gms` (233 lines)
 
 #### 6.1 Land Aggregation
 
@@ -652,7 +652,7 @@ vm_natforest_reduction(j2) =e=
   v35_primforest_reduction(j2) + sum(ac_sub, v35_secdforest_reduction(j2,ac_sub));
 ```
 
-**Purpose**: Total natural forest reduction = primary forest reduction + sum of secondary forest reduction across all age classes. This interface variable is provided to other modules (e.g. Module 73 timber).
+**Purpose**: Total natural forest reduction = primary forest reduction + sum of secondary forest reduction across all age classes. This interface variable is consumed by Module 32 (forestry) at `modules/32_forestry/dynamic_may24/equations.gms:80`, where equation `q32_ndc_aff_limit` forces `vm_natforest_reduction = 0` when NPI/NDC afforestation policy is active.
 **Key variables**: `vm_natforest_reduction` (total natural forest loss), `v35_primforest_reduction`, `v35_secdforest_reduction`
 
 **q35_landdiff** (`equations.gms:92-98`):
@@ -891,7 +891,6 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 
 **From Module 10 (Land)**:
 - `vm_lu_transitions(j,land_from,land_to)` - Land use transitions
-- `pm_land_start(j,land)` - Initial land areas
 
 **From Module 22 (Conservation)**:
 - `pm_land_conservation(t,j,land_natveg,consv_type)` - Protection and restoration targets
@@ -979,7 +978,7 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 - ✅ Conservation policies (NPI/NDC/protected areas enforced here)
 - ✅ Avoided deforestation potential (climate mitigation)
 
-**File Complexity**: 1,085 lines across 9 files, 32 equations - one of the most complex modules in MAgPIE.
+**File Complexity**: 1,165 lines across 9 files, 32 equations - one of the most complex modules in MAgPIE.
 
 **Reference**: `cross_module/modification_safety_guide.md` (HIGH RISK - Complex land and carbon dynamics)
 
@@ -1136,7 +1135,7 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 
 **Purpose**: Central hub for natural vegetation dynamics with age-class tracking, disturbances, harvest, and conservation
 
-**Complexity**: VERY HIGH (1,085 lines, 32 equations, 8 files)
+**Complexity**: VERY HIGH (1,165 lines, 32 equations, 8 files)
 
 **Key Innovation**: Age-class tracking with 20 tC/ha threshold for forest maturation
 
@@ -1151,9 +1150,9 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 4. Test disturbance scenarios (c35_shock_scenario)
 
 **Critical Files**:
-- `presolve.gms` (262 lines) ⭐ - Disturbances, age dynamics, recovery, bounds
-- `equations.gms` (229 lines) - 32 equations for land, carbon, harvest, BII
-- `postsolve.gms` (203 lines) - State updates
+- `presolve.gms` (294 lines) ⭐ - Disturbances, age dynamics, recovery, bounds
+- `equations.gms` (233 lines) - 32 equations for land, carbon, harvest, BII
+- `postsolve.gms` (210 lines) - State updates
 
 **AI Response Pattern**:
 - Cite specific equations and line numbers (32 equations available)

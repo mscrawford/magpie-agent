@@ -8,7 +8,7 @@
 
 ### 1. Purpose & Overview
 
-**Core Function**: Module 22 provides **exogenous land conservation targets** that prevent conversion of natural vegetation and enable active restoration. It operates as a **data provider module** (no equations) that calculates protection and restoration requirements in `presolve_ini`, which are then used as constraints in Modules 10 (Land), 35 (NatVeg), and 31 (Pasture).
+**Core Function**: Module 22 provides **exogenous land conservation targets** that prevent conversion of natural vegetation and enable active restoration. It operates as a **data provider module** (no equations) that calculates protection and restoration requirements in `presolve_ini`, which are then read directly by Modules 13 (TC), 29 (Cropland), 31 (Pasture), 32 (Forestry), and 35 (NatVeg); Module 10 (Land) is constrained transitively via vm_land.lo bounds those modules impose.
 
 **Two Conservation Types**:
 1. **Protection** (`consv_type = "protect"`): Prevents conversion of existing land to other uses
@@ -38,7 +38,7 @@ Historical protected areas            +    Conservation scenarios
 pm_land_conservation(t,j,land,"protect")  pm_land_conservation(t,j,land,"restore")
 ```
 
-**From Module Header** (`realization.gms:8-24`):
+**From Module Header** (`realization.gms:10-18`):
 ```gams
 *' Land reserved for area-based conservation is derived from WDPA and @wang_over_2024 and is
 *' based on observed protected area designation. In 1995, the total area under
@@ -231,7 +231,7 @@ pm_land_conservation(t,j,"other","restore")$(p22_conservation_area(t,j,"other") 
 - Timber plantations (locked in)
 - Protected pasture (cannot convert to forest)
 - Crop minimum (food security)
-- Tree cover (from Module 32)
+- Tree cover (from Module 29)
 
 **E.1 Secondary Forest Restoration Potential** (`presolve_ini.gms:82-89`):
 
@@ -480,7 +480,7 @@ $include "./modules/22_land_conservation/input/consv_prio_areas.cs3"
 i22_land_iso(iso) = sum(land, fm_land_iso("y1995",iso,land));
 ```
 
-**Source**: `fm_land_iso` from Module 09 (Drivers)
+**Source**: `fm_land_iso` from Module 10 (Land)
 **Purpose**: Calculate country weights for regional aggregation
 **Logic**: Countries weighted by total land area (not population or GDP)
 
@@ -496,35 +496,55 @@ i22_land_iso(iso) = sum(land, fm_land_iso("y1995",iso,land));
    - **Variables received**:
      - `pcm_land(j,land)`: Previous timestep land area (mio. ha)
      - `vm_land.lo(j,"crop")`: Minimum cropland requirement (mio. ha)
+     - `fm_land_iso(t_ini10,iso,land)`: ISO-level land area used for country weights (declared in Module 10 modules/10_land/landmatrix_dec18/input.gms:25)
    - **Why critical**: Cannot calculate restoration potential without knowing current land allocation
    - **Timing**: Module 10 runs in optimization, Module 22 in presolve_ini (uses previous timestep values)
    - **File**: `presolve_ini.gms:54-111`
 
 **Additional Dependencies** (indirect):
-- **Module 32 (Forestry)**: `vm_treecover.l(j)` - tree cover area (mio. ha)
-- **Module 09 (Drivers)**: `fm_land_iso(t,iso,land)` - country-level land areas (mio. ha)
+- **Module 29 (Cropland)**: `vm_treecover.l(j)` - cropland tree cover area / agroforestry (mio. ha); declared and populated in Module 29 (q29_treecover)
 
 ---
 
-#### **PROVIDES TO (3 modules)** - **CRITICAL OUTPUTS**:
+#### **PROVIDES TO (5 modules)** - **CRITICAL OUTPUTS**:
 
-**1. Module 10 (Land)** - **PRIMARY CONSUMER**:
+> **Note (MANDATE-17 / one-hop read)**: Module 10 (Land) does NOT directly read
+> `pm_land_conservation`. It is constrained transitively: M29, M31, M32, and M35
+> translate the parameter into `vm_land.lo` bounds and =g= constraints that
+> Module 10's `vm_land` must satisfy. Module 10 is a downstream beneficiary,
+> not a direct consumer.
+
+**1. Module 29 (Cropland)** - **DIRECT CONSUMER**:
    - **Variable provided**: `pm_land_conservation(t,j,land,consv_type)`
-   - **Purpose**: Land conservation constraints in land allocation
-   - **Mechanism**: Protected land cannot be converted, restored land must be created
-   - **Impact**: **Directly constrains land-use optimization**
+   - **Purpose**: Semi-natural-vegetation constraint in cropland allocation (q29_land_snv)
+   - **Mechanism**: Sets minimum semi-natural area on cropland grid cells
+   - **Impact**: Limits cropland expansion into conservation areas
+   - **File**: `modules/29_cropland/detail_apr24/equations.gms:52`
 
-**2. Module 35 (NatVeg - Natural Vegetation)** - **SECONDARY CONSUMER**:
+**2. Module 31 (Pasture)** - **DIRECT CONSUMER**:
+   - **Variable provided**: `pm_land_conservation(t,j,"past",consv_type)`
+   - **Purpose**: Grassland protection and restoration
+   - **Mechanism**: Prevents conversion of protected pasture to cropland
+   - **Impact**: Maintains rangeland ecosystems
+
+**3. Module 32 (Forestry)** - **DIRECT CONSUMER**:
+   - **Variable provided**: `pm_land_conservation(t,j,land,consv_type)`
+   - **Purpose**: Land availability constraints for afforestation
+   - **Mechanism**: Limits forestry expansion into conservation areas
+   - **Impact**: Constrains timber plantation siting
+
+**4. Module 35 (NatVeg - Natural Vegetation)** - **DIRECT CONSUMER**:
    - **Variable provided**: `pm_land_conservation(t,j,land_natveg,consv_type)`
    - **Purpose**: Natural vegetation protection and restoration targets
    - **Mechanism**: Prevents conversion of primforest, secdforest, other natural land
    - **Impact**: Protects biodiversity, carbon stocks, ecosystem services
 
-**3. Module 31 (Pasture)** - **TERTIARY CONSUMER**:
-   - **Variable provided**: `pm_land_conservation(t,j,"past",consv_type)`
-   - **Purpose**: Grassland protection and restoration
-   - **Mechanism**: Prevents conversion of protected pasture to cropland
-   - **Impact**: Maintains rangeland ecosystems
+**5. Module 13 (Technology Change / TC)** - **DIRECT CONSUMER**:
+   - **Variable provided**: `pm_land_conservation(t,j,land,consv_type)`
+   - **Purpose**: Cropland-in-conservation share (p13_cropland_consv_shr)
+   - **Mechanism**: Adjusts TC expectations based on conservation land fraction
+   - **Impact**: Modifies yield expectations in conservation regions
+   - **File**: `modules/13_tc/endo_jan22/presolve.gms:40`
 
 ---
 
@@ -573,18 +593,18 @@ Module 22 provides **exogenous protection and restoration targets** that constra
 #### Dependency Chains
 
 **Centrality Rank**: ~25 of 46 modules (moderate centrality)
-**Total Connections**: 5-7 (provides to 5-7 modules, depends on 1)
+**Total Connections**: 5 direct consumers, depends on 1
 **Hub Type**: **Data Provider** (exogenous policy constraints)
 
-**Provides To** (5-7 modules):
-1. **Module 10 (Land)** - Conservation constraints (`pm_land_conservation`)
+**Provides To** (5 direct consumers - M10 is constrained transitively, not directly):
+1. **Module 29 (Cropland)** - Semi-natural-vegetation constraint (q29_land_snv)
 2. **Module 31 (Pasture)** - Pasture protection targets
-3. **Module 35 (NatVeg)** - Natural vegetation protection/restoration targets
-4. **Module 32 (Forestry)** - Land availability constraints for afforestation
-5. Plus 2-3 other modules receiving conservation data
+3. **Module 32 (Forestry)** - Land availability constraints for afforestation
+4. **Module 35 (NatVeg)** - Natural vegetation protection/restoration targets
+5. **Module 13 (TC)** - Cropland-in-conservation share (p13_cropland_consv_shr)
 
 **Depends On** (1 module):
-1. **Module 09 (Drivers)** - Population and scenario data (for conservation priority areas)
+1. **Module 10 (Land)** - ISO-level land area (fm_land_iso) + previous timestep land allocation (pcm_land)
 
 **Key Position**: Module 22 acts as **policy enforcement layer** that translates WDPA baseline + conservation scenarios into binding land allocation constraints.
 
@@ -721,7 +741,7 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 ✅ **6. Provides Binding Constraints to Land Modules** (`presolve_ini.gms:54-55`):
 - **Protection**: `pm_land_conservation(t,j,land,"protect")` prevents conversion
 - **Restoration**: `pm_land_conservation(t,j,land,"restore")` requires land creation
-- **Used by**: Module 10 (Land), Module 35 (NatVeg), Module 31 (Pasture)
+- **Direct consumers**: Module 13 (TC), Module 29 (Cropland), Module 31 (Pasture), Module 32 (Forestry), Module 35 (NatVeg); Module 10 (Land) is constrained transitively
 
 ✅ **7. Handles Land Cover Data Mismatch** (`realization.gms:27-30`):
 - **WDPA baseline**: Based on ESA-CCI land cover (1995-2020)
@@ -1309,7 +1329,8 @@ if(reversal_year < 9999) {  # Reversal enabled
 
 **Critical Output**:
 - `pm_land_conservation(t,j,land,consv_type)`: **Binding constraint** in land allocation
-  - Used by: Module 10 (Land), Module 35 (NatVeg), Module 31 (Pasture)
+  - Direct consumers: Module 13 (TC), Module 29 (Cropland), Module 31 (Pasture), Module 32 (Forestry), Module 35 (NatVeg)
+  - Module 10 (Land) is constrained transitively via vm_land.lo bounds set by the direct consumers
   - Effect: Protected land cannot be converted, restored land must be created
 
 **Conservation Priority Areas**:
@@ -1334,8 +1355,8 @@ if(reversal_year < 9999) {  # Reversal enabled
    - Output `pm_land_conservation` to land allocation modules
 
 **Dependencies**:
-- **Receives from**: Module 10 (Land) - previous timestep land areas
-- **Provides to**: Module 10 (Land), Module 35 (NatVeg), Module 31 (Pasture) - conservation constraints
+- **Receives from**: Module 10 (Land) - previous timestep land areas + ISO-level land area (fm_land_iso)
+- **Provides to (direct)**: Module 13 (TC), Module 29 (Cropland), Module 31 (Pasture), Module 32 (Forestry), Module 35 (NatVeg) - conservation constraints; Module 10 (Land) is constrained transitively
 - **Circular**: None (uses previous timestep values)
 
 **Limitations**:
@@ -1401,7 +1422,8 @@ Module 22 (Land Conservation) implements protected areas as EXOGENOUS constraint
 
 3. Mechanism:
    → pm_land_conservation(t,j,land,"protect"): Binding constraint (mio. ha)
-   → Used by Module 10 (Land), Module 35 (NatVeg), Module 31 (Pasture)
+   → Direct consumers: M13 (TC), M29 (Cropland), M31 (Pasture), M32 (Forestry), M35 (NatVeg)
+   → M10 (Land) is constrained transitively via vm_land.lo bounds set by the direct consumers
    → Protected land CANNOT be converted to agriculture or other uses
 
 4. Restoration (if enabled):
