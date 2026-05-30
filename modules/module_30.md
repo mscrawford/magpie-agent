@@ -42,7 +42,7 @@ This module provides the critical interface variable `vm_area(j,kcr,w)` that is 
 - Has `not_used.txt` listing one unused input variable (`vm_AEI`); this does **not** indicate deprecated status — `simple_apr24` is the active default realization
 
 **2. detail_apr24** (alternative)
-- Full rotational constraints system (29 crop groups)
+- Full rotational constraints system (30 max-constraint + 6 min-constraint crop groups; 36 total rota30 rules)
 - Rule-based OR penalty-based implementation modes
 - Separate constraints for total and irrigated areas
 - Bioenergy tree land targets
@@ -567,19 +567,19 @@ q30_rotation_min(j2,crpmin30,w) ..
 ### Provided by Module 30
 
 #### vm_area(j,kcr,w) - Agricultural Production Area
-**Declaration**: `declarations.gms:21`
+**Declaration**: `modules/30_croparea/simple_apr24/declarations.gms:18` (default) / `detail_apr24/declarations.gms:21`
 **Type**: Positive variable
 **Units**: Million hectares (mio. ha)
 **Dimensions**: `j` (cell) × `kcr` (19 crops) × `w` (rainfed/irrigated)
 
 **Used by**:
-- Module 17 (Production): Spatial aggregation
 - Module 18 (Residues): Residue biomass calculation
-- Module 38 (Factor Costs): Labor and capital requirements
+- Module 29 (Cropland): `q29_cropland` area aggregation and `q29_carbon` carbon aggregation
+- Module 32 (Forestry): `dynamic_may24` afforestation potential (reads `vm_area.l/.lo`)
 - Module 41 (Area Equipped for Irrigation): Irrigation area tracking
 - Module 42 (Water Demand): Crop water demand calculation
 - Module 50 (Nitrogen): Nitrogen fertilizer requirements
-- Module 53 (Methane): Methane emissions from rice paddies
+- Module 53 (Methane): Methane emissions from rice paddies (rice only)
 - Module 59 (SOM): Soil organic matter dynamics
 
 **Initialization**: `fm_croparea("y1995",j,w,kcr)` from input file (`input.gms:76-80`)
@@ -591,7 +591,7 @@ q30_rotation_min(j2,crpmin30,w) ..
 **Description**: This is one of the most critical interface variables in MAgPIE. It represents the spatial allocation of crops across the landscape, combining land-use decisions with water management choices.
 
 #### vm_rotation_penalty(i) - Rotational Constraint Penalty
-**Declaration**: `declarations.gms:22`
+**Declaration**: `modules/30_croparea/simple_apr24/declarations.gms:19` (default) / `detail_apr24/declarations.gms:22`
 **Type**: Positive variable
 **Units**: Million USD17MER
 **Dimensions**: `i` (region)
@@ -606,14 +606,13 @@ q30_rotation_min(j2,crpmin30,w) ..
 **Description**: This penalty appears in the objective function, creating an economic incentive to diversify crops rather than a hard constraint. The magnitude of penalties determines how strongly the model avoids monoculture.
 
 #### vm_carbon_stock_croparea(j,ag_pools) - Cropland Carbon Stock
-**Declaration**: `declarations.gms:23`
+**Declaration**: `modules/30_croparea/simple_apr24/declarations.gms:20` (default) / `detail_apr24/declarations.gms:23`
 **Type**: Positive variable
 **Units**: Tonnes of carbon (tC)
 **Dimensions**: `j` (cell) × `ag_pools` (above-ground carbon pools)
 
 **Used by**:
-- Module 52 (Carbon): Carbon accounting and emissions
-- Module 56 (GHG Policy): Carbon pricing and CDR incentives
+- Module 29 (Cropland) only - aggregated into cluster-level `vm_carbon_stock(j,"crop",ag_pools)` via `q29_carbon` (`modules/29_cropland/simple_apr24/equations.gms:31`, `detail_apr24/equations.gms:40`). M52/M56 read the aggregated `vm_carbon_stock`, NOT `vm_carbon_stock_croparea` directly.
 
 **Pools**: Typically 2 above-ground pools (vegetation carbon, litter carbon)
 
@@ -1027,7 +1026,7 @@ $include "./modules/30_croparea/detail_apr24/input/f30_rotation_rules.csv"
 
 **Scenarios**: `min`, `default`, `good`, `good_20div`, `setaside`, `legumes`, `sixfoldrotation`, `agroecology`, `FSEC`
 
-**Description**: Defines maximum and minimum shares for 29 crop rotation groups under different policy scenarios. For example:
+**Description**: Defines maximum and minimum shares for 30 max-constraint + 6 min-constraint crop rotation groups (36 total rota30 rules) under different policy scenarios. For example:
 - `cereals1_max`: 0.67 (default) → 0.33 (agroecology) - max 67% cereals by default, 33% under agroecology
 - `legumes_min`: 0.0 (default) → 0.16 (agroecology) - no minimum by default, 16% minimum under agroecology
 
@@ -1222,7 +1221,7 @@ i30_betr_target(t,j) ≤ 1.0
 vm_area(j,kcr,w) ≥ 0
 ```
 
-**Status**: ENFORCED via positive variable declaration (`declarations.gms:21`).
+**Status**: ENFORCED via positive variable declaration (`simple_apr24/declarations.gms:18` (default) / `detail_apr24/declarations.gms:21`).
 
 ### 6. Carbon Stock Non-Negativity
 **Carbon Stocks ≥ 0**:
@@ -1230,7 +1229,7 @@ vm_area(j,kcr,w) ≥ 0
 vm_carbon_stock_croparea(j,ag_pools) ≥ 0
 ```
 
-**Status**: ENFORCED via positive variable declaration (`declarations.gms:23`).
+**Status**: ENFORCED via positive variable declaration (`simple_apr24/declarations.gms:20` (default) / `detail_apr24/declarations.gms:23`).
 
 ### 7. Biodiversity Value Non-Negativity
 **BV ≥ 0**:
@@ -1250,7 +1249,7 @@ v30_penalty_max_irrig(j,rotamax30) ≥ 0
 v30_betr_missing(j) ≥ 0
 ```
 
-**Status**: ENFORCED via positive variable declarations (`declarations.gms:22,25,24,26`).
+**Status**: ENFORCED via positive variable declarations. `vm_rotation_penalty`: `simple_apr24/declarations.gms:19` (default) / `detail_apr24/declarations.gms:22`. `v30_penalty`, `v30_penalty_max_irrig`, `v30_betr_missing`: `detail_apr24/declarations.gms:25,24,26` only (detail_apr24-specific variables).
 
 ---
 
@@ -1270,7 +1269,7 @@ Module 30 provides **detailed crop area allocation** within total cropland:
 
 - **Spatial Allocation**: Endogenous optimization determines which cells grow which crops
   - Driven by comparative advantage (yields, costs, water availability)
-  - Constrained by rotation diversity requirements (29 crop groups)
+  - Constrained by rotation diversity requirements (30 max-constraint crop groups + 6 min-constraint groups; 36 total rota30 rules)
 
 - **Cross-Module Reference**: `cross_module/land_balance_conservation.md` (Section 5.3, "Module 30 Spatial Crop Allocation")
 
@@ -1341,11 +1340,13 @@ Module 30 provides **crop area** that Module 50 uses for nitrogen fertilizer dem
 8. **Module 52 (Carbon)** - Cropland carbon (indirectly)
 9. **Module 73 (Timber)** - Bioenergy tree production
 
-**Depends On** (6 modules):
+**Depends On** (direct variable reads; 4 modules):
 1. **Module 14 (Yields)** - `vm_yld(j,kcr,w)` for production
-2. **Module 16 (Demand)** - Demand signals for crop allocation
-3. **Module 13 (TC)** - Technological change affecting productivity
-4. Plus 3 other modules providing constraints
+2. **Module 10 (Land)** - `vm_land(j,"crop")` for BETR target calculation
+3. **Module 41 (AEI)** - `vm_AEI(j)` for irrigated-area constraint
+4. **Module 11 (Costs)** - consumes `vm_rotation_penalty(i)` in objective function
+
+Note: M13 (TC) acts indirectly via M14 yields, and M16 (Demand) drives the global optimization target, but neither is a direct variable read in Module 30's .gms files.
 
 **Key Position**: Module 30 is the **CENTRAL HUB** for crop production, determining:
 - WHERE crops grown (spatial allocation)
@@ -1460,7 +1461,7 @@ Module 30 ──→ vm_area ──→ Module 29 ──→ vm_land("crop") ──
    - Verify land allocation stable
 
 4. **Infeasibility Testing**:
-   - Test extreme rotation diversity (e.g., 50% of 29 crop groups required)
+   - Test extreme rotation diversity (e.g., 50% of 30 max-constraint crop groups required)
    - Test water scarcity scenarios (all regions hit irrigation limits)
    - Test land constraints (no available cropland for expansion)
    - Test BETR targets exceeding feasible area
@@ -1492,13 +1493,13 @@ Module 30 ──→ vm_area ──→ Module 29 ──→ vm_land("crop") ──
 
 ### Downstream Dependencies (Modules Using vm_area)
 
-- Module 17 (Production): Spatial aggregation
 - Module 18 (Residues): Residue biomass
-- Module 38 (Factor Costs): Labor and capital costs
+- Module 29 (Cropland): `q29_cropland` area aggregation and `q29_carbon` carbon aggregation
+- Module 32 (Forestry): `dynamic_may24` afforestation potential (reads `vm_area.l/.lo`)
 - Module 41 (Area Equipped for Irrigation): Irrigation area tracking
 - Module 42 (Water Demand): Crop water requirements
 - Module 50 (Nitrogen): Fertilizer requirements
-- Module 53 (Methane): Rice paddy emissions
+- Module 53 (Methane): Rice paddy emissions (rice only)
 - Module 59 (SOM): Soil organic matter dynamics
 
 ### Parameter Dependencies

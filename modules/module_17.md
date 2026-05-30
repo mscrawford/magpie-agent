@@ -15,20 +15,20 @@ Module 17 aggregates **cell-level production to regional-level production** for 
 
 **Core Function:** `vm_prod_reg(i,k)` = Σ `vm_prod(j,k)` for all cells j in region i
 
-**Architectural Role:** Module 17 is a **pure spatial aggregator** with minimal logic. It provides the regional production totals that Module 21 (Trade) uses for inter-regional trade and Module 15 (Food Demand) compares against consumption requirements.
+**Architectural Role:** Module 17 is a **pure spatial aggregator** with minimal logic. It provides the regional production totals that Module 21 (Trade) uses for inter-regional trade. The food balance (production vs. demand) is enforced in Module 21 using vm_supply (from M16); Module 15 supplies the demand side but does not read vm_prod_reg directly.
 
 ### 1.2 Key Features
 
 1. **Spatial Aggregation** (`equations.gms:10-11`): Sums cell-level production to regional totals
 2. **Production Initialization** (`presolve.gms:10-16`): Sets initial production levels for first time step to improve solver convergence
-3. **Equation over Full k Set** (`equations.gms:11`): `q17_prod_reg` is declared over the full set `k` (all 28 primary commodities, including livestock, fish, and forestry); in practice, `vm_prod(j,k)` is currently only populated for plant commodities (crops and pasture)
+3. **Equation over Full k Set** (`equations.gms:11`): `q17_prod_reg` is declared over the full set `k` (all 28 primary commodities); in default config, `vm_prod(j,k)` is non-zero for crops/pasture (M30/31), livestock (M71 foragebased_jul23), and wood/woodfuel (M73 default); fish remains zero
 4. **Zero Configuration Complexity:** One switch, no input files, no calibration
 
 ### 1.3 Scope and Limitations
 
-**Equation declared over:** Full set `k` (28 primary commodities: crops, pasture, livestock, fish, wood, woodfuel) (`declarations.gms:9,11`)
+**Equation declared over:** Full set `k` (28 primary commodities: crops, pasture, livestock, fish, wood, woodfuel) (`declarations.gms:14`; the variables vm_prod(j,k) and vm_prod_reg(i,kall) are declared at `declarations.gms:9,10`)
 
-**Currently populates non-zero values for:** Crops (kcr) and pasture — 20 plant commodities — from Modules 30/31. Ruminant and monogastric livestock (`kli_rum`, `kli_mon`) are ALSO populated at cell level under the default M71 realization `foragebased_jul23`, which constrains `vm_prod(j, kli_rum)` via `q71_feed_forage` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:21-24`) and `vm_prod(j, kli_mon)` via `q71_prod_mon_liv` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:55-59`). Fish (`fish`) and wood products (`wood`, `woodfuel`) remain zero at cell level.
+**Currently populates non-zero values for:** Crops (kcr) and pasture -- 20 plant commodities -- from Modules 30/31. Ruminant and monogastric livestock (`kli_rum`, `kli_mon`) are ALSO populated at cell level under the default M71 realization `foragebased_jul23`, which constrains `vm_prod(j, kli_rum)` indirectly via q71_feed_rum_liv (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:14-17`) with forage feed requirements set by q71_feed_forage (`:21-24`), and `vm_prod(j, kli_mon)` via `q71_prod_mon_liv` (`:55-59`). Wood and woodfuel are ALSO populated at cell level under the default timber realization `73_timber/default` via `q73_prod_wood` and `q73_prod_woodfuel` (`modules/73_timber/default/equations.gms:43-60`), and aggregated to `vm_prod_reg(i,"wood"/"woodfuel")` by q17. Only fish (`fish`) remains zero at cell level (no module populates `vm_prod(j,"fish")`).
 
 **Stale comment caveat:** `modules/17_production/flexreg_apr16/realization.gms:13-14` still says "For the time being, this approach is not applied to livestock products." That `@limitations` text predates the M71 `foragebased_jul23` realization (added 2023) and is out of date — the realization comment was not updated when M71's cell-level livestock constraints landed. **The current behavior is that `vm_prod_reg(i, kli_rum)` and `vm_prod_reg(i, kli_mon)` are non-zero** (aggregated from M71-constrained cell-level `vm_prod`).
 
@@ -66,12 +66,12 @@ RegionalProduction(i,k) = Σ CellProduction(j,k)  for all cells j in region i
 - **cell(i,j)**: Mapping set defining which cells belong to which region
 - **i2**: Regions currently active in simulation (typically 10-14 MAgPIE regions)
 - **j2**: Cells currently active (typically 200-59000 cells depending on spatial resolution)
-- **k**: Plant commodities (crops + pasture, subset of kall)
+- **k**: Primary commodities (28 members: crops, pasture, livestock, fish, wood, woodfuel; subset of kall). Summed vm_prod(j2,k) is currently non-zero for crops and pasture (M30/31), ruminant/monogastric livestock (M71 default), and wood/woodfuel (M73 default); fish is zero at cell level.
 
 **Dimensions:**
 
-- **vm_prod:** j (cells) × k (crops + pasture) ≈ 200-59000 × 20 = 4,000-1,180,000 values
-- **vm_prod_reg:** i (regions) × k (crops + pasture) ≈ 10-14 × 20 = 200-280 values
+- **vm_prod:** j (cells) × k (28 primary commodities) ≈ 200-59000 × 28 values (non-zero subset depends on active modules)
+- **vm_prod_reg:** i (regions) × k (28 primary commodities) ≈ 10-14 × 28 values (non-zero for crops/pasture/livestock/wood/woodfuel in default config; fish zero)
 
 **Reduction Factor:** Cell-level → Regional reduces data dimensionality by ~20-4200x (depending on resolution).
 
@@ -160,15 +160,22 @@ If in first time step (`ord(t) = 1`) AND initialization switch is ON, set level 
 ### 4.1 Output (Provided to Other Modules)
 
 **vm_prod_reg(i,kall)** - Regional production for all commodities (mio. tDM/yr)
-**Provided to:**
-- **Module 21 (Trade):** Regional supply available for export
-- **Module 15 (Food Demand):** Production to compare against consumption needs
+**Direct consumers (grep-verified):**
+- **Module 21 (Trade):** Regional supply for trade balance (q21_trade_glo, q21_notrade)
+- **Module 16 (Demand):** Reads vm_prod_reg for demand projections
+- **Module 18 (Residues):** Residue availability from crop production
 - **Module 20 (Processing):** Raw material supply for processing industries
+- **Module 38 (Factor costs):** vm_prod_reg(i,kcr) -> crop labor/capital cost (modules/38_factor_costs/sticky_feb18/equations.gms:16)
+- **Module 50 (N soil budget):** Nitrogen in harvested biomass
+- **Module 70 (Livestock):** Livestock production data at regional level
+- **Module 71 (Disagg_lvst):** Reads vm_prod_reg(i,kli_rum/kli_mon) for cellular livestock disaggregation (modules/71_disagg_lvst/foragebased_jul23/equations.gms:37,57)
 - **Reporting modules:** Output for analysis and validation
+
+**Note:** Module 15 (Food Demand) supplies the demand side but does NOT read vm_prod_reg directly. Food balance is enforced in Module 21 using vm_supply (from M16), not M15.
 
 **Dimensions:** i (regions) × kall (all commodities; `q17_prod_reg` computes values for set `k`, the subset of primary commodities)
 
-**Note:** `vm_prod_reg` is defined over `kall` (all products). Module 17's equation `q17_prod_reg(i2,k)` is declared over set `k` (all 28 primary commodities, including livestock, fish, wood, woodfuel). In current practice, `vm_prod(j,k)` is only non-zero for plant commodities, so livestock/fish/forestry rows of `vm_prod_reg` sum to zero via Module 17 — but the equation itself is not restricted to plants.
+**Note:** `vm_prod_reg` is defined over `kall` (all products). Module 17's equation `q17_prod_reg(i2,k)` is declared over set `k` (28 primary commodities, including livestock, fish, wood, woodfuel). In current default config, `vm_prod(j,k)` is non-zero for crops/pasture (M30/31), livestock (M71), and wood/woodfuel (M73); fish remains zero.
 
 **Citation:** `declarations.gms:10`
 
@@ -271,19 +278,20 @@ $setglobal c17_prod_init  on
 ### 6.2 Critical Downstream Dependencies
 
 **Module 21 (Trade):**
-- Uses `vm_prod_reg` to determine regional supply for trade
+- Uses `vm_prod_reg` to determine regional supply for trade (q21_trade_glo: sum vm_prod_reg =g= sum vm_supply + balanceflow)
 - Without Module 17, no regional production data → trade infeasible
 
-**Module 15 (Food Demand):**
-- Compares `vm_prod_reg` against demand to check food security
-- Without Module 17, cannot validate if production meets consumption needs
+**Module 38 (Factor costs):**
+- Reads `vm_prod_reg(i,kcr)` to compute crop labor/capital cost (modules/38_factor_costs/sticky_feb18/equations.gms:16)
+
+**Module 71 (Disagg_lvst):**
+- Reads `vm_prod_reg(i,kli_rum/kli_mon)` for cellular livestock disaggregation (modules/71_disagg_lvst/foragebased_jul23/equations.gms:37,57)
 
 **Module 20 (Processing):**
 - Uses `vm_prod_reg` as input for processing industries
 - Without Module 17, processing cannot calculate raw material availability
 
-**Module 73 (Timber):**
-- May use similar aggregation logic for wood products (check Module 73 documentation)
+**Note:** Module 15 (Food Demand) does NOT read vm_prod_reg directly -- it computes food demand only. Module 73 (Timber) is an UPSTREAM populator of cell-level vm_prod(j,"wood"/"woodfuel"), not a downstream consumer of vm_prod_reg.
 
 ### 6.3 Circular Dependencies
 
@@ -306,9 +314,9 @@ Following the "Code Truth" principle:
 
 ### 7.2 Livestock/Fish/Forestry — Updated Status (post-M71 foragebased_jul23)
 
-- **The equation `q17_prod_reg(i2,k)` IS declared** over the full set `k` (all primary commodities including livestock, fish, wood, woodfuel) — `declarations.gms:9,11`
-- **In current practice (default config),** `vm_prod(j,k)` is populated for crops + pasture (M30/31) AND for ruminant/monogastric livestock under M71 `foragebased_jul23` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:21-24` for kli_rum, `:55-59` for kli_mon). So `vm_prod_reg(i, kli_rum)` and `vm_prod_reg(i, kli_mon)` are non-zero.
-- Fish (`fish`) and wood products (`wood`, `woodfuel`) remain zero at cell level — M17 aggregates them to zero.
+- **The equation `q17_prod_reg(i2,k)` IS declared** over the full set `k` (all primary commodities including livestock, fish, wood, woodfuel) -- `declarations.gms:14`
+- **In current practice (default config),** `vm_prod(j,k)` is populated for crops + pasture (M30/31) AND for ruminant/monogastric livestock under M71 `foragebased_jul23` (ruminant: q71_feed_rum_liv requires forage coverage with forage requirements set by q71_feed_forage `modules/71_disagg_lvst/foragebased_jul23/equations.gms:14-24`; monogastric: q71_prod_mon_liv `:55-59`). So `vm_prod_reg(i, kli_rum)` and `vm_prod_reg(i, kli_mon)` are non-zero. Wood and woodfuel are ALSO populated at cell level by M73 default via q73_prod_wood/q73_prod_woodfuel (`modules/73_timber/default/equations.gms:43-60`), so `vm_prod_reg(i, "wood"/"woodfuel")` are non-zero.
+- Only fish (`fish`) remains zero at cell level -- no module populates `vm_prod(j,"fish")`.
 - The text in `modules/17_production/flexreg_apr16/realization.gms:13-14` (*"For the time being, this approach is not applied to livestock products"*) is a STALE `@limitations` comment that predates M71 `foragebased_jul23`. Treat it as out of date.
 
 **Rationale:** Cell-level livestock production was added by M71 `foragebased_jul23` (default since 2023). M17's `q17_prod_reg` was always declared over the full `k`; what changed is which subset of `k` actually has non-zero cell-level production. Module 70 still handles livestock cost/feed-basket logic at regional level, but the production variables are now disaggregated to cells by M71.
@@ -471,8 +479,10 @@ p17_ncells(i) = sum(cell(i,j), 1);
 2. **Check livestock production aggregation (post-M71 foragebased_jul23):**
    ```gams
    * vm_prod_reg.l(i,"kli_rum") is aggregated by Module 17 from cell-level
-   * vm_prod(j,kli_rum), which is constrained by Module 71's q71_feed_forage.
-   * Expected: non-zero in default config (foragebased_jul23). Fish/wood remain zero.
+   * vm_prod(j,kli_rum), which is constrained by M71 q71_feed_rum_liv + q71_feed_forage.
+   * vm_prod_reg.l(i,"wood"/"woodfuel") is also non-zero (M73 default populates vm_prod(j,kforestry)).
+   * Expected: crops/pasture/livestock/wood/woodfuel all non-zero in default config.
+   * Only fish remains zero at cell level -- no module populates vm_prod(j,"fish").
    ```
 
 ---
@@ -547,7 +557,7 @@ p17_ncells(i) = sum(cell(i,j), 1);
 - M71 disaggregation realization is set to `off` or to a non-default that doesn't constrain `vm_prod(j, kli)`.
 - Cell-level forage availability is binding tight, forcing `vm_prod(j, kli_rum)` to zero in all cells.
 
-**Solution:** Check `cfg$gms$disagg_lvst` in `config/default.cfg` (expected: `foragebased_jul23`). Then verify M71 `q71_feed_forage` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:21-24`) and `q71_prod_mon_liv` (`:55-59`) are active and forage supply is positive in the affected cells.
+**Solution:** Check `cfg$gms$disagg_lvst` in `config/default.cfg` (expected: `foragebased_jul23`). Then verify M71 q71_feed_rum_liv (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:14-17`) and q71_feed_forage (`:21-24`) are active and forage supply is positive in the affected cells. For monogastric, check q71_prod_mon_liv (`:55-59`).
 
 **Historical note:** Pre-2023 documentation (and the stale `realization.gms:13-14` `@limitations` text) said livestock production was outside M17's scope. With M71 `foragebased_jul23` as default, M17's `q17_prod_reg` now aggregates non-zero cell-level livestock production into regional totals.
 
@@ -603,17 +613,23 @@ Because Module 17 is a simple aggregator with no complex logic:
 
 ## 12. Relationship to Other Modules
 
-### 12.1 Provides Regional Production To
+### 12.1 Provides Regional Production To (direct consumers of vm_prod_reg, grep-verified)
 
-- **Module 21 (Trade):** `vm_prod_reg(i,k)` → regional supply for export
-- **Module 15 (Food Demand):** `vm_prod_reg(i,k)` → production to compare against demand
+- **Module 21 (Trade):** `vm_prod_reg(i,k)` → regional supply for trade balance
+- **Module 38 (Factor costs):** `vm_prod_reg(i,kcr)` → crop labor/capital cost (modules/38_factor_costs/sticky_feb18/equations.gms:16)
+- **Module 71 (Disagg_lvst):** `vm_prod_reg(i,kli_rum/kli_mon)` → cellular livestock disaggregation (modules/71_disagg_lvst/foragebased_jul23/equations.gms:37,57)
 - **Module 20 (Processing):** `vm_prod_reg(i,k)` → raw materials for processing
+- **Module 16 (Demand), Module 18 (Residues), Module 50 (N soil budget), Module 70 (Livestock):** various production reads
 - **Reporting modules:** Regional production outputs for validation and analysis
+
+**Note:** Module 15 (Food Demand) does NOT read vm_prod_reg directly. Food balance is enforced in Module 21.
 
 ### 12.2 Receives Cell Production From
 
 - **Module 30 (Crop):** `vm_prod(j,kcr)` for all crops
 - **Module 31 (Pasture):** `vm_prod(j,"pasture")` for pasture production
+- **Module 71 (Disagg_lvst):** `vm_prod(j,kli_rum/kli_mon)` constrained at cell level (foragebased_jul23 default)
+- **Module 73 (Timber):** `vm_prod(j,"wood"/"woodfuel")` defined at cell level (modules/73_timber/default/equations.gms:43-60)
 
 ### 12.3 Coordinates With
 
@@ -707,19 +723,19 @@ Module 17 is a **minimal but essential aggregation module** that connects spatia
 **What It Does:**
 - Sums cell-level production to regional totals (1 equation: q17_prod_reg, over full set k)
 - Initializes production in first time step for faster convergence (optional)
-- Equation is declared over all 28 primary commodities (k); currently produces non-zero values for plant commodities only (livestock/fish/forestry cell-level production not yet implemented)
+- Equation is declared over all 28 primary commodities (k); in default config produces non-zero values for crops/pasture (M30/31), livestock (M71 foragebased_jul23), and wood/woodfuel (M73 default); fish remains zero
 
 **What It Doesn't Do:**
-- Calculate production (that's Module 30/31)
+- Calculate production (that's Module 30/31/71/73)
 - Model intra-regional transport costs or losses
-- Produce non-zero aggregation for livestock, fish, or wood products (current limitation — vm_prod is not populated for these)
+- Produce non-zero aggregation for fish (no module populates vm_prod(j,"fish"))
 - Apply weights, adjustments, or quality factors
 
 **Critical Principle:** Module 17 is a **pure pass-through aggregator**. All production logic is upstream; Module 17 just sums the results.
 
 **Key Dependencies:**
-- **Upstream:** Module 30 (Crop), Module 31 (Pasture), spatial mapping
-- **Downstream:** Module 21 (Trade), Module 15 (Food Demand), Module 20 (Processing)
+- **Upstream:** Module 30 (Crop), Module 31 (Pasture), Module 71 (Disagg_lvst), Module 73 (Timber), spatial mapping
+- **Downstream:** Module 21 (Trade), Module 38 (Factor costs), Module 71 (reads vm_prod_reg), Module 20 (Processing)
 - **No circular dependencies**
 
 **Testing Priority:**
@@ -747,13 +763,16 @@ Module 17 is a **minimal but essential aggregation module** that connects spatia
 
 **Role**: Module 17 aggregates cell-level production to regional totals (`vm_prod_reg`), which is the **supply side** of the food balance equation.
 
-**Equation** (Module 21, trade):
+**Equation** (Module 21 default realization, modules/21_trade/selfsuff_reduced/equations.gms:13-14):
+
+Conceptually: regional production + net imports ~ demand. In code:
 ```
-vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) = vm_demand(i,k)
+sum(i, vm_prod_reg(i,k_trade)) =g= sum(i, vm_supply(i,k_trade)) + balanceflow
 ```
+where vm_supply (declared in M16) carries the demand side. (vm_import, vm_export, vm_demand are not MAgPIE variable names; see cross_module/nitrogen_food_balance.md for the conceptual identity.)
 
 **Module 17's contribution**:
-- Provides `vm_prod_reg(i,k)` for all primary commodities (currently non-zero for crops and pasture)
+- Provides `vm_prod_reg(i,k)` for all primary commodities (in default config non-zero for crops, pasture, livestock, wood, woodfuel; fish zero)
 - **Critical**: If production aggregation is wrong, food balance cannot be satisfied
 - **Must sum correctly**: Σ(cells) production = regional production
 
@@ -778,29 +797,38 @@ vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) = vm_demand(i,k)
 - **Hub Type**: **Aggregation Hub** (receives spatial, provides regional)
 - **Role**: **Production aggregator** - connects cell-level to regional supply
 
-**Modules that Module 17 depends on**:
-- **Module 30 (croparea)**: `vm_prod(j,kcr)` — crop production by cell (**PRIMARY DEPENDENCY**)
-- **Module 31 (pasture)**: `vm_prod(j,"pasture")` — pasture production by cell
+**Modules that Module 17 depends on (upstreams that populate vm_prod)**:
+- **Module 30 (croparea)**: `vm_prod(j,kcr)` -- crop production by cell (**PRIMARY DEPENDENCY**)
+- **Module 31 (pasture)**: `vm_prod(j,"pasture")` -- pasture production by cell
+- **Module 71 (disagg_lvst)**: `vm_prod(j,kli_rum/kli_mon)` -- cell-level livestock (foragebased_jul23 default)
+- **Module 73 (timber)**: `vm_prod(j,"wood"/"woodfuel")` -- cell-level timber (default realization, modules/73_timber/default/equations.gms:43-60)
 - **Spatial mapping**: `cell(i,j)` set defines which cells belong to which regions
 
-**Modules that depend on Module 17**:
-- Module 15 (food): Food demand calculations use production availability
+**Direct consumers of vm_prod_reg (grep-verified)**:
 - Module 16 (demand): Demand projections consider production constraints
 - Module 18 (residues): Residue availability from crop production
 - Module 20 (processing): Processing volumes based on production
-- Module 21 (trade): **CRITICAL** - Trade balances regional production vs. demand
+- Module 21 (trade): **CRITICAL** - Trade balances regional production vs. demand (modules/21_trade/selfsuff_reduced/equations.gms:13-14)
+- Module 38 (factor_costs): vm_prod_reg(i,kcr) -> crop labor/capital cost (modules/38_factor_costs/sticky_feb18/equations.gms:16)
 - Module 50 (nr_soil_budget): Nitrogen in harvested biomass
-- Module 51 (nitrogen): N content in products
-- Module 53 (methane): CH₄ from residue management
-- Module 55 (awms): Animal waste from production
-- Module 60 (bioenergy): Bioenergy feedstock availability
-- Module 62 (material): Material product availability
-- Module 70 (livestock): Livestock production data (though Module 70 has its own aggregation)
-- Module 73 (timber): Timber production (forestry)
+- Module 70 (livestock): Livestock production data at regional level
+- Module 71 (disagg_lvst): Reads vm_prod_reg(i,kli_rum/kli_mon) for cellular disaggregation (modules/71_disagg_lvst/foragebased_jul23/equations.gms:37,57)
+
+**Code-verified direct-consumer set**: {16, 18, 20, 21, 38, 50, 70, 71}
+
+**Indirect/transitive dependents (do NOT read vm_prod_reg directly)**:
+- Module 15 (food): Supplies demand side but does not read vm_prod_reg
+- Module 51 (nitrogen): Depends transitively through M50/M70
+- Module 53 (methane): Depends transitively
+- Module 55 (awms): Depends transitively
+- Module 60 (bioenergy): Depends transitively
+- Module 62 (material): Depends transitively
+
+**Note:** Module 73 (timber) is an UPSTREAM populator of vm_prod(j,"wood"/"woodfuel"), not a downstream consumer of vm_prod_reg.
 
 **Key Interface Variables**:
-- `vm_prod_reg(i,k)`: Regional production - **MOST CRITICAL OUTPUT** (used by 13 modules)
-- `vm_prod(j,k)`: Cell-level production - INPUT from Modules 30/31
+- `vm_prod_reg(i,k)`: Regional production - **MOST CRITICAL OUTPUT**
+- `vm_prod(j,k)`: Cell-level production - INPUT from Modules 30/31/71/73
 
 ### 16.3 Circular Dependencies
 

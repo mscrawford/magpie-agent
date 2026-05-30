@@ -246,7 +246,7 @@ q50_nr_cost_fert(i2) ..
 | **55_awms** | vm_manure | Manure from grazing (stubble, pasture) | equations.gms:28, 77 |
 | **59_som** | vm_nr_som_fertilizer | Nitrogen from SOM mining | equations.gms:30 |
 | **10_land** | vm_land | Land area for deposition and pasture fixation | equations.gms:79, 90 |
-| **57_maccs** | im_maccs_mitigation | MACC curves for N2O mitigation | presolve.gms:56, 57 |
+| **57_maccs** | im_maccs_mitigation | MACC curves for N2O mitigation | presolve.gms:56, 58 |
 
 ### 6.2 Provides To (Downstream Consumers)
 

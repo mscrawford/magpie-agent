@@ -569,7 +569,7 @@ $include "./modules/15_food/input/f15_bmi.cs3"
 ```
 
 **BMI Groups**: verylow, low, medium, mediumhigh, high, veryhigh
-**By**: Sex, age (18 age groups: 0-4, 5-9, ..., 100+)
+**By**: Sex, age (21 age groups: 0-4, 5-9, ..., 100+)
 **Purpose**: Convert BMI shares to body weights for energy calculations
 
 ---
@@ -766,11 +766,13 @@ $include "./modules/15_food/input/f15_supply2intake_ratio_FAO_iso.cs3"
 **1. Module 16 (Demand)**:
    - **Variable provided**:
      - `vm_dem_food(i,kfo)`: Food demand (mio. tDM/yr) — `modules/16_demand/sector_may15/equations.gms:21`
-     - `pm_kcal_pc_initial(t,i,kfo)`: Initial per capita demand (kcal/cap/day)
-     - `fm_nutrition_attributes(t,kfo,nutrition)`: Nutrition content
    - **Purpose**: Module 16 uses `vm_dem_food` as a **constraint** in MAgPIE optimization; also consumed by Module 20 (`modules/20_processing/substitution_may21/equations.gms:33`) and Module 62 (`modules/62_material/exo_flexreg_apr16/presolve.gms:22`)
-   - **Equation**: `q15_food_demand` enforces that supply ≥ demand
+   - **Equation**: `q15_food_demand` enforces that supply >= demand
    - **Impact**: This is the PRIMARY DRIVER of agricultural production in MAgPIE
+
+**1b. Module 70 (Livestock)**:
+   - **Parameter provided**:
+     - `pm_kcal_pc_initial(t,i,kall)`: Initial per capita demand (kcal/cap/day), used for cattle-stock/milk/feed proxies — `modules/70_livestock/fbask_jan16/presolve.gms:32,35,47`
 
 **2. Module 20 (Processing)**:
    - **Variable provided**:
@@ -810,11 +812,11 @@ Module 15 has **NO circular dependencies** because:
 - Can be run independently: `gams standalone/demand_model.gms`
 
 ✅ **2. Estimates Anthropometric Energy Requirements** (`presolve.gms:183-197`)
-- BMI distribution by country, sex, age (6 BMI groups × 18 ages × 2 sexes)
+- BMI distribution by country, sex, age (6 BMI groups × 21 ages × 2 sexes)
 - Body weight = BMI × (height/100)²
 - BMR from Schofield equations: `BMR = intercept + slope × weight`
 - Total energy = BMR × PAL (Physical Activity Level: 1.53-1.76)
-- Extra energy for pregnancy/lactation: newborns × 760 kcal
+- Extra energy for pregnancy/lactation: newborns × 845/675 kcal (weighted ~778 kcal/newborn)
 
 ✅ **3. Models Income Effects on Food Demand** (`equations.gms:48-52`, `169-173`)
 - Saturation curves: Demand approaches asymptotes as income rises
@@ -1511,7 +1513,7 @@ if(s15_exo_diet == 1) {
 - **10 optimization variables** in food demand model (+ `vm_dem_food` in MAgPIE)
 - **15+ input files**: FAO data, regression parameters, EAT-Lancet targets, etc.
 - **249 ISO countries**: Country-level resolution, aggregated to 10 MAgPIE regions
-- **6 BMI groups × 18 ages × 2 sexes**: Detailed demographic structure
+- **6 BMI groups × 21 ages × 2 sexes**: Detailed demographic structure
 
 **Critical Output**:
 - `vm_dem_food(i,kfo)`: **THE primary driver** of agricultural production in MAgPIE

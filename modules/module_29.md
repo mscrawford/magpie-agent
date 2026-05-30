@@ -121,7 +121,7 @@ p29_avl_cropland(t,j) = f29_avl_cropland(j,"%c29_marginal_land%") * (1 - p29_snv
 ```
 
 **Components**:
-- `f29_avl_cropland(j,marginal_land)` - Base suitability-constrained area
+- `f29_avl_cropland(j,marginal_land29)` - Base suitability-constrained area
 - `p29_snv_shr(t,j)` - SNV share applied during presolve (reduces available cropland before optimization)
 
 **Marginal Land Options** (`input.gms:8`, `sets.gms:10-11`):
@@ -191,7 +191,7 @@ q29_carbon(j2,ag_pools,stockType)..
 
 ### 5. SNV Land Constraint (`q29_land_snv`)
 
-**Formula** (`equations.gms:49-49`):
+**Formula** (`modules/29_cropland/detail_apr24/equations.gms:49-52`):
 ```gams
 q29_land_snv(j2)..
   sum(land_snv, vm_land(j2,land_snv)) =g=
@@ -639,23 +639,23 @@ pc29_treecover(j,ac) = 0;  ! Start with no tree cover
 
 **Option 0** (`s29_treecover_plantation = 0`, default):
 ```gams
-p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_secdforest_ac(t,j,ac,ag_pools);
+p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_secdforest_ac_uncalib(t,j,ac,ag_pools);
 ```
-- Uses natural vegetation regrowth curve
+- Uses uncalibrated natural vegetation regrowth curve (from Module 52)
 - Slower carbon accumulation
 - Converges to natural forest carbon density
 
 **Option 1** (`s29_treecover_plantation = 1`):
 ```gams
-p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac(t,j,ac,ag_pools);
+p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac_uncalib(t,j,ac,ag_pools);
 ```
-- Uses plantation growth curve
+- Uses uncalibrated plantation growth curve (from Module 52)
 - Faster carbon accumulation (managed trees)
 - Converges to plantation carbon density (typically lower than natural)
 
 **Trade-off**: Plantation grows faster initially but has lower final carbon density
 
-**Source**: `preloop.gms`, `input.gms:20`
+**Source**: `modules/29_cropland/detail_apr24/preloop.gms:46-48`, `input.gms:20`
 
 ---
 
@@ -663,8 +663,8 @@ p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac(t,j,ac,
 
 | File | Parameter | Description | Dimensions | Units |
 |------|-----------|-------------|------------|-------|
-| `avl_cropland.cs3` | `f29_avl_cropland` | Available cropland by suitability | (j, marginal_land) | Mio. ha |
-| `avl_cropland_iso.cs3` | `f29_avl_cropland_iso` | Available cropland at country level | (iso, marginal_land) | Mio. ha |
+| `avl_cropland.cs3` | `f29_avl_cropland` | Available cropland by suitability | (j, marginal_land29) | Mio. ha |
+| `avl_cropland_iso.cs3` | `f29_avl_cropland_iso` | Available cropland at country level | (iso, marginal_land29) | Mio. ha |
 | `SNVTargetCropland.cs3` | `f29_snv_target_cropland` | Cropland requiring relocation for SNV | (j, relocation_target) | Mio. ha |
 | `CroplandTreecover.cs2` | `f29_treecover` | Initial tree cover from maps (2015) | (j) | Mio. ha |
 
@@ -777,7 +777,7 @@ p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac(t,j,ac,
 
 **No scaling applied in this module.**
 
-Scaling file not present in module.
+A scaling.gms file exists (`detail_apr24/scaling.gms`) but all scale statements are commented out, so no scaling is applied by default.
 
 ---
 
@@ -837,19 +837,17 @@ Module 29 provides **total cropland area** to the land balance equation in Modul
 
 #### 2. Carbon Balance: ✅ **PARTICIPANT**
 
-Module 29 tracks **cropland carbon stocks** across four pools:
+Module 29 tracks **cropland carbon stocks** across two above-ground pools:
 
-- **Four Carbon Pools**:
-  1. **Vegetation carbon**: Crops (annual, negligible stocks)
-  2. **Litter carbon**: Crop residues (small pool)
-  3. **Soil carbon**: Largest pool, **dynamic via Module 59 (SOM)**
-     - Converges to equilibrium based on management (tillage, residue, manure)
-     - Tree cover on cropland increases soil carbon (100% of natural levels)
-  4. **Below-ground carbon**: Root biomass
+- **Two Above-Ground Carbon Pools** (ag_pools = {vegc, litc}):
+  1. **Vegetation carbon** (vegc): Crops (annual, negligible stocks)
+  2. **Litter carbon** (litc): Crop residues (small pool)
 
-- **Dynamic Soil Carbon**:
-  - Module 59 calculates equilibrium: `pm_carbon_density_secdforest_ac` for tree cover
-  - Equation: `v29_treecover(j,ac)` affects soil carbon accumulation
+- **Note on pool coverage**: `q29_carbon` operates only over `ag_pools` (above-ground: vegc, litc). It does NOT set soil carbon (soilc) for cropland - the SOM module (59) populates the soilc slice separately. The full `c_pools` set is {vegc, litc, soilc}; there is no separate below-ground pool.
+
+- **Tree Cover Carbon**:
+  - Module 52 provides age-class carbon density: `pm_carbon_density_secdforest_ac_uncalib` (natural vegetation) and `pm_carbon_density_plantation_ac_uncalib` (plantation); Module 29 reads these into `p29_carbon_density_ac` in preloop
+  - `v29_treecover(j,ac)` contributes to above-ground cropland carbon
   - Tree cover acts as carbon sink on cropland
 
 - **Cross-Module Reference**: `cross_module/carbon_balance_conservation.md` (Section 3.1, "Cropland Carbon")
@@ -885,22 +883,24 @@ Module 29 does NOT directly participate in water balance (no water equations), b
 ### Dependency Chains
 
 **Centrality Rank**: 9 of 46 modules
-**Total Connections**: 13 (provides to 6 modules, depends on 7)
+**Total Connections**: 12 (provides to 6 modules, depends on 6)
 **Hub Type**: **Aggregation Hub** (aggregates cropland components: area + fallow + tree cover)
 
 **Provides To** (6 modules):
 1. **Module 10 (Land)** - Total cropland area (`vm_land(j,"crop")`)
 2. **Module 11 (Costs)** - Cropland management costs (fallow, tree cover, seminatural vegetation)
-3. **Module 52 (Carbon)** - Cropland carbon stocks (four pools)
+3. **Module 52 (Carbon)** - Cropland above-ground carbon stocks (vegc, litc)
 4. **Module 59 (SOM)** - Soil organic matter targets for cropland
 5. **Module 22 (Conservation)** - Protected cropland area (if applicable)
 6. Plus potentially 1-2 other modules
 
-**Depends On** (7 modules):
-1. **Module 30 (Croparea)** - Harvested crop area (`vm_area(j,kcr,w)`)
-2. **Module 14 (Yields)** - Yield parameters for fallow/tree cover productivity
-3. **Module 16 (Demand)** - Demand signals affecting land use
-4. Plus 4 other modules providing policy constraints
+**Depends On** (6 modules):
+1. **Module 10 (Land)** - Total land by type (`vm_land`), land use transitions (`vm_lu_transitions`)
+2. **Module 30 (Croparea)** - Harvested crop area (`vm_area`), croparea carbon stocks (`vm_carbon_stock_croparea`)
+3. **Module 12 (Interest Rate)** - Regional interest rate (`pm_interest`)
+4. **Module 22 (Conservation)** - Conservation land targets (`pm_land_conservation`)
+5. **Module 52 (Carbon)** - Age-class carbon density (`pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib`)
+6. Core data - Historical land use (`pm_land_hist`), carbon density (`fm_carbon_density`), BII coefficients (`fm_bii_coeff`), potential vegetation layers (`fm_luh2_side_layers`)
 
 **Key Position**: Module 29 acts as **cropland aggregator** - it sums harvested area (Module 30), fallow land, and tree cover into total cropland area for the land balance.
 

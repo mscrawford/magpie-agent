@@ -21,9 +21,9 @@ Module 14 calculates crop yields and pasture productivity for all agricultural p
 1. **LPJmL Input Integration** (`realization.gms:8-11`): Reads gridded crop and pasture yields from the Lund-Potsdam-Jena managed Land model, providing climate-sensitive biophysical baselines
 2. **Multi-Stage Calibration System** (`preloop.gms:26-145`): Calibrates LPJmL yields to FAO regional statistics through sophisticated "limited calibration" approach
 3. **Technological Change** (`equations.gms:14-16`): Scales yields using τ (tau) factor from Module 13 to represent agricultural intensification over time
-4. **Irrigated/Rainfed Differentiation** (`preloop.gms:116-143`): Calibrates irrigated-to-rainfed yield ratios to match AQUASTAT country-level observations
+4. **Irrigated/Rainfed Differentiation** (`preloop.gms:123-150`): Calibrates irrigated-to-rainfed yield ratios to match AQUASTAT country-level observations
 5. **Pasture Spillover** (`equations.gms:35-39`): Allows crop sector technological improvements to partially benefit pasture yields
-6. **Degradation Effects** (`preloop.gms:183-188`): Reduces yields based on soil loss and pollination deficiency
+6. **Degradation Effects** (`preloop.gms:190-195`): Reduces yields based on soil loss and pollination deficiency
 7. **Timber Yield Calculation** (`presolve.gms:24-60`): Converts carbon density to harvestable wood biomass for forestry and natural vegetation
 
 ### 1.3 Limitations Stated in Code
@@ -190,7 +190,7 @@ i14_yields_calib(t,j,"pasture",w) = i14_yields_calib(t,j,"pasture",w) * sum(cell
 
 #### Step 3a: Calculate Regional Modeled Yields
 
-**File:** `preloop.gms:60-66`
+**File:** `preloop.gms:67-73`
 
 ```gams
 i14_modeled_yields_hist(t_past,i,knbe14)
@@ -210,11 +210,11 @@ i14_modeled_yields_hist(t_past,i,knbe14)
 
 In either case, the calculation falls back to using total cropland area as weights. This handles FAO/LUH croparea mismatches with LPJmL yield data that could otherwise cause overestimated yields or division errors.
 
-**Citation:** `preloop.gms:60-66`
+**Citation:** `preloop.gms:67-73`
 
 #### Step 3b: Calculate Lambda (Calibration Mode Factor)
 
-**File:** `preloop.gms:75-95`
+**File:** `preloop.gms:82-102`
 
 ```gams
 loop(t,
@@ -248,11 +248,11 @@ loop(t,
 - **Additive calibration:** Add (FAO - LPJmL). Maintains future yield increases, avoids over-scaling.
 - **Lambda blends the two:** As baseline quality worsens (FAO >> LPJmL), shift from relative toward additive.
 
-**Citation:** `preloop.gms:69-95`, mathematical foundation cited as `@Heinke.2013` in `preloop.gms:47`
+**Citation:** `preloop.gms:82-102`, mathematical foundation cited as `@Heinke.2013` in `preloop.gms:47`
 
 #### Step 3c: Apply Calibration Factor
 
-**File:** `preloop.gms:101-109`
+**File:** `preloop.gms:108-116`
 
 ```gams
 i14_managementcalib(t,j,knbe14,w) =
@@ -277,13 +277,13 @@ CalibFactor = 1 + [(FAO - LPJmL_regional) / LPJmL_cellular] × [(LPJmL_cellular 
 - **λ = 0:** Factor = 1 + [(FAO - LPJmL_reg) / LPJmL_cell] × 1 = additive difference
 - **λ intermediate:** Smooth blend between the two
 
-**Citation:** `preloop.gms:101-109`
+**Citation:** `preloop.gms:108-116`
 
 ---
 
 ### 3.4 Stage 4: Irrigated-Rainfed Ratio Calibration
 
-**File:** `preloop.gms:116-143`
+**File:** `preloop.gms:123-150`
 
 **Problem:** AQUASTAT reports irrigated yields are often 2-3x rainfed yields in some regions, but LPJmL may underpredict this ratio.
 
@@ -303,7 +303,7 @@ if ((s14_calib_ir2rf = 1),
                                                i14_yields_calib(t,j,knbe14,"irrigated");
 
 * Calibrate newly calibrated yields to FAO yields
-  [re-apply FAO calibration to maintain regional totals - equations at lines 130-140]
+  [re-apply FAO calibration to maintain regional totals - equations at lines 137-147]
 );
 ```
 
@@ -314,19 +314,19 @@ if ((s14_calib_ir2rf = 1),
 3. If AQUASTAT ratio is higher, scale up irrigated yields
 4. Re-calibrate to FAO regional totals to maintain production balance
 
-**Why Two-Stage Calibration:** Increasing irrigated yields without re-calibration would violate FAO regional yield constraint. The second calibration at lines 130-140 adjusts both irrigated and rainfed to maintain FAO totals.
+**Why Two-Stage Calibration:** Increasing irrigated yields without re-calibration would violate FAO regional yield constraint. The second calibration at lines 137-147 adjusts both irrigated and rainfed to maintain FAO totals.
 
-**Bugfix Note (2025-09-26):** The re-calibration step (lines 130-140) was corrected to use `i14_yields_calib` instead of `f14_yields` for total cropland weighting, ensuring consistency with the first-stage calibration. Additionally, the same division-by-zero protection (dual condition checks) from Step 3a is applied here to handle edge cases.
+**Bugfix Note (2025-09-26):** The re-calibration step (lines 137-147) was corrected to use `i14_yields_calib` instead of `f14_yields` for total cropland weighting, ensuring consistency with the first-stage calibration. Additionally, the same division-by-zero protection (dual condition checks) from Step 3a is applied here to handle edge cases.
 
 **Control Switch:** `s14_calib_ir2rf = 1` enables this (default ON, `input.gms:16`)
 
-**Citation:** `preloop.gms:116-143`
+**Citation:** `preloop.gms:123-150`
 
 ---
 
 ### 3.5 Stage 5: Yield Calibration Factors
 
-**File:** `preloop.gms:150-167`
+**File:** `preloop.gms:155-173`
 
 **Purpose:** Apply optional post-calibration adjustments from previous model runs to improve representation of historical cropland and production patterns.
 
@@ -347,13 +347,13 @@ i14_yields_calib(t,j,"pasture",w) = i14_yields_calib(t,j,"pasture",w)
 
 **Default:** OFF (`s14_use_yield_calib = 0`, `input.gms:18`)
 
-**Citation:** `preloop.gms:150-167`
+**Citation:** `preloop.gms:155-173`
 
 ---
 
 ### 3.6 Stage 6: Degradation Effects
 
-**File:** `preloop.gms:170-188`
+**File:** `preloop.gms:190-195`
 
 **Purpose:** Reduce yields on degraded land with soil loss or pollination deficiency.
 
@@ -391,7 +391,7 @@ Where:
 
 **NCP Tracking:** Module 14 expects another module to provide `f14_yld_ncp_report(t,j,ncp_type14)` with "soil_intact" and "poll_suff" shares (likely Module 29 or Module 35).
 
-**Citation:** `preloop.gms:171-188`, `input.gms:17,21`
+**Citation:** `preloop.gms:190-195`, `input.gms:17,21`
 
 ---
 
@@ -677,7 +677,7 @@ Module 14 reads 9 input data files:
 
 **vm_yld(j,kve,w)** - Yields for crops and pasture (tDM/ha/yr)
 **Provided to:**
-- Module 30 (Crop): Crop production = area × yield
+- Module 30 (Croparea): Crop production = area × yield
 - Module 31 (Pasture): Pasture production = area × yield
 
 **Dimensions:** j (cells), kve (crops + pasture), w (rainfed/irrigated)
@@ -710,7 +710,7 @@ Module 14 reads 9 input data files:
 
 **pm_yields_semi_calib(j,kve,w)** - 1995 calibrated yields (tDM/ha/yr)
 **Purpose:** Baseline reference for other modules
-**Set at:** `preloop.gms:109,142`
+**Set at:** `preloop.gms:116,149`
 **Citation:** `declarations.gms:18`
 
 ---
@@ -731,16 +731,9 @@ Module 14 reads 9 input data files:
 
 - **pm_carbon_density_plantation_ac(t,j,ac,"vegc")**: Plantation carbon density (tC/ha)
 - **pm_carbon_density_secdforest_ac(t,j,ac,"vegc")**: Secondary forest carbon density (tC/ha)
-
-**Citation:** Used in `presolve.gms:26,44`
-
----
-
-**From Module 35 (Natural Vegetation):**
-
 - **pm_carbon_density_other_ac(t,j,ac,"vegc")**: Other natural land carbon density (tC/ha)
 
-**Citation:** Used in `presolve.gms:53`
+**Citation:** Used in `presolve.gms:26,44,53`
 
 ---
 
@@ -784,7 +777,7 @@ Module 14 reads 9 input data files:
 
 ### 8.2 Critical Downstream Dependencies
 
-**Module 30 (Crop) and Module 31 (Pasture):**
+**Module 30 (Croparea) and Module 31 (Pasture):**
 - **Cannot function without vm_yld**
 - Production = area × yield, so yields determine how much land is needed to meet demand
 
@@ -819,7 +812,7 @@ Module 14 reads 9 input data files:
 ---
 
 **i14_managementcalib(t,j,kcr,w)** - Limited calibration factor (dimensionless)
-**Computed in:** `preloop.gms:101-105`
+**Computed in:** `preloop.gms:108-112`
 **Formula:** See Section 3.3.3
 **Purpose:** Scales LPJmL yields to FAO regional levels
 **Citation:** `declarations.gms:16`
@@ -827,7 +820,7 @@ Module 14 reads 9 input data files:
 ---
 
 **i14_lambda_yields(t,i,kcr)** - Calibration mode factor (dimensionless, 0-1)
-**Computed in:** `preloop.gms:76-86`
+**Computed in:** `preloop.gms:82-92`
 **Formula:** λ = 1 if FAO ≤ LPJmL, else √(LPJmL/FAO)
 **Purpose:** Controls blend between relative and additive calibration
 **Citation:** `declarations.gms:15`
@@ -844,7 +837,7 @@ Module 14 reads 9 input data files:
 ---
 
 **i14_modeled_yields_hist(t_all,i,kcr)** - Regional LPJmL yields (tDM/ha/yr)
-**Computed in:** `preloop.gms:60-66`
+**Computed in:** `preloop.gms:67-73`
 **Purpose:** Area-weighted average for calibration
 **Citation:** `declarations.gms:13`
 
@@ -948,13 +941,13 @@ Following the "Code Truth" principle, it's important to state what Module 14 doe
 
 ### 12.1 Two-Stage Calibration for FAO Totals
 
-**Pattern:** Whenever irrigated yields are scaled up (Stage 4), a second calibration pass (`preloop.gms:130-140`) re-applies FAO regional yield targets to maintain production balance.
+**Pattern:** Whenever irrigated yields are scaled up (Stage 4), a second calibration pass (`preloop.gms:137-147`) re-applies FAO regional yield targets to maintain production balance.
 
 **Why:** Increasing irrigated yields without adjusting rainfed yields would cause regional average yields to exceed FAO targets, violating historical production constraint.
 
 ### 12.2 Lambda-Based Limited Calibration
 
-**Pattern:** Use λ as exponent on ratio term to blend relative and additive calibration (`preloop.gms:101-105`).
+**Pattern:** Use λ as exponent on ratio term to blend relative and additive calibration (`preloop.gms:108-112`).
 
 **Why:** Pure relative calibration (λ=1) over-amplifies future yield growth when baseline is underestimated. Lambda reduces amplification by approaching additive calibration (λ→0) as underestimation worsens.
 
@@ -1177,7 +1170,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 
 ### 16.1 Provides Yields To
 
-- **Module 30 (Crop):** `vm_yld(j,kcr,w)` → crop production calculation
+- **Module 30 (Croparea):** `vm_yld(j,kcr,w)` → crop production calculation
 - **Module 31 (Pasture):** `vm_yld(j,"pasture",w)` → pasture production calculation
 - **Module 32 (Forestry):** `im_growing_stock(t,j,ac,"forestry")` → plantation harvest
 - **Module 35 (Natural Vegetation):** `im_growing_stock(t,j,ac,land_natveg)` → natural forest harvest
@@ -1189,8 +1182,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 
 ### 16.3 Receives Carbon Density From
 
-- **Module 52 (Carbon):** Plantation and secondary forest carbon → timber yields
-- **Module 35 (Natural Vegetation):** Other natural land carbon → timber yields
+- **Module 52 (Carbon):** Plantation, secondary forest, and other natural land carbon density (pm_carbon_density_other_ac) → timber yields
 
 ### 16.4 Receives Pasture Management From
 
@@ -1322,7 +1314,7 @@ Timber yields are calculated separately in the presolve phase by converting carb
 
 **Critical Dependencies:**
 - **Upstream:** LPJmL data, Module 13 (τ factor), Module 52 (carbon density), FAO/AQUASTAT data
-- **Downstream:** Module 30 (Crop), Module 31 (Pasture), Module 32 (Forestry), Module 35 (Natural Vegetation)
+- **Downstream:** Module 30 (Croparea), Module 31 (Pasture), Module 32 (Forestry), Module 35 (Natural Vegetation)
 
 **Common Use Cases:**
 - Baseline yield projections with climate change

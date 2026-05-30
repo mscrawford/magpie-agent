@@ -1,7 +1,7 @@
 # Module 56: GHG Policy (price_aug22)
 
 **Realization:** `price_aug22` (Price-based Policy, August 2022)
-**Total Lines of Code:** 708
+**Total Lines of Code:** 709
 **Equation Count:** 7
 **Status:** ✅ Fully Verified (2025-10-12)
 
@@ -63,7 +63,7 @@ For annual (recurring) emissions (CH4, N2O, annual CO2), the emissions subject t
 **Components:**
 
 - **v56_emis_pricing(i,emis_annual,pollutants)**: Emissions used for pricing calculation (Tg/yr)
-- **vm_emissions_reg(i,emis_annual,pollutants)**: Actual regional emissions from Module 51-57 (Tg/yr)
+- **vm_emissions_reg(i,emis_annual,pollutants)**: Actual regional emissions from the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland) (Tg/yr)
 - **emis_annual**: Recurring emission sources (fertilizer, livestock, etc.)
 
 **Conceptual Meaning:**
@@ -283,7 +283,7 @@ Where:
 
 **Components:**
 
-- **vm_cdr_aff(j,ac,aff_effect)**: Expected CDR from afforestation per age class (tC/ha/yr) from Module 32
+- **vm_cdr_aff(j,ac,aff_effect)**: Expected CDR (bgc) + local bph effects of afforestation, by age class (mio. tC) from Module 32
 - **s56_buffer_aff**: Buffer fraction for permanence risk (default 0.5 = 50%) (`input.gms:71`)
 - **p56_c_price_aff(ct,i,ac)**: Age-class-specific future C price (USD17MER/tC), constructed in preloop
 - **pm_interest(ct,i)**: Regional discount rate from Module 12
@@ -319,7 +319,7 @@ Trees planted today sequester carbon over decades. Price expectations must refle
 
 ## 3. Pollutant Price Configuration (Preloop Phase)
 
-Module 56's complexity lies in extensive preloop logic that configures GHG prices based on policy scenarios. The preloop performs multiple sequential configuration stages (at least 11 distinct operations, see preloop.gms:35–124):
+Module 56's complexity lies in extensive preloop logic that configures GHG prices based on policy scenarios. The preloop performs multiple sequential configuration stages (at least 11 distinct operations, see preloop.gms:35-123):
 
 ### 3.1 Stage 1: Select Price Scenario
 
@@ -587,7 +587,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 ### 4.2 Inputs (Received from Other Modules)
 
-**From Module 51-55 (Emission Modules):**
+**From the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland):**
 
 - **vm_emissions_reg(i,emis_source,pollutants)**: Regional emissions by source and gas (Tg/yr)
 
@@ -599,7 +599,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 **From Module 32 (Forestry):**
 
-- **vm_cdr_aff(j,ac,aff_effect)**: Expected carbon dioxide removal from afforestation per age class (tC/ha/yr)
+- **vm_cdr_aff(j,ac,aff_effect)**: Expected CDR (bgc) + local bph effects of afforestation, by age class (mio. tC)
 
 **Citation:** Used in `equations.gms:77`
 
@@ -711,7 +711,7 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 ### 7.1 No Physical Emission Calculation
 
 - **Does NOT calculate** emissions (CH4, N2O, CO2)
-- **DOES price** emissions calculated by Modules 51-55
+- **DOES price** emissions calculated by the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland)
 - Emission calculation is in source modules (livestock, soils, land-use change, etc.)
 
 ### 7.2 No Carbon Sequestration Modeling
@@ -1021,7 +1021,7 @@ Even with high global C prices, countries with low development state receive red
 
 ### 12.2 Receives Emissions From
 
-- **Modules 51-55:** Regional emissions by source and gas (`vm_emissions_reg`)
+- **Emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland):** Regional emissions by source and gas (`vm_emissions_reg`)
 - **Sources:** Livestock CH4, fertilizer N2O, land-use change CO2, peatland CO2, soil C, etc.
 
 ---
@@ -1057,13 +1057,13 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 **What It Does:**
 - Multiplies emissions by GHG prices to calculate costs (7 equations)
-- Constructs complex price scenarios through multi-stage preloop configuration (preloop.gms:35–124)
+- Constructs complex price scenarios through multi-stage preloop configuration (preloop.gms:35-123)
 - Calculates discounted CDR rewards for afforestation with price foresight
 - Distinguishes one-off (deforestation) vs. annual (fertilizer) emissions via annuity factors
 - Provides 100+ price scenarios × 60+ policy scenarios = vast policy space
 
 **What It Doesn't Do:**
-- Calculate emissions (done by Modules 51-55)
+- Calculate emissions (done by the emission modules: 51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland)
 - Model carbon sequestration (done by Modules 32, 35, 52)
 - Specify mitigation technologies (emergent from cost minimization)
 - Model climate system or carbon markets
@@ -1071,7 +1071,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 **Critical Principle:** Module 56 **creates incentives**, not mandates. Land-use decisions respond to prices via MAgPIE's cost minimization, finding least-cost mitigation portfolios.
 
 **Key Dependencies:**
-- **Upstream:** Emission modules (51-55), Forestry CDR (32), Carbon stocks (30,31,32,35,58), Discount rates (12)
+- **Upstream:** Emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland), Forestry CDR (32), Carbon stocks (29,31,32,34,35,59; M30 via vm_carbon_stock_croparea), Discount rates (12)
 - **Downstream:** Module 11 (Costs) → Objective function → ALL land-use decisions
 - **No circular dependencies**
 
@@ -1096,7 +1096,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 ---
 
 **Documentation Status:** ✅ Fully Verified (2025-10-12)
-**Verification Method:** All source files read, 7 equations verified, 708 lines analyzed, multi-stage preloop logic traced, policy matrix structure documented
+**Verification Method:** All source files read, 7 equations verified, 709 lines analyzed, multi-stage preloop logic traced, policy matrix structure documented
 **Citation Density:** 80+ file:line references
 **Next Module:** Module 21 (Trade) or Module 30 (Crop) — core production/supply-demand hubs
 
@@ -1106,17 +1106,17 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 ### Structural Limitations
 
-1. **Recursive dynamic (myopic) implementation**: Carbon prices are applied per-period without any foresight — agents cannot anticipate future carbon price increases. With `s56_limit_ch4_n2o_price = 1000`, methane and nitrous oxide prices are capped at ~33 USD17MER/tCO2eq (converted from 1000 USD/tN2O), limiting policy ambition.
+1. **Recursive dynamic (myopic) implementation**: Carbon prices are applied per-period without any foresight — agents cannot anticipate future carbon price increases. The default cap `s56_limit_ch4_n2o_price = 4920 USD17MER/tC` bounds CH4 and N2O prices (CH4 cap ~= 4920*12/44*28 ~= 37,571 USD/tCH4; N2O-N cap ~= 558,771 USD/tN), preventing numerical instability from very high non-CO2 prices.
 
 2. **Selective emission coverage**: Only land-use and agriculture-related emissions are priced: CO2 from land-use change, CH4 from enteric fermentation, N2O from soils. Industrial fossil fuel emissions, energy-sector CO2, and embodied emissions from agricultural inputs are excluded from the model boundary.
 
-3. **Carbon stock pricing method varies by implementation**: The `price_aug22` realization uses total stock changes (`vm_carbon_stock`), while `price_jan20` uses separate annual emission terms. This means switching realizations can fundamentally change how forests and carbon sequestration are valued.
+3. **Single realization (price_aug22)**: Module 56 has a single realization (price_aug22). CO2 from LULUCF is priced via total carbon-stock changes (`vm_carbon_stock`), with priced pools governed by `c56_carbon_stock_pricing` (default `actualNoAcEst`).
 
 ### Methodological Limitations
 
 4. **No explicit CDR target or pledge enforcement**: Carbon Dioxide Removal (CDR) via afforestation is incentivized through the discounted price-driven reward `vm_reward_cdr_aff` (`price_aug22/declarations.gms:43`), with permanence risk handled by `s56_buffer_aff` (default 0.5 = 50% of CDR credited; see Limitation 8 row in the parameter table). The model has no explicit CDR target, pledge floor, or quota constraint — CDR happens only when discounted future carbon-price revenue exceeds afforestation costs over the foresight horizon (`s56_c_price_exp_aff`, default 50 years). Under-delivery of national or international CDR pledges is not penalized; the response is fully voluntary and price-driven.
 
-5. **50-year price foresight cap**: Maximum anticipation period is limited to 50 years. The CO2 price reduction factor `s56_cprice_red_factor` (default = 1, full price applied) scales the carbon price incentive — setting it to 0 eliminates price foresight entirely. Afforestation investments that sequester carbon over 100+ years see only the first 50 years of carbon revenue at best.
+5. **50-year price foresight cap**: Maximum anticipation period is limited to 50 years. The CO2 price reduction factor `s56_cprice_red_factor` (default = 1, full price applied) scales the CO2 price level — setting it to 0 removes the CO2-emission/afforestation price incentive entirely (it does not affect the foresight horizon, which is `s56_c_price_exp_aff`). Afforestation investments that sequester carbon over 100+ years see only the first 50 years of carbon revenue at best.
 
 ---
 

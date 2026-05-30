@@ -135,7 +135,7 @@ pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc") =
 - Asymptote: Secondary forest vegc from LPJmL
 - Growth: Natural vegetation k and m
 
-> **⚠️ As of 2026-04-20**: The vegc value computed here is **overwritten in preloop.gms** when `s52_growingstock_calib = 1` (default). The uncalibrated value is preserved in `pm_carbon_density_secdforest_ac_uncalib` and is still used downstream for afforestation/NDC use cases (Module 32's `af_ndc` realization logic, Module 29's tree cover, Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:117`). See Section 2.C below.
+> **⚠️ As of 2026-04-20**: The vegc value computed here is **overwritten in preloop.gms** when `s52_growingstock_calib = 1` (default). The uncalibrated value is preserved in `pm_carbon_density_secdforest_ac_uncalib` and is still used downstream for afforestation/NDC use cases (Module 32's `aff` and `ndc` plantation types (set type32), Module 29's tree cover, Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:117`). See Section 2.C below.
 
 **Other land** (start.gms:48):
 ```
@@ -161,7 +161,7 @@ m_growth_litc_soilc(start,end,ac) =
   end$(ac > 20/5)
 ```
 
-> **⚠️ Macro name is misleading**: Despite being named `m_growth_litc_soilc`, this macro is applied **only to litter carbon (litc)** in Module 52 (start.gms:20, 31, 38). Soil carbon (`soilc`) has **no age-class growth function** in Module 52 — it is read directly from LPJmL static input data and is not age-class-specific (see also Section 4, line 717: "Soil carbon (soilc) NOT age-class-specific").
+> **⚠️ Macro name is misleading**: Despite being named `m_growth_litc_soilc`, this macro is applied **only to litter carbon (litc)** in Module 52 (start.gms:20, 31, 51). Soil carbon (`soilc`) has **no age-class growth function** in Module 52 — it is read directly from LPJmL static input data and is not age-class-specific (see also Section 4, line 717: "Soil carbon (soilc) NOT age-class-specific").
 
 **Parameters**:
 - `start` = Initial litter carbon (tC/ha) = pasture litc (start.gms:10)
@@ -213,7 +213,7 @@ pm_carbon_density_other_ac(t_all,j,ac,"litc") =
 **References**:
 - Chapman-Richards model: Humpenöder et al. (2014) (realization.gms:14)
 - Age-class dynamics: Braakhekke et al. (2019) (realization.gms:14)
-- 20-year litter equilibrium: IPCC guidelines (start.gms:19, 30, 37)
+- 20-year litter equilibrium: IPCC guidelines (start.gms:19, 30, 50)
 
 #### C. Growing-Stock Calibration (NEW 2026-04-20)
 
@@ -237,7 +237,7 @@ im_vol_conv(i) = sum((cell(i,j), clcl), pm_climate_class(j,clcl) * f52_volumetri
 ```
 This value is **always computed** (it's outside the `if(s52_growingstock_calib = 1, ...)` block) because Module 73 depends on it regardless of the switch.
 
-**Step 2 — Regional BEF and shape-parameter averages** (`preloop.gms:28-33`, only when calibration ON):
+**Step 2 — Regional BEF and shape-parameter averages** (`preloop.gms:26-30`, only when calibration ON):
 - `i52_bef_avg(i)` — area-weighted BEF from `fm_ipcc_bef(clcl)` (provided by Module 14)
 - `i52_m_avg_natveg(i)`, `i52_m_avg_plant(i)` — fixed `m` for each forest type
 
@@ -267,15 +267,16 @@ Analogous to Step 3, with these differences. The age distribution comes from Mod
 - Module 29 (Cropland) — `modules/29_cropland/detail_apr24/equations.gms:41`
 - Module 30 (Croparea) — `modules/30_croparea/simple_apr24/equations.gms:51`
 - Module 31 (Past) — `modules/31_past/static/presolve.gms:16`
+- Module 32 (Forestry) — `modules/32_forestry/dynamic_may24/presolve.gms:176`
 - Module 35 (Natveg) — `modules/35_natveg/pot_forest_may24/equations.gms:44`
 - Module 56 (GHG Policy) — `modules/56_ghg_policy/price_aug22/preloop.gms:10`
 - Module 59 (SOM) — `modules/59_som/cellpool_jan23/preloop.gms:12`
 
-**Step 5 — Diagnostic logging** (`preloop.gms:108-113`):
+**Step 5 — Diagnostic logging** (`preloop.gms:106-111`):
 Writes a per-region table of `(FRA target NRF, achieved NRF, FRA target plantation, achieved plantation)` to the GAMS log.
 
 **Uncalibrated copies**: `start.gms:43-44` saves `pm_carbon_density_secdforest_ac_uncalib` and `pm_carbon_density_plantation_ac_uncalib` BEFORE preloop overwrites the primary parameters. The copies capture the FULL start-phase state (both `vegc` and `litc` pools, since the assignment indexes on `ag_pools`). These uncalibrated versions are read by:
-- **Module 32 (Forestry)** for afforestation and NDC sub-types: `modules/32_forestry/dynamic_may24/presolve.gms:58,60` (type `"aff"` — `v32_cost_establishment` uses either secdforest or plantation uncalib depending on `s32_aff_plantation`) and `modules/32_forestry/dynamic_may24/presolve.gms:69` (type `"ndc"` — secdforest uncalib)
+- **Module 32 (Forestry)** for afforestation and NDC sub-types: `modules/32_forestry/dynamic_may24/presolve.gms:59,61` (type `"aff"` — `p32_carbon_density_ac(...,"aff",...)` is set from either secdforest or plantation uncalib depending on `s32_aff_plantation`) and `modules/32_forestry/dynamic_may24/presolve.gms:68` (type `"ndc"` — secdforest uncalib)
 - **Module 29 (Cropland)** for tree cover: `modules/29_cropland/detail_apr24/preloop.gms:46,48` — either secdforest or plantation uncalib depending on `s29_treecover_plantation`
 
 **Rationale**: Uncalibrated curves represent the potential Chapman-Richards growth from bare land toward the LPJmL asymptote — appropriate for new establishment scenarios (afforestation, NDC forest commitments, tree cover on cropland). Calibrated curves represent *existing* forests where realized growing stock is already below potential; applying that suppressed growth rate to newly-planted trees would underestimate their accumulation trajectory.
@@ -358,13 +359,13 @@ m_timestep_length = sum((ct,t2), (1$(ord(t2)=1) + (m_year(t2)-m_year(t2-1))$(ord
 
 ### 4. Land Carbon Sink Adjustment Factors
 
-Module 52 loads **land carbon sink adjustment factors** from Grassi et al. (2021) for **post-processing only** (input.gms:45-66).
+Module 52 loads **land carbon sink adjustment factors** from Grassi et al. (2021) for **post-processing only** (input.gms:75-96).
 
-**Purpose**: These factors are **NOT used within MAgPIE** but stored for use in R post-processing scripts (input.gms:49).
+**Purpose**: These factors are **NOT used within MAgPIE** but stored for use in R post-processing scripts (input.gms:79).
 
-**Source**: Grassi et al. 2021, Nature Climate Change (DOI: 10.1038/s41558-021-01033-6) (input.gms:45)
+**Source**: Grassi et al. 2021, Nature Climate Change (DOI: 10.1038/s41558-021-01033-6) (input.gms:75)
 
-**Data file** (input.gms:51-56):
+**Data file** (input.gms:80-86):
 - `f52_land_carbon_sink_adjust_grassi.cs3` (optional)
 - Table: `f52_land_carbon_sink(t_all,i,rcp52)`
 - Units: GtCO2 per year
@@ -376,15 +377,15 @@ Module 52 loads **land carbon sink adjustment factors** from Grassi et al. (2021
 - Default: `RCPBU`
 - Options: RCP19/26/34/45/60/RCPBU, nocc, nocc_hist
 
-**Selection logic** (input.gms:58-66):
+**Selection logic** (input.gms:88-96):
 
-**No climate change** (input.gms:59):
+**No climate change** (input.gms:89):
 ```
 i52_land_carbon_sink(t_all,i) = f52_land_carbon_sink("y1995",i,"RCPBU");
 ```
 - All years use 1995 RCPBU values
 
-**No climate change after threshold** (input.gms:60-62):
+**No climate change after threshold** (input.gms:90-92):
 ```
 i52_land_carbon_sink(t_all,i) = f52_land_carbon_sink(t_all,i,"RCPBU");
 i52_land_carbon_sink(t_all,i)$(m_year(t_all) > sm_fix_cc) =
@@ -392,7 +393,7 @@ i52_land_carbon_sink(t_all,i)$(m_year(t_all) > sm_fix_cc) =
 ```
 - Dynamic until `sm_fix_cc`, then frozen
 
-**Climate change with RCP** (input.gms:63-66):
+**Climate change with RCP** (input.gms:93-96):
 ```
 i52_land_carbon_sink(t_all,i) = f52_land_carbon_sink(t_all,i,"%c52_land_carbon_sink_rcp%");
 i52_land_carbon_sink(t_all,i)$(m_year(t_all) <= sm_fix_cc) =
@@ -401,7 +402,7 @@ i52_land_carbon_sink(t_all,i)$(m_year(t_all) <= sm_fix_cc) =
 - Historical period: RCPBU
 - Future: Selected RCP scenario
 
-**Usage**: Stored in `i52_land_carbon_sink(t_all,i)` for access by R post-processing script `magpie4::reportEmissions()` (input.gms:46-47).
+**Usage**: Stored in `i52_land_carbon_sink(t_all,i)` for access by R post-processing script `magpie4::reportEmissions()` (input.gms:75-78).
 
 ---
 
@@ -454,33 +455,33 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Description**: Uncalibrated secondary forest carbon density (preserved from start.gms before preloop overwrite — captures both vegc and litc pools)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
 - **Calculation**: `start.gms:43` copies the uncalibrated start.gms value
-- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:58` and NDC forest `"ndc"` at `modules/32_forestry/dynamic_may24/presolve.gms:69`), Module 29 (tree cover on cropland at `modules/29_cropland/detail_apr24/preloop.gms:46`). All three use cases represent *new establishment* rather than existing managed forest.
+- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:59` and NDC forest `"ndc"` at `modules/32_forestry/dynamic_may24/presolve.gms:68`), Module 29 (tree cover on cropland at `modules/29_cropland/detail_apr24/preloop.gms:46`). All three use cases represent *new establishment* rather than existing managed forest.
 
-**2. pm_carbon_density_other_ac** (declarations.gms:12)
+**2. pm_carbon_density_other_ac** (declarations.gms:11)
 - **Description**: Vegetation other land carbon density by age class (tC per ha)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
 - **Pools**: vegc, litc
 - **Calculation**: `start.gms:48,51` (NOT calibrated — no FRA target for "other" land)
 - **Consumers**: Module 14, Module 35 (other land carbon accounting)
 
-**3. pm_carbon_density_plantation_ac** (declarations.gms:13)
+**3. pm_carbon_density_plantation_ac** (declarations.gms:12)
 - **Description**: Vegetation plantation carbon density by age class (tC per ha)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
 - **Pools**: vegc, litc
 - **Calculation**: `start.gms:17,20`, then **overwritten in `preloop.gms` for vegc pool when `s52_growingstock_calib = 1`**
 - **Consumers**: Module 14 (`im_growing_stock`), Module 32 (plantation carbon accounting)
 
-**3b. pm_carbon_density_plantation_ac_uncalib** (NEW 2026-04-20, declarations.gms:14)
+**3b. pm_carbon_density_plantation_ac_uncalib** (NEW 2026-04-20, declarations.gms:13)
 - **Description**: Uncalibrated plantation carbon density (preserved from start.gms before preloop overwrite — captures both vegc and litc pools)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
 - **Calculation**: `start.gms:44` copies the uncalibrated start.gms value
-- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:60`), Module 29 (tree cover on cropland with plantation growth curve, `modules/29_cropland/detail_apr24/preloop.gms:48` when `s29_treecover_plantation = 1`)
+- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:61`), Module 29 (tree cover on cropland with plantation growth curve, `modules/29_cropland/detail_apr24/preloop.gms:48` when `s29_treecover_plantation = 1`)
 
 **4. fm_carbon_density** (input.gms:16)
 - **Description**: LPJmL carbon density for all land types and carbon pools (tC per ha)
 - **Dimensions**: `(t_all,j,land,c_pools)`
 - **Source**: LPJmL output file `lpj_carbon_stocks.cs3`
-- **Consumers**: Modules 14, 29, 30, 31, 35, 56, and 59 (the `fm_carbon_density` consumer list in the carbon-density calibration section above) for carbon-density and carbon-stock calculations
+- **Consumers**: Modules 14, 29, 30, 31, 32, 35, 56, and 59 (the `fm_carbon_density` consumer list in the carbon-density calibration section above) for carbon-density and carbon-stock calculations
 
 **5. im_vol_conv** (NEW 2026-04-20, declarations.gms:23)
 - **Description**: Regional basic wood density (tDM per m³)
@@ -494,36 +495,36 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 **1. pm_climate_class** (Module 45)
 - **Description**: Köppen-Geiger climate classification shares by cell (1)
 - **Dimensions**: `(j,clcl)`
-- **Usage**: Climate-weighted growth parameters (`start.gms:17,28,35`, `preloop.gms:22,27-31`)
+- **Usage**: Climate-weighted growth parameters (`start.gms:17,28,48`, `preloop.gms:21,29-30`)
 - **Provider**: Module 45 (Climate)
 
 **2. im_forest_ageclass** (NEW read 2026-04-20, Module 28)
 - **Description**: Forest age-class distribution from GFAD (Poulter et al.)
 - **Dimensions**: `(j,ac)`
-- **Usage**: Weights secdforest growing-stock calibration (`preloop.gms:47`)
+- **Usage**: Weights secdforest growing-stock calibration (`preloop.gms:53`)
 - **Provider**: Module 28 (Age Class)
 
 **3. pm_land_plantation** (NEW read 2026-04-20, Module 32)
 - **Description**: Plantation land by age class (mio. ha) — newly provided by M32 in 2026-04-20
 - **Dimensions**: `(j,ac)`
-- **Usage**: Weights plantation growing-stock calibration (`preloop.gms:83`)
+- **Usage**: Weights plantation growing-stock calibration (`preloop.gms:88`)
 - **Provider**: Module 32 (Forestry)
 
 **4. fm_ipcc_bef** (NEW read 2026-04-20, Module 14)
 - **Description**: IPCC Biomass Expansion Factor (1)
 - **Dimensions**: `(clcl)`
-- **Usage**: Converts aboveground biomass to stem biomass in GS calibration (`preloop.gms:27`)
+- **Usage**: Converts aboveground biomass to stem biomass in GS calibration (`preloop.gms:26`)
 - **Provider**: Module 14 (Yields)
 
 **5. fm_aboveground_fraction** (NEW read 2026-04-20, Module 14)
 - **Description**: Aboveground fraction of total biomass (1)
 - **Dimensions**: `(land_timber)`
-- **Usage**: Extracts aboveground biomass fraction in GS calibration (`preloop.gms:56`)
+- **Usage**: Extracts aboveground biomass fraction in GS calibration (`preloop.gms:61`)
 - **Provider**: Module 14 (Yields)
 
 **6. sm_carbon_fraction** (NEW read 2026-04-20, interface scalar from M14)
 - **Description**: Carbon fraction of dry matter (0.5 tC/tDM)
-- **Usage**: Converts tC/ha to tDM/ha in GS calibration (`preloop.gms:56`)
+- **Usage**: Converts tC/ha to tDM/ha in GS calibration (`preloop.gms:60`)
 - **Source**: Scalar declared in Module 14's `input.gms:22` with the `sm_` prefix (shared/interface scalar, accessible to any module)
 
 ---
@@ -577,14 +578,14 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - Separate parameters for plantations vs. natural vegetation
 
 **Usage**:
-- Climate-weighted to account for sub-cell climate heterogeneity (start.gms:17,28,35)
+- Climate-weighted to account for sub-cell climate heterogeneity (start.gms:17,28,48)
 - Weighting: `sum(clcl, pm_climate_class(j,clcl) * f52_growth_par(clcl,par,type))`
 
 **Reference**: Humpenöder et al. (2014) (realization.gms:14)
 
 ### 3. Land Carbon Sink Adjustment Factors (Optional)
 
-**File**: `f52_land_carbon_sink_adjust_grassi.cs3` (input.gms:53)
+**File**: `f52_land_carbon_sink_adjust_grassi.cs3` (input.gms:83)
 
 **Parameter**: `f52_land_carbon_sink(t_all,i,rcp52)` (GtCO2 per year)
 
@@ -598,7 +599,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - NOT used within MAgPIE optimization
 - Stored for R post-processing only
 
-**Purpose**: Align MAgPIE emissions with IPCC-compatible land carbon sink estimates in reporting (input.gms:46-49).
+**Purpose**: Align MAgPIE emissions with IPCC-compatible land carbon sink estimates in reporting (input.gms:75-78).
 
 ### 4. FRA 2025 Growing Stock Targets (NEW 2026-04-20)
 
@@ -621,7 +622,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 **Parameter**: `f52_volumetric_conversion(clcl)` — basic wood density (tDM per m³) by Köppen-Geiger climate class
 
 **Purpose**:
-- Aggregated to regional `im_vol_conv(i)` in preloop.gms:22
+- Aggregated to regional `im_vol_conv(i)` in preloop.gms:21
 - Used in the GS calibration bisection (via `im_vol_conv`)
 - Exposed as interface parameter for Module 73's demand/cost conversion
 
@@ -663,7 +664,7 @@ $if "%c52_carbon_scenario%" == "nocc_hist"
 
 **Default**: RCPBU (business-as-usual)
 
-**Implementation**: See "Land Carbon Sink Adjustment Factors" section above (input.gms:58-66).
+**Implementation**: See "Land Carbon Sink Adjustment Factors" section above (input.gms:88-96).
 
 **Usage**: Post-processing only, does NOT affect optimization.
 
@@ -861,7 +862,7 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 
 ### 2. Growth Equation Limitations
 
-**Age-class resolution** (start.gms:17,28,35):
+**Age-class resolution** (start.gms:17,28,48):
 - Age classes are **5-year increments** (ac*5 in equations)
 - Smooths out inter-annual variability in carbon accumulation
 - Cannot capture annual disturbances (fires, storms) or year-to-year growth fluctuations
@@ -920,7 +921,7 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 - Soil carbon (soilc) NOT age-class-specific
 - Assumption: Soil carbon independent of stand age (questionable for mineral soils)
 
-**Plantation-natveg dichotomy** (start.gms:17,28,35):
+**Plantation-natveg dichotomy** (start.gms:17,28,48):
 - Only two growth parameter sets: plantations vs. natveg
 - No distinction among plantation types (fast-growing pine vs. slow-growing oak)
 - Secondary forests and other land use identical natveg parameters
@@ -937,12 +938,12 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 
 ### 5. Land Carbon Sink Adjustment Factors
 
-**Post-processing only** (input.gms:49):
+**Post-processing only** (input.gms:79):
 - Grassi et al. (2021) adjustment factors NOT used in optimization
 - No feedback from adjusted emissions to land-use decisions
 - Potential inconsistency between model results and reported emissions
 
-**RCP scenario selection** (input.gms:58-66):
+**RCP scenario selection** (input.gms:88-96):
 - Adjustment factors linked to RCP scenarios
 - Assumes MAgPIE land-use aligns with RCP storylines
 - May mismatch if MAgPIE explores non-RCP pathways
@@ -1126,7 +1127,7 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 **Data inputs**: Confirmed ✅
 - lpj_carbon_stocks.cs3: LPJmL carbon densities (input.gms:18)
 - f52_growth_par.csv: Chapman-Richards parameters (input.gms:40)
-- f52_land_carbon_sink_adjust_grassi.cs3: Grassi et al. factors (input.gms:53, optional)
+- f52_land_carbon_sink_adjust_grassi.cs3: Grassi et al. factors (input.gms:83, optional)
 
 **Configuration options**: Confirmed ✅
 - c52_carbon_scenario: cc/nocc/nocc_hist (input.gms:8)

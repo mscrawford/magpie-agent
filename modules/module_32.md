@@ -2,7 +2,7 @@
 
 **Status**: Fully documented
 **Location**: `modules/32_forestry/dynamic_may24/`
-**Code Size**: 1,313 lines across 11 files
+**Code Size**: 1,331 lines across 9 files
 **Authors**: Florian Humpenöder, Abhijeet Mishra
 **Realization**: `dynamic_may24` (only realization)
 
@@ -65,7 +65,7 @@ i32_growing_stock_at_harvest(t,j) = sum(ac$(ac.off = p32_rotation_cellular_estb(
 > Semantic: was "yield at rotation age"; now "growing stock at rotation age."
 > Consumers divide by `m_timestep_length_forestry` to recover an annual flux.
 
-**Default costs** (`input.gms:23-26`):
+**Default costs** (`input.gms:23-27`):
 - Establishment: $2,460/ha
 - Recurring: $615/ha/yr
 - Harvesting: $1,230/ha
@@ -77,7 +77,7 @@ i32_growing_stock_at_harvest(t,j) = sum(ac$(ac.off = p32_rotation_cellular_estb(
 **Characteristics**:
 - **Exogenous targets**: Based on country reports (NPI = National Policy Instruments, NDC = Nationally Determined Contributions)
 - **Growth curve**: Natural vegetation regrowth (slower than plantations)
-- **Protection**: Fixed once established (cannot be harvested or converted) (`presolve.gms:138`)
+- **Protection**: Fixed once established (cannot be harvested or converted) (`presolve.gms:144`)
 - **Carbon density**: Uses `pm_carbon_density_secdforest_ac_uncalib` (uncalibrated natveg regrowth curve) (`presolve.gms:68`)
 
 **Policy constraint** (`equations.gms:74-75`):
@@ -88,7 +88,7 @@ sum(ac_est, v32_land(j2,"ndc",ac_est)) + v32_ndc_area_missing(j2) =e= sum(ct, p3
 
 **Translation**: Established NPI/NDC afforestation must equal policy targets each timestep
 
-**Reversal mechanism** (`presolve.gms:143-147`):
+**Reversal mechanism** (`presolve.gms:149-153`):
 ```gams
 if (m_year(t) >= s32_npi_ndc_reversal,
   v32_land.lo(j,"ndc",ac) = 0;
@@ -104,10 +104,10 @@ Default: `s32_npi_ndc_reversal = Inf` (no reversal)
 
 **Characteristics**:
 - **Optimization variable**: Area determined by carbon price vs. establishment costs
-- **Planning horizon**: 50 years default (`s32_planning_horizon = 50`, `input.gms:27`)
+- **Planning horizon**: 50 years default (`s32_planning_horizon = 50`, `input.gms:28`)
 - **CDR provision**: Provides projected carbon sequestration to Module 56
-- **Growth curve**: Natural vegetation OR plantation (switch `s32_aff_plantation`) (`presolve.gms:58-56`)
-- **Protection duration**: Until end of planning horizon (`s32_aff_prot = 0`) OR forever (`s32_aff_prot = 1`) (`presolve.gms:156-159`)
+- **Growth curve**: Natural vegetation OR plantation (switch `s32_aff_plantation`) (`presolve.gms:58-62`)
+- **Protection duration**: Until end of planning horizon (`s32_aff_prot = 0`) OR forever (`s32_aff_prot = 1`, default) (`presolve.gms:156-159`)
 
 **CDR calculation** (`equations.gms:36-39`):
 ```gams
@@ -129,7 +129,7 @@ p32_cdr_ac(t,j,ac)$(ord(ac) > 1 AND (ord(ac)-1) <= s32_planning_horizon/5)
 - `noboreal`: Excludes boreal zones (default)
 - `onlytropical`: Restricts to tropical regions
 
-**Additional restriction** (`presolve.gms:170`):
+**Additional restriction** (`presolve.gms:176`):
 ```gams
 v32_land.fx(j,"aff",ac_est)$(fm_carbon_density(t,j,"forestry","vegc") <= 20) = 0;
 ```
@@ -139,7 +139,7 @@ v32_land.fx(j,"aff",ac_est)$(fm_carbon_density(t,j,"forestry","vegc") <= 20) = 0
 
 ### 3. Rotation Length Calculation
 
-**VERIFIED**: Rotation lengths calculated in preloop, fixed during optimization (`realization.gms:34`).
+**VERIFIED**: Rotation lengths calculated in preloop, fixed during optimization (`realization.gms:36`).
 
 #### 3.1 Rotation Methods
 
@@ -182,7 +182,7 @@ p32_rotation_regional(t,i) = weighted average of cellular rotations by area
 
 #### 3.3 Rotation Extension
 
-**Scalar**: `s32_rotation_extension = 1` (default, `input.gms:28`)
+**Scalar**: `s32_rotation_extension = 1` (default, `input.gms:29`)
 
 **Purpose**: Artificially extend rotations for sensitivity analysis
 - `s32_rotation_extension = 1`: Original rotation lengths
@@ -216,7 +216,7 @@ q32_cost_total(i2) .. vm_cost_fore(i2) =e=
 1. **Recurring costs**: Monitoring and maintenance of standing forests
 2. **Establishment costs**: Investment in new plantations/afforestation
 3. **Harvesting costs**: Timber removal costs
-4. **Technical penalties**: `v32_land_missing` (timber) and `v32_ndc_area_missing` (policy) with huge cost ($1M/ha) (`input.gms:32`)
+4. **Technical penalties**: `v32_land_missing` (timber) and `v32_ndc_area_missing` (policy) with huge cost ($1M/ha) (`input.gms:33`)
 
 #### 4.2 Land Aggregation
 
@@ -293,7 +293,7 @@ q32_prod_forestry_future(i2) ..
 
 **Translation**: Expected future production = newly established area × expected growing stock at rotation age, divided by timestep length to annualize.
 
-**q32_establishment_demand** (`equations.gms:196-200`):
+**q32_establishment_demand** (`equations.gms:205-209`):
 ```gams
 q32_establishment_demand(i2)$s32_establishment_dynamic ..
               v32_prod_forestry_future(i2)
@@ -309,7 +309,7 @@ q32_establishment_demand(i2)$s32_establishment_dynamic ..
 - Capped at `s32_plant_contr_max = 1` (100%)
 - Purpose: Gradually increase plantation share over time
 
-**Forward-looking demand** (`presolve.gms:191-199`):
+**Forward-looking demand** (`presolve.gms:197-205`):
 ```gams
 if(s32_demand_establishment = 1,
   p32_demand_forestry_future(t,i,kforestry) = sum(t_ext$(t_ext.pos = t.pos + p32_rotation_regional(t,i)),
@@ -318,7 +318,7 @@ if(s32_demand_establishment = 1,
 
 **Translation**: If forward-looking, use demand at time `t + rotation_length`, else use current demand
 
-**q32_establishment_hvarea** (`equations.gms:204-208`):
+**q32_establishment_hvarea** (`equations.gms:213-217`):
 ```gams
 q32_establishment_hvarea(j2)$s32_establishment_dynamic ..
               sum(ac_est, v32_land(j2,"plant",ac_est))
@@ -329,7 +329,7 @@ q32_establishment_hvarea(j2)$s32_establishment_dynamic ..
 
 **Translation**: New plantation establishment must be at least as large as the harvested area scaled by `min(1, future/current demand ratio)`. Only active when `s32_establishment_dynamic = 1`. Ensures harvested plantations are re-established unless demand is declining.
 
-**q32_establishment_fixed** (`equations.gms:215-216`):
+**q32_establishment_fixed** (`equations.gms:224-225`):
 ```gams
 q32_establishment_fixed(j2)$s32_establishment_static ..
   sum(ac, v32_land(j2,"plant",ac)) =e= sum(ac, pc32_land(j2,"plant",ac));
@@ -350,7 +350,7 @@ q32_prod_forestry(j2)..
 
 **Translation**: Production = harvested area × growing stock / timestep length. (Previously used *pm_timber_yield* (tDM/ha/yr); renamed to `im_growing_stock` (tDM/ha) on 2026-04-20.)
 
-**q32_hvarea_forestry** (`equations.gms:228-231`):
+**q32_hvarea_forestry** (`equations.gms:237-240`):
 ```gams
 q32_hvarea_forestry(j2,ac_sub) ..
                           v32_hvarea_forestry(j2,ac_sub)
@@ -373,9 +373,9 @@ q32_carbon(j2,ag_pools,stockType) .. vm_carbon_stock(j2,"forestry",ag_pools,stoc
 **Macro expansion**: Carbon = sum over types and age classes of (area × carbon density)
 
 **Different carbon densities by type**:
-- `plant`: `pm_carbon_density_plantation_ac` (fast-growing species)
-- `ndc`: `pm_carbon_density_secdforest_ac` (natural regrowth)
-- `aff`: `pm_carbon_density_secdforest_ac` OR `pm_carbon_density_plantation_ac` (switch-dependent)
+- `plant`: `pm_carbon_density_plantation_ac` (fast-growing species, calibrated)
+- `ndc`: `pm_carbon_density_secdforest_ac_uncalib` (natural regrowth, uncalibrated)
+- `aff`: `pm_carbon_density_secdforest_ac_uncalib` (switch=0, default) OR `pm_carbon_density_plantation_ac_uncalib` (switch=1) (both uncalibrated)
 
 #### 4.6 Afforestation Constraints
 
@@ -395,7 +395,7 @@ q32_max_aff_reg(i2)$(s32_max_aff_area_glo=0) ..
 
 **Switch**: `s32_max_aff_area_glo = 1` → use global constraint, = 0 → use regional constraints
 
-**Default**: `s32_max_aff_area = Inf` (no limit, `input.gms:33`)
+**Default**: `s32_max_aff_area = Inf` (no limit, `input.gms:34`)
 
 **Annual afforestation limit** (`equations.gms:84-86`):
 ```gams
@@ -404,7 +404,7 @@ q32_co2p_aff_limit(j2) ..
   s32_annual_aff_limit * sum(ct, pm_max_forest_est(ct,j2));
 ```
 
-**Default**: `s32_annual_aff_limit = 0.03` (3% of forest establishment potential per year, `input.gms:49`)
+**Default**: `s32_annual_aff_limit = 0.03` (3% of forest establishment potential per year, `input.gms:50`)
 
 **Purpose**: Prevent unrealistically rapid afforestation in single timestep
 
@@ -467,7 +467,7 @@ q32_bv_plant(j2,potnatveg) .. vm_bv(j2,"plant",potnatveg)
 
 **Translation**: Biodiversity value of timber plantations. Same structure as `q32_bv_aff` but uses `plant` land pools and `plant`-specific BII coefficients. Plantations typically have lower BII coefficients than `ndc` or `aff` types.
 
-**BII coefficient choice** (`input.gms:38`):
+**BII coefficient choice** (`input.gms:39`):
 - `s32_aff_bii_coeff = 0`: Use natural vegetation BII (default)
 - `s32_aff_bii_coeff = 1`: Use plantation BII
 
@@ -481,7 +481,7 @@ q32_bv_plant(j2,potnatveg) .. vm_bv(j2,"plant",potnatveg)
 
 #### 5.1 Establishment Costs
 
-**q32_cost_establishment** (`equations.gms:157-172`):
+**q32_cost_establishment** (`equations.gms:166-173`):
 ```gams
 q32_cost_establishment(i2)..
   v32_cost_establishment(i2)
@@ -497,7 +497,7 @@ q32_cost_establishment(i2)..
 **Notes**:
 - The discounting formula `(1+interest)**years` correctly applies compound discounting. Fixed in commit `9ccd6290d` (2025-11-28).
 - **2026-04-20 change**: `im_timber_prod_cost` is now region-dimensioned `(i2, kforestry)` instead of `(kforestry)`.
-- **2026-04-20 change**: New replanting discount term `- v32_land_replant × (p32_est_cost("plant") − s32_est_cost_plant_reest)`. The replanted plantation area receives a reduced establishment cost of 1230 USD17MER/ha (50% of full 2460 USD17MER/ha) — no land clearing, existing roads, known site productivity. `s32_est_cost_plant_reest` = 1230 (`input.gms:23`).
+- **2026-04-20 change**: New replanting discount term `- v32_land_replant × (p32_est_cost("plant") − s32_est_cost_plant_reest)`. The replanted plantation area receives a reduced establishment cost of 1230 USD17MER/ha (50% of full 2460 USD17MER/ha) — no land clearing, existing roads, known site productivity. `s32_est_cost_plant_reest` = 1230 (`input.gms:25`).
 
 **Components**:
 1. **Upfront establishment for all plantation types**: Area × establishment cost × annuity factor
@@ -516,7 +516,7 @@ Parameter `p32_est_cost(type32)` set in preloop based on these scalars
 
 #### 5.2 Recurring Costs
 
-**q32_cost_recur** (`equations.gms:172-173`):
+**q32_cost_recur** (`equations.gms:181-182`):
 ```gams
 q32_cost_recur(i2) .. v32_cost_recur(i2) =e=
                     sum((cell(i2,j2),type32,ac_sub), v32_land(j2,type32,ac_sub) * i32_recurring_cost(type32));
@@ -524,17 +524,17 @@ q32_cost_recur(i2) .. v32_cost_recur(i2) =e=
 
 **Translation**: Annual cost = standing area × recurring cost per ha
 
-**Default**: `s32_recurring_cost = 615` (USD17MER/ha/yr, `input.gms:25`)
+**Default**: `s32_recurring_cost = 615` (USD17MER/ha/yr, `input.gms:26`)
 
 **Purpose**: Monitoring, maintenance, fire prevention, pest management
 
 **Applied to**: All plantation types (plant, ndc, aff)
 
-**Reversal exception** (`presolve.gms:146`): If NPI/NDC reversed, recurring cost for `ndc` set to zero
+**Reversal exception** (`presolve.gms:152`): If NPI/NDC reversed, recurring cost for `ndc` set to zero
 
 #### 5.3 Harvesting Costs
 
-**q32_cost_hvarea** (`equations.gms:245-249`):
+**q32_cost_hvarea** (`equations.gms:254-258`):
 ```gams
 q32_cost_hvarea(i2)..
                     v32_cost_hvarea(i2)
@@ -544,7 +544,7 @@ q32_cost_hvarea(i2)..
 
 **Translation**: Cost = harvested area × harvesting cost per ha
 
-**Default**: `s32_harvesting_cost = 1230` (USD17MER/ha, `input.gms:26`)
+**Default**: `s32_harvesting_cost = 1230` (USD17MER/ha, `input.gms:27`)
 
 **Applied to**: Only `plant` type (timber plantations)
 
@@ -558,7 +558,7 @@ q32_cost_hvarea(i2)..
 
 #### 6.1 Age-Class Shift
 
-**Shift calculation** (`presolve.gms:77`):
+**Shift calculation** (`presolve.gms:83`):
 ```gams
 s32_shift = m_yeardiff_forestry(t)/5;
 ```
@@ -567,7 +567,7 @@ s32_shift = m_yeardiff_forestry(t)/5;
 - 5-year timestep → s32_shift = 1 → ac5 becomes ac10
 - 10-year timestep → s32_shift = 2 → ac5 becomes ac15
 
-**Shifting logic** (`presolve.gms:83-85`):
+**Shifting logic** (`presolve.gms:89-91`):
 ```gams
 p32_land(t,j,type32,ac)$(ord(ac) > s32_shift) = pc32_land(j,type32,ac-s32_shift);
 p32_land(t,j,type32,"acx") = p32_land(t,j,type32,"acx")
@@ -585,7 +585,7 @@ p32_land(t,j,type32,"acx") = p32_land(t,j,type32,"acx")
 p32_land(t,j,type32,ac_est) = 0;
 ```
 
-**Distribution constraint** (`equations.gms:222-223`):
+**Distribution constraint** (`equations.gms:231-232`):
 ```gams
 q32_forestry_est(j2,type32,ac_est) ..
 v32_land(j2,type32,ac_est) =e= sum(ac_est2, v32_land(j2,type32,ac_est2))/card(ac_est2);
@@ -631,7 +631,7 @@ q32_land_replant(j2) ..
 
 ### 7. Disturbances
 
-**VERIFIED**: Generic disturbance scenarios affect afforestation plantations (`presolve.gms:68-72`).
+**VERIFIED**: Generic disturbance scenarios affect afforestation plantations (`presolve.gms:74-78`).
 
 #### 7.1 Disturbance Application
 
@@ -644,14 +644,14 @@ q32_land_replant(j2) ..
 - `008lin2030`: 0.8% annual loss
 - `016lin2030`: 1.6% annual loss
 
-**Disturbance calculation** (`presolve.gms:69-70`):
+**Disturbance calculation** (`presolve.gms:75-76`):
 ```gams
 p32_disturbance_loss_ftype32(t,j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub)
                                                  * f32_forest_shock(t,"%c32_shock_scenario%")
                                                  * m_timestep_length;
 ```
 
-**Distribution** (`presolve.gms:70-72`):
+**Distribution** (`presolve.gms:76,78`):
 ```gams
 pc32_land(j,"aff",ac_est) = pc32_land(j,"aff",ac_est)
                           + sum(ac_sub,p32_disturbance_loss_ftype32(t,j,"aff",ac_sub))/card(ac_est2);
@@ -691,24 +691,23 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 | **10_land** | vm_landexpansion_forestry | Forestry expansion by type | equations.gms:61-62 |
 | **10_land** | vm_landreduction_forestry | Forestry reduction by type | equations.gms:64-65 |
 | **11_costs** | vm_cost_fore | Total forestry costs | equations.gms:21-27 |
-| **35_natveg** | pcm_land_forestry | Forestry land for max forest establishment calc | presolve.gms:96 |
+| **35_natveg** | pcm_land_forestry | Forestry land for max forest establishment calc | presolve.gms:102 |
 | **56_ghg_policy** | vm_cdr_aff | Projected CDR from afforestation | equations.gms:36-43 |
-| **73_timber** | vm_prod_forestry | Timber production from plantations | equations.gms:237-240 |
+| **73_timber** | vm_prod_forestry | Timber production from plantations | equations.gms:246-249 |
 
 #### 8.2 Receives From (Inputs)
 
 | From Module | Variable | Use | File:Line |
 |-------------|----------|-----|-----------|
-| **10_land** | pm_max_forest_est | Forest establishment potential | presolve.gms:22-23, equations.gms:86 |
-| **10_land** | pm_land_conservation | Avoid conflict with secdforest restoration | presolve.gms:208-210 |
+| **35_natveg** | pm_max_forest_est | Forest establishment potential | presolve.gms:22-23, equations.gms:86 |
 | **10_land** | pcm_land | Previous land allocation | presolve.gms multiple |
-| **22_conservation** | pm_land_conservation | Land restoration constraints | presolve.gms:20, 208-210 |
+| **22_conservation** | pm_land_conservation | Avoid conflict with secdforest restoration / land restoration constraints | presolve.gms:20, 214-216 |
 | **28_age_class** | ac, ac_est, ac_sub | Age class structure | throughout |
 | **30_croparea** | vm_area | For NPI/NDC suitable area calculation | presolve.gms:17-18 |
 | **29_cropland** | vm_fallow | For NPI/NDC suitable area calculation | presolve.gms:18 |
 | **44_biodiversity** | fm_bii_coeff | BII coefficients by age class | equations.gms:131, 136, 141 |
-| **52_carbon** | pm_carbon_density_* | Carbon densities for plantations and regrowth | presolve.gms:53-62 |
-| **73_timber** | pm_demand_forestry | Timber demand for establishment decision | presolve.gms:193-199 |
+| **52_carbon** | pm_carbon_density_* | Carbon densities for plantations and regrowth | presolve.gms:58-68 |
+| **73_timber** | pm_demand_forestry | Timber demand for establishment decision | presolve.gms:197-205 |
 | **14_yields** | im_growing_stock | Harvestable stem biomass by age class (tDM/ha) — renamed 2026-04-20 from *pm_timber_yield* | equations.gms:249, presolve.gms:181,185 |
 | **73_timber** | im_timber_prod_cost(i,kforestry) | Regional timber production cost — now region-dimensioned (2026-04-20) | equations.gms:165 |
 
@@ -824,6 +823,8 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 **c32_aff_policy** = none, npi, ndc (`input.gms:9-10`)
 
+**Default**: `npi` (NPI policy afforestation is on by default)
+
 **Options**:
 - `none`: No policy-driven afforestation
 - `npi`: National Policy Instruments (implemented policies)
@@ -844,21 +845,21 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 #### 9.4 Afforestation Growth Curves
 
-**s32_aff_plantation** = 0 or 1 (`input.gms:34`)
+**s32_aff_plantation** = 0 or 1 (`input.gms:35`)
 
 **0 = Natural vegetation (default)**:
 - Slow S-shaped regrowth
-- Carbon density follows `pm_carbon_density_secdforest_ac`
+- Carbon density follows `pm_carbon_density_secdforest_ac_uncalib` (uncalibrated)
 - Realistic for spontaneous regeneration
 
 **1 = Plantation**:
 - Fast linear growth
-- Carbon density follows `pm_carbon_density_plantation_ac`
+- Carbon density follows `pm_carbon_density_plantation_ac_uncalib` (uncalibrated)
 - Optimistic assumption for actively managed afforestation
 
 #### 9.5 Planning Horizon
 
-**s32_planning_horizon** = 50 years (default, `input.gms:27`)
+**s32_planning_horizon** = 50 years (default, `input.gms:28`)
 
 **Purpose**: Determines how many years of CDR are credited for new afforestation
 
@@ -875,12 +876,12 @@ s32_est_cost_plant = 2460  / USD17MER per ha
 s32_est_cost_natveg = 2460  / USD17MER per ha
 ```
 
-**Recurring costs** (`input.gms:25`):
+**Recurring costs** (`input.gms:26`):
 ```gams
 s32_recurring_cost = 615  / USD17MER per ha per yr
 ```
 
-**Harvesting costs** (`input.gms:26`):
+**Harvesting costs** (`input.gms:27`):
 ```gams
 s32_harvesting_cost = 1230  / USD17MER per ha
 ```
@@ -918,9 +919,9 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 **p32_carbon_density_ac(t,j,type32,ac,ag_pools)** - `declarations.gms:19`:
 - **Source**: Module 52 (Carbon)
 - **Type-specific**:
-  - `plant` → `pm_carbon_density_plantation_ac` (fast growth)
-  - `ndc` → `pm_carbon_density_secdforest_ac` (natural regrowth)
-  - `aff` → switch-dependent (natural OR plantation)
+  - `plant` → `pm_carbon_density_plantation_ac` (fast growth, calibrated)
+  - `ndc` → `pm_carbon_density_secdforest_ac_uncalib` (natural regrowth, uncalibrated)
+  - `aff` → switch-dependent: `pm_carbon_density_secdforest_ac_uncalib` (switch=0) OR `pm_carbon_density_plantation_ac_uncalib` (switch=1) (both uncalibrated)
 - **Age-dependent**: Different densities for each 5-year age class
 
 **p32_cdr_ac(t,j,ac)** - `declarations.gms:31`:
@@ -959,11 +960,11 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 **pm_land_plantation(j,ac)** - `declarations.gms:59`:
 - **Description**: Plantation land by age class (mio. ha)
 - **Purpose**: Provides age-class-resolved plantation area to Module 52 for growing-stock calibration weighting
-- **Consumer**: Module 52 (`preloop.gms:83`)
+- **Consumer**: Module 52 (`preloop.gms:88,90,94`)
 
 **New scalar (NEW 2026-04-20):**
 
-**s32_est_cost_plant_reest** - `input.gms:23`:
+**s32_est_cost_plant_reest** - `input.gms:25`:
 - **Default**: 1230 USD17MER/ha (half of `s32_est_cost_plant` = 2460)
 - **Use**: Replanting cost in `q32_cost_establishment` for `v32_land_replant` area
 - **Rationale**: No land clearing, existing roads, known site productivity (expert estimate)
@@ -1007,7 +1008,7 @@ Based on actual code verification with file:line references:
    - Cannot reduce once established (unless reversal activated)
    - Protected from conversion to other uses
 
-6. **Differentiates costs by activity** - `equations.gms:21-27, 158-173, 245-249`
+6. **Differentiates costs by activity** - `equations.gms:21-27, 166-173, 181-182, 254-258`
    - Establishment: $2,460/ha
    - Recurring: $615/ha/yr
    - Harvesting: $1,230/ha
@@ -1018,7 +1019,7 @@ Based on actual code verification with file:line references:
    - Distributes new establishments across ac_est
    - Accumulates old forests in acx
 
-8. **Applies disturbances to afforestation** - `presolve.gms:68-72`
+8. **Applies disturbances to afforestation** - `presolve.gms:74-78`
    - Generic shock scenarios (fire/storm/pest)
    - Only affects `aff` type
    - Resets disturbed areas to youngest age classes
@@ -1039,7 +1040,7 @@ Based on actual code verification with file:line references:
 
 **VERIFIED limitations with file:line references**:
 
-1. ❌ **Does NOT optimize rotation lengths** - `realization.gms:34`
+1. ❌ **Does NOT optimize rotation lengths** - `realization.gms:36`
    - Rotation lengths calculated in preloop, fixed during solve
    - No endogenous adjustment to changing prices or carbon values
    - Land owners "stick to their establishment decision"
@@ -1054,7 +1055,7 @@ Based on actual code verification with file:line references:
    - No commercial thinning for improved growth
    - No partial harvesting or selective logging
 
-4. ❌ **Does NOT include salvage logging** - `presolve.gms:68-72`
+4. ❌ **Does NOT include salvage logging** - `presolve.gms:74-78`
    - Disturbed forests reset to young age classes
    - No recovery of timber from disturbed areas
    - Lost growing stock not harvested
@@ -1065,11 +1066,11 @@ Based on actual code verification with file:line references:
    - Each cell independent
 
 6. ❌ **Does NOT vary costs regionally or temporally**
-   - Global constant costs (`input.gms:23-26`)
+   - Global constant costs (`input.gms:23-27`)
    - No regional variation in labor costs, accessibility
    - No learning curves or technological change in forestry
 
-7. ❌ **Does NOT model timber quality differences** - `equations.gms:237-240`
+7. ❌ **Does NOT model timber quality differences** - `equations.gms:246-249`
    - Yield measured in volume (m³) only
    - No quality premium for older/larger trees
    - All timber same value per unit volume
@@ -1097,7 +1098,7 @@ Based on actual code verification with file:line references:
 
 **Purpose**: Test impact of faster harvest cycles
 
-**File**: `input.gms:28`
+**File**: `input.gms:29`
 
 **Default**:
 ```gams
@@ -1118,7 +1119,7 @@ s32_rotation_extension = 0.8  / 20% shorter rotations
 
 **Purpose**: Test policy reversal scenarios
 
-**File**: `input.gms:47`
+**File**: `input.gms:48`
 
 **Default**:
 ```gams
@@ -1130,7 +1131,7 @@ s32_npi_ndc_reversal = Inf  / Never reverse policies
 s32_npi_ndc_reversal = 2050  / Reverse policies in 2050
 ```
 
-**Effect** (`presolve.gms:143-147`):
+**Effect** (`presolve.gms:149-153`):
 - After 2050, NPI/NDC forests can be converted
 - Recurring costs set to zero
 - Tests permanence assumptions
@@ -1139,7 +1140,7 @@ s32_npi_ndc_reversal = 2050  / Reverse policies in 2050
 
 **Purpose**: Faster CDR from afforestation
 
-**File**: `input.gms:34`
+**File**: `input.gms:35`
 
 **Default**:
 ```gams
@@ -1160,7 +1161,7 @@ s32_aff_plantation = 1  / Use plantation growth curves
 
 **Purpose**: Test regional constraints
 
-**File**: `input.gms:39`
+**File**: `input.gms:40`
 
 **Default**:
 ```gams
@@ -1344,7 +1345,7 @@ abline(v=rot_age, col="red", lty=2)  # Rotation age
 7. **Cost accounting** for establishment, recurring, and harvesting activities
 
 **Key Features**:
-- 1,313 lines of code across 11 files
+- 1,331 lines of code across 9 files
 - 31 equations managing costs, land, carbon, production, constraints
 - 3 plantation types with distinct purposes and management
 - Age-class tracking with 5-year intervals

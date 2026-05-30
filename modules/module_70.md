@@ -154,7 +154,8 @@ vm_cost_prod_livst(i2,"labor") =e=
 **Factor Requirements** (`preloop.gms:88`):
 ```
 i70_fac_req_livst(t,i,kli) = i70_cost_regr(i,kli,"cost_regr_b")
-    * livestock_productivity(t,i,sys) + i70_cost_regr(i,kli,"cost_regr_a")
+    * sum(sys_to_kli(sys,kli), i70_livestock_productivity(t,i,sys))
+    + i70_cost_regr(i,kli,"cost_regr_a")
 ```
 
 **Regression Logic** (`equations.gms:48-53`):
@@ -476,7 +477,8 @@ Module 70 calculates livestock factor costs using regression relationships betwe
 **Factor Requirements** (`preloop.gms:88`):
 ```
 i70_fac_req_livst(t,i,kli) =
-    i70_cost_regr(i,kli,"cost_regr_b") * livestock_productivity(t,i,sys)
+    i70_cost_regr(i,kli,"cost_regr_b")
+    * sum(sys_to_kli(sys,kli), i70_livestock_productivity(t,i,sys))
     + i70_cost_regr(i,kli,"cost_regr_a")
 ```
 
@@ -537,7 +539,7 @@ i70_fac_req_livst(t_all,i,kli) =
 
 Module 70 calculates exogenous pasture management intensification factor `pm_past_mngmnt_factor(t,i)` that is passed to Module 14 (Yields) to scale pasture yields (`presolve.gms:23-70`).
 
-**Interface**: `pm_past_mngmnt_factor(t,i)` defined in Module 70 declarations, used by Module 14 to adjust `vm_yld(j,"past",kve)`.
+**Interface**: `pm_past_mngmnt_factor(t,i)` defined in Module 70 declarations, used by Module 14 to adjust `vm_yld(j,"pasture",w)`.
 
 ### Cattle Stock Proxies
 
@@ -687,7 +689,7 @@ Module 70 distinguishes between **feed intake** and **feed demand** (`equations.
 vm_dem_feed(i,kap,kall)  // mio. tDM per yr
 ```
 - **To Module 16 (Demand)**: Aggregated with food, material, seed, bioenergy demands (`module.gms:18`)
-- **To Module 31 (Pasture)**: Pasture feed demand drives pasture area requirements (`module.gms:16-17`)
+- **To Module 31 (Pasture) - INDIRECT**: pasture feed demand reaches M31 transitively (vm_dem_feed -> Module 16 demand balance -> Module 21 trade -> vm_prod_reg); M31 reads vm_prod/vm_land/vm_yld, NOT vm_dem_feed directly (`modules/31_past/endo_jun13/equations.gms:16-18`, q31_prod). Interface flow organized via Modules 16 and 21 (`module.gms:18-19`).
 - **Dimensions**: Region × livestock products × all feed items
 
 **2. Feed Intake** (`declarations.gms:18`):
@@ -715,7 +717,7 @@ vm_cost_prod_fish(i)          // mio. USD17MER per yr
 ```
 pm_past_mngmnt_factor(t,i)  // dimensionless (≥1)
 ```
-- **To Module 14 (Yields)**: Scales pasture yields to account for exogenous intensification (`module.gms:16`)
+- **To Module 14 (Yields)**: Scales pasture yields to account for exogenous intensification (`presolve.gms:23-26`; consumed in `modules/14_yields/managementcalib_aug19/equations.gms:38`)
 
 **6. Slaughter Feed Share** (`declarations.gms:34`):
 ```
@@ -1060,10 +1062,10 @@ Used for regional regression calibration.
 
 **Cost Variables** (`scaling.gms:9-10`):
 ```
-vm_cost_prod_livst.scale(i,factors) = 10e5
-vm_cost_prod_fish.scale(i) = 10e5
+vm_cost_prod_livst.scale(i,factors) = 1e4
+vm_cost_prod_fish.scale(i) = 1e5
 ```
-Scale factor of 10^6 (million USD) improves solver numerics for cost equations.
+Scale factors (10,000 for livestock factor costs, 100,000 for fish) improve solver numerics for the cost equations. (Identical in fbask_jan16 and fbask_jan16_sticky.)
 
 ### Initial Values
 
@@ -1138,7 +1140,7 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 - **Module 11 (Costs)**: Livestock and fish production costs added to objective function
 - **Module 14 (Yields)**: Pasture management factor scales pasture yields
 - **Module 16 (Demand)**: Feed demand aggregated with food/material/bioenergy demands
-- **Module 31 (Pasture)**: Pasture feed demand drives pasture area requirements
+- **Module 31 (Pasture) - INDIRECT**: pasture feed demand reaches M31 transitively via Modules 16 and 21 (vm_dem_feed -> M16 demand balance -> M21 trade -> vm_prod_reg); M31 reads vm_prod/vm_land/vm_yld, not vm_dem_feed directly
 - **Module 53 (Methane)**: Feed intake determines enteric fermentation emissions
 - **Module 55 (AWMS)**: Feed intake determines manure production
 
@@ -1221,7 +1223,7 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 1. Extract cattle stock proxies: `p70_cattle_stock_proxy(t,i)`, `p70_milk_cow_proxy(t,i)`
 2. Extract pasture management factor: `pm_past_mngmnt_factor(t,i)`
 3. Compare scenarios with different food demand trajectories (e.g., SSP1 low demand vs. SSP3 high demand)
-4. Trace to pasture yields in Module 14: `vm_yld(j,"past",kve)` scaled by `pm_past_mngmnt_factor(t,i)`
+4. Trace to pasture yields in Module 14: `vm_yld(j,"pasture",w)` scaled by `pm_past_mngmnt_factor(t,i)`
 
 **Expected Pattern**:
 - High demand growth → more cattle → higher `p70_incr_cattle(t,i)` → higher `pm_past_mngmnt_factor(t,i)` → higher pasture yields → less pasture area expansion
@@ -1233,8 +1235,8 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 
 **Module 16 (Demand)**: Aggregates feed demand with food/material/seed/bioenergy demands; passes to trade module
 **Module 17 (Production)**: Provides regional production targets (`vm_prod_reg`) that drive feed demand
-**Module 31 (Pasture)**: Pasture area determined by pasture feed demand from Module 70
-**Module 14 (Yields)**: Pasture yields scaled by `pm_past_mngmnt_factor` from Module 70
+**Module 31 (Pasture)**: Pasture area reached via Modules 16+21 (INDIRECT: vm_dem_feed -> M16 demand balance -> M21 trade -> vm_prod_reg -> M31 q31_prod); M31 does not read vm_dem_feed directly
+**Module 14 (Yields)**: Pasture yields `vm_yld(j,"pasture",w)` scaled by `pm_past_mngmnt_factor` from Module 70
 **Module 11 (Costs)**: Livestock and fish production costs added to objective function
 **Module 38 (Factor Costs)**: Provides factor cost shares for labor/capital split
 **Module 36 (Employment)**: Provides wage scenario parameters for labor cost scaling

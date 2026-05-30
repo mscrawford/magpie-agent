@@ -377,7 +377,7 @@ vm_supply(i2,kforestry) =e=
 
 #### `vm_prod_reg(i,kcr)` - Regional Production
 **Source**: Module 17 (Production)
-**Usage**: `equations.gms:78` (seed demand calculation)
+**Usage**: `equations.gms:79` (seed demand calculation)
 **Purpose**: Regional crop production used to calculate seed requirements
 
 ---
@@ -562,14 +562,9 @@ Hypothetical cell with balance flow problem:
 - **Module 17** (Production): `vm_prod_reg` - regional production (for seed calculation)
 
 ### Provides Output To:
-- **Module 21** (Trade): `vm_supply` - regional supply/demand for trade flow calculation (PRIMARY CONNECTION)
-- **Module 60** (Bioenergy): `vm_dem_seed` - seed demand (constraints on bioenergy crops)
-- **Module 20** (Processing): `vm_supply` - total supply available for processing
-- **Module 18** (Residues): `vm_supply` - residue supply for various uses; **Module 21** (Trade): `modules/21_trade/selfsuff_reduced/equations.gms:14`
-- **Module 55** (AWMS): `vm_dem_food`, `vm_supply` - food system flows for nutrient accounting
-- **Module 50** (Nitrogen): `vm_supply`, `vm_dem_seed` - commodity flows for nitrogen budgets
-- **Module 32** (Forestry): `vm_supply` - forestry product demand
-- **Module 53** (Methane): `vm_supply` - commodity flows for methane accounting
+- **Module 21** (Trade): `vm_supply` - the ONLY equation-level consumer (PRIMARY CONNECTION; `modules/21_trade/selfsuff_reduced/equations.gms:14`, q21_trade_glo)
+- **Module 50** (Nitrogen): `vm_dem_seed` - seed N flux in the soil budget (`modules/50_nr_soil_budget/macceff_aug22/equations.gms:42`)
+- Shared input table `fm_attributes` (declared in input.gms:20) is read by many modules (18_residues, 20_processing, 53_methane, 55_awms, 50_nr_soil_budget) for nutrient/DM/energy conversion - this, not `vm_supply`, is why realization.gms lists those as recipients
 
 **Critical Hub Role**: Module 16 is THE central aggregation point for all demand, feeding directly into the trade system.
 
@@ -689,10 +684,12 @@ Module 16 treats waste as an unavoidable loss proportional to supply. This contr
 
 **Role**: Calculates total regional supply requirements (`vm_supply`) which **must be met** by production + trade.
 
-**Food Balance Equation** (Module 21):
+**Food Balance Equation** (Module 21, default selfsuff_reduced - q21_trade_glo):
 ```
-vm_prod_reg(i,k) + vm_import(i,k) - vm_export(i,k) ≥ vm_supply(i,k)
+sum(i, vm_prod_reg(i,k)) >= sum(i, vm_supply(i,k)) + f21_trade_balanceflow(k)
 ```
+
+Note: MAgPIE default trade does not use per-region vm_import/vm_export variables; it enforces a global supply>=demand pool (`modules/21_trade/selfsuff_reduced/equations.gms:13-15`).
 
 Module 16 determines the **demand side** (vm_supply), Module 17 provides **supply side** (vm_prod_reg), Module 21 **balances** via trade.
 
@@ -700,9 +697,9 @@ Module 16 determines the **demand side** (vm_supply), Module 17 provides **suppl
 
 ### Dependency Chains
 
-**Centrality**: Mid-range hub (provides to 1 major consumer [Module 21], depends on 7 modules)
+**Centrality**: Mid-range hub (provides to 1 major consumer [Module 21], depends on 6 modules)
 
-**Depends on**: Modules 09, 15, 18, 60, 62, 70, 73 (for demands)
+**Depends on**: Modules 15, 17, 20, 60, 62, 70 (for demand and production inputs)
 **Provides to**: Module 21 (trade) via `vm_supply(i,k)`
 
 **Role**: **Demand aggregator** - compiles all uses into total supply requirements

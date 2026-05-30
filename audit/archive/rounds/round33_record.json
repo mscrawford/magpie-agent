@@ -1,0 +1,79 @@
+{
+  "round": 33,
+  "type": "doc_centric_audit",
+  "mode": "doccentric",
+  "date": "2026-05-30",
+  "scope": "High-centrality test (Round 1 of the adaptive test->sweep): 12 hub module docs never previously doc-centric-audited.",
+  "develop_sha": "ee98739fd",
+  "engine": "audit/tools/doc_audit_round.workflow.js",
+  "workflow_run_id": "wf_dce1918a-290",
+  "workflow_task_id": "wldfcgy01",
+  "n_docs": 12,
+  "dropped": [],
+  "cap_probe": {
+    "max_inter_message_gap_min": 1.85,
+    "capped": false,
+    "wall_clock_min": 40.7,
+    "n_agents": 29,
+    "subagent_tokens": 2772665,
+    "note": "No rate-limit wait (gap << 5 min). The 40.7 min wall-clock was driven by large hub docs (module_30 = 1741 lines, module_32/11/52/56), not capping. Window has ample headroom."
+  },
+  "totals": {
+    "confirmed_bugs": 74,
+    "critical": 4,
+    "major": 33,
+    "minor": 33,
+    "informational": 4,
+    "bugs_per_doc": 6.17,
+    "edits_applied": 204
+  },
+  "per_doc": [
+    {"label": "module_11", "critical": 0, "major": 3, "minor": 3, "confirmed": 6, "score": 6, "key": "Spine CLEAN (32 q11_cost_reg terms, 27 source-module attributions, vm_maccs_costs confirmed consumed-not-produced, M11 declares only vm_cost_glo+v11_cost_reg). Bugs in scaling/description/citation layers."},
+    {"label": "module_14", "critical": 0, "major": 1, "minor": 3, "confirmed": 4, "score": 7.5, "key": "Spine correct incl G1 (managementcalib_aug19, 2 eqns, no q14_yieldcalib). 1 Major: pm_carbon_density_other_ac sourced to M35 but declared+populated in M52 (internal contradiction). Both fed advisories refuted."},
+    {"label": "module_15", "critical": 0, "major": 2, "minor": 1, "confirmed": 3, "score": 7, "key": "s15_exo_diet=0 CONFIRMED (no inverted-Boolean). Major: age 18->21 (x3); pm_kcal_pc_initial consumer M16->M70."},
+    {"label": "module_16", "critical": 1, "major": 4, "minor": 0, "informational": 1, "confirmed": 6, "key": "CRITICAL: vm_supply equation-consumer = M21 ONLY; phantoms M18/20/55/50/32/53 removed. +4 Major (vm_dem_seed M60->M50, vm_dem_food M55 phantom, deps list, invented vm_import/export). M18 phantom confirmed; M70-add refuted (comment-only)."},
+    {"label": "module_17", "critical": 0, "major": 3, "minor": 5, "confirmed": 8, "key": "flexreg_apr16 confirmed. Major: wood/woodfuel NOT zero at cell level (M73 populates); consumer set M15 phantom + M38/M71 omitted + 7 transitive-as-direct."},
+    {"label": "module_29", "critical": 0, "major": 3, "minor": 2, "informational": 1, "confirmed": 6, "key": "detail_apr24 confirmed; 16 eqs correct. Major: fabricated M14/M16 upstream deps; wrong carbon-density names + M59-not-M52 attribution; 'four carbon pools' false (q29_carbon ag_pools={vegc,litc})."},
+    {"label": "module_30", "critical": 3, "major": 2, "minor": 1, "confirmed": 6, "key": "simple_apr24 confirmed. 3 CRITICAL consumer-set: vm_area phantom M17/M38 + omitted M29 (M32 retained as .l/.lo presolve reader); vm_carbon_stock_croparea false-direct M52/M56 removed (real consumer M29 via q29_carbon). All verified vs develop."},
+    {"label": "module_32", "critical": 0, "major": 6, "minor": 7, "informational": 1, "confirmed": 14, "key": "Algebra + all 15 scalar defaults correct; vm_carbon_stock populator treatment CORRECT. 14 bugs: 6 Major (citation-drift-to-different-equation, _uncalib-vs-calibrated density, 2 wrong producer attributions). Fixer correctly REFUSED invalid 'affexp' c32_aff_policy option (pol32={none,npi,ndc})."},
+    {"label": "module_50", "critical": 0, "major": 0, "minor": 1, "confirmed": 1, "key": "Exceptionally accurate (macceff_aug22; all eqns/formulas/decls/consumer sets verified; advisory refuted). 1 Minor: im_maccs_mitigation presolve.gms:57->58."},
+    {"label": "module_52", "critical": 0, "major": 3, "minor": 5, "confirmed": 8, "key": "G2 spine fully correct (populator set, M56 decl site, line-4 consumers, formula, defaults). Checker phantom-consumer lead (M35/M32) REFUTED. All defects = PR#869 citation drift."},
+    {"label": "module_56", "critical": 0, "major": 4, "minor": 2, "informational": 1, "confirmed": 7, "key": "G2 chain + GWP 28/265 + price units CORRECT. Major: vm_cdr_aff unit tC/ha/yr->'mio. tC' (checker confirmed); phantom price_jan20 realization; wrong carbon-stock populator set in summary line; bad cap arithmetic."},
+    {"label": "module_70", "critical": 0, "major": 2, "minor": 3, "confirmed": 5, "key": "fbask_jan16 confirmed (advisory refuted, NOT fbask_jul23). Major: vm_dem_feed->M31 is transitive via M16+M21 (MANDATE 17); scaling.gms values 1e4/1e5 not 10e5/10e5."}
+  ],
+  "anchors": [
+    {"id": "G1", "score": 9, "drift": false, "note": "managementcalib_aug19 sole realization; 2 eqns q14_yield_crop/q14_yield_past; q14_yieldcalib absent (rg + positive control). 1 Minor citation range."},
+    {"id": "G2", "score": 9, "drift": false, "note": "vm_carbon_stock DECLARED M56:34 not M52; M52 reads via q52_emis_co2_actual; full M56 pricing chain verified; actualNoAcEst default; populators 29/31/32/34/35/59. 1 Minor (CSV-absent precision)."}
+  ],
+  "mean_score": 9,
+  "gate": {
+    "clean": true,
+    "validate_consistency_errors": 0,
+    "self_healed": ["module_17.md", "module_29.md"],
+    "self_heal_class": "bare-basename / partial-path file:line citations (MANDATE 16) mis-resolved by walk-order; content verified correct, full paths added; 0 reverts",
+    "reverted_files": [],
+    "warnings": 2,
+    "check_units_advisories": 5,
+    "check_consumer_advisories": 20
+  },
+  "criticals_spotchecked": [
+    {"doc": "module_16", "claim": "vm_supply equation-consumer = M21 only; M18/20/55/50/32/53 phantom", "verdict": "CONFIRMED", "evidence": "rg 'vm_supply\\(' develop: declared+populated 16_demand/sector_may15; equation-read only in 21_trade/*"},
+    {"doc": "module_30", "claim": "vm_area equation-consumers = 18,29,41,42,50,53,59; M17/M38 phantom; M29 omitted", "verdict": "CONFIRMED", "evidence": "rg 'vm_area\\(' develop: exactly those 7 modules; zero hits in 17_production / 38_factor_costs"},
+    {"doc": "module_30", "claim": "M32 reads vm_area.l/.lo (afforestation potential)", "verdict": "CONFIRMED", "evidence": "32_forestry/dynamic_may24/presolve.gms:17 p32_aff_pot = 0.95*(sum(vm_area.l - vm_area.lo)). Doc correctly distinguishes this .l/.lo reader from the 7 equation-consumers."},
+    {"doc": "module_30", "claim": "vm_carbon_stock_croparea direct consumer = M29 only; M52/M56 not direct", "verdict": "CONFIRMED", "evidence": "rg develop: read only in 29_cropland/*/equations.gms (q29_carbon aggregation); zero M52/M56 hits"}
+  ],
+  "verification_lesson": "A paren-restricted grep ('vm_area\\(') MISSES .l/.lo/.fx/.m/.up solution-level reads. My initial vm_area\\( probe found no M32 hit and I nearly flagged the M32 listing as a phantom; broadening to 'vm_area' (no paren) immediately surfaced the .l/.lo read in presolve.gms:17. When verifying whether module X consumes a variable, grep BOTH the equation form 'var(' AND the attribute form 'var.' before concluding absence. (Extends bash-grep-r-unreliable-magpie.)",
+  "decision_rule": {
+    "threshold": ">=2.0 confirmed bugs/doc OR >=2 Critical",
+    "observed": "6.17 confirmed bugs/doc; 4 Critical",
+    "verdict": "SWEEP TRIGGERED",
+    "interpretation": "Hypothesis confirmed hard: every high-centrality hub doc carried bugs; dominant class is wrong consumer/populator sets + citation drift; rate (6.17/doc) exceeds the prior push's ~3.7/doc first-audit rate. The un-audited corpus is NOT trustworthy at the consumer-set/citation level."
+  },
+  "fixes_n_edits": {"module_11": 22, "module_14": 24, "module_15": 5, "module_16": 4, "module_17": 15, "module_29": 9, "module_30": 14, "module_32": 58, "module_50": 1, "module_52": 27, "module_56": 15, "module_70": 10},
+  "fixer_discipline_notes": [
+    "module_32 fixer refused an auditor over-claim: 'affexp' is NOT a valid c32_aff_policy option (pol32 set = none/npi/ndc); applied only the verifiable part (Default: npi).",
+    "Several fed baseline advisories correctly refuted by auditors: module_12 pm_interest 'TC' (n/a this round), module_52 M35/M32 phantom-consumer, module_70 fbask_jul23, module_14 commit-provenance."
+  ],
+  "pushed": false,
+  "note": "All commits local on magpie-agent main, pending user review. Nothing pushed."
+}

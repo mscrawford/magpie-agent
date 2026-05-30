@@ -1,7 +1,7 @@
 # Module 11: Costs (default)
 
 **Realization:** `default`
-**Total Lines of Code:** 147
+**Total Lines of Code:** 149 (default/ realization; 170 incl. module.gms)
 **Equation Count:** 2
 **Status:** ✅ Fully Verified (2025-10-12)
 
@@ -173,9 +173,9 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 
 **Variable:** `vm_cost_prod_crop(i,factors)`
 **Source Module:** Module 38 (Factor Costs)
-**Description:** Labor and capital costs for crop production (land rents are handled separately in Module 11; not part of the M38 `factors` set)
+**Description:** Labor and capital costs for crop production (only labor and capital; land rent is not an explicit M38 cost -- it emerges as the shadow value of the land constraint, not a term in Module 11)
 **Dimensions:** i (regions), factors (labor, capital) — verified at `modules/38_factor_costs/sticky_feb18/sets.gms:15-16`
-**Citation:** `equations.gms:15`, documented in `equations.gms:51`
+**Citation:** `equations.gms:15`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -215,7 +215,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 70 (Livestock)
 **Description:** Labor and capital costs for livestock production
 **Dimensions:** i (regions), factors (labor, capital)
-**Citation:** `equations.gms:19`, documented in `equations.gms:51`
+**Citation:** `equations.gms:19`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -228,7 +228,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Description:** One-time costs for converting land between types (clearing, drainage, leveling)
 **Dimensions:** j (cells), land (cropland, pasture, forest, urban, other)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:20`, documented in `equations.gms:52`
+**Citation:** `equations.gms:20`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -239,7 +239,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Description:** Small smoothing costs to penalize rapid land-use changes
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:41`, documented in `equations.gms:65`
+**Citation:** `equations.gms:41`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -274,7 +274,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Description:** Costs for transporting goods from cells to regional markets
 **Dimensions:** j (cells), k (all commodities including crops, livestock, wood)
 **Aggregation:** Sum over all cells in region, all commodities
-**Citation:** `equations.gms:21`, documented in `equations.gms:53`
+**Citation:** `equations.gms:21`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -284,7 +284,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 21 (Trade)
 **Description:** Regional trade costs, split into three interface variables — import-tariff costs, transport-margin (freight + insurance) costs, and a feasibility-import penalty. Each is summed separately into `q11_cost_reg`.
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:30-32`, documented in `equations.gms:62`
+**Citation:** `equations.gms:30-32`, documented in the component comment block `equations.gms:49-69`
 
 > **PR #866 (2026-05)**: the former single trade-cost variable *vm_cost_trade* was removed and split into these three. Module 11's only change is that `q11_cost_reg` now adds three terms where it previously added one. `vm_cost_trade_feasibility` is fixed at 0 in the `exo` and `selfsuff_reduced_bilateral22` realizations of Module 21 (no feasibility-import mechanism there), so it contributes 0 to the sum in those cases — Module 11 still sums it unconditionally.
 
@@ -298,7 +298,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 13 (Technological Change)
 **Description:** Costs for investing in agricultural intensification (τ factor increase)
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:22`, documented in `equations.gms:54`
+**Citation:** `equations.gms:22`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -320,7 +320,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 50 (Nitrogen Soil Budget)
 **Description:** Costs for purchasing and applying synthetic nitrogen fertilizers
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:24`, documented in `equations.gms:55`
+**Citation:** `equations.gms:24`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -342,7 +342,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 41 (Area Equipped for Irrigation)
 **Description:** Capital costs for expanding irrigation infrastructure
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:29`, documented in `equations.gms:59`
+**Citation:** `equations.gms:29`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -364,7 +364,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 32 (Forestry)
 **Description:** Costs for establishing and managing plantation forests (NPI, NDC, afforestation)
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:33`, documented in `equations.gms:61`
+**Citation:** `equations.gms:33`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -396,7 +396,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 20 (Processing)
 **Description:** Costs for processing raw commodities (milling, refining, manufacturing)
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:36`, documented in `equations.gms:63`
+**Citation:** `equations.gms:36`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -416,7 +416,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 60 (Bioenergy)
 **Description:** Utility/benefits from bioenergy production (may be positive or negative cost)
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:38`, documented in `equations.gms:62`
+**Citation:** `equations.gms:38`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -428,7 +428,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Source Module:** Module 56 (GHG Policy)
 **Description:** Costs from greenhouse gas emissions under carbon pricing or cap policies
 **Dimensions:** i (regions)
-**Citation:** `equations.gms:26`, documented in `equations.gms:56`
+**Citation:** `equations.gms:26`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -439,7 +439,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Description:** **Revenue** (negative cost) from carbon dioxide removal via afforestation
 **Dimensions:** i (regions)
 **Note:** Has **negative sign** in cost equation (rewards reduce costs)
-**Citation:** `equations.gms:27`, documented in `equations.gms:59`
+**Citation:** `equations.gms:27`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -448,8 +448,8 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Variable:** `vm_maccs_costs(i,factors)`
 **Source Module:** Module 57 (MACCS - Marginal Abatement Cost Curves)
 **Description:** Costs for implementing emission abatement measures (beyond baseline)
-**Dimensions:** i (regions), factors (different abatement options)
-**Citation:** `equations.gms:28`, documented in `equations.gms:60`
+**Dimensions:** i (regions), factors (labor, capital -- the same global factors set as crop/livestock factor costs; M57 splits abatement cost into a labor and a capital component, see `57_maccs/on_aug22/equations.gms:36,46`)
+**Citation:** `equations.gms:28`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -473,7 +473,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Description:** Costs for soil carbon management practices (cover crops, reduced tillage)
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:37`, documented in `equations.gms:64`
+**Citation:** `equations.gms:37`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -484,7 +484,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Description:** Costs for peatland restoration or drainage management
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:42`, documented in `equations.gms:66`
+**Citation:** `equations.gms:42`, documented in the component comment block `equations.gms:49-69`
 
 ---
 
@@ -539,9 +539,9 @@ Module 11 receives **32 cost variables** (31 costs + 1 reward) from other module
 **File:** `scaling.gms:8-10`
 
 ```gams
-vm_cost_glo.scale = 10e7;
-v11_cost_reg.scale(i) = 10e6;
-vm_cost_transp.scale(j,k) = 10e3;
+vm_cost_glo.scale = 1e7;
+v11_cost_reg.scale(i) = 1e6;
+vm_cost_transp.scale(j,k) = 1e3;
 ```
 
 **What This Does:**
@@ -550,9 +550,9 @@ Informs GAMS solver about typical magnitude of variables to improve numerical co
 
 **Scaling Values:**
 
-- **vm_cost_glo:** ~10^8 USD/yr (hundreds of billions of dollars globally)
-- **v11_cost_reg:** ~10^7 USD/yr (tens of billions per region)
-- **vm_cost_transp:** ~10^4 USD/yr (tens of thousands per cell-commodity)
+- **vm_cost_glo:** ~10^7 USD/yr (tens of billions of dollars globally)
+- **v11_cost_reg:** ~10^6 USD/yr (billions per region)
+- **vm_cost_transp:** ~10^3 USD/yr (thousands per cell-commodity)
 
 **Why Scaling Matters:**
 
@@ -1134,7 +1134,7 @@ Module 11 does **not directly participate** in any conservation laws:
 
 **What Module 11 provides**:
 - `vm_cost_glo` → **GAMS Solver** (objective function to minimize)
-- `v11_cost_reg(i)` → Aggregated for reporting only (not used in optimization)
+- `v11_cost_reg(i)` → summed by q11_cost_glo into vm_cost_glo (the objective). It IS part of the optimization (regional intermediate of the objective), not a reporting-only artifact.
 
 ### 17.3 Circular Dependencies
 
