@@ -339,7 +339,7 @@ v36_employment_maccs(i) =
 
 **Variables**:
 - **Determined**: `v36_employment_maccs(i)` (mio. people)
-- **Uses**: `vm_maccs_costs` from Module 57; consumed by Module 11 (`modules/11_costs/default/equations.gms:28`)
+- **Uses**: `vm_maccs_costs(i,"labor")` from Module 57 (`modules/57_maccs/on_aug22/declarations.gms:25`). (Note: `vm_maccs_costs` itself enters Module 11 cost aggregation at `modules/11_costs/default/equations.gms:28`; `v36_employment_maccs` does not - it is a reporting variable consumed by no module.)
 
 **Purpose**: Track additional employment from climate mitigation activities
 
@@ -412,7 +412,7 @@ v36_employment_maccs(i) =
 
 ### 6. Input Data & Sources
 
-Module 36 uses **6 input data files** (`input.gms:14-56`):
+Module 36 uses **7 input data files** (`input.gms:14-56`):
 
 #### 6.1 f36_weekly_hours(t,i) - Regional weekly hours
 
@@ -572,7 +572,7 @@ Module 36 is a **reporting and post-processing module** that back-calculates emp
 **Total Connections**: 3 downstream consumers (Modules 38, 57, 70) + ~4 upstream parameter dependencies (Module 09 + back-calculation from 38, 57, 70)
 **Hub Type**: Post-Processing Hub (wage calculation + employment reporting)
 
-**Provides To**: Module 11 (Costs - labor cost parameters), Module 38 (Factor Costs - wage inputs), Reporting modules (employment statistics)
+**Provides To**: Module 38 (Factor Costs - wage + productivity inputs), Module 57 (MACCs - wage + productivity inputs), Module 70 (Livestock - wage + productivity inputs), Reporting modules (employment statistics). Module 36 does NOT provide to Module 11 (employment variables are output-only and enter no cost equation).
 
 **Depends On**: Module 09 (Drivers - GDP per capita for wage regression), Module 38 (Factor Costs - for back-calculation)
 
@@ -658,7 +658,7 @@ Module 36 is a **reporting and post-processing module** that back-calculates emp
 
 **VERIFIED limitations with file:line references**:
 
-1. ❌ **NO labor supply constraint** (`module.gms:10-14`):
+1. ❌ **NO labor supply constraint** (`realization.gms:16-25` @limitations; no =l=/=g= constraint in equations.gms):
    - Employment is OUTPUT, not INPUT
    - Model does NOT optimize subject to labor availability
    - No labor market clearing

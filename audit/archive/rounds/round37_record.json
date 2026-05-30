@@ -1,0 +1,35 @@
+{
+  "round": 37,
+  "type": "doc_centric_audit + verify",
+  "mode": "doccentric",
+  "verify": true,
+  "date": "2026-05-30",
+  "scope": "Final sweep batch (8 docs): 20, 34, 36, 37, 40, 43, 54, 80. Completes the 35-module unaudited corpus.",
+  "develop_sha": "ee98739fd",
+  "workflow_run_id": "wf_738b8726-475",
+  "outcome": "CLEAN - 0 dropped, 0 Critical",
+  "cap_probe": {"max_inter_message_gap_min": 1.48, "capped": false, "wall_clock_min": 12.9, "n_agents": 25, "subagent_tokens": 1653624},
+  "verify_summary": {"docs_verified": 8, "upheld": 9, "corrected": 0, "refuted": 0, "note": "9 consumer/producer-set findings upheld with both-form greps + positive controls; non-consumer-set (citation/value/count) passed through. No Criticals this round."},
+  "totals": {"confirmed_bugs": 21, "critical": 0, "major": 9, "minor": 10, "informational": 2, "edits": 30},
+  "per_doc": [
+    {"label": "module_20", "c": 0, "ma": 1, "mi": 0, "info": 2, "edits": 4, "key": "High-accuracy (substitution_may21, full producer/consumer sets M11/M16/M15/M17 verified). Major: scale 10e5/10e4 -> 1e5/1e4 (10x). 2 Info."},
+    {"label": "module_34", "c": 0, "ma": 1, "mi": 2, "edits": 5, "key": "Major (verifier-upheld): vm_carbon_stock reader-set omits M56 (G2 class; M56:22 + .l/.m reads, declared M56 not M52). Minor: static var-elim count; vm_land.fx attribution. R16 anchor (LUH2/LUH3) did NOT re-fire (doc tracks realization.gms correctly)."},
+    {"label": "module_36", "c": 0, "ma": 2, "mi": 2, "edits": 4, "key": "Major (verifier-upheld): phantom M11 linkage (conflated v36_employment/labor-cost-params with vm_maccs_costs; M11 zero refs to M36 vars); real consumers {38,57,70}. Input-count + citation."},
+    {"label": "module_37", "c": 0, "ma": 2, "mi": 1, "edits": 8, "key": "Major (verifier-upheld): phantom M45 upstream dep (M37 reads nothing from M45); missing caveat that default sticky_feb18 ABORTS if pm_labor_prod!=1 (only sticky_labor uses it). Minor: invented vm_labor_costs (real = vm_cost_prod_crop)."},
+    {"label": "module_40", "c": 0, "ma": 1, "mi": 0, "edits": 1, "key": "Mostly accurate (gtap_nov12, q40_cost_transport, M11 sole-consumer, 7 vm_prod citations exact). Major (verifier-upheld): vm_cost_transp scaled 1e3 in 11_costs/default/scaling.gms:10 (doc implied unscaled; '10e4' fabricated)."},
+    {"label": "module_43", "c": 0, "ma": 1, "mi": 2, "edits": 3, "key": "Major (verifier-upheld): 'Provides to M11' phantom (M11 reads M42's vm_water_cost; M43 provides nothing to M11; im_wat_avail->M42 edge correct). Minor scaling + line counts. M42<->M43 advisory REFUTED."},
+    {"label": "module_54", "c": 0, "ma": 1, "mi": 0, "edits": 1, "key": "Mostly accurate (default 'off', 0 eqs, ~25 citations exact). Major (verifier-upheld): vm_p_fert_costs wired DIRECTLY to M11 q11_cost_reg:25, NOT via M38 (M38 phantom; doc self-contradicts at L304-306)."},
+    {"label": "module_80", "c": 0, "ma": 0, "mi": 3, "edits": 4, "key": "ACCURATE (9/10; nlp_apr17, vm_cost_glo/vm_landdiff producers, modelstat-7 limbo, 4 solve sequences verified). 3 Minor citation-drift only. No phantom/omitted consumers."}
+  ],
+  "gate": {"clean": true, "validate_consistency_errors": 0, "self_healed": "none needed this round", "reverted_files": [], "warnings": 3},
+  "review_flags": [
+    "module_54 D3 populator ADVISORY (non-error): vm_p_fert_costs / vm_nr_inorg_fert_costs list M18 (residues) + M50 (nr_soil_budget) as populators with no grep-hit. The auditor/verifier fixed the vm_p_fert_costs->M11 CONSUMER edge but did not adjudicate the POPULATOR claim. Follow-up: verify module_54's fert-cost populator attribution against code.",
+    "module_37 B1: verifier noted the fix should RE-LABEL (not hard-delete) the conceptual M45 provenance link at :1323 - confirm the fixer re-labeled rather than deleted context."
+  ],
+  "key_learnings": [
+    "Peripheral/single-realization hubs (40, 54, 80, 20) are markedly cleaner (0 Critical, mostly 1 Major or citation-only) than the central hubs (R33's 11/30/52/56) - centrality predicts consumer-set bug density, consistent with the thesis.",
+    "The DECLARED-vs-POPULATED-vs-READ / phantom-cost-edge vein recurs to the end (module_36 M11, module_43 M11, module_54 M38->M11) - the dominant residual error class even in small docs.",
+    "Lean doc-centric+verify held clean across R35/R36/R37 (4/8/8 docs, gaps 1.45/1.62/1.48 min) - the sustainable config; the verifier upheld 25 consumer-set findings across the three rounds with 1 correction, 0 false refutations."
+  ],
+  "pushed": false
+}

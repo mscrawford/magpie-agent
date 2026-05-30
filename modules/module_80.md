@@ -446,7 +446,7 @@ This finalization block is identical to `nlp_apr17`'s (solve.gms:97-109 in both 
 | `s80_optfile` | 1 | (1) | Switch to use specified solver settings (0=default, 1=use `ipopt.opt`) | input.gms:10 |
 | `s80_toloptimal` | 1e-08 | (1) | Ipopt solver tolerance (written as the `tol` option) | input.gms:11 |
 
-**Note**: `nlp_ipopt`'s `input.gms` does **NOT** declare `s80_secondsolve` (no second-solve mechanism). `s80_toloptimal` here feeds the Ipopt `tol` option (`nlp_apr17` uses the same scalar for the CONOPT4 `Tol_Optimality` option). The `c80_nlp_solver` switch is **not** used by `nlp_ipopt` — that switch applies only to `lp_nlp_apr17` (config comment, `config/default.cfg:2285`).
+**Note**: `nlp_ipopt`'s `input.gms` does **NOT** declare `s80_secondsolve` (no second-solve mechanism). `s80_toloptimal` here feeds the Ipopt `tol` option (`nlp_apr17` uses the same scalar for the CONOPT4 `Tol_Optimality` option). The `c80_nlp_solver` switch is **not** used by `nlp_ipopt` — that switch applies only to `lp_nlp_apr17` (config comment, `config/default.cfg:2287`).
 
 **No `equations` defined** — like all Module 80 realizations, `nlp_ipopt` defines zero model equations; it is pure solver-control logic.
 
@@ -468,7 +468,7 @@ This finalization block is identical to `nlp_apr17`'s (solve.gms:97-109 in both 
 | LP warmstart | ✅ Yes | ❌ No | ❌ No |
 | Requires `nl_fix`/`nl_release` | ✅ Yes | ❌ No | ❌ No |
 | Retry strategy | Relax + retry LP, then NLP fallbacks | Cycle 4 strategies (CONOPT4 ×3 + CONOPT3) | Re-solve with **same** Ipopt settings |
-| `s80_resolve_option` | (LP-relax counter) | ✅ Declared (4-way cycle) | ❌ Not declared |
+| `s80_resolve_option` | ❌ Not declared (relax counted by s80_counter) | ✅ Declared (4-way cycle) | ❌ Not declared |
 | `s80_secondsolve` | ✅ Declared | ✅ Declared | ❌ Not declared |
 | Solver fallback to other solver | ✅ (CONOPT3) | ✅ (CONOPT3) | ❌ None |
 | Land difference minimization | ✅ Yes | ❌ No | ❌ No |
@@ -954,7 +954,7 @@ Module 80 behavior controlled by main configuration switches in `config/default.
 - "nlp_ipopt" (Ipopt interior-point solver, alternative)
 - "nlp_par"
 
-**cfg$gms$c80_nlp_solver** (solver selection — applies to `lp_nlp_apr17` only; see `config/default.cfg:2285`):
+**cfg$gms$c80_nlp_solver** (solver selection — applies to `lp_nlp_apr17` only; see `config/default.cfg:2287`):
 - "conopt4" (default)
 - "conopt4+cplex"
 - "conopt4+conopt3"
@@ -1035,7 +1035,7 @@ Module 80 behavior controlled by main configuration switches in `config/default.
 **2026-05-16 sync update** (commit 9cba74ab7, PR #871):
 - ✅ Read all 5 new `nlp_ipopt/*.gms` files (realization, declarations, input, preloop, solve) and `module.gms`
 - ✅ Verified `nlp_ipopt` registration in `module.gms:26`
-- ✅ Verified `nlp_apr17` remains the default in `config/default.cfg:2280`
+- ✅ Verified `nlp_apr17` remains the default in `config/default.cfg:2282`
 - ✅ Verified `nlp_ipopt` scalars/parameters against `declarations.gms` and `input.gms`
 - ✅ Verified `nlp_ipopt`'s solve sequence and Ipopt option-file writing against `solve.gms`
 

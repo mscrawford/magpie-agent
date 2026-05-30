@@ -401,12 +401,10 @@ Module 37 provides **1 interface parameter** to other modules:
 
 **Used By**: Module 38 (Factor Costs)
 
-**Application in Module 38** (conceptual):
-```gams
-* Labor costs are divided by productivity factor
-* Lower productivity → higher costs (need more labor hours for same output)
-vm_labor_costs(i) = baseline_labor_costs(i) / sum(cell(i,j), pm_labor_prod(t,j))
-```
+> **Default-config caveat**: pm_labor_prod is only consumed in the cost equation by the non-default `sticky_labor` realization of Module 38 (`38_factor_costs/sticky_labor/equations.gms:22`). The DEFAULT factor-costs realization `sticky_feb18` -- and also `per_ton_fao_may22` -- abort the run if pm_labor_prod != 1 (`38_factor_costs/sticky_feb18/presolve.gms:8-10`). To run the `exo` heat-stress scenario you MUST also set `cfg$gms$factor_costs <- "sticky_labor"`; otherwise the model aborts. With default settings (`sticky_feb18`) pm_labor_prod = 1 and has no cost effect. See `config/default.cfg:1235,1210`.
+
+**Application in Module 38** (conceptual; real consumer is non-default sticky_labor realization):
+Labor efficiency in the CES factor-cost function is multiplied by pm_labor_prod -- higher productivity raises effective labor input, lowering labor hours (v38_laborhours_need) per unit output, hence lower cost. See `38_factor_costs/sticky_labor/equations.gms:22`. There is no vm_labor_costs variable; crop factor costs are tracked via vm_cost_prod_crop(i,factors).
 
 **Interpretation**:
 ```
@@ -612,6 +610,8 @@ Climate Change (ESM)
 
 #### 13.1 Switch to RCP8.5 (High Warming Scenario)
 
+> **Default-config caveat**: Switching labor_prod to `exo` has no cost effect under the default factor_costs realization (`sticky_feb18`), which aborts if pm_labor_prod != 1. To observe labor cost impacts you MUST also set `cfg$gms$factor_costs <- "sticky_labor"`. See the caveat in Section 8 above.
+
 **Purpose**: Assess agricultural labor costs under severe climate change
 
 **Configuration**:
@@ -727,6 +727,8 @@ plot(ci_width, main="90% Uncertainty range in labor productivity by 2100")
 - ensupper: 50% productivity (pessimistic ESMs)
 
 #### 13.5 Disable Heat Stress Impacts (Counterfactual)
+
+> **Default-config caveat**: The comparison `off` vs. `exo` only shows cost differences if `cfg$gms$factor_costs` is set to `"sticky_labor"`. Under the default `sticky_feb18` realization, pm_labor_prod != 1 aborts the run, so `exo` cannot be tested without also switching factor_costs. See the caveat in Section 8 above.
 
 **Purpose**: Isolate heat stress effects on agricultural costs and land use
 
@@ -1097,7 +1099,7 @@ Configuration:
 
 Output:
 • pm_labor_prod(t,j): Productivity factor (1 = no impact, <1 = loss)
-• Used by Module 38 to adjust labor costs: costs_actual = costs_baseline / pm_labor_prod
+• Used by Module 38 non-default sticky_labor realization: pm_labor_prod multiplies labor efficiency in CES factor-cost function (38_factor_costs/sticky_labor/equations.gms:22); requires cfg$gms$factor_costs <- "sticky_labor"
 • Lower productivity → higher costs → affects land allocation
 
 Typical Impacts (RCP8.5, 2100):
@@ -1134,9 +1136,9 @@ Causal Chain:
    • modules/37_labor_prod/exo/preloop.gms:8
 
 4. Lower productivity → Need more labor hours for same output
-   • Module 38: Labor costs = Baseline costs / pm_labor_prod
-   • Example: 25% productivity loss → 33% higher labor costs (1/0.75 = 1.33)
-   • modules/38_factor_costs (conceptual application)
+   • Module 38 (non-default sticky_labor only): pm_labor_prod multiplies labor efficiency in CES factor-cost function -- lower pm_labor_prod raises effective labor demand (v38_laborhours_need) and hence cost
+   • See 38_factor_costs/sticky_labor/equations.gms:22 (requires cfg$gms$factor_costs <- "sticky_labor")
+   • modules/38_factor_costs (conceptual; no cost effect under default sticky_feb18)
 
 5. Higher labor costs → Agricultural production becomes more expensive
    • Affects land allocation (shifts to regions with lower heat stress)
@@ -1249,7 +1251,7 @@ Module 37 does **not directly participate** in any conservation laws:
 - Module 38 (factor_costs): Labor productivity factor affects agricultural wage calculations
 
 **Depends on**:
-- Module 45 (climate): Climate data for heat stress calculations (optional, depends on realization)
+- NONE (pure source module). The exogenous climate signal is pre-computed offline (LAMACLIMA) and loaded from f37_labourprodimpact.cs3; Module 37 reads no runtime variable from any other module, including Module 45.
 
 ### Circular Dependencies
 
@@ -1320,7 +1322,7 @@ Module 37 participates in **zero circular dependencies**:
 **Links**:
 - Full dependency details → `core_docs/Module_Dependencies.md`
 - Factor costs (Module 38) → `modules/module_38.md`
-- Climate data (Module 45) → `modules/module_45.md`
+- Module 37 has no runtime dependency on Module 45; climate signal is pre-baked into input data (LAMACLIMA)
 
 ---
 

@@ -457,18 +457,19 @@ v43_watavail.fx("ren_ground",j) = im_wat_avail(t,"ren_ground",j);
 
 ## 8. Scaling
 
-**Numerical scaling** (scaling.gms:8):
+**Numerical scaling** (scaling.gms:8-9):
 
 ```
-v43_watavail.scale(wat_src,j) = 10e4;
+v43_watavail.scale(wat_src,j) = 1e4;
+q43_water.scale(j) = 1e2;
 ```
 
 **Purpose**:
-- Water availability values ~ millions m³ → scale by 10^5
+- Water availability values ~ millions m3 -> variable scaled by 1e4 (10^4); the q43_water constraint is scaled by 1e2 (10^2)
 - Helps solver convergence (brings values closer to order of magnitude 1)
 
 **Sources**:
-- scaling.gms:8
+- scaling.gms:8-9
 
 ---
 
@@ -774,22 +775,22 @@ grep "^[ ]*q43_" modules/43_water_availability/total_water_aug13/declarations.gm
 
 ## 16. Summary of File Locations
 
-**Module interface**: `modules/43_water_availability/module.gms` (22 lines)
+**Module interface**: `modules/43_water_availability/module.gms` (21 lines)
 
 **total_water_aug13 realization**:
-- realization.gms (53 lines)
-- declarations.gms (26 lines)
-- input.gms (28 lines)
-- equations.gms (21 lines)
-- preloop.gms (13 lines)
-- presolve.gms (17 lines)
-- postsolve.gms (20 lines)
+- realization.gms (52 lines)
+- declarations.gms (25 lines)
+- input.gms (27 lines)
+- equations.gms (20 lines)
+- preloop.gms (12 lines)
+- presolve.gms (16 lines)
+- postsolve.gms (19 lines)
 - scaling.gms (9 lines)
 
 **Input data**:
 - input/lpj_watavail_grper.cs2 (surface water availability by cell and time)
 
-**Total code**: ~190 lines
+**Total code**: ~200 lines (201 across the 9 files)
 
 ---
 
@@ -868,7 +869,7 @@ This section shows Module 43's role in system-level mechanisms.
 - **Centrality Rank**: Medium (water system enforcer)
 - **Hub Type**: Water Balance Enforcer
 
-**Provides to**: Module 11 (costs): Shadow prices on water constraint
+**Provides to**: Module 42 (water_demand): `im_wat_avail` (read in M42 presolve to set environmental-flow and reserved-fraction water demands). Module 43 owns no cost variable and is not read by Module 11; the water cost in Module 11 (`vm_water_cost`, modules/11_costs/default/equations.gms:46) is produced by Module 42. The q43_water shadow price is a solver dual (diagnostic output `oq43_water.marginal`), not an interface variable provided to another module.
 
 **Depends on**: Module 42 (water_demand): vm_watdem for all sectors
 

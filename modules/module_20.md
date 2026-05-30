@@ -4,7 +4,7 @@
 **Realization**: substitution_may21
 **Lines of Code**: ~270 (excluding postsolve output)
 **Equations**: 10
-**Interface Variables (Outputs)**: 3
+**Interface Variables (Outputs)**: 4
 **Interface Variables (Inputs)**: 4+
 
 ---
@@ -250,7 +250,7 @@ vm_cost_processing(i2) =e=
 - `f20_scp_unitcosts.csv` `input.gms:45-50`
 - `f20_scp_type_shr.csv` `input.gms:35-38`
 
-**Scaling**: `vm_cost_processing.scale(i) = 10e5` (1 million USD) `scaling.gms:8`
+**Scaling**: `vm_cost_processing.scale(i) = 1e5` (100,000 USD) `scaling.gms:8`
 
 #### 10. q20_substitution_utility_loss `equations.gms:134-142`
 
@@ -277,7 +277,7 @@ vm_processing_substitution_cost(i2) =e=
    - Magnitude based on current price differences, standardized to soybean oil price `equations.gms:130-132`
    - Input file: `f20_quality_cost.cs3` `input.gms:30-33`
 
-**Scaling**: `vm_processing_substitution_cost.scale(i) = 10e4` (10,000 USD) `scaling.gms:9`
+**Scaling**: `vm_processing_substitution_cost.scale(i) = 1e4` (10,000 USD) `scaling.gms:9`
 
 **Interpretation**: This represents a **utility loss** from consuming a different product than preferred, not a market transaction cost `equations.gms:123-126`.
 
@@ -523,7 +523,7 @@ v20_secondary_substitutes.up(i2,"brans",kcereals20) = Inf
 
 **What it means**: Secondary products are treated as homogeneous within categories (all "oils" are equivalent) `equations.gms:127-129`.
 
-**Partial correction**: Quality cost adjustments for oils `f20_quality_cost` provide some differentiation `equations.gms:142-132`.
+**Partial correction**: Quality cost adjustments for oils `f20_quality_cost` provide some differentiation `equations.gms:127-132`.
 
 **What it does NOT model**:
 - Consumer preferences for specific oil types beyond price

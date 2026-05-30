@@ -256,12 +256,9 @@ According to module.gms:12-24, the phosphorus module is **intended** to account 
 - Currently tracks residue allocation (field, removal, burning)
 - Would provide residue P flows (recycled P, removed P, burned P)
 
-**4. Module 38 (Factor Costs)**:
-- Would receive P fertilizer costs from Module 54
-- P fertilizer costs added to total production costs in objective function
-
-**5. Module 11 (Costs)**:
-- Would aggregate P fertilizer costs from Module 38
+**4. Module 11 (Costs)**:
+- `vm_p_fert_costs` is already wired DIRECTLY into Module 11 regional cost equation `q11_cost_reg` (`modules/11_costs/default/equations.gms:25`), on the line below the N inorganic fertilizer cost `vm_nr_inorg_fert_costs` (line 24, from Module 50). It is fixed to zero (`preloop.gms:10`) so contributes nothing, but the interface is present; an active realization need only populate it.
+- P fertilizer cost does NOT route through Module 38 (Factor Costs) -- Module 38 has no reference to `vm_p_fert_costs`, mirroring how N inorganic fertilizer cost comes from Module 50, not 38.
 - Total costs: Labor + Capital + Land conversion + **P fertilizer** + N fertilizer + Irrigation + ...
 
 **6. Module 51 (Nitrogen) and Module 53 (Methane)**:

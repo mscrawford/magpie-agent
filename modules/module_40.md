@@ -718,13 +718,13 @@ Transport costs are a spatially variable component of land rent. In classical lo
 
 ### Scaling
 
-**No explicit scaling defined** in Module 40 gtap_nov12 realization (no `.scale` attribute set in declarations or presolve)
+**Scaling**: Module 40 gtap_nov12 sets no `.scale` in its own files (no presolve; declarations.gms sets none), but the interface variable IS explicitly scaled -- `vm_cost_transp.scale(j,k) = 1e3` is set in the cost hub at `modules/11_costs/default/scaling.gms:10` (alongside `vm_cost_glo.scale = 1e7` and `v11_cost_reg.scale(i) = 1e6`).
 
 **Typical values** (order of magnitude, illustrative):
 - `vm_cost_transp(j,k)`: 0.001 to 100 Million USD/yr (0.001 = small cell/low production, 100 = high production in remote area)
-- Solver handles this range without scaling issues (costs are moderate size in objective function)
+- Solver handles this range with the 1e3 scaling applied via Module 11
 
-**Comparison**: Modules with much larger cost ranges (e.g., Module 11 objective function) use explicit scaling (`.scale = 10e4` or similar)
+**Comparison**: Module 11 scaling.gms scales both vm_cost_glo (1e7) and vm_cost_transp (1e3)
 
 ---
 

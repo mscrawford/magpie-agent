@@ -194,7 +194,7 @@ vm_bv(j2,"urban", potnatveg) =e= vm_land(j2,"urban") * fm_bii_coeff("urban",potn
    - Incentivizes matching prescribed cell-level urban area
 
 3. **vm_carbon_stock(j,"urban",ag_pools,stockType)** - urban carbon stocks
-   - To: Module 52 (Carbon) for carbon accounting
+   - To: Module 52 (Carbon, emissions) and Module 56 (GHG policy, pricing) for carbon accounting
    - Fixed to zero (no urban carbon density data) (`presolve.gms:8`)
 
 4. **vm_bv(j,"urban",potnatveg)** - biodiversity value
@@ -285,9 +285,9 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
    - High punishment costs ensure prescribed urban area matched when feasible
    - Deviation costs incurred only when local constraints force reallocation
 
-3. **Module 52 (Carbon)**: Receives vm_carbon_stock(j,"urban",*) = 0 for carbon accounting
+3. **Module 52 (Carbon)** and **Module 56 (GHG Policy)**: Both read vm_carbon_stock(j,"urban",ag_pools,stockType) (the urban slice, fixed to 0). M52 computes CO2 emissions from inter-timestep carbon-stock change (q52_emis_co2_actual); M56 prices them (q56_emis_pricing_co2). vm_carbon_stock is declared in Module 56, not Module 52. Urban contributes zero because the slice is fixed; lifting that assumption would propagate to BOTH.
    - Urban land contributes zero to carbon balance (data limitation)
-   - Urban expansion emits carbon from previous land use (e.g., forest → urban)
+   - Urban expansion emits carbon from previous land use (e.g., forest to urban)
 
 4. **Module 44 (Biodiversity)**: Receives vm_bv(j,"urban",potnatveg) for BV aggregation
    - Urban land has low BII (high biodiversity impact)
@@ -470,7 +470,8 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 
 - **Module 11 (Costs)**: Receives vm_cost_urban(j) for objective function
 - **Module 44 (Biodiversity)**: Receives vm_bv(j,"urban",potnatveg) for BV accounting
-- **Module 52 (Carbon)**: Receives vm_carbon_stock(j,"urban",*) = 0 for carbon balance
+- **Module 52 (Carbon)**: Receives vm_carbon_stock(j,"urban",*) = 0 for carbon emissions accounting
+- **Module 56 (GHG Policy)**: Receives vm_carbon_stock(j,"urban",*) = 0 for emission pricing
 
 ---
 
@@ -486,7 +487,7 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 
 - Historical counterfactual: "What if urbanization stopped in 1995?"
 - Sensitivity analysis: Isolate urban expansion effects
-- Computational efficiency: Eliminate 5 equations and 3 variables (marginal savings)
+- Computational efficiency: Eliminate 5 equations and 2 variables (v34_cost1, v34_cost2; vm_cost_urban persists, fixed to 0) (marginal savings)
 
 ### Interpreting Results
 
@@ -511,7 +512,7 @@ None - Module 34 is a data provider, reads only from external input files (LUH3)
 - **t>1**: vm_land.lo(j,"urban") = 0; vm_land.l(j,"urban") = i34_urban_area(t,j) (lines 13-14); vm_land.up(j,"urban") = Inf (line 15)
 
 **static** (`static/presolve.gms:9`):
-- **All t**: vm_land.fx(j,"urban") = pcm_land(j,"urban") = i34_urban_area("y1995",j) (fixed to 1995)
+- **All t**: vm_land.fx(j,"urban") = pcm_land(j,"urban") (fixed to the 1995 baseline; static reads pcm_land from core initialization and does not use M34's i34_urban_area parameter)
 
 ### Scaling
 
