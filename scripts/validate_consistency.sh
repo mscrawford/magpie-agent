@@ -47,20 +47,20 @@ log_color() {
 }
 
 check_pass() {
-    ((TOTAL_CHECKS++))
-    ((PASSED_CHECKS++))
+    TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
+    PASSED_CHECKS=$((PASSED_CHECKS + 1))
     log_color "${GREEN}✓${NC} $1" "✓ $1"
 }
 
 check_warning() {
-    ((TOTAL_CHECKS++))
-    ((WARNINGS++))
+    TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
+    WARNINGS=$((WARNINGS + 1))
     log_color "${YELLOW}⚠️  $1${NC}" "⚠️  $1"
 }
 
 check_error() {
-    ((TOTAL_CHECKS++))
-    ((ERRORS++))
+    TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
+    ERRORS=$((ERRORS + 1))
     log_color "${RED}❌ $1${NC}" "❌ $1"
 }
 
@@ -219,9 +219,9 @@ VALID_REFS=0
 
 for ref in $MODULE_REFS; do
     if [ -f "modules/$ref" ]; then
-        ((VALID_REFS++))
+        VALID_REFS=$((VALID_REFS + 1))
     else
-        ((BROKEN_REFS++))
+        BROKEN_REFS=$((BROKEN_REFS + 1))
         check_error "Broken reference: $ref referenced but doesn't exist"
         # Find where it's referenced
         REFS_IN=$(grep -l "$ref" AGENT.md core_docs/*.md cross_module/*.md 2>/dev/null | tr '\n' ' ')
@@ -242,9 +242,9 @@ VALID_PHASE_REFS=0
 
 for ref in $PHASE_REFS_CORE; do
     if [ -f "core_docs/$ref" ]; then
-        ((VALID_PHASE_REFS++))
+        VALID_PHASE_REFS=$((VALID_PHASE_REFS + 1))
     else
-        ((BROKEN_PHASE_REFS++))
+        BROKEN_PHASE_REFS=$((BROKEN_PHASE_REFS + 1))
         check_error "Broken reference: $ref referenced but doesn't exist in core_docs/"
     fi
 done
@@ -258,9 +258,9 @@ VALID_GAMS_REFS=0
 
 for ref in $GAMS_REFS; do
     if [ -f "reference/$ref" ]; then
-        ((VALID_GAMS_REFS++))
+        VALID_GAMS_REFS=$((VALID_GAMS_REFS + 1))
     else
-        ((BROKEN_GAMS_REFS++))
+        BROKEN_GAMS_REFS=$((BROKEN_GAMS_REFS + 1))
         check_error "Broken reference: $ref referenced but doesn't exist in reference/"
     fi
 done
