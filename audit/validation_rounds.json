@@ -5431,23 +5431,57 @@
     },
     "note": "GAMS-language content correct (gams.com), but the MAgPIE EXAMPLE code was never code-verified: fabricated identifiers (im_demandshare_reg, v10_lu_transitions->vm_lu_transitions, q10_land_from, f17_prod_init, vm_production/vm_trade) + citation drift throughout. High yield (the agent's low-yield prediction was wrong). Verifier caught the auditor citing config:2293=s80_optfile instead of the real tc default :293 (INFEAS-B9 corrected)."
    }
+  },
+  {
+   "round": 40,
+   "date": "2026-05-31",
+   "type": "doc_centric_audit + verify (targeted: post-/sync M21+M32 vs develop)",
+   "scope": "targeted /sync validation after pulling develop @ee98739fd. module_21: selfsuff_reduced_bilateral22 resynced (eq count 8->9; feasibility-import valve v21_import_for_feasibility + q21_cost_trade_feasibility added by SSP4/SSP5 bugfix 670e92cea; q21_trade_reg_up + v21_excess_prod removed by a28df314a; presolve.gms deleted). module_32: affexp afforestation-expansion policy added to c32_aff_policy/pol32 (a54cd02c6), default unchanged (npi). 3 independent adversarial auditors verifying vs origin/develop (NOT the lagging experiment-branch working tree) + regression anchor G2.",
+   "commit_before": "235b492",
+   "commit_after": null,
+   "answerer_model": null,
+   "auditor_model": "claude-opus-4-8 (module_21) + claude-sonnet-4-6 (module_32, G2 anchor)",
+   "verification_source": "origin/develop @ee98739fd",
+   "summary": {
+    "n_docs": 2,
+    "sync_corrections": {
+     "module_21": "bilateral22 eq count 8->9 at lines 7/91/468/485/788; feasibility-valve mechanism documented at 292/435/460/498 (v21_import_for_feasibility exists as (i_ex,i_im,k_trade), free only for k_import21; q21_cost_trade_feasibility penalises it at s21_cost_import); presolve.gms deletion noted. Default selfsuff_reduced untouched.",
+     "module_32": "affexp added as 4th pol32 member + c32_aff_policy option (lines 824/832/910); default stays npi"
+    },
+    "doc_audit_bugs": {
+     "critical": 0,
+     "major": 0,
+     "minor": 2
+    },
+    "verify": {
+     "upheld": 13,
+     "corrected": 2,
+     "refuted": 0,
+     "citation_failed": 0
+    },
+    "regression_anchor": {
+     "anchor": "G2 (vm_carbon_stock)",
+     "result": "no drift: DECLARED M56 (price_aug22/declarations.gms:34), READ M52 (normal_dec17/equations.gms:19); equation-populators {29,31,32,35,59}, M34 sets via presolve .fx=0 (consistent with the anchor's documented populator-list nuance)"
+    },
+    "note": "Adversarial audit (3 agents) confirmed all substantive M21/M32 sync edits, 0 false refutations. Caught + fixed 2 Minor residuals the first pass missed: (1) module_21 line 788 still said bilateral22 'has 8'; (2) module_32 affexp description omitted 'after 2030 / share of available potential forest / developing-vs-developed countries' from authoritative config/default.cfg:1006-7. Auditors verified vs origin/develop because the working tree is on an experiment branch lagging develop (validate_consistency.sh greps the working tree, so it could only confirm names that also exist via the default realization). validate_consistency.sh: completed=1, 43 checks, 0 errors. Validator itself re-validated this session via selftest_validator.sh positive control, after fixing a BSD/macOS sed portability bug in its sub-test 3 (GNU /pat/a -> awk)."
+   }
   }
  ],
  "cumulative_stats": {
-  "total_rounds": 39,
+  "total_rounds": 40,
   "total_docs_validated": 85,
   "module_docs_validated": 46,
   "non_module_docs_validated": 33,
-  "total_bugs_found": 839,
-  "total_bugs_fixed": 643,
+  "total_bugs_found": 841,
+  "total_bugs_fixed": 645,
   "validator_checks": 28,
   "validator_sub_checks": 43,
   "gams_variables_verified": 953,
   "gams_equations_verified": 139,
   "gams_realizations_verified": 75,
   "file_line_citations_verified": 2598,
-  "last_validation_date": "2026-05-30",
-  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)",
+  "last_validation_date": "2026-05-31",
+  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)",
   "doc_push_2026_05_30": {
    "rounds": "R30-R32",
    "docs": 30,

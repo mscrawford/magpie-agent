@@ -821,7 +821,7 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 #### 9.2 Afforestation Policy
 
-**c32_aff_policy** = none, npi, ndc (`input.gms:9-10`)
+**c32_aff_policy** = none, npi, ndc, affexp (`input.gms:9-10`)
 
 **Default**: `npi` (NPI policy afforestation is on by default)
 
@@ -829,8 +829,9 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 - `none`: No policy-driven afforestation
 - `npi`: National Policy Instruments (implemented policies)
 - `ndc`: Nationally Determined Contributions (Paris pledges)
+- `affexp`: NPI-2025 baseline plus country-specific forest-expansion targets after 2030, set as a share of available potential forest at a given annual rate, differentiated between developing and developed countries (added on develop 2026-05 for the ELEVATE project "Good Performance" scenario)
 
-**Data source**: `f32_aff_pol(t,j,pol32)` from `npi_ndc_aff_pol.cs3` (`input.gms:70-74`)
+**Data source**: `f32_aff_pol(t,j,pol32)` from `npi_ndc_aff_pol.cs3` (`input.gms:70-74`), where `pol32 = none, npi, ndc, affexp` (`sets.gms:19-20`)
 
 #### 9.3 Rotation Calculation
 
@@ -907,7 +908,7 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 - **Interpolation**: Linear between reported years
 
 **p32_aff_pol(t,j)** - `declarations.gms:14`:
-- **Derived**: Selected policy (npi or ndc) based on `c32_aff_policy`
+- **Derived**: Selected policy (npi, ndc, or affexp) based on `c32_aff_policy`
 - **Cumulative**: Total afforestation target by time t
 
 **p32_aff_pol_timestep(t,j)** - `declarations.gms:15`:

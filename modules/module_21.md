@@ -4,7 +4,7 @@
 **Realization**: `selfsuff_reduced` (default) | `exo` | `selfsuff_reduced_bilateral22` (alternatives)
 **Source Files Verified**: declarations.gms, equations.gms, input.gms, sets.gms, preloop.gms, presolve.gms, postsolve.gms, scaling.gms
 **Total Lines**: ~79 (equations.gms, selfsuff_reduced)
-**Total Equations**: 9 (selfsuff_reduced default) | 3 (exo) | 8 (selfsuff_reduced_bilateral22)
+**Total Equations**: 9 (selfsuff_reduced default) | 3 (exo) | 9 (selfsuff_reduced_bilateral22)
 
 ---
 
@@ -88,7 +88,7 @@ livst_egg, livst_milk, fish
 
 ## Equations
 
-> **The default `selfsuff_reduced` realization has 9 equations** (`q21_trade_glo`, `q21_notrade`, `q21_trade_reg`, `q21_trade_reg_up`, `q21_excess_dem`, `q21_excess_supply`, `q21_cost_trade_tariff`, `q21_cost_trade_margin`, `q21_cost_trade_feasibility`). The three trade-cost equations replace a former pair of equations (*q21_cost_trade_reg* + *q21_cost_trade*) that computed trade cost as one combined stream; PR #866 split tariff, margin, and feasibility into separate equations and interface variables. The `selfsuff_reduced_bilateral22` alternative has a different set of 8 equations — see the comparison table below.
+> **The default `selfsuff_reduced` realization has 9 equations** (`q21_trade_glo`, `q21_notrade`, `q21_trade_reg`, `q21_trade_reg_up`, `q21_excess_dem`, `q21_excess_supply`, `q21_cost_trade_tariff`, `q21_cost_trade_margin`, `q21_cost_trade_feasibility`). The three trade-cost equations replace a former pair of equations (*q21_cost_trade_reg* + *q21_cost_trade*) that computed trade cost as one combined stream; PR #866 split tariff, margin, and feasibility into separate equations and interface variables. The `selfsuff_reduced_bilateral22` alternative has a different set of 9 equations — see the comparison table below.
 
 ### 1. Global Production Constraint (`q21_trade_glo`)
 
@@ -289,7 +289,7 @@ q21_cost_trade_feasibility(h2)..
 
 > **Note**: `presolve.gms` releases the fix on `vm_cost_trade_feasibility` each time step (`.lo = 0`, `.up = Inf`) so the solver can freely set its level via this equation (`modules/21_trade/selfsuff_reduced/presolve.gms:11-12`).
 
-> **Bilateral22 / exo differ**: In `selfsuff_reduced_bilateral22` and `exo`, tariff and margin costs are computed differently and there is **no feasibility penalty** — `vm_cost_trade_feasibility.fx(i) = 0` is set in their `presolve.gms`. See the comparison table below.
+> **Bilateral22 / exo differ**: All three realizations compute tariff and margin costs, via different equations. `exo` has **no feasibility penalty** (`vm_cost_trade_feasibility.fx(i) = 0` in `modules/21_trade/exo/presolve.gms`). `selfsuff_reduced_bilateral22` **gained** a feasibility-import valve in the 2026-05 SSP4/SSP5 bilateral bugfix (`v21_import_for_feasibility` plus `q21_cost_trade_feasibility`); its `presolve.gms` was deleted, so it no longer fixes `vm_cost_trade_feasibility` to 0. See the comparison table below.
 
 ---
 
@@ -432,7 +432,7 @@ k_import21(k_trade) = / wood, woodfuel /
 
 **Source**: `modules/21_trade/selfsuff_reduced/declarations.gms:21-23`; consumed in Module 11 `modules/11_costs/default/equations.gms:30-32`.
 
-**Note**: In `exo` and `selfsuff_reduced_bilateral22` there is no feasibility-import mechanism, so `vm_cost_trade_feasibility` is fixed at 0 in their `presolve.gms` (it still exists as an interface variable so Module 11 can sum it unconditionally).
+**Note**: In `exo` there is no feasibility-import mechanism, so `vm_cost_trade_feasibility` is fixed at 0 in `modules/21_trade/exo/presolve.gms` (it still exists as an interface variable so Module 11 can sum it unconditionally). `selfsuff_reduced_bilateral22` **does** have a feasibility-import valve as of the 2026-05 SSP4/SSP5 bugfix (`v21_import_for_feasibility`, penalised via `q21_cost_trade_feasibility`); its `presolve.gms` was removed.
 
 ### Used by Module 21
 
@@ -457,7 +457,7 @@ k_import21(k_trade) = / wood, woodfuel /
 
 > **PR #866 removed *v21_cost_trade_reg*** (the former per-commodity superregional trade-cost variable). Trade costs are now defined directly on the three `vm_cost_trade_*` interface variables via `q21_cost_trade_tariff` / `q21_cost_trade_margin` / `q21_cost_trade_feasibility`.
 
-> `[⚠️ bilateral22 only]`: `v21_trade(i_ex,i_im,k_trade)`, `v21_cost_tariff_reg(i,k_trade)`, and `v21_cost_margin_reg(i,k_trade)` exist **only** in `selfsuff_reduced_bilateral22`. `v21_excess_dem`, `v21_excess_prod`, and `v21_import_for_feasibility` do **not** exist in bilateral22.
+> `[⚠️ bilateral22 only]`: `v21_trade(i_ex,i_im,k_trade)`, `v21_cost_tariff_reg(i,k_trade)`, and `v21_cost_margin_reg(i,k_trade)` exist **only** in `selfsuff_reduced_bilateral22`. `v21_excess_dem` and `v21_excess_prod` do **not** exist in bilateral22. `v21_import_for_feasibility` **does** exist in bilateral22 as `(i_ex,i_im,k_trade)`, added by the 2026-05 SSP4/SSP5 bugfix (it also exists in the default realization with different dimensions).
 
 ---
 
@@ -465,7 +465,7 @@ k_import21(k_trade) = / wood, woodfuel /
 
 The trade module has **three** realizations. All three share the three `vm_cost_trade_*` interface variables but compute them via different equations.
 
-**Equation counts**: `selfsuff_reduced` = 9 | `exo` = 3 | `selfsuff_reduced_bilateral22` = 8.
+**Equation counts**: `selfsuff_reduced` = 9 | `exo` = 3 | `selfsuff_reduced_bilateral22` = 9.
 
 #### `selfsuff_reduced` (default)
 Production-band approach: self-sufficiency ratios and export shares define a baseline; production may fluctuate within a band. 9 equations: `q21_trade_glo`, `q21_notrade`, `q21_trade_reg`, `q21_trade_reg_up`, `q21_excess_dem`, `q21_excess_supply`, `q21_cost_trade_tariff`, `q21_cost_trade_margin`, `q21_cost_trade_feasibility`. Has a feasibility-import valve (`v21_import_for_feasibility`, wood/woodfuel only).
@@ -482,20 +482,21 @@ Trade fully prescribed exogenously; regions do not interact. 3 equations only:
 No feasibility penalty (`vm_cost_trade_feasibility.fx(i) = 0` in `modules/21_trade/exo/presolve.gms:10`). Source: `modules/21_trade/exo/equations.gms`, `modules/21_trade/exo/declarations.gms:20-24`.
 
 #### `selfsuff_reduced_bilateral22`
-Explicit **bilateral** trade flows `v21_trade(i_ex,i_im,k_trade)`, bounded by a corridor around historically observed import-supply ratios. 8 equations:
+Explicit **bilateral** trade flows `v21_trade(i_ex,i_im,k_trade)`, bounded by a corridor around historically observed import-supply ratios. 9 equations:
 
 | Equation | Dims | Purpose |
 |----------|------|---------|
 | `q21_notrade` | `(h,k_notrade)` | Non-tradables produced within super-region |
 | `q21_trade_reg` | `(h,k_trade)` | Regional material balance: production covers supply ± net bilateral trade + balance flows |
 | `q21_trade_lower` | `(i_ex,i_im,k_trade)` | Lower bound on each bilateral flow (historical ratio − flexibility window) |
-| `q21_trade_upper` | `(i_ex,i_im,k_trade)` | Upper bound on each bilateral flow (historical ratio + flexibility window) |
+| `q21_trade_upper` | `(i_ex,i_im,k_trade)` | Upper bound on each bilateral flow (historical ratio + flexibility window), relaxed by the `v21_import_for_feasibility` slack |
 | `q21_costs_tariffs` | `(i,k_trade)` | Bilateral tariff costs per exporter → `v21_cost_tariff_reg` |
 | `q21_costs_margins` | `(i,k_trade)` | Bilateral margin costs per exporter → `v21_cost_margin_reg` |
 | `q21_cost_trade_tariff` | `(i)` | Aggregates `v21_cost_tariff_reg` over commodities → `vm_cost_trade_tariff` |
 | `q21_cost_trade_margin` | `(i)` | Aggregates `v21_cost_margin_reg` over commodities → `vm_cost_trade_margin` |
+| `q21_cost_trade_feasibility` | `(i)` | Penalises `v21_import_for_feasibility` at `s21_cost_import` → `vm_cost_trade_feasibility` |
 
-No feasibility penalty (`vm_cost_trade_feasibility.fx(i) = 0` in `modules/21_trade/selfsuff_reduced_bilateral22/presolve.gms:11`). Source: `modules/21_trade/selfsuff_reduced_bilateral22/equations.gms`, `modules/21_trade/selfsuff_reduced_bilateral22/declarations.gms`.
+Has a feasibility-import valve as of the 2026-05 SSP4/SSP5 bugfix: `v21_import_for_feasibility` (free only for the `k_import21` commodity subset, bounded in `preloop.gms`) relaxes `q21_trade_upper` and is penalised by `q21_cost_trade_feasibility`. The realization's `presolve.gms` was **removed**, so `vm_cost_trade_feasibility` is no longer fixed to 0. Source: `modules/21_trade/selfsuff_reduced_bilateral22/equations.gms`, `modules/21_trade/selfsuff_reduced_bilateral22/declarations.gms`.
 
 > **Note**: the former bilateral22 equation *q21_trade_bilat* and the file-read parameter *f21_exp_shr* described in earlier versions of this doc no longer exist — PR #866 replaced the bilateral22 mechanism with the import-supply-ratio corridor (`q21_trade_lower` / `q21_trade_upper`) above.
 
@@ -784,7 +785,7 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 **Equation Count**: ✅ 9 equations verified for default `selfsuff_reduced`
 - `q21_trade_glo`, `q21_notrade`, `q21_trade_reg`, `q21_trade_reg_up`, `q21_excess_dem`, `q21_excess_supply`, `q21_cost_trade_tariff`, `q21_cost_trade_margin`, `q21_cost_trade_feasibility`
 - All 9 equation formulas verified against `modules/21_trade/selfsuff_reduced/equations.gms`
-- `exo` has 3 equations (`q21_notrade`, `q21_cost_trade_tariff`, `q21_cost_trade_margin`); `selfsuff_reduced_bilateral22` has 8 (see Realization Comparison)
+- `exo` has 3 equations (`q21_notrade`, `q21_cost_trade_tariff`, `q21_cost_trade_margin`); `selfsuff_reduced_bilateral22` has 9 (see Realization Comparison)
 
 **Variables**: ✅ 3 interface variables verified — `vm_cost_trade_tariff`, `vm_cost_trade_margin`, `vm_cost_trade_feasibility`
 - Confirmed consumption in Module 11 `modules/11_costs/default/equations.gms:30-32`

@@ -2,11 +2,11 @@
   "_comment": "Tracks synchronization between MAgPIE codebase and agent documentation",
   "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
   "sync_status": {
-    "last_sync_date": "2026-05-16",
-    "last_sync_commit": "3836bbaa9",
-    "last_sync_commit_date": "2026-05-11",
-    "last_sync_commit_message": "Merge pull request #883 from pascal-sauer/develop",
-    "synced_by": "AI agent (Claude, Opus 4.7)",
+    "last_sync_date": "2026-05-31",
+    "last_sync_commit": "ee98739fd",
+    "last_sync_commit_date": "2026-05-29",
+    "last_sync_commit_message": "Merge pull request #887 from mishkos/f_affexp_policy",
+    "synced_by": "AI agent (Claude, Opus 4.8)",
     "magpie_branch": "develop"
   },
   "pending_review": {
@@ -14,6 +14,55 @@
     "commits": []
   },
   "recent_syncs": [
+    {
+      "date": "2026-05-31",
+      "commit_range": "3836bbaa9..ee98739fd",
+      "summary": "24-commit develop sync; 5 GAMS-affecting commits in 2 modules. module_21 selfsuff_reduced_bilateral22 (non-default) resynced: equation count 8->9, feasibility-import valve added (v21_import_for_feasibility + q21_cost_trade_feasibility), q21_trade_reg_up removed, presolve.gms deleted. module_32 dynamic_may24: affexp afforestation-expansion policy added (4th c32_aff_policy/pol32 option; default unchanged = npi). Validator: 43 checks, 0 errors. Semantic validation: targeted round R40 (3 adversarial auditors vs origin/develop + G2 anchor, 0 false refutations, 2 minor fixed).",
+      "changes_reviewed": [
+        {
+          "commit": "670e92cea",
+          "date": "2026-05-27",
+          "description": "Bugfix to bilateral trade to avoid infes in SSP4/SSP5",
+          "modules_affected": ["21_trade"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "selfsuff_reduced_bilateral22 only. Added feasibility-import valve: new positive vars v21_import_for_feasibility(i_ex,i_im,k_trade) + v21_excess_prod(h,k_trade), new eqs q21_cost_trade_feasibility + q21_trade_reg_up; q21_trade_upper relaxed by the import slack and scenario-scaled; import-supply ratios capped at 1 (p21_import_supply_sum) in preloop; presolve.gms (which fixed vm_cost_trade_feasibility=0) deleted. v21_import_for_feasibility free only for k_import21 subset."
+        },
+        {
+          "commit": "a28df314a",
+          "date": "2026-05-28",
+          "description": "Remove overproduction punishment equation (pending deeper solution)",
+          "modules_affected": ["21_trade"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "selfsuff_reduced_bilateral22 only. Removed eq q21_trade_reg_up and var v21_excess_prod (and the v21_excess_prod term from q21_cost_trade_feasibility). Net: bilateral22 = 9 equations on develop."
+        },
+        {
+          "commit": "a54cd02c6",
+          "date": "2026-05-27",
+          "description": "Added affexp afforestation expansion policy (ELEVATE Good Performance)",
+          "modules_affected": ["32_forestry"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "dynamic_may24: pol32 set gains 4th member affexp; c32_aff_policy options now none/npi/ndc/affexp (default stays npi). affexp = NPI-2025 baseline + country-specific forest expansion targets after 2030 as a share of available potential forest, differentiated developing/developed. Uses the same f32_aff_pol / npi_ndc_aff_pol.cs3 mechanism; no new equation."
+        },
+        {
+          "commit": "ab8e67db0",
+          "date": "2026-05-28",
+          "description": "Update preloop.gms (#889) - codecheck whitespace",
+          "modules_affected": ["21_trade"],
+          "doc_update_needed": false,
+          "doc_update_status": "n/a",
+          "notes": "selfsuff_reduced_bilateral22 preloop.gms: trailing-newline only, no behavior change."
+        }
+      ],
+      "validation_results": {
+        "validator": "validate_consistency.sh: completed=1, 43 checks, 39 passed, 0 errors, 4 pre-existing advisory warnings. Validator re-validated this session via selftest_validator.sh positive control (after fixing a BSD/macOS sed portability bug in sub-test 3).",
+        "semantic_validation_recommended": true,
+        "semantic_validation_done": true,
+        "semantic_validation_round": 40
+      }
+    },
     {
       "date": "2026-05-16",
       "commit_range": "451d1fbad..3836bbaa9",
