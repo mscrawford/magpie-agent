@@ -76,6 +76,11 @@ magpie-agent/
 └── ...
 ```
 
+**Scope: the agent spans three layers of the MAgPIE pipeline and routes across them.**
+- **Core (the GAMS model):** the 46 modules, conservation laws, architecture, and GAMS reference (`modules/`, `cross_module/`, `core_docs/`, `reference/`). The agent's primary domain.
+- **Downstream (R reporting):** `agent/helpers/magpie4_reference.md` (in this repo) routes `report.mif` / IAMC-variable / `getReport` questions to the version-pinned `magpie4` source (`project/version_pins.json` + `.cache/sources/magpie4/`).
+- **Upstream (R preprocessing):** the companion `PREPROC_AGENT.md` (deployed at the MAgPIE root alongside `AGENT.md`; see AGENT.md's preprocessing-agent and twin-agent sections) routes `madrat`/`mrcommons`/`mrmagpie`/... input-provenance questions ("where does this input file come from?").
+
 ---
 
 ## ⚠️ Code Truth Principle
@@ -84,7 +89,7 @@ When analyzing MAgPIE, describe ONLY what is actually implemented in the code.
 
 - ✅ Describe actual equations, parameters, and module implementations
 - ❌ Don't add ecological/economic reality, suggest improvements, or describe ideal features
-- 📖 See `reference/Code_Truth_Principles.md` (full discussion) and `AGENT.md` Step 1d for the 16 anti-confabulation MANDATEs
+- 📖 See `reference/Code_Truth_Principles.md` (full discussion) and `AGENT.md` Step 1d for the 20 anti-confabulation MANDATEs
 
 ---
 
@@ -188,6 +193,8 @@ Note: the snapshot is from 2025-10-10; MAgPIE has churned since (renames in PR #
 | Need to understand agent workflow | Read `AGENT.md` |
 | Tool usage / path issues | Check `core_docs/Tool_Usage_Patterns.md` |
 | Module docs look stale | Check `audit/validation_rounds.json` for recent findings; run `bash scripts/validate_consistency.sh` |
+| report.mif / IAMC variable / model output | Check `agent/helpers/magpie4_reference.md` (version-pinned magpie4 reporting layer) |
+| Input data / where an input file comes from | Route to `PREPROC_AGENT.md` (R preprocessing companion) |
 
 ---
 
