@@ -9,10 +9,22 @@
 ## How to Run
 
 ```bash
+# 1. Prove the guard itself works (positive control). REQUIRED before trusting
+#    any "clean" result — a validator that can't fail is not evidence of health.
+./scripts/selftest_validator.sh    # must print SELFTEST_RESULT: PASS
+
+# 2. Run the validator.
 ./scripts/validate_consistency.sh
 ```
 
-The script runs **a suite of top-level structural checks (each with sub-checks)** across these categories (the run's `=== Summary ===` prints the live counts):
+**Trustworthiness protocol (read this — it is why the validator was dead for ~7 months without anyone noticing):**
+
+- A run is only valid if it reaches the `VALIDATOR_RESULT:` line containing `completed=1`. Anything else means the run ABORTED (exit 99) and the result is **invalid** — do NOT record it as a pass.
+- Exit codes: **0** = PASS (completed, 0 errors), **1** = FAIL (completed, errors > 0), **99** = ABORTED (never completed — the guard is broken, not necessarily the docs).
+- When recording a result in `project/sync_log.json` or a PR description, **paste the `VALIDATOR_RESULT` line (or `.cache/validation_reports/latest_result.json`) verbatim**. Never hand-type "NN/NN clean" — that is exactly how a green that no completed run produced ended up in the history.
+- CI enforces this on every push/PR via `.github/workflows/validate.yml`: the self-test and abort-detection are always blocking; doc drift is advisory until the repo variable `VALIDATOR_STRICT=true` is set.
+
+The script runs **a suite of top-level structural checks (each with sub-checks)** across these categories (the run's `VALIDATOR_RESULT` line prints the live counts; the script is the single source of truth for the full list, which now extends past those below):
 
 1. **Dependency counts** — Same counts across files (Modules 10, 11, 17)
 2. **Equation parameters** — Consistent descriptions

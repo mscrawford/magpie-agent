@@ -1,0 +1,91 @@
+name: validate-consistency
+
+# Sync guard for the magpie-agent documentation.
+#
+# Two guarantees, deliberately separated:
+#   * GUARD HEALTH (always blocking): selftest_validator.sh must pass and the
+#     validator must never ABORT (exit 99). This is the iron guarantee that the
+#     guard is alive and capable of detecting defects — the property whose
+#     absence let a dead validator be reported as "clean" for ~7 months.
+#   * DOC DRIFT (advisory by default): validate_consistency.sh exit 1 (docs
+#     disagree with the GAMS code at the pinned sync commit) is surfaced as a
+#     warning annotation. Set the repo variable VALIDATOR_STRICT=true to make
+#     drift block merges once the existing citation backlog is triaged.
+#
+# The validator needs the parent MAgPIE model tree to produce a meaningful
+# result, so this job reconstructs the deployed layout (magpie/magpie-agent)
+# with the model checked out at the commit recorded in project/sync_log.json.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout magpie-agent
+        uses: actions/checkout@v4
+        with:
+          path: magpie-agent-src
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Read pinned magpie commit from sync_log.json
+        id: pin
+        run: |
+          sha=$(python3 -c "import json,sys; print(json.load(open('magpie-agent-src/project/sync_log.json'))['sync_status']['last_sync_commit'])")
+          if [ -z "$sha" ]; then echo "::error::no last_sync_commit in sync_log.json"; exit 1; fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Pinned magpie commit: $sha"
+
+      - name: Clone MAgPIE model at pinned commit
+        run: |
+          git clone --filter=blob:none https://github.com/magpiemodel/magpie.git magpie
+          git -C magpie checkout "${{ steps.pin.outputs.sha }}"
+          git -C magpie log -1 --format='checked out %h %ci %s'
+
+      - name: Assemble deployed layout and deploy AGENT.md
+        run: |
+          mv magpie-agent-src magpie/magpie-agent
+          cp magpie/magpie-agent/AGENT.md magpie/AGENT.md
+          cp magpie/magpie-agent/AGENT.md magpie/CLAUDE.md
+
+      - name: Guard health — validator self-test (always blocking)
+        run: bash magpie/magpie-agent/scripts/selftest_validator.sh
+
+      - name: Run consistency validator
+        env:
+          STRICT: ${{ vars.VALIDATOR_STRICT || 'false' }}
+        run: |
+          set +e
+          bash magpie/magpie-agent/scripts/validate_consistency.sh
+          rc=$?
+          echo "validator exit code: $rc"
+          if [ "$rc" -eq 99 ]; then
+            echo "::error::Validator ABORTED (exit 99) before completion — the guard is broken, not the docs. Fix the abort cause."
+            exit 1
+          fi
+          if [ "$rc" -eq 1 ]; then
+            echo "::warning::Validator completed with doc-vs-code errors (exit 1). See the VALIDATOR_RESULT line above."
+            if [ "$STRICT" = "true" ]; then
+              echo "::error::VALIDATOR_STRICT=true — doc drift fails the build."
+              exit 1
+            fi
+            exit 0
+          fi
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::Validator exited with unexpected code $rc."
+            exit 1
+          fi
+          echo "Validator PASS (exit 0)."
