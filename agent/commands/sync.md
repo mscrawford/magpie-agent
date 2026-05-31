@@ -30,21 +30,24 @@ Report:
 ### Step 2: Fetch Latest Commits from MAgPIE
 
 ```bash
-# From magpie-agent/, fetch and show recent MAgPIE commits
-git -C .. fetch origin develop
-git -C .. log origin/develop --oneline -20 --date=short --format="%h %ad %s"
+# From magpie-agent/, fetch CANONICAL MAgPIE develop (magpiemodel/magpie) BY URL
+# into a stable ref, then show recent commits. By URL (not a remote name) so this
+# works whether the local clone calls canonical 'origin' (direct clone) or
+# 'upstream' (fork clone). Read-only: writes one ref, never a branch/working tree.
+git -C .. fetch https://github.com/magpiemodel/magpie.git develop:refs/magpie-canonical-develop --force
+git -C .. log refs/magpie-canonical-develop --oneline -20 --date=short --format="%h %ad %s"
 ```
 
 Compare against `sync_status.last_sync_commit` in sync_log.json.
 
-> ⚠️ **Verify against `origin/develop`, never the working tree.** The agent's docs track the canonical `develop` branch, but the surrounding MAgPIE checkout is often on a feature or experiment branch that lags or diverges from develop. Three consequences:
-> - **Read every reference GAMS file via `git -C .. show origin/develop:<path>`**, not `../modules/...` directly. A working-tree file may be a stale or divergent version, and reconciling docs against it syncs to the wrong branch. (This generalizes Rule 4 below from citations to *all* reads.)
-> - **Size the sweep from develop, filtered to module GAMS**, so feature/analysis-branch noise does not distort the workload:
+> ⚠️ **Verify against canonical `magpiemodel/magpie` develop (`refs/magpie-canonical-develop`), never the working tree OR the local fork's `origin/develop`.** The agent's docs track the canonical `develop` branch. The surrounding MAgPIE checkout is often on a feature or experiment branch that lags or diverges from develop — AND in a fork-based setup `origin/develop` is the *fork's* develop, which can itself lag canonical. Three consequences:
+> - **Read every reference GAMS file via `git -C .. show refs/magpie-canonical-develop:<path>`**, not `../modules/...` directly. A working-tree file may be a stale or divergent version, and reconciling docs against it syncs to the wrong branch. (This generalizes Rule 4 below from citations to *all* reads.)
+> - **Size the sweep from canonical develop, filtered to module GAMS**, so feature/analysis-branch noise does not distort the workload:
 >   ```bash
 >   LAST=$(python3 -c "import json;print(json.load(open('project/sync_log.json'))['sync_status']['last_sync_commit'])")
->   git -C .. log --oneline ${LAST}..origin/develop -- 'modules/**/*.gms'   # doc-relevant commits only
+>   git -C .. log --oneline ${LAST}..refs/magpie-canonical-develop -- 'modules/**/*.gms'   # doc-relevant commits only
 >   ```
-> - **`/validate` (`validate_consistency.sh`) greps the working tree**, so a clean run proves only internal + working-tree consistency; it CANNOT detect doc-vs-develop drift. Closing that drift is the job of this sync (which reads develop) and the develop-targeted `/validate-semantic` audit, not the syntactic validator.
+> - **`/validate` (`validate_consistency.sh`) greps the working tree**, so a clean run proves only internal + working-tree consistency; it CANNOT detect doc-vs-develop drift. Closing that drift is the job of this sync (which reads canonical develop) and the develop-targeted `/validate-semantic` audit, not the syntactic validator.
 
 ### Step 3: Identify Changes Requiring Documentation Updates
 
@@ -89,7 +92,7 @@ git -C .. show <commit> -- modules/<module_name>/*.gms
 If documentation updates are needed:
 
 1. **Read the current module doc**: `modules/module_XX.md`
-2. **Compare with the develop code, read via git** (NOT the working tree -- see the ⚠️ box under Step 2): `git -C .. show origin/develop:modules/XX_name/realization/file.gms`
+2. **Compare with the develop code, read via git** (NOT the working tree -- see the ⚠️ box under Step 2): `git -C .. show refs/magpie-canonical-develop:modules/XX_name/realization/file.gms`
 3. **Update the relevant sections**:
    - Equations (if formula changed)
    - Parameters (if added/removed/modified)
@@ -118,13 +121,13 @@ The GAMS variable checker matches backtick-wrapped names. When writing "formerly
 - ✅ Renamed from *pm_timber_yield* (clear historical reference, not flagged)
 
 **Rule 4 — CITE LINES FROM THE FINAL MERGED CODE, not intermediate diffs.**
-Line numbers in citations should come from reading `origin/develop` (or whatever the sync target is) AFTER the pull, not from reading diff output during triage. R20 had 13 line-drift bugs because citations were drafted against diff output. Workflow:
+Line numbers in citations should come from reading canonical develop (`refs/magpie-canonical-develop`, or whatever the sync target is) AFTER the pull, not from reading diff output during triage. R20 had 13 line-drift bugs because citations were drafted against diff output. Workflow:
 1. Finish all code merging first (pull/fast-forward complete)
 2. THEN read the final files to extract citations
 3. Run `scripts/check_gams_citations.sh` before committing — it compares doc citations against actual file line counts
 
 **Rule 5 — USE FULL RELATIVE PATHS in file:line citations to avoid ambiguity.**
-The citation checker resolves bare filenames by "first match within module number" — if a module has both `simple_apr24/preloop.gms` and `detail_apr24/preloop.gms`, the first is picked even when you meant the second. Always write citations as `modules/XX_name/realization_dir/file.gms:NN`, not just `file.gms:NN` or `realization_dir/file.gms:NN`.
+The citation checker resolves a bare filename to the module's **default realization** (read from `config/default.cfg`); only when no default can be determined does it fall back to walk-order first-match. So a bare `preloop.gms:NN` is checked against the *default-compiled* realization — if you actually mean a NON-default realization (e.g. `detail_apr24/preloop.gms` when the default is `simple_apr24`), the bare cite is measured against the wrong file and will mis-flag. Always write citations as `modules/XX_name/realization_dir/file.gms:NN`, not just `file.gms:NN` or `realization_dir/file.gms:NN`.
 
 ### Step 5b: Verify Default Realizations
 

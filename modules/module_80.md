@@ -70,7 +70,7 @@ This includes ALL equations from all active module realizations, EXCEPT the food
 
 ### Key Mechanism: Nonlinearity Fixation
 
-**Step 1 - Fix Nonlinear Terms** (solve.gms:52-55):
+**Step 1 - Fix Nonlinear Terms** (lp_nlp_apr17/solve.gms:52-55):
 - All nonlinear terms are temporarily fixed to best-guess values
 - Each nonlinear module realization MUST provide `nl_fix.gms` file
 - Example: Module 13 (TC) fixes tau factors to previous timestep values
@@ -79,11 +79,11 @@ This includes ALL equations from all active module realizations, EXCEPT the food
 ```gams
 $batinclude "./modules/include.gms" nl_fix
 ```
-(solve.gms:55)
+(lp_nlp_apr17/solve.gms:55)
 
-**Step 2 - LP Solve with CPLEX** (solve.gms:47-78):
+**Step 2 - LP Solve with CPLEX** (lp_nlp_apr17/solve.gms:47-78):
 
-Solver settings (solve.gms:19-24):
+Solver settings (lp_nlp_apr17/solve.gms:19-24):
 - Linear solver: CPLEX
 - QCP solver: CPLEX
 - Threads: 1
@@ -93,26 +93,26 @@ Primary solve:
 ```gams
 solve magpie USING nlp MINIMIZING vm_cost_glo;
 ```
-(solve.gms:65)
+(lp_nlp_apr17/solve.gms:65)
 
-**Note**: Declared as NLP but solved as LP due to fixations and `trylinear` flag (solve.gms:58-61).
+**Note**: Declared as NLP but solved as LP due to fixations and `trylinear` flag (lp_nlp_apr17/solve.gms:58-61).
 
 **Optional second solve** (for matching LHS and RHS, controlled by `s80_secondsolve` scalar):
 ```gams
 if(s80_secondsolve = 1, solve magpie USING nlp MINIMIZING vm_cost_glo; );
 ```
-(solve.gms:66)
+(lp_nlp_apr17/solve.gms:66)
 
-**Step 3 - Minimize Land Use Changes** (solve.gms:74-79):
+**Step 3 - Minimize Land Use Changes** (lp_nlp_apr17/solve.gms:74-79):
 
 If LP solve is optimal (modelstat = 1) or feasible (modelstat = 7):
 1. Fix total costs: `vm_cost_glo.up = vm_cost_glo.l`
 2. Minimize land changes: `solve magpie USING nlp MINIMIZING vm_landdiff`
 3. Release cost constraint: `vm_cost_glo.up = Inf`
 
-Purpose: Among multiple cost-optimal solutions, select the one with minimal land use change compared to previous timestep (solve.gms:68-72).
+Purpose: Among multiple cost-optimal solutions, select the one with minimal land use change compared to previous timestep (lp_nlp_apr17/solve.gms:68-72).
 
-**Step 4 - Check Linear Solve** (solve.gms:84-96):
+**Step 4 - Check Linear Solve** (lp_nlp_apr17/solve.gms:84-96):
 
 Success (modelstat = 1 or 7):
 - Store objective value: `s80_obj_linear = vm_cost_glo.l`
@@ -124,27 +124,27 @@ Failure (modelstat = 2):
 Other failures:
 - Set `s80_obj_linear = Inf` (indicates infeasibility)
 
-**Step 5 - Release Nonlinear Terms** (solve.gms:101-104):
+**Step 5 - Release Nonlinear Terms** (lp_nlp_apr17/solve.gms:101-104):
 
 ```gams
 $batinclude "./modules/include.gms" nl_release
 ```
 
-**Step 6 - Relax and Retry LP** (if infeasible) (solve.gms:106-121):
+**Step 6 - Relax and Retry LP** (if infeasible) (lp_nlp_apr17/solve.gms:106-121):
 
 If `p80_modelstat(t) ≠ 1`:
 - Relax nonlinear term fixations: `$batinclude "./modules/include.gms" nl_relax`
 - Retry LP solve
 - Repeat up to `s80_maxiter` times (default: 30)
 
-**Step 7 - Full NLP Solve with CONOPT4** (solve.gms:124-133):
+**Step 7 - Full NLP Solve with CONOPT4** (lp_nlp_apr17/solve.gms:124-133):
 
-Solver selection (solve.gms:27-35):
+Solver selection (lp_nlp_apr17/solve.gms:27-35):
 - Default NLP solver: CONOPT4
 - Alternative: CONOPT4 + CPLEX (set `c80_nlp_solver = "conopt4+cplex"`)
 - Alternative: CONOPT4 + CONOPT3 (set `c80_nlp_solver = "conopt4+conopt3"`)
 
-CONOPT4 settings (solve.gms:37-39):
+CONOPT4 settings (lp_nlp_apr17/solve.gms:37-39):
 - Tolerance: `Tol_Optimality = s80_toloptimal` (default: 1e-08)
 
 Primary NLP solve:
@@ -152,18 +152,18 @@ Primary NLP solve:
 solve magpie USING nlp MINIMIZING vm_cost_glo;
 if(s80_secondsolve = 1, solve magpie USING nlp MINIMIZING vm_cost_glo; );
 ```
-(solve.gms:130-131)
+(lp_nlp_apr17/solve.gms:130-131)
 
-**Step 8 - Fallback Strategies** (solve.gms:135-146):
+**Step 8 - Fallback Strategies** (lp_nlp_apr17/solve.gms:135-146):
 
 **Fallback A - Additional CONOPT3 solve** (if `s80_add_conopt3 = 1`):
 ```gams
 option nlp = conopt3;
 solve magpie USING nlp MINIMIZING vm_cost_glo;
 ```
-(solve.gms:138-140)
+(lp_nlp_apr17/solve.gms:138-140)
 
-**Fallback B - Modelstat 13 recovery** (solve.gms:145-146):
+**Fallback B - Modelstat 13 recovery** (lp_nlp_apr17/solve.gms:145-146):
 - Modelstat 13: Error during solve (e.g., evaluation error)
 - Retry 1: CONOPT4 with increased variable limit (optfile = 2, Lim_Variable = 1.e25)
 - If still fails, proceed to Fallback C
@@ -211,7 +211,7 @@ Failure (modelstat > 2 and ≠ 7):
 | `s80_secondsolve` | 0 | binary | Enable second solve statement (0=off, 1=on) | input.gms:11 |
 | `s80_toloptimal` | 1e-08 | (1) | CONOPT4 optimality tolerance | input.gms:12 |
 
-**Configuration switches** (solve.gms:27-35):
+**Configuration switches** (lp_nlp_apr17/solve.gms:27-35):
 - `c80_nlp_solver`: "conopt4" (default), "conopt4+cplex", "conopt4+conopt3"
 
 ---
@@ -224,7 +224,7 @@ Failure (modelstat > 2 and ≠ 7):
 
 ### Solve Sequence (nlp_apr17)
 
-**Step 1 - Solver Configuration** (solve.gms:13-27):
+**Step 1 - Solver Configuration** (nlp_apr17/solve.gms:13-27):
 
 ```gams
 option nlp = conopt4;
@@ -234,21 +234,21 @@ magpie.scaleopt  = 1;              // Enable scaling
 magpie.solprint  = 0;              // Suppress detailed solve output
 magpie.holdfixed = 1;              // Keep fixed variables out of basis
 ```
-(solve.gms:14-19)
+(nlp_apr17/solve.gms:14-19)
 
 CONOPT4 settings:
 - Tolerance: `Tol_Optimality = s80_toloptimal` (default: 1e-08)
 - Alternate optfile: `Lim_Variable = 1.e25` (optfile = 2, relaxed variable limits)
 
-**Step 2 - Primary NLP Solve** (solve.gms:33-36):
+**Step 2 - Primary NLP Solve** (nlp_apr17/solve.gms:33-36):
 
 ```gams
 solve magpie USING nlp MINIMIZING vm_cost_glo;
 if(s80_secondsolve = 1, solve magpie USING nlp MINIMIZING vm_cost_glo; );
 ```
-(solve.gms:34-36)
+(nlp_apr17/solve.gms:34-36)
 
-**Step 3 - Fallback Retry Loop** (if modelstat > 2) (solve.gms:47-93):
+**Step 3 - Fallback Retry Loop** (if modelstat > 2) (nlp_apr17/solve.gms:47-93):
 
 Iteration strategies (4 attempts, cyclic):
 
@@ -279,9 +279,9 @@ repeat(
   until (magpie.modelstat <= 2 or s80_counter >= s80_maxiter)
 );
 ```
-(solve.gms:48-92)
+(nlp_apr17/solve.gms:48-92)
 
-**Step 4 - Finalization** (solve.gms:95-109):
+**Step 4 - Finalization** (nlp_apr17/solve.gms:95-109):
 
 Success (modelstat ≤ 2):
 - Save GDX: `mv magpie_p.gdx magpie_YEAR.gdx`
@@ -336,13 +336,13 @@ Failure (modelstat > 2 and ≠ 7):
 
 > ⚠️ **Non-default alternative**: The default `optimization` realization remains `nlp_apr17` (CONOPT4-based). `nlp_ipopt` is an **alternative** realization, added in MAgPIE `develop` (commit 9cba74ab7, PR #871, "Adding IPOPT as an alternative solver for MAgPIE"). To use it, set `cfg$gms$optimization <- "nlp_ipopt"`.
 
-**What is Ipopt in this context**: Ipopt (Interior Point OPTimizer) is an open-source NLP solver implementing a primal-dual interior-point (barrier) method. In MAgPIE it is selected via `option nlp = ipopt;` (solve.gms:13) and is the **only** solver `nlp_ipopt` uses — it does not fall back to CONOPT. This realization shares the direct-NLP structure of `nlp_apr17` (solve once, retry on infeasibility) but swaps the solver and the option-file mechanism.
+**What is Ipopt in this context**: Ipopt (Interior Point OPTimizer) is an open-source NLP solver implementing a primal-dual interior-point (barrier) method. In MAgPIE it is selected via `option nlp = ipopt;` (nlp_ipopt/solve.gms:13) and is the **only** solver `nlp_ipopt` uses — it does not fall back to CONOPT. This realization shares the direct-NLP structure of `nlp_apr17` (solve once, retry on infeasibility) but swaps the solver and the option-file mechanism.
 
 **Use Case**: Provides a non-CONOPT solver path. Useful for cross-checking solutions against the CONOPT-based realizations, or where the Ipopt interior-point method converges better than CONOPT4 on a given problem.
 
 ### Solve Sequence (nlp_ipopt)
 
-**Step 1 - Solver Configuration** (solve.gms:9-55):
+**Step 1 - Solver Configuration** (nlp_ipopt/solve.gms:9-55):
 
 ```gams
 s80_counter = 0;
@@ -351,9 +351,9 @@ p80_modelstat(t) = 14;
 option nlp = ipopt;
 option threads = 1;
 ```
-(solve.gms:9-14)
+(nlp_ipopt/solve.gms:9-14)
 
-`magpie` solver attributes (solve.gms:52-55):
+`magpie` solver attributes (nlp_ipopt/solve.gms:52-55):
 ```gams
 magpie.optfile   = s80_optfile;    // 1 = use the written ipopt.opt file
 magpie.scaleopt  = 1 ;             // enable scaling
@@ -361,25 +361,25 @@ magpie.solprint  = 0 ;             // suppress detailed solve output
 magpie.holdfixed = 1 ;             // keep fixed variables out of basis
 ```
 
-**Step 2 - Write Ipopt option files at runtime** (solve.gms:16-50):
+**Step 2 - Write Ipopt option files at runtime** (nlp_ipopt/solve.gms:16-50):
 
 The CONOPT-based realizations also write their primary option file (`conopt4.opt`) at runtime via `put`/`putclose`; they differ only in writing the secondary `conopt4.op2` via a compile-time `$onecho` block in `solve.gms`. `nlp_ipopt` writes **both** Ipopt option files from GAMS via `put`/`putclose`, into the `File` objects declared in `preloop.gms` (`ipopt.opt` and `ipopt.op2`):
 
-- **`ipopt.opt`** (default optfile, used when `s80_optfile = 1`) — solve.gms:18-29. Comment in code: "starting immediately with the monotone `mu_strategy` to make the behavior more consistent." Settings written: `tol` (= `s80_toloptimal`), `mu_strategy monotone`, `mu_init 1e-5`, `mu_linear_decrease_factor 0.85`, `mu_superlinear_decrease_power 1.02`, `nlp_scaling_method none`, `bound_relax_factor 1e-7`, `honor_original_bounds yes`, `constr_viol_tol 1e-6`, `dependency_detector mumps`.
-- **`ipopt.op2`** (alternative optfile) — solve.gms:33-50. Comment in code: uses "the adaptive `mu_strategy` which starts faster but is less reliable. Seems to behave better for values near zero." Settings include `mu_strategy adaptive`, `mu_oracle quality-function`, `nlp_scaling_method gradient-based`, `acceptable_*` tolerances, `max_iter 10000`, `linear_solver mumps`, `dependency_detector mumps`.
+- **`ipopt.opt`** (default optfile, used when `s80_optfile = 1`) — nlp_ipopt/solve.gms:18-29. Comment in code: "starting immediately with the monotone `mu_strategy` to make the behavior more consistent." Settings written: `tol` (= `s80_toloptimal`), `mu_strategy monotone`, `mu_init 1e-5`, `mu_linear_decrease_factor 0.85`, `mu_superlinear_decrease_power 1.02`, `nlp_scaling_method none`, `bound_relax_factor 1e-7`, `honor_original_bounds yes`, `constr_viol_tol 1e-6`, `dependency_detector mumps`.
+- **`ipopt.op2`** (alternative optfile) — nlp_ipopt/solve.gms:33-50. Comment in code: uses "the adaptive `mu_strategy` which starts faster but is less reliable. Seems to behave better for values near zero." Settings include `mu_strategy adaptive`, `mu_oracle quality-function`, `nlp_scaling_method gradient-based`, `acceptable_*` tolerances, `max_iter 10000`, `linear_solver mumps`, `dependency_detector mumps`.
 
 ⚠️ **Note**: `ipopt.op2` is written to disk but the solve loop never sets `magpie.optfile = 2` (the retry loop reuses the same `s80_optfile` setting — see Step 4). The `.op2` file is therefore prepared but not exercised by the current code path; switching to it would require a manual `magpie.optfile = 2` or code change. (Verified: `solve.gms` contains no assignment of `magpie.optfile` other than the `s80_optfile` assignment at line 52.)
 
-**Step 3 - Primary NLP Solve** (solve.gms:61-67):
+**Step 3 - Primary NLP Solve** (nlp_ipopt/solve.gms:61-67):
 
 ```gams
 solve magpie USING nlp MINIMIZING vm_cost_glo;
 ```
-(solve.gms:62)
+(nlp_ipopt/solve.gms:62)
 
 There is **no `s80_secondsolve` second solve** in `nlp_ipopt` — that scalar is not declared for this realization (see Parameters below).
 
-**Step 4 - Retry Loop** (if modelstat > 2) (solve.gms:69-95):
+**Step 4 - Retry Loop** (if modelstat > 2) (nlp_ipopt/solve.gms:69-95):
 
 If the primary solve returns `modelstat > 2`, a `repeat` loop re-solves with **the same Ipopt optfile settings** (no solver/optfile cycling):
 
@@ -403,13 +403,13 @@ if (magpie.modelstat > 2,
   );
 );
 ```
-(solve.gms:69-95)
+(nlp_ipopt/solve.gms:69-95)
 
-Loop terminates when a solution is found (`modelstat <= 2`) or `s80_counter >= s80_maxiter` (default 30). On the penultimate iteration, `magpie.solprint` is set to 1 so the final (infeasible) solve writes detailed output to the LST file (solve.gms:83-85).
+Loop terminates when a solution is found (`modelstat <= 2`) or `s80_counter >= s80_maxiter` (default 30). On the penultimate iteration, `magpie.solprint` is set to 1 so the final (infeasible) solve writes detailed output to the LST file (nlp_ipopt/solve.gms:83-85).
 
 **Key contrast with `nlp_apr17`**: `nlp_apr17`'s retry loop cycles through 4 strategies (CONOPT4 default → CONOPT4 optfile → CONOPT4 relaxed → CONOPT3) via `s80_resolve_option`. `nlp_ipopt` has **no `s80_resolve_option`** — every retry is an identical Ipopt re-solve. The only thing a retry can change is the solver's internal restart from the previous (failed) point.
 
-**Step 5 - Finalization** (solve.gms:97-109):
+**Step 5 - Finalization** (nlp_ipopt/solve.gms:97-109):
 
 ```gams
 p80_modelstat(t) = magpie.modelstat;
@@ -417,14 +417,14 @@ p80_num_nonopt(t) = magpie.numNOpt;
 ```
 
 Success (`p80_modelstat(t) <= 2`):
-- Save GDX: `mv -f magpie_p.gdx magpie_YEAR.gdx` (solve.gms:100-102)
+- Save GDX: `mv -f magpie_p.gdx magpie_YEAR.gdx` (nlp_ipopt/solve.gms:100-102)
 
 Failure (`p80_modelstat(t) > 2` and `≠ 7`):
-- Zip debug files: `gmszip -r magpie_problem.zip "%gams.scrdir%"`, renamed `magpie_problem_YEAR.zip` (solve.gms:104-106)
+- Zip debug files: `gmszip -r magpie_problem.zip "%gams.scrdir%"`, renamed `magpie_problem_YEAR.zip` (nlp_ipopt/solve.gms:104-106)
 - Dump full data: `Execute_Unload "fulldata.gdx"`
-- ABORT: "no feasible solution found!" (solve.gms:107-108)
+- ABORT: "no feasible solution found!" (nlp_ipopt/solve.gms:107-108)
 
-This finalization block is identical to `nlp_apr17`'s (solve.gms:97-109 in both files).
+This finalization block is identical to `nlp_apr17`'s (nlp_ipopt/solve.gms:97-109 in both files).
 
 ### Parameters (nlp_ipopt)
 
@@ -492,13 +492,13 @@ This finalization block is identical to `nlp_apr17`'s (solve.gms:97-109 in both 
 
 ### Parallel Solve Mechanism
 
-**Step 1 - Initialize Handles** (solve.gms:8-30):
+**Step 1 - Initialize Handles** (nlp_par/solve.gms:8-30):
 
 ```gams
 magpie.solvelink = 3;   // Asynchronous solve (submit, check later)
 option threads = 1;     // Each regional solve uses 1 thread
 ```
-(solve.gms:17-22)
+(nlp_par/solve.gms:17-22)
 
 Parameters for parallel tracking:
 | Parameter | Dimensions | Description | Reference |
@@ -510,7 +510,7 @@ Parameters for parallel tracking:
 | `p80_counter_modelstat(h)` | superregion | Counter for successful solves (modelstat ≤ 2) | declarations.gms:13 |
 | `p80_resolve_option(h)` | superregion | Current fallback strategy (1-4) | declarations.gms:14 |
 
-**Step 2 - Submission Loop** (submit all regions) (solve.gms:36-46):
+**Step 2 - Submission Loop** (submit all regions) (nlp_par/solve.gms:36-46):
 
 ```gams
 loop(h,
@@ -527,11 +527,11 @@ loop(h,
   p80_handle(h) = magpie.handle;            // Store handle for later collection
 );
 ```
-(solve.gms:37-46)
+(nlp_par/solve.gms:37-46)
 
 **Key mechanism**: By activating/deactivating set elements (`h2`, `i2`, `j2`), each solve only includes equations for one superregion. Regions are independent because trade is fixed.
 
-**Step 3 - Collection Loop** (collect results asynchronously) (solve.gms:48-136):
+**Step 3 - Collection Loop** (collect results asynchronously) (nlp_par/solve.gms:48-136):
 
 Main loop structure:
 ```gams
@@ -562,9 +562,9 @@ repeat
 
 until card(p80_handle) = 0 OR smax(h, p80_counter(h)) >= s80_maxiter;
 ```
-(solve.gms:49-136)
+(nlp_par/solve.gms:49-136)
 
-**Step 4 - Retry Logic** (per region) (solve.gms:70-127):
+**Step 4 - Retry Logic** (per region) (nlp_par/solve.gms:70-127):
 
 If `p80_modelstat(t,h) > 2` (infeasible/error):
 
@@ -584,7 +584,7 @@ If `p80_counter(h) >= s80_maxiter`:
 - Write LST file with solve details
 - Clear handle: `p80_extra_solve(h) = 0`
 
-**Step 5 - Success Handling** (per region) (solve.gms:82-94):
+**Step 5 - Success Handling** (per region) (nlp_par/solve.gms:82-94):
 
 If `p80_modelstat(t,h) ≤ 2` (optimal/locally optimal):
 
@@ -597,9 +597,9 @@ else
   p80_handle(h) = 0;  // Clear handle (done)
 );
 ```
-(solve.gms:84-93)
+(nlp_par/solve.gms:84-93)
 
-**Step 6 - Final Check** (solve.gms:137-140):
+**Step 6 - Final Check** (nlp_par/solve.gms:137-140):
 
 If ANY region failed:
 ```gams
@@ -627,7 +627,7 @@ if (smax(h,p80_modelstat(t,h)) > 2 and smax(h,p80_modelstat(t,h)) ne 7,
 
 ### Linear Solvers (lp_nlp_apr17 only)
 
-**CPLEX** (solve.gms:19-24):
+**CPLEX** (lp_nlp_apr17/solve.gms:19-24):
 - Used for LP warmstart phase
 - Settings: 1 thread, default options (empty cplex.opt file)
 - Purpose: Fast linear solver for convex problems
@@ -672,11 +672,11 @@ For `nlp_ipopt` the same `s80_optfile` switch instead selects `ipopt.opt` (value
 - Keep fixed variables out of basis
 - Reduces basis size, improves solve efficiency
 
-**magpie.trylinear** = 1 (lp_nlp_apr17 LP phase) (solve.gms:47):
+**magpie.trylinear** = 1 (lp_nlp_apr17 LP phase) (lp_nlp_apr17/solve.gms:47):
 - Signal GAMS to attempt linear solve if no nonlinearities detected
 - Used after `nl_fix` fixations
 
-**magpie.solvelink** = 3 (nlp_par only) (solve.gms:17):
+**magpie.solvelink** = 3 (nlp_par only) (nlp_par/solve.gms:17):
 - Asynchronous solve mode
 - Returns immediately with handle, allows parallel submission
 
@@ -718,7 +718,7 @@ option limcol     = 0;         // No column listing limit (full model)
 
 ### 1. **No Guarantee of Global Optimum** (Nonlinear Models)
 
-**What the code does**: Solves nonlinear programming (NLP) problem using local solvers (CONOPT4, CONOPT3) (solve.gms:130, nlp_apr17/solve.gms:34).
+**What the code does**: Solves nonlinear programming (NLP) problem using local solvers (CONOPT4, CONOPT3) (lp_nlp_apr17/solve.gms:130, nlp_apr17/solve.gms:34).
 
 **Limitation**: NLP solvers find locally optimal solutions, not globally optimal. The solution depends on:
 - Starting point (LP warmstart in lp_nlp_apr17 provides better starting point)
@@ -736,7 +736,7 @@ option limcol     = 0;         // No column listing limit (full model)
 2. `nl_release.gms`: Release nonlinear terms after LP solve
 3. `nl_relax.gms`: Relax fixations if LP is infeasible
 
-**What happens if missing**: Model run cancelled by error (solve.gms:88-92):
+**What happens if missing**: Model run cancelled by error (lp_nlp_apr17/solve.gms:88-92):
 ```
 "Unfixed nonlinear terms in linear solve!"
 abort
@@ -765,7 +765,7 @@ abort
 
 ### 4. **Land Difference Minimization Only in lp_nlp_apr17**
 
-**What lp_nlp_apr17 does**: After optimal solution found, minimize `vm_landdiff` subject to cost constraint (solve.gms:74-79):
+**What lp_nlp_apr17 does**: After optimal solution found, minimize `vm_landdiff` subject to cost constraint (lp_nlp_apr17/solve.gms:74-79):
 ```gams
 vm_cost_glo.up = vm_cost_glo.l;
 solve magpie USING nlp MINIMIZING vm_landdiff;
@@ -782,7 +782,7 @@ vm_cost_glo.up = Inf;
 
 ### 5. **No Parallelization Within Regions** (nlp_par)
 
-**What nlp_par does**: Solves each superregion `h` in parallel (e.g., 10 superregions on 10 cores) (solve.gms:37-46).
+**What nlp_par does**: Solves each superregion `h` in parallel (e.g., 10 superregions on 10 cores) (nlp_par/solve.gms:37-46).
 
 **What it does NOT do**: Parallelize within a region (e.g., split 5,920 cells in one superregion across multiple cores).
 
@@ -854,17 +854,17 @@ So modelstat 7 saves no timestep GDX and triggers no abort: the run continues wi
 
 ### 10. **Asynchronous Handle Management Complexity** (nlp_par)
 
-**Complexity**: nlp_par uses GAMS asynchronous solve API with handle submission, status checking, collection, and deletion (solve.gms:36-136).
+**Complexity**: nlp_par uses GAMS asynchronous solve API with handle submission, status checking, collection, and deletion (nlp_par/solve.gms:36-136).
 
 **Error-prone aspects**:
-- Handle leaks if `handledelete` fails (solve.gms:80)
-- Race conditions in handle status checking (solve.gms:51)
-- NA modelstat requires special handling (solve.gms:66, 87)
-- Sleep/wait mechanisms for coordination (solve.gms:133-134)
+- Handle leaks if `handledelete` fails (nlp_par/solve.gms:80)
+- Race conditions in handle status checking (nlp_par/solve.gms:51)
+- NA modelstat requires special handling (nlp_par/solve.gms:66, 87)
+- Sleep/wait mechanisms for coordination (nlp_par/solve.gms:133-134)
 
 **Implication**: nlp_par is the most complex realization, hardest to debug, and most susceptible to subtle bugs in parallel execution.
 
-**Current status**: Code includes error handling for most issues (solve.gms:74-77, 80, 118), but parallel execution remains inherently more fragile than sequential.
+**Current status**: Code includes error handling for most issues (nlp_par/solve.gms:74-77, 80, 118), but parallel execution remains inherently more fragile than sequential.
 
 ---
 

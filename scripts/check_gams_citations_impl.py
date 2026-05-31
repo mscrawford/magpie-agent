@@ -104,6 +104,41 @@ def main():
             if f.endswith('.gms'):
                 file_index[f].append(os.path.join(root, f))
 
+    # Map module number -> DEFAULT realization dir (from config/default.cfg).
+    # A bare-basename cite (`declarations.gms:NN` with no realization path) must
+    # resolve to the realization MAgPIE compiles by DEFAULT, not whatever the
+    # filesystem walk returns first. Walk-order resolution measured cites against
+    # the wrong (often shorter) realization and produced false LINE errors — e.g.
+    # module_58.md cites resolved to 58_peatland/off/ (18 lines) instead of the
+    # default v2/ (85 lines), flagging every cite past line 18.
+    modules_dir = os.path.join(magpie_root, 'modules')
+    suffix_to_num = {}
+    if os.path.isdir(modules_dir):
+        for d in os.listdir(modules_dir):
+            md = re.match(r'^(\d+)_(.+)$', d)
+            if md and os.path.isdir(os.path.join(modules_dir, d)):
+                suffix_to_num[md.group(2)] = md.group(1)
+    module_default_realization = {}
+    cfg_re = re.compile(r'cfg\$gms\$(\w+)\s*<-\s*"([^"]+)"')
+    try:
+        with open(os.path.join(magpie_root, 'config', 'default.cfg'),
+                  'r', errors='replace') as cfgf:
+            for cfg_line in cfgf:
+                cm = cfg_re.search(cfg_line)
+                if not cm:
+                    continue
+                key, real = cm.group(1), cm.group(2).strip()
+                # Skip composite/multi-token defaults (e.g. "a, b, c") — no
+                # single realization dir; fall through to walk-order for those.
+                if ',' in real or ' ' in real:
+                    continue
+                num = suffix_to_num.get(key)
+                # Only trust the mapping if the realization dir actually exists.
+                if num and os.path.isdir(os.path.join(modules_dir, f'{num}_{key}', real)):
+                    module_default_realization[num] = real
+    except OSError:
+        pass
+
     # Cache file contents (only when needed)
     file_lines_cache = {}
 
@@ -355,16 +390,30 @@ def main():
                         continue
 
             if mod_candidates:
-                actual = mod_candidates[0]
-                # WARN only if still ambiguous after narrowing
-                if len(mod_candidates) > 1:
-                    ambig += 1
-                    relatives = [os.path.relpath(c, magpie_root) for c in mod_candidates]
-                    warnings.append(
-                        f"  AMBIG: {gms_hint}:{start} resolved to {os.path.relpath(actual, magpie_root)} "
-                        f"by walk-order in {doc_short} — other candidates: {relatives[1:]}. "
-                        f"Use full path per MANDATE 16."
-                    )
+                # Prefer the module's DEFAULT realization (config/default.cfg)
+                # over walk-order. Resolving to the default is deterministic and
+                # correct: a bare cite describes the default-compiled module.
+                default_real = module_default_realization.get(mod_num)
+                default_match = None
+                if default_real:
+                    for c in mod_candidates:
+                        if f'/{default_real}/' in c:
+                            default_match = c
+                            break
+                if default_match:
+                    actual = default_match
+                    # Deterministic — not a walk-order guess, so no AMBIG warning.
+                else:
+                    actual = mod_candidates[0]
+                    # WARN only if still ambiguous after narrowing
+                    if len(mod_candidates) > 1:
+                        ambig += 1
+                        relatives = [os.path.relpath(c, magpie_root) for c in mod_candidates]
+                        warnings.append(
+                            f"  AMBIG: {gms_hint}:{start} resolved to {os.path.relpath(actual, magpie_root)} "
+                            f"by walk-order in {doc_short} — other candidates: {relatives[1:]}. "
+                            f"Use full path per MANDATE 16."
+                        )
             elif candidates:
                 actual = candidates[0]
 

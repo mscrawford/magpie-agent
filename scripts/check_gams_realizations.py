@@ -34,6 +34,8 @@ ALLOWLIST = {
     "substitution_dec18",
     "price_jan20",
     "fbask_jan16",
+    # Removed upstream; identical to bii_target (module_44.md historical note).
+    "bii_target_apr24",
 }
 
 

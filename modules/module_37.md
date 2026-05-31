@@ -326,7 +326,7 @@ Module 37 has **2 realizations**:
 
 **Purpose**: Include climate change impacts on labor productivity
 
-**Mechanism** (`preloop.gms:8`):
+**Mechanism** (`exo/preloop.gms:8`):
 ```gams
 pm_labor_prod(t,j) = f37_labor_prod(t,j,"%c37_labor_rcp%","%c37_labor_metric%",
                                      "%c37_labor_intensity%","%c37_labor_uncertainty%");
@@ -334,7 +334,7 @@ pm_labor_prod(t,j) = f37_labor_prod(t,j,"%c37_labor_rcp%","%c37_labor_metric%",
 
 **Data Source**: `f37_labourprodimpact.cs3` (from LAMACLIMA project)
 
-**Climate Scenario Switch** (`input.gms:8-11`, `preloop.gms:10-11`):
+**Climate Scenario Switch** (`exo/input.gms:8-11`, `exo/preloop.gms:10-11`):
 - `c37_labor_prod_scenario = "cc"` (default): Climate change impacts included
 - `c37_labor_prod_scenario = "nocc"`: All years fixed to 1995 (no climate change)
 - `c37_labor_prod_scenario = "nocc_hist"`: Fixed after `sm_fix_cc` year (e.g., 2025)
@@ -396,7 +396,7 @@ Module 37 provides **1 interface parameter** to other modules:
 - RCP8.5 by 2100: 0.50-0.90 (10-50% loss in tropics)
 
 **Calculated In**:
-- `exo` realization: `preloop.gms:8`
+- `exo` realization: `exo/preloop.gms:8`
 - `off` realization: `off/preloop.gms:8`
 
 **Used By**: Module 38 (Factor Costs)
@@ -529,13 +529,13 @@ Climate Change (ESM)
    - All scenarios identical before `sm_fix_cc` year
 
 4. ✅ **Selects scenario based on configuration**:
-   - Selection: `preloop.gms:8`
+   - Selection: `exo/preloop.gms:8`
    - Uses global settings (RCP, metric, intensity, uncertainty)
 
 5. ✅ **Supports climate scenario switching**:
-   - "cc": Full climate change (`preloop.gms:8`)
-   - "nocc": Fixed to 1995 (`preloop.gms:10`)
-   - "nocc_hist": Fixed after `sm_fix_cc` (`preloop.gms:11`)
+   - "cc": Full climate change (`exo/preloop.gms:8`)
+   - "nocc": Fixed to 1995 (`exo/preloop.gms:10`)
+   - "nocc_hist": Fixed after `sm_fix_cc` (`exo/preloop.gms:11`)
 
 6. ✅ **Provides two realizations**:
    - `exo`: Heat stress impacts included (`exo/realization.gms`)

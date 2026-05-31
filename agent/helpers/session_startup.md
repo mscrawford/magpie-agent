@@ -35,11 +35,15 @@ cd "$AGENT_DIR" && git pull --rebase origin main 2>/dev/null
 # Re-deploy AGENT.md to both targets (CLAUDE.md is what Claude loads!)
 cp "$AGENT_DIR/AGENT.md" "$MAGPIE_DIR/AGENT.md" 2>/dev/null
 cp "$AGENT_DIR/AGENT.md" "$MAGPIE_DIR/CLAUDE.md" 2>/dev/null
-# Fetch latest MAgPIE develop (so we can detect new commits)
-cd "$MAGPIE_DIR" && git fetch origin develop --quiet 2>/dev/null
+# Fetch CANONICAL MAgPIE develop (magpiemodel/magpie) BY URL, so freshness is
+# measured against the upstream the docs + CI pin to — not the local fork or
+# working tree. Robust to remote naming (fork clones call canonical 'upstream';
+# direct clones call it 'origin'). Read-only: writes one ref, never a branch or
+# the working tree. Degrades silently if offline.
+cd "$MAGPIE_DIR" && git fetch https://github.com/magpiemodel/magpie.git develop:refs/magpie-canonical-develop --force --quiet 2>/dev/null
 ```
 
-**Why**: Team members push corrections, new helpers, and lessons learned to magpie-agent. Without this step, you'd be working with stale documentation. The MAgPIE fetch (not pull) lets us count new commits without changing the user's working tree.
+**Why**: Team members push corrections, new helpers, and lessons learned to magpie-agent. Without this step, you'd be working with stale documentation. The MAgPIE fetch (not pull) lets us count new commits without changing the user's working tree. It fetches **canonical** `magpiemodel/magpie` develop by URL — not the local fork's `origin/develop`, which can itself lag canonical — so the staleness badge reflects distance from the upstream the docs are pinned to.
 
 **Note**: The script handles both possible working directories (magpie/ or magpie-agent/) since the AI tool may start in either location.
 
@@ -82,18 +86,26 @@ git -C .. --no-pager log --oneline -1
 # Last sync point (from magpie-agent)
 LAST_SYNC=$(python3 -c "import json; d=json.load(open('project/sync_log.json')); print(d['sync_status']['last_sync_commit'])" 2>/dev/null)
 echo "Last sync commit: ${LAST_SYNC}"
-# Commits since last sync (use the dynamic value, NOT a hardcoded hash)
-git -C .. --no-pager log --oneline ${LAST_SYNC}..HEAD 2>/dev/null | wc -l
+# Commits the pinned sync-commit is BEHIND canonical magpiemodel/magpie develop
+# (the real staleness question — NOT distance from the local working tree).
+# Uses the ref fetched in Step 0; prints "unknown" if that fetch failed (e.g.
+# offline login node) so the badge shows ⚪ rather than a misleading 0.
+if git -C .. rev-parse --verify -q refs/magpie-canonical-develop >/dev/null; then
+  git -C .. --no-pager rev-list --count ${LAST_SYNC}..refs/magpie-canonical-develop 2>/dev/null
+else
+  echo "unknown"
+fi
 ```
 
-**Staleness assessment:**
+**Staleness assessment** (commits the pin is behind **canonical** `magpiemodel/magpie` develop):
 | Commits behind | Days since sync | Badge | Action |
 |---------------|----------------|-------|--------|
 | 0-5 | <14 days | 🟢 Current | None needed |
 | 6-20 | 14-30 days | 🟡 Aging | Mention to user, suggest `/sync` |
 | 21+ | >30 days | 🔴 Stale | Warn user, recommend sync before trusting docs |
+| unknown | — | ⚪ Unknown | Canonical fetch failed (offline?); retry when network returns |
 
-**Report format:** `📊 Docs synced: [badge] (X commits behind, last sync YYYY-MM-DD)`
+**Report format:** `📊 Docs synced: [badge] (X commits behind canonical develop, last sync YYYY-MM-DD)`
 
 ### Step 2b: Semantic Validation Freshness
 

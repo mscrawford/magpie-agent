@@ -7,7 +7,7 @@
 ---
 
 > ⚙️ **Default Realization**: `bii_target`
-> Confirmed in `config/default.cfg`: `cfg$gms$biodiversity <- "bii_target"`. Only alternative: `bv_btc_mar21` (global optimization of range-rarity weighted biodiversity stock losses/gains via a price). Note: `bii_target_apr24` was removed upstream (identical to `bii_target`; see CHANGELOG).
+> Confirmed in `config/default.cfg`: `cfg$gms$biodiversity <- "bii_target"`. Only alternative: `bv_btc_mar21` (global optimization of range-rarity weighted biodiversity stock losses/gains via a price). Note: *bii_target_apr24* was removed upstream (identical to `bii_target`; see CHANGELOG).
 
 
 ## Purpose
