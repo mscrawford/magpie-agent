@@ -76,7 +76,8 @@ fi
 # a premature exit after the trap is installed and confirm the safety net fires.
 echo "[3/3] premature death should ABORT loudly (exit 99)"
 build_clean_fixture
-sed '/^trap on_exit EXIT$/a echo "[selftest] forcing early exit"; exit 7' \
+# Portable injection: BSD/macOS `sed` rejects GNU's one-line `/pat/a text`, so use awk.
+awk '{ print } /^trap on_exit EXIT$/ { print "echo \"[selftest] forcing early exit\"; exit 7" }' \
     "$VALIDATOR" > "$FIXTURE/scripts/validate_aborts.sh"
 run validate_aborts.sh
 if [ "$RC" -eq 99 ] && grep -q "ABORTED before completion" <<<"$OUT"; then
