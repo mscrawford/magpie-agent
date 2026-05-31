@@ -3,7 +3,43 @@
 # validate_consistency.sh
 # Validates documentation consistency across the magpie-agent ecosystem
 
-set -e
+# Robustness: deliberately NOT `set -e`.
+#
+# This validator's job is to probe for ABSENT things — greps that don't match,
+# counters that start at zero. Under `set -e` those normal non-zero returns
+# abort the whole run. From this file's creation (2025-10-26) until 2026-05-31
+# the combination of `set -e` and `((VAR++))`-from-0 silently killed the script
+# at the very first check, yet commit messages and project/sync_log.json kept
+# recording "NN/NN clean" results that no completed run ever produced.
+#
+# The fix has two parts:
+#   1. Use pipefail but NOT -e/-u, so benign empty greps and zero counters
+#      don't abort the run.
+#   2. An EXIT trap + completion sentinel (VALIDATOR_COMPLETED). If the script
+#      exits for ANY reason before reaching its verdict block, the trap fires
+#      LOUDLY and exits 99 (ABORTED) — a state distinct from 0 (PASS) and
+#      1 (FAIL). A silent partial run can no longer be mistaken for a pass.
+set -o pipefail
+
+VALIDATOR_COMPLETED=0
+on_exit() {
+    local rc=$?
+    if [ "$VALIDATOR_COMPLETED" -ne 1 ]; then
+        {
+            echo ""
+            echo "================================================================"
+            echo "FATAL: validate_consistency.sh ABORTED before completion (rc=$rc)."
+            echo "This run did NOT reach its verdict block. Results are INVALID and"
+            echo "MUST NOT be recorded as a pass. Treat the guard as broken until"
+            echo "the abort cause is fixed (re-run with 'bash -x' to locate it)."
+            echo "================================================================"
+        } >&2
+        exit 99
+    fi
+    # Completed normally: preserve the verdict block's own exit code.
+    exit "$rc"
+}
+trap on_exit EXIT
 
 # Color codes
 RED='\033[0;31m'
@@ -1073,8 +1109,44 @@ if [ $ERRORS -gt 0 ] || [ $WARNINGS -gt 0 ]; then
     log "See AGENT.md and core_docs/Response_Guidelines.md for authoritative sources."
 fi
 
-# Exit code
-if [ $ERRORS -gt 0 ]; then
+# ============
+# Machine-readable verdict.
+# Cite the VALIDATOR_RESULT line (or latest_result.json) verbatim in
+# project/sync_log.json and PR descriptions. NEVER hand-type "NN/NN clean":
+# `completed=1` is the proof the run actually reached this point — the missing
+# guarantee that let a dead validator be reported as passing for ~7 months.
+# ============
+if [ "$ERRORS" -gt 0 ]; then
+    VERDICT="FAIL"
+else
+    VERDICT="PASS"
+fi
+
+# Mark completion BEFORE emitting results so the EXIT trap treats this as a
+# clean finish rather than an abort.
+VALIDATOR_COMPLETED=1
+
+RESULT_LINE="VALIDATOR_RESULT: completed=1 checks=$TOTAL_CHECKS passed=$PASSED_CHECKS warnings=$WARNINGS errors=$ERRORS verdict=$VERDICT"
+echo ""
+log_color "${BLUE}${RESULT_LINE}${NC}" "$RESULT_LINE"
+
+RESULT_JSON="${REPORT_DIR}/latest_result.json"
+cat > "$RESULT_JSON" <<EOF
+{
+  "completed": true,
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "checks": $TOTAL_CHECKS,
+  "passed": $PASSED_CHECKS,
+  "warnings": $WARNINGS,
+  "errors": $ERRORS,
+  "verdict": "$VERDICT"
+}
+EOF
+log_color "${BLUE}Result JSON: $RESULT_JSON${NC}" "Result JSON: $RESULT_JSON"
+
+# Exit code: 0 = PASS, 1 = FAIL (completed with errors). 99 = ABORTED is
+# emitted by the EXIT trap when the run never reaches this block.
+if [ "$ERRORS" -gt 0 ]; then
     exit 1
 else
     exit 0
