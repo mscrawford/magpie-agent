@@ -33,6 +33,27 @@ Would you like me to complete the setup now?
 
 ---
 
+## Prerequisite — download MAgPIE input data (recommended)
+
+The agent answers some questions from the model's **actual input data**, and the
+steps below pin to it. Running `download_data` in the parent magpie root populates
+`input/` and `modules/*/input/` with the `.cs3`/`.mz` files **and writes
+`input/renv.lock`** — which Step 4 (`sync_magpie4_clone.py`) and the companion
+preproc-agent read to pin package versions to the exact data revision. Without it,
+those steps fall back to the bundled `project/version_pins.json` snapshot (may lag)
+and input-data values aren't legible.
+
+```bash
+# from the parent magpie/ root (NOT magpie-agent/):
+cd .. && Rscript scripts/start/download_data.R && cd magpie-agent
+```
+
+Requires R with `gms`/`magclass` and access to the MAgPIE data repositories
+(`cfg$repositories`). On the PIK cluster this is fast — the `intern`/mirror paths
+in `/p/projects/rd3mod/R/.Rprofile` resolve to local filesystem copies. For a public
+off-cluster clone the data may be unavailable; skip it and the agent still works for
+GAMS-code questions (only input-data legibility and exact version pinning are lost).
+
 ## Bootstrap Steps
 
 If user agrees, run these commands:
