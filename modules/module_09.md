@@ -172,7 +172,7 @@ i09_pop_raw(t_all,i,pop_gdp_scen09) = sum(i_to_iso(i,iso), f09_pop_iso(t_all,iso
 **Dimensions**: (t_all, iso)
 **Units**: USD17MER per capita per yr (2017 US dollars, Market Exchange Rates)
 **Used by**: 2 modules (15, 36)
-**Calculation** (`preloop.gms:29-33`):
+**Raw calculation** (`preloop.gms:29-33`, produces `i09_gdp_pc_mer_iso_raw`; the `im_*` interface is the scenario-selected slice assigned later in preloop):
 ```gams
 i09_gdp_pc_mer_iso_raw(t_all,iso,pop_gdp_scen09) =
   f09_gdp_mer_iso(t_all,iso,pop_gdp_scen09) / f09_pop_iso(t_all,iso,pop_gdp_scen09);
@@ -209,7 +209,7 @@ i09_gdp_pc_mer_raw(t_all,i,pop_gdp_scen09)$(i09_pop_raw(t_all,i,pop_gdp_scen09) 
 - Timber demand elasticity (Module 73)
 - Factor costs (Module 38)
 
-**Calculation** (`preloop.gms:23-27`):
+**Raw calculation** (`preloop.gms:23-27`, produces `i09_gdp_pc_ppp_iso_raw`; the `im_*` interface is the scenario-selected slice assigned later in preloop):
 ```gams
 i09_gdp_pc_ppp_iso_raw(t_all,iso,pop_gdp_scen09) =
   f09_gdp_ppp_iso(t_all,iso,pop_gdp_scen09) / f09_pop_iso(t_all,iso,pop_gdp_scen09);

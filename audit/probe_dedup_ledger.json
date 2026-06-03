@@ -1,6 +1,6 @@
 {
   "ledger_version": "1.0",
-  "captured_at": "2026-05-30",
+  "captured_at": "2026-06-03",
   "_purpose": "Track GAMS modules / variables / equations / realizations named in agent-loaded text or prior round results, so future flywheel probes don't accidentally measure recognition rather than capability. See audit/flywheel_rubric.md \u00a75 (round composition) and \u00a78 (stability mechanisms).",
   "schema": {
     "name": "string \u2014 exact GAMS module / variable / equation / realization name as it appears in source",
@@ -43,11 +43,12 @@
       ],
       "source_files": [
         "R20 Q1, Q2, Q3 (forestry interactions with carbon); 9 mentions",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_14",
@@ -73,11 +74,12 @@
         "R21 Q1 (PR #866 bilateral-trade overhaul); 4 mentions",
         "R27 (auto-appended)",
         "R28 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_38",
@@ -103,11 +105,12 @@
       ],
       "source_files": [
         "R21 Q3 (secdforest carbon, PR #876); R20 Q1, Q3",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-04-20",
       "first_named_round": 20,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_71",
@@ -130,11 +133,12 @@
       ],
       "source_files": [
         "R20 Q1, Q3 (age classes)",
-        "R32 doc-improvement push (2026-05-30, doc-audit)"
+        "R32 doc-improvement push (2026-05-30, doc-audit)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-04-20",
       "first_named_round": 20,
-      "retirement_eligible_after": 35
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_62",
@@ -144,11 +148,12 @@
       ],
       "source_files": [
         "bioplastic/material questions; 4 mentions",
-        "R31 doc-improvement push (2026-05-30, doc-audit)"
+        "R31 doc-improvement push (2026-05-30, doc-audit)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 34
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_29",
@@ -159,11 +164,12 @@
       "source_files": [
         "R20 Q1, Q3 (cropland tree cover)",
         "R25 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-04-20",
       "first_named_round": 20,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_80",
@@ -203,11 +209,12 @@
       ],
       "source_files": [
         "R19 Q4 (irrigation); MANDATE 3, 4 worked examples (s42_pumping)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_22",
@@ -217,11 +224,12 @@
       ],
       "source_files": [
         "conservation; 3 mentions across early rounds",
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_58",
@@ -248,11 +256,12 @@
         "R23 (re-use, Q1 M16 aggregation)",
         "R27 (auto-appended)",
         "R28 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 6,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_10",
@@ -266,11 +275,12 @@
         "R27 (auto-appended)",
         "R28 (auto-appended)",
         "R29 (auto-appended)",
-        "R30 doc-improvement push (2026-05-30, doc-audit)"
+        "R30 doc-improvement push (2026-05-30, doc-audit)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 33
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_41",
@@ -280,11 +290,12 @@
       ],
       "source_files": [
         "R19 Q4 (area_equipped_for_irrigation)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_45",
@@ -294,11 +305,12 @@
       ],
       "source_files": [
         "climate scenarios",
-        "R32 doc-improvement push (2026-05-30, doc-audit)"
+        "R32 doc-improvement push (2026-05-30, doc-audit)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 35
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_59",
@@ -309,11 +321,12 @@
       "source_files": [
         "R19 Q5 (som \u2014 soil organic matter)",
         "R28 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_73",
@@ -339,11 +352,12 @@
         "R21 Q1 (trade costs)",
         "R25 R25 Q3 (q11_cost_reg N-MACC cost chain; Phase 2c sweep test)",
         "R27 (auto-appended)",
-        "R28 (auto-appended)"
+        "R28 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 31
+      "retirement_eligible_after": 45
     },
     {
       "name": "vm_water_available",
@@ -682,11 +696,12 @@
       "source_files": [
         "R23 Q1 (diet\u2192N chain primary)",
         "R27 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_17",
@@ -698,11 +713,12 @@
         "R23 Q1 (M17 vm_prod_reg aggregation tested); Q5 (M17 used as worked-example subject)",
         "R27 (auto-appended)",
         "R28 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_43",
@@ -712,11 +728,12 @@
       ],
       "source_files": [
         "R23 Q2 (water-balance hard-constraint primary)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_44",
@@ -726,11 +743,12 @@
       ],
       "source_files": [
         "R23 Q3 (modification-safety primary)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_50",
@@ -742,11 +760,12 @@
         "R23 Q1 (q50_nr_bal_crp form)",
         "R27 (auto-appended)",
         "R28 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_51",
@@ -757,11 +776,13 @@
       "source_files": [
         "R23 Q1 (M51 downstream emissions consumer)",
         "R25 R25 Q3 + Q5 (nitrogen emissions; q51_emissionbal_awms for AWMS N2O trace)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 45
     },
     {
       "name": "vm_dem_food",
@@ -1033,11 +1054,12 @@
       ],
       "source_files": [
         "R25 R25 Q3 (N MACCs as upstream of M11 cost objective)",
-        "R32 doc-improvement push (2026-05-30, doc-audit)"
+        "R32 doc-improvement push (2026-05-30, doc-audit)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-25",
       "first_named_round": 25,
-      "retirement_eligible_after": 35
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_55",
@@ -1047,11 +1069,12 @@
       ],
       "source_files": [
         "R25 R25 Q5 (AWMS manure_confinement upstream of M51 N2O trace)",
-        "R31 doc-improvement push (2026-05-30, doc-audit)"
+        "R31 doc-improvement push (2026-05-30, doc-audit)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-05-25",
       "first_named_round": 25,
-      "retirement_eligible_after": 34
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_36",
@@ -1089,11 +1112,12 @@
         "R24 Q4 (simple_apr24 infeasibility + M10/M29 interaction); R25 Q1 (simple_apr24 rotation constraints; Phase 2a sweep test)",
         "R27 (auto-appended)",
         "R28 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 24,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_18",
@@ -1103,11 +1127,12 @@
       ],
       "source_files": [
         "R27 Q1 residues",
-        "R28 (auto-appended)"
+        "R28 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
-      "retirement_eligible_after": 31
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_53",
@@ -1117,11 +1142,12 @@
       ],
       "source_files": [
         "R27 Q2 methane",
-        "R32 doc-improvement push (2026-05-30, doc-audit)"
+        "R32 doc-improvement push (2026-05-30, doc-audit)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
-      "retirement_eligible_after": 35
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_31",
@@ -1131,11 +1157,12 @@
       ],
       "source_files": [
         "R27 Q3 pasture",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_40",
@@ -1170,11 +1197,12 @@
         "round_result"
       ],
       "source_files": [
-        "R27 (auto-appended)"
+        "R27 (auto-appended)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_34",
@@ -1237,11 +1265,12 @@
       ],
       "source_files": [
         "R28 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R42 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 28,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 45
     },
     {
       "name": "module_09",
@@ -1250,11 +1279,12 @@
         "round_result"
       ],
       "source_files": [
-        "R31 doc-improvement push (2026-05-30, doc-audit)"
+        "R31 doc-improvement push (2026-05-30, doc-audit)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-30",
       "first_named_round": 31,
-      "retirement_eligible_after": 34
+      "retirement_eligible_after": 44
     },
     {
       "name": "module_12",
@@ -1276,11 +1306,25 @@
         "round_result"
       ],
       "source_files": [
-        "R31 doc-improvement push (2026-05-30, doc-audit)"
+        "R31 doc-improvement push (2026-05-30, doc-audit)",
+        "R41 (auto-appended)"
       ],
       "first_named_at": "2026-05-30",
       "first_named_round": 31,
-      "retirement_eligible_after": 34
+      "retirement_eligible_after": 44
+    },
+    {
+      "name": "magpie4_source",
+      "type": "resource",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R42 (auto-appended)"
+      ],
+      "first_named_at": "2026-06-03",
+      "first_named_round": 42,
+      "retirement_eligible_after": 45
     }
   ],
   "_maintenance_notes": [

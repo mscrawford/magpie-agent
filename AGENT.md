@@ -24,7 +24,7 @@ When loading `PREPROC_AGENT.md`, follow its session startup instructions (check 
 
 ## ⚠️ Twin-agent disambiguation (READ FIRST when terms below appear)
 
-Two independent agents share this workspace, each with its own flywheel and `audit/validation_rounds.json`. This file (magpie-agent's AGENT.md / CLAUDE.md) auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT. Counter that asymmetric prior.
+Two independent agents share this workspace, each with its own flywheel and validation_rounds.json (magpie-agent: `audit/validation_rounds.json`; preproc-agent: `feedback/validation_rounds.json`). This file (magpie-agent's AGENT.md / CLAUDE.md) auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT. Counter that asymmetric prior.
 
 **Ambiguous terms** — `flywheel`, `round`, `round N`, `validation round`, `verification round`, `validation_rounds.json`, generic `validate` / `validation` without "consistency" or a specific module:
 → **ASK which agent before acting**. Cost of a wrong run is ~1 hour of compute and a polluted validation_rounds.json.
@@ -32,7 +32,7 @@ Two independent agents share this workspace, each with its own flywheel and `aud
 **Quick recency check** (run before assuming):
 ```bash
 python3 -c "import json,os
-for label,path in [('magpie','magpie-agent/audit/validation_rounds.json'),('preproc','magpie-preproc-agent/audit/validation_rounds.json')]:
+for label,path in [('magpie','magpie-agent/audit/validation_rounds.json'),('preproc','magpie-preproc-agent/feedback/validation_rounds.json')]:
   if os.path.exists(path):
     d=json.load(open(path)); r=d.get('rounds',[])
     print(f'{label}: {len(r)} rounds, latest R{r[-1].get(\"round\")} on {r[-1].get(\"date\")}' if r else f'{label}: 0 rounds')"

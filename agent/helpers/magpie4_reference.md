@@ -42,7 +42,7 @@ python3 scripts/sync_magpie4_clone.py
 `magpie4::getReport(gdx, ...)` is invoked by `scripts/output/rds_report.R:37` (in MAgPIE proper) and produces the IAMC-format `report.mif` / `report.rds`. Its dispatch is a flat `tryList(...)` of 117 unconditional calls to 106 unique `report*` functions:
 
 ```r
-# .cache/sources/magpie4/R/getReport.R:62-181 (v2.70.0 @ a360d8c9ec)
+# .cache/sources/magpie4/R/getReport.R: getReport() spans L56-235; tryList dispatch block L62-182 (v2.70.0 @ a360d8c9ec)
 getReport <- function(gdx, file = NULL, scenario = NULL, filter = c(1, 2, 7),
                       detail = TRUE, level = "regglo", ...) {
   t <- system.time(
@@ -256,7 +256,7 @@ The IAMC variable hierarchy uses `|` as the level delimiter and `+`/`++` summati
 
 1. **Reading from the workspace clone.** `~/Documents/Work/Workspace/magpie4/` is at HEAD (currently v2.75.1, ahead of the renv pin v2.70.0). Lines, variable definitions, and even function names can differ. ALWAYS use `.cache/sources/magpie4/` unless the user explicitly asked about HEAD.
 2. **Stale pin.** If the parent `input/renv.lock` was updated (e.g., by a recent `git pull`), the `.cache/` clone is stale. Re-run the sync script. `version_pins.json.lock_file_sha256` vs. live SHA256 of `input/renv.lock` is the canary.
-3. **Citing line numbers from the wrong version.** Line numbers in this helper's tables (e.g., `getReport.R:62-181`) are for v2.70.0. If the pin advances, they will drift. Re-verify on the version under inspection.
+3. **Citing line numbers from the wrong version.** Line numbers in this helper's tables (e.g., `getReport.R` tryList dispatch block L62-182, function L56-235) are for v2.70.0. If the pin advances, they will drift. Re-verify on the version under inspection.
 4. **Confusing `magpie4` and `magpiesets`.** `magpiesets` (separate pik-piam R package) provides commodity-grouping sets (e.g., `findset("kcr")`). magpie4 functions call into magpiesets but are NOT the same package. Don't conflate `magpiesets::findset()` with `magpie4::<extractor>`.
 5. **Plan said 108 unique report* functions — actual count is 106.** Minor discrepancy; don't cite the plan's number when answering, count from `getReport.R` if precision matters.
 6. **`reportharvested_area_timber` uses snake_case suffix** (unusual — most are camelCase). Don't auto-correct to `reportHarvestedAreaTimber`.

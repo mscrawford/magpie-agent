@@ -496,7 +496,7 @@ Dimensions: 60+ policies × 15 pollutants × 20+ emission sources
 Example policies:
 - **"none":** All entries = 0 (no pricing)
 - **"all":** All entries = 1 (price everything)
-- **"reddnatveg_nosoil"** (default): Prices CO2 from natural vegetation carbon stocks — specifically **vegc AND litc** for primforest, secdforest, and other land, plus peatland emissions. Does **not** price soil carbon (soilc) or cropland/pasture/forestry carbon stocks. Verified from `f56_emis_policy.csv`: co2_c entries = 1 for primforest_vegc, primforest_litc, secdforest_vegc, secdforest_litc, other_vegc, other_litc, and peatland.
+- **"reddnatveg_nosoil"** (default): Prices CO2 from natural vegetation carbon stocks — specifically **vegc AND litc** for primforest, secdforest, and other land, plus peatland emissions. Does **not** price soil carbon (soilc) or cropland/pasture/forestry carbon stocks. Verified from `f56_emis_policy.csv`: co2_c entries = 1 for primforest_vegc, primforest_litc, secdforest_vegc, secdforest_litc, other_vegc, other_litc, and peatland. **However, `reddnatveg_nosoil` is NOT CO2-only**: the same policy also routes agricultural CH4 (awms, resid_burn, rice, ent_ferm, peatland) and N2O (inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice, plus indirect N) to pricing (see the `ch4` / `n2o_n_direct` / `n2o_n_indirect` rows of `f56_emis_policy.csv`). "nosoil" means soil C is excluded, not that non-CO2 gases are. Whether a nonzero price is actually applied is a separate switch (`c56_pollutant_prices`, default `R34M410-SSP2-NPi2025`, near-zero through 2030).
 - **"all_nosoil":** Price all gases except soil CO2
 - **"sdp_all":** Comprehensive pricing for Sustainable Development Pathway scenarios
 
@@ -658,8 +658,8 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 | **none** | ✗ | ✗ | ✗ | ✗ | Reference (no policy) |
 | **all** | ✓ | ✓ | ✓ | ✓ | Comprehensive carbon pricing |
 | **all_nosoil** | ✓ | ✗ | ✓ | ✓ | Price all except soil C (measurement challenges) |
-| **reddnatveg_nosoil** (default) | ✓ (primforest vegc+litc, secdforest vegc+litc, other vegc+litc, peatland) | ✗ | ✗ | ✗ | REDD+ (reduce deforestation emissions) |
-| **redd+natveg_nosoil** | ✓ (deforestation + reforestation) | ✗ | ✗ | ✗ | REDD+ with forestry emission pricing |
+| **reddnatveg_nosoil** (default) | ✓ (primforest vegc+litc, secdforest vegc+litc, other vegc+litc, peatland) | ✗ | ✓ (ag: awms, resid_burn, rice, ent_ferm, peatland) | ✓ (ag: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice + indirect N) | REDD+ deforestation CO2 + agricultural non-CO2 |
+| **redd+natveg_nosoil** | ✓ (reddnatveg sources + forestry vegc+litc) | ✗ | ✓ (ag: awms, resid_burn, rice, ent_ferm, peatland) | ✓ (ag: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice + indirect N) | REDD+ plus plantation-forestry CO2; ag non-CO2 identical to the default reddnatveg_nosoil |
 | **sdp_all** | ✓ | ✓ | ✓ | ✓ | Sustainable Development Pathway |
 
 **Note:** The CDR reward mechanism (`q56_reward_cdr_aff`) for afforestation is driven by `p56_c_price_aff`, which uses `im_pollutant_prices` for the source specified by `c56_cprice_aff` (default: `secdforest_vegc`). Because `f56_emis_policy("reddnatveg_nosoil","co2_c","secdforest_vegc") = 1`, the CDR afforestation reward **is active under the default `reddnatveg_nosoil` policy** — it operates independently of the emission pricing policy matrix. A separate `c56_emis_policy` is not required to incentivize afforestation.
