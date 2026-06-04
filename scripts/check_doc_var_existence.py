@@ -19,8 +19,9 @@ Logic reuses check_gams_variables.py:
 Module docs (modules/module_*.md) are explicitly NOT scanned — Check 14 owns
 that scope. Scanning them here would be redundant.
 
-Usage: python3 check_doc_var_existence.py [--summary-only]
+Usage: python3 check_doc_var_existence.py [--summary-only] [--self-test]
 Exit: 0 always (advisory; mismatches surface via output text)
+       --self-test: exits 1 on assertion failure (positive control)
 """
 
 from __future__ import annotations
@@ -51,7 +52,70 @@ SCAN_DIRS = [
 ]
 
 
+def self_test() -> int:
+    """Positive-control self-test on a synthetic fixture (no real tree touched).
+
+    Exercises the core check loop directly so that a vacuous-green path (0 refs
+    scanned) is distinguishable from a genuine clean run.  Addresses R8-I2 /
+    R7-deferred: the main success string "All identifier references verified"
+    was printed regardless of whether any identifiers were actually scanned.
+
+    Assertions:
+      1. POSITIVE CONTROL — a doc referencing `vm_fabricated_xyz` (absent from
+         the fixture GAMS index) must be flagged as a mismatch.
+      2. CLEAN CONTROL — a doc referencing only `vm_real` (present in the
+         fixture GAMS index) must pass, AND the ref count must be > 0 (proving
+         the scan was non-vacuous).
+    """
+    ok = True
+
+    # Tiny fixture GAMS index — stands in for build_gams_index() on the real tree.
+    fixture_gams_index: set[str] = {"vm_real"}
+
+    # --- Assertion 1: positive control ---
+    # A cross-cutting doc that mentions a fabricated identifier must be flagged.
+    doc_bad = "The `vm_fabricated_xyz` variable is critical for land conservation."
+    doc_vars_bad = set(DOC_VAR_RE.findall(doc_bad))
+    per_doc_allow_bad = collect_per_doc_allow(doc_bad)
+    filtered_bad = filter_doc_vars(doc_bad, doc_vars_bad, per_doc_allow_bad)
+    mismatches_bad = [v for v in filtered_bad if v not in fixture_gams_index]
+    if mismatches_bad != ["vm_fabricated_xyz"]:
+        print(f"  check_doc_var_existence SELF-TEST FAIL [1-positive]: "
+              f"expected ['vm_fabricated_xyz'] flagged, got {mismatches_bad}")
+        ok = False
+    else:
+        print("  check_doc_var_existence SELF-TEST [1-positive]: PASS "
+              "(vm_fabricated_xyz correctly flagged)")
+
+    # --- Assertion 2: clean control — must pass AND ref count must be > 0 ---
+    # A doc referencing only a real identifier must produce 0 mismatches on a
+    # NON-empty scan (distinguishes genuine clean from vacuous 0-ref scan).
+    doc_good = "The `vm_real` variable tracks land use across modules."
+    doc_vars_good = set(DOC_VAR_RE.findall(doc_good))
+    per_doc_allow_good = collect_per_doc_allow(doc_good)
+    filtered_good = filter_doc_vars(doc_good, doc_vars_good, per_doc_allow_good)
+    ref_count = len(filtered_good)
+    mismatches_good = [v for v in filtered_good if v not in fixture_gams_index]
+    if ref_count == 0:
+        print("  check_doc_var_existence SELF-TEST FAIL [2-clean]: "
+              "ref count is 0 — scan was vacuous (vm_real not extracted from doc fixture)")
+        ok = False
+    elif mismatches_good:
+        print(f"  check_doc_var_existence SELF-TEST FAIL [2-clean]: "
+              f"vm_real wrongly flagged as mismatch: {mismatches_good}")
+        ok = False
+    else:
+        print(f"  check_doc_var_existence SELF-TEST [2-clean]: PASS "
+              f"(verified {ref_count} ref(s), 0 mismatches — non-vacuous)")
+
+    print(f"check_doc_var_existence self-test: {'PASS' if ok else 'FAIL'}")
+    return 0 if ok else 1
+
+
 def main() -> int:
+    if "--self-test" in sys.argv:
+        return self_test()
+
     summary_only = "--summary-only" in sys.argv
 
     if not (MAGPIE_DIR / "main.gms").is_file() or not (MAGPIE_DIR / "modules").is_dir():

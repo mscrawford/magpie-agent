@@ -19,7 +19,7 @@ Reports:
   CONTENT: identifier not found near cited line (WARN, content mismatch)
 """
 
-import subprocess, re, os, sys
+import subprocess, re, os, sys, shutil, tempfile, textwrap
 from collections import defaultdict
 
 
@@ -89,7 +89,144 @@ BOUNDARY_RE = re.compile(
 )
 
 
+def self_test():
+    """Positive-control self-test for Check 17 (file:line citation checker).
+
+    Builds a self-contained temp fixture (never touches the real modules/ tree)
+    that exercises the three outcomes the checker must distinguish:
+
+      A. Full-path cite to the SHORT realization (off/, 18 lines) at line 80
+         → must FLAG as LINE error.  Proves the checker catches out-of-range cites.
+
+      B. Bare-basename cite `declarations.gms:80` that resolves via
+         config/default.cfg to the DEFAULT realization (v2/, 85 lines)
+         → must PASS.  This is the exact f4f44b0 behaviour: bare cites go to
+         the default realization, not to whatever walk-order returns first.
+         Regression of this fix would cause every bare cite past line 18 to
+         be a false LINE error (the original f4f44b0 symptom).
+
+      C. Full-path cite to the LONG realization (v2/, 85 lines) at line 80
+         → must PASS (clean control: valid in-range citation).
+
+    The test re-invokes this script as a subprocess so it exercises the
+    complete pipeline (file-index build, config parse, rg scan, resolution
+    logic, line-count check) on the fixture without touching any real files.
+    """
+    ok = True
+    tmpdir = tempfile.mkdtemp(prefix='check17_selftest_')
+    try:
+        # ── Build fixture ────────────────────────────────────────────────────
+        magpie_root = os.path.join(tmpdir, 'magpie')
+        agent_dir   = os.path.join(tmpdir, 'agent')
+
+        # GAMS tree: two realizations of module 58
+        off_dir = os.path.join(magpie_root, 'modules', '58_peatland', 'off')
+        v2_dir  = os.path.join(magpie_root, 'modules', '58_peatland', 'v2')
+        os.makedirs(off_dir)
+        os.makedirs(v2_dir)
+        os.makedirs(os.path.join(magpie_root, 'config'))
+        os.makedirs(os.path.join(agent_dir, 'modules'))
+
+        # off/declarations.gms — 18 lines (short realization)
+        with open(os.path.join(off_dir, 'declarations.gms'), 'w') as f:
+            for i in range(1, 19):
+                f.write(f'* line {i}\n')
+
+        # v2/declarations.gms — 85 lines (default realization)
+        with open(os.path.join(v2_dir, 'declarations.gms'), 'w') as f:
+            for i in range(1, 86):
+                f.write(f'* line {i}\n')
+
+        # config/default.cfg — sets peatland default to v2
+        with open(os.path.join(magpie_root, 'config', 'default.cfg'), 'w') as f:
+            f.write('cfg$gms$peatland <- "v2"\n')
+
+        # AI doc with three citations:
+        #   (A) full path to off/ at line 80  → out of range (off has 18 lines)
+        #   (B) bare basename at line 80       → resolved to v2/ (85 lines) → in range
+        #   (C) full path to v2/ at line 80   → in range (v2 has 85 lines)
+        doc = textwrap.dedent("""\
+            # Test doc
+
+            Citation A (full path, out-of-range realization): modules/58_peatland/off/declarations.gms:80
+
+            Citation B (bare basename, must resolve to default v2): declarations.gms:80
+
+            Citation C (full path, in-range realization): modules/58_peatland/v2/declarations.gms:80
+        """)
+        with open(os.path.join(agent_dir, 'modules', 'module_58.md'), 'w') as f:
+            f.write(doc)
+
+        # ── Run checker on fixture ───────────────────────────────────────────
+        result = subprocess.run(
+            [sys.executable, __file__, agent_dir, magpie_root],
+            capture_output=True, text=True
+        )
+        stdout = result.stdout + result.stderr
+
+        # ── Assertion A: checker must FLAG the off/ out-of-range cite ────────
+        # exit code 1 means at least one LINE/FILE error was found
+        if result.returncode != 1:
+            print(f"  SELF-TEST FAIL [A]: expected exit code 1 (out-of-range cite "
+                  f"in off/ not caught), got {result.returncode}")
+            print(f"  Output was:\n{stdout}")
+            ok = False
+        # The error detail must mention the off/ path and line 80
+        if 'off/declarations.gms:80' not in stdout and 'off\\declarations.gms:80' not in stdout:
+            print("  SELF-TEST FAIL [A]: LINE error for off/declarations.gms:80 "
+                  "not found in output")
+            print(f"  Output was:\n{stdout}")
+            ok = False
+
+        # ── Assertion B: bare cite at line 80 must NOT produce a LINE error ──
+        # The bare cite `declarations.gms:80` must resolve to v2/ (85 lines).
+        # If the f4f44b0 bare-cite resolution regressed (e.g. walk-order returns
+        # off/ first), line 80 would exceed off/'s 18 lines and appear here as
+        # a second LINE error — the test would then see two LINE errors instead
+        # of one, proving the regression.
+        line_errors = [ln for ln in stdout.splitlines()
+                       if ln.lstrip().startswith('LINE:')]
+        # Exactly one LINE error expected (the off/ cite in assertion A)
+        off_errors = [ln for ln in line_errors
+                      if 'off' in ln or 'off\\' in ln]
+        bare_or_v2_errors = [ln for ln in line_errors
+                             if 'off' not in ln and 'off\\' not in ln]
+        if bare_or_v2_errors:
+            print("  SELF-TEST FAIL [B]: bare or v2 citation at line 80 was "
+                  "incorrectly flagged as LINE error — bare-cite resolution "
+                  "likely regressed to walk-order (returning off/ instead of v2/)")
+            for e in bare_or_v2_errors:
+                print(f"    {e}")
+            ok = False
+
+        # ── Assertion C: v2/ full-path cite at line 80 must pass ─────────────
+        # (This is subsumed by assertion B's check above, but stated explicitly
+        # for documentation clarity — if C fired it would appear in bare_or_v2_errors)
+        v2_errors = [ln for ln in line_errors if 'v2' in ln]
+        if v2_errors:
+            print("  SELF-TEST FAIL [C]: full-path v2/declarations.gms:80 was "
+                  "flagged as out-of-range (v2 has 85 lines — should be in range)")
+            ok = False
+
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+    if ok:
+        print("SELF-TEST PASS: Check 17 (file:line citations)")
+        print("  [A] Out-of-range cite in off/ (18 lines) correctly flagged as LINE error")
+        print("  [B] Bare-basename cite at line 80 correctly resolves to default v2/ "
+              "(85 lines) and passes — f4f44b0 bare-cite resolution intact")
+        print("  [C] Full-path cite to v2/ at line 80 correctly passes")
+        return 0
+    else:
+        print("SELF-TEST FAIL: one or more assertions failed (see above)")
+        return 1
+
+
 def main():
+    if '--self-test' in sys.argv:
+        sys.exit(self_test())
+
     agent_dir = sys.argv[1]
     magpie_root = sys.argv[2]
 

@@ -13,7 +13,7 @@
 
 ### Three rules before answering any magpie4 question
 
-1. **Check the pin is current.** Read `project/version_pins.json`. If its `lock_file_sha256` differs from the SHA256 of `../input/renv.lock`, run `python3 scripts/sync_magpie4_clone.py`.
+1. **Check the pin is current.** Run `python3 scripts/sync_magpie4_clone.py --check` — it compares the stored `lock_file_sha256` in `project/version_pins.json` against the live `../input/renv.lock` hash (plus the clone HEAD vs the pinned SHA) and reports `pin canary: OK` or `STALE`. If STALE, re-run without `--check` to refresh the pin + clone.
 2. **Read from `.cache/sources/magpie4/`** (the SHA-pinned clone), NEVER from `~/Documents/Work/Workspace/magpie4/` (HEAD; drifts ahead of the renv pin — currently 5 minor versions ahead per 2026-05-24).
 3. **Cite with full version-pinned path**: e.g. `.cache/sources/magpie4/R/reportEmissions.R:23` plus the pin (`v2.70.0 @ a360d8c9ec`).
 

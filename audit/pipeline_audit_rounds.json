@@ -916,20 +916,66 @@
         "C6-coherence-cross-surface"
       ],
       "findings_total": 40,
-      "by_severity": {"CRITICAL": 0, "HIGH": 4, "MEDIUM": 19, "LOW": 17},
-      "by_lens": {"C1-dead-no-op": 6, "C2-redundant-overlapping": 5, "C3-drift-unenforced": 7, "C4-untested-testers": 8, "C5-over-complexity": 9, "C6-coherence-cross-surface": 5},
+      "by_severity": {
+        "CRITICAL": 0,
+        "HIGH": 4,
+        "MEDIUM": 19,
+        "LOW": 17
+      },
+      "by_lens": {
+        "C1-dead-no-op": 6,
+        "C2-redundant-overlapping": 5,
+        "C3-drift-unenforced": 7,
+        "C4-untested-testers": 8,
+        "C5-over-complexity": 9,
+        "C6-coherence-cross-surface": 5
+      },
       "verify_stage": "7 deduped removal/merge candidates adversarially checked (skeptic prompted to REFUTE removal): 5 confirm_safe_to_remove, 2 partial_keep_some. Refuted before applying: Check 18 merge (a synthesized known-bug test proved Check 18/19 catch DISJOINT classes; the overlap header form is used by 0 docs); MANDATE demotion (none fully mechanized -> would drop the answer-time guard); citations.sh deletion (genuine wrapper, not a duplicate).",
       "corroborated": [
-        {"finding": "pr_*.py trio (~1192 LOC) unwired/deep-shelf, 0 lifetime catches", "lenses": ["C1-dead-no-op", "C5-over-complexity"], "severity": "MEDIUM"},
-        {"finding": "dual .sh/.py GAMS checkers redundant; realizations pair drifted LIVE (61 vs 127), .sh feeding the count ledger", "lenses": ["C1-dead-no-op", "C2-redundant-overlapping", "C4-untested-testers", "C5-over-complexity"], "severity": "HIGH"}
+        {
+          "finding": "pr_*.py trio (~1192 LOC) unwired/deep-shelf, 0 lifetime catches",
+          "lenses": [
+            "C1-dead-no-op",
+            "C5-over-complexity"
+          ],
+          "severity": "MEDIUM"
+        },
+        {
+          "finding": "dual .sh/.py GAMS checkers redundant; realizations pair drifted LIVE (61 vs 127), .sh feeding the count ledger",
+          "lenses": [
+            "C1-dead-no-op",
+            "C2-redundant-overlapping",
+            "C4-untested-testers",
+            "C5-over-complexity"
+          ],
+          "severity": "HIGH"
+        }
       ],
       "root_cause_clusters": [
-        {"cluster": "I1 collapse dual .sh/.py GAMS checkers to one .py", "status": "APPLIED 65f6718"},
-        {"cluster": "I2 remove dead scripts (add_timestamps, pr_* trio, audit/templates)", "status": "APPLIED a3079b7"},
-        {"cluster": "I3 retire the aggregate-count marker system (2 scripts + Check 27 + 14 markers; print_section auto-numbers)", "status": "APPLIED be17620 + 717cd78"},
-        {"cluster": "I4 coherence fixes (MANDATE 16->17, round-ranges, schema 1.2->1.3, R26 status) + hedged-claims FP narrow", "status": "APPLIED d82d50b + 717cd78"},
-        {"cluster": "I5 check-retirements (Checks 1/2/4/6/23/26) + bare-basename advisory silence", "status": "DEFERRED (user; session length)"},
-        {"cluster": "I6 backfill self-tests for 3 surviving load-bearing checks (17 citations, 18 default-real, 14/21 var/doc-var)", "status": "DEFERRED (additive; user)"}
+        {
+          "cluster": "I1 collapse dual .sh/.py GAMS checkers to one .py",
+          "status": "APPLIED 65f6718"
+        },
+        {
+          "cluster": "I2 remove dead scripts (add_timestamps, pr_* trio, audit/templates)",
+          "status": "APPLIED a3079b7"
+        },
+        {
+          "cluster": "I3 retire the aggregate-count marker system (2 scripts + Check 27 + 14 markers; print_section auto-numbers)",
+          "status": "APPLIED be17620 + 717cd78"
+        },
+        {
+          "cluster": "I4 coherence fixes (MANDATE 16->17, round-ranges, schema 1.2->1.3, R26 status) + hedged-claims FP narrow",
+          "status": "APPLIED d82d50b + 717cd78"
+        },
+        {
+          "cluster": "I5 check-retirements (Checks 1/2/4/6/23/26) + bare-basename advisory silence",
+          "status": "DEFERRED (user; session length)"
+        },
+        {
+          "cluster": "I6 backfill self-tests for 3 surviving load-bearing checks (17 citations, 18 default-real, 14/21 var/doc-var)",
+          "status": "DEFERRED (additive; user)"
+        }
       ],
       "report_path": "audit/archive/rounds/pipeline_audit_round7.md",
       "design_path": "audit/archive/rounds/pipeline_audit_round7_design.md",
@@ -944,6 +990,104 @@
       ],
       "status": "consolidation applied (I1-I4 + AGENT.md batch; 5 local commits 65f6718..717cd78; nothing pushed). I5 retirements + bare-basename silence + I6 self-tests DEFERRED to a follow-up per user.",
       "notes": "FIRST consolidation-focused round; per-round override of the doc<->code default lens set (see pipeline_audit_round7_design.md). Motivation: the agent accretes machinery faster than it verifies it (feedback_test_the_testers) -- probe_dedup was a multi-round no-op, count markers drifted ~3 rounds, 2 parsers FP'd, all surfaced the same 2026-05-29 session. Standing bias AGAINST adding surface area; every removal carried what_it_protects/who_else_needs_it/blast_radius (feedback_blast_radius_before_infrastructure); a stage-2 adversarial verify refuted 3 candidate removals before they were applied. 40 findings collapsed to 6 root interventions (feedback_synthetic_interventions). scripts/ hot spot tripled by method (C1 static-liveness || C2 static-redundancy || C5 empirical-run). Net: ~7 scripts + ~1900 LOC + 1 gate check + the marker subsystem removed; a live count drift killed; ~900 computed advisory lines/run eliminated. guards_added is empty by design -- a consolidation round removes surface area rather than adding checks."
+    },
+    {
+      "round": 8,
+      "date": "2026-06-03",
+      "commit": "b683388",
+      "auditor_model": "claude-opus-4-8",
+      "round_type": "targeted machinery-delta (C3/C4/C6 subset of R7's consolidation lenses)",
+      "lenses_run": [
+        "C3-drift-vertical",
+        "C4-untested-testers",
+        "C6-coherence-horizontal"
+      ],
+      "findings_total": 15,
+      "by_severity": {
+        "CRITICAL": 0,
+        "HIGH": 4,
+        "MEDIUM": 7,
+        "LOW": 4
+      },
+      "by_lens": {
+        "C3-drift-vertical": 5,
+        "C4-untested-testers": 6,
+        "C6-coherence-horizontal": 4
+      },
+      "verified_clean": [
+        "live freshness/staleness badge (computed each session)",
+        "probe_dedup_ledger.retire_after (script-derived N+3)",
+        "f4f44b0 bare-cite default-realization resolution (re-read from default.cfg each run)",
+        "source<->deployed copies identical (Check-10)",
+        "session preproc-path fix fully applied (1 ref, no stragglers)",
+        "Check-N numbering coherent post-R7 (no dangling pointers)"
+      ],
+      "corroborated": [
+        {
+          "finding": "cumulative_stats orphaned counters (4 GAMS verified-counts LIVE-STALE + validator_checks/sub_checks unenforced mirrors)",
+          "lenses": [
+            "C3-drift-vertical",
+            "C6-coherence-horizontal"
+          ],
+          "verify": "Stage-2 skeptic: all 6 safe_to_delete, 0 live readers; staleness independently recomputed (vars 953->1003, eqs 139->153, cites 2598->2946, real 75->60)",
+          "severity": "HIGH"
+        }
+      ],
+      "root_cause_clusters": [
+        {
+          "cluster": "I1 orphaned snapshot counters (R7 be17620 deleted refresh_aggregate_counts.py but left the output fields in cumulative_stats)",
+          "findings": [
+            "4 stale verified-counts (HIGH)",
+            "validator_checks/sub_checks unmaintained mirrors (MEDIUM)",
+            "total_bugs_found/fixed unreconstructable hand-tally (HIGH)"
+          ],
+          "candidate_intervention": "DELETE the 6 fields (verified safe); relabel total_bugs approx_*"
+        },
+        {
+          "cluster": "I2 positive-control coverage hole (self-test fixture is empty -> load-bearing Python checks never exercised; new/changed testers shipped without controls)",
+          "findings": [
+            "check_gams_citations_impl.py freshly-changed, no self-test (HIGH)",
+            "selftest_validator.sh empty-fixture scope hole (HIGH)",
+            "vacuous-pass-on-empty floor (MEDIUM)",
+            "completed=1 proves REACHED not RAN, no EXPECTED_CHECKS (MEDIUM)",
+            "R7-deferred self-tests 18/14/21 still missing (MEDIUM)"
+          ],
+          "candidate_intervention": "add minimal positive controls (sanctioned C4 additive exception); Check 17 first; this IS R7's deferred item 2"
+        },
+        {
+          "cluster": "I3 hardcoded counts on secondary surfaces (count restated on 2nd/3rd surface, only primary updated)",
+          "findings": [
+            "pipeline-audit.md:50 '17 MANDATEs' (actual 20) (MEDIUM)",
+            "validation_rounds.json rubric_version '1.1' (actual 1.2) (MEDIUM)",
+            "verifiers.md:344 changelog '16' (LOW)",
+            "validator internal # Check numbering gap (LOW)"
+          ],
+          "candidate_intervention": "fix literals or drop -> point-at-source SSOT"
+        },
+        {
+          "cluster": "I4 documented-but-unwired control",
+          "findings": [
+            "version_pins lock_file_sha256 canary comparison is prose-only, not scripted (MEDIUM)"
+          ],
+          "candidate_intervention": "wire ~6-line advisory check OR explicitly document agent-side enforcement"
+        }
+      ],
+      "verify_stage": "1 adversarial removal-safety skeptic on the 6 cumulative_stats deletion candidates: refutation FAILED (finding upheld) -- 0 live readers across the tree + parent deployment copies; only grep hits are the file itself + frozen audit/archive reports; 4 GAMS counts independently recomputed stale; decisive root = be17620 deleted the updater. All 6 safe_to_delete.",
+      "report_path": "audit/archive/rounds/pipeline_audit_round8.md",
+      "design_path": "audit/archive/rounds/pipeline_audit_round8_design.md",
+      "guards_added": [
+        "4 per-check positive controls: --self-test on check_gams_citations_impl.py (17), check_default_realizations.py (18), check_gams_variables.py (14), check_doc_var_existence.py (21) -- each adversarially verified to FAIL when its detector is neutered",
+        "selftest_validator.sh extended: sub-test 4 aggregates all 9 check_*.py --self-tests; sub-test 5 regression-tests the section-skip guard",
+        "validate_consistency.sh: SECTION_NUM==SECTION_TOTAL structural guard (exit 99 on silent section skip) -- closes the completed=1-proves-REACHED-not-RAN gap",
+        "sync_magpie4_clone.py --check: wired the lock_file_sha256 canary (renv.lock vs version_pins.json), previously prose-only"
+      ],
+      "status": "fixed (A+B+C+D applied + verified; selftest_validator.sh 5/5; validate_consistency.sh PASS)",
+      "fixes_applied": {
+        "I1": "deleted 6 orphaned cumulative_stats counters (4 stale GAMS counts + validator_checks/sub_checks); renamed total_bugs_found/fixed -> approx_* + note",
+        "I2": "added 4 positive controls + selftest aggregation + section-skip guard",
+        "I3": "pipeline-audit.md MANDATE count -> SSOT (dropped the '17' literal x2); validation_rounds.json rubric_version 1.1->1.2; verifiers.md:344 scope marker; validate_consistency.sh # Check 26/27/28 comments",
+        "I4": "sync_magpie4_clone.py --check canary wired + magpie4_reference.md points at it"
+      }
     }
   ]
 }

@@ -7,10 +7,12 @@
 # silently died at check 1 (set -e + ((VAR++))-from-0) while commit messages and
 # project/sync_log.json recorded "NN/NN clean" — a green that no completed run
 # ever produced. This self-test makes that class of failure impossible to miss
-# by asserting three properties on an isolated fixture:
+# by asserting five properties on an isolated fixture:
 #   1. CLEAN tree         -> verdict=PASS, exit 0                  (no false positive)
 #   2. PLANTED defect     -> verdict=FAIL, exit 1, defect named, completed=1
-#   3. FORCED early exit   -> exit 99, "ABORTED"                   (safety net fires)
+#   3. FORCED early exit   -> exit 99, "ABORTED"                   (death safety net)
+#   4. PER-CHECK controls -> each load-bearing check_*.py --self-test passes
+#   5. SECTION-COUNT skip  -> stale SECTION_TOTAL -> exit 99       (skip safety net)
 #
 # Run this before trusting any clean validate_consistency.sh result, and in CI.
 # Exit 0 = the guard is trustworthy; exit 1 = a property failed, do NOT trust it.
@@ -47,7 +49,7 @@ run() {  # $1 = script basename under fixture/scripts ; sets OUT, RC
 echo "[selftest] fixture base: $BASE"
 
 # ---- 1: clean fixture must PASS (no false positives) ----
-echo "[1/3] clean fixture should PASS"
+echo "[1/5] clean fixture should PASS"
 build_clean_fixture
 run validate_consistency.sh
 if [ "$RC" -eq 0 ] && grep -q "verdict=PASS" <<<"$OUT" && grep -q "completed=1" <<<"$OUT"; then
@@ -58,7 +60,7 @@ else
 fi
 
 # ---- 2: planted unclosed code block must be DETECTED (FAIL) ----
-echo "[2/3] planted defect should be DETECTED (FAIL)"
+echo "[2/5] planted defect should be DETECTED (FAIL)"
 build_clean_fixture
 # Odd number of ``` fences -> Check 13 must flag it.
 printf '# Planted defect\n```python\nprint("no closing fence")\n' > "$FIXTURE/core_docs/Unclosed.md"
@@ -74,7 +76,7 @@ fi
 # ---- 3: forced early exit must ABORT loudly (exit 99) ----
 # This is the direct regression test for the 2025-2026 silent-death bug: inject
 # a premature exit after the trap is installed and confirm the safety net fires.
-echo "[3/3] premature death should ABORT loudly (exit 99)"
+echo "[3/5] premature death should ABORT loudly (exit 99)"
 build_clean_fixture
 # Portable injection: BSD/macOS `sed` rejects GNU's one-line `/pat/a text`, so use awk.
 awk '{ print } /^trap on_exit EXIT$/ { print "echo \"[selftest] forcing early exit\"; exit 7" }' \
@@ -85,6 +87,39 @@ if [ "$RC" -eq 99 ] && grep -q "ABORTED before completion" <<<"$OUT"; then
 else
     fail "early exit expected exit 99 + ABORTED; got exit $RC"
     tail -5 <<<"$OUT" | sed 's/^/        /'
+fi
+
+# ---- 4: per-check positive controls (each load-bearing check_*.py --self-test) ----
+# Binds the load-bearing checks end-to-end (pipeline-audit R8 I2). A check that
+# silently stops catching its bug class fails here -- proven: neutering a detector
+# makes its --self-test exit non-zero. ADD new --self-test scripts to this list.
+echo "[4/5] per-check positive controls (--self-test)"
+SELFTEST_SCRIPTS=(check_gams_citations_impl check_default_realizations check_gams_variables \
+                  check_doc_var_existence check_scaling check_consumer_attribution \
+                  check_hedged_claims check_module_realizations probe_dedup_check)
+for s in "${SELFTEST_SCRIPTS[@]}"; do
+    if [ ! -f "$SCRIPT_DIR/$s.py" ]; then
+        fail "$s.py missing (expected a --self-test)"
+    elif python3 "$SCRIPT_DIR/$s.py" --self-test >/dev/null 2>&1; then
+        pass "$s --self-test"
+    else
+        fail "$s --self-test FAILED (its positive control did not hold)"
+    fi
+done
+
+# ---- 5: a silently-skipped section must ABORT (exit 99) ----
+# Regression test for the "completed=1 proves REACHED, not RAN" gap (R8 I2): make
+# SECTION_TOTAL disagree with the sections that actually run; the structural guard
+# must fire rather than report a green that verified fewer sections than it claims.
+echo "[5/5] section-count mismatch should ABORT (exit 99)"
+build_clean_fixture
+sed 's/^SECTION_TOTAL=.*/SECTION_TOTAL=999/' "$VALIDATOR" > "$FIXTURE/scripts/validate_skip.sh"
+run validate_skip.sh
+if [ "$RC" -eq 99 ] && grep -q "section-count mismatch" <<<"$OUT"; then
+    pass "section mismatch -> exit 99, structural guard fires"
+else
+    fail "section mismatch expected exit 99 + 'section-count mismatch'; got exit $RC"
+    grep "VALIDATOR_RESULT\|section-count\|FATAL" <<<"$OUT" | sed 's/^/        /'
 fi
 
 echo ""

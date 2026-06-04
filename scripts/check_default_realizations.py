@@ -5,17 +5,19 @@ Detects the "Interesting Over Default" antipattern where AI docs label a non-def
 realization as "(default)". This was the root cause of doc errors in M37, M38, M80
 across validation rounds R14-R15.
 
-Usage: python3 scripts/check_default_realizations.py [--fix]
+Usage: python3 scripts/check_default_realizations.py [--fix] [--self-test]
   --fix: Print suggested fixes (does not modify files)
+  --self-test: Run positive/clean controls on synthetic fixtures (exits 1 on failure)
 
 Exit codes:
-  0: All checks pass
-  1: Mismatches found
+  0: All checks pass (or --self-test passed)
+  1: Mismatches found (or --self-test failed)
 """
 
 import os
 import re
 import sys
+import tempfile
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 AGENT_DIR = os.path.dirname(SCRIPT_DIR)
@@ -62,9 +64,17 @@ def get_default_realizations():
     return defaults
 
 
-def check_doc_default_labels(module_num, module_name, actual_default):
-    """Check a module doc for "(default)" labels and compare against actual default."""
-    doc_path = os.path.join(DOCS_DIR, f"module_{module_num}.md")
+def check_doc_default_labels(module_num, module_name, actual_default,
+                              docs_dir=None, gams_modules_dir=None):
+    """Check a module doc for "(default)" labels and compare against actual default.
+
+    docs_dir / gams_modules_dir: override the global DOCS_DIR / MODULES_DIR.
+    Used only by --self-test; real-tree behaviour is unchanged when both are None.
+    """
+    _docs = docs_dir if docs_dir is not None else DOCS_DIR
+    _mods = gams_modules_dir if gams_modules_dir is not None else MODULES_DIR
+
+    doc_path = os.path.join(_docs, f"module_{module_num}.md")
     if not os.path.isfile(doc_path):
         return None  # No doc for this module
 
@@ -73,7 +83,7 @@ def check_doc_default_labels(module_num, module_name, actual_default):
         lines = f.readlines()
 
     # Check if the actual default realization is available in the module dir
-    module_dir = os.path.join(MODULES_DIR, f"{module_num}_{module_name}")
+    module_dir = os.path.join(_mods, f"{module_num}_{module_name}")
     if os.path.isdir(module_dir):
         available_realizations = [
             d for d in os.listdir(module_dir)
@@ -137,7 +147,91 @@ def check_doc_default_labels(module_num, module_name, actual_default):
     return mismatches
 
 
+def self_test():
+    """Positive and clean controls on synthetic temp-tree fixtures.
+
+    Builds an isolated tempdir — does NOT touch the real tree.
+    Positive control: doc claims realB is default, config says realA → must FLAG.
+    Clean control:   doc claims realA is default, config says realA → must PASS.
+    Exits 0 iff both assertions hold; exits 1 if either fails.
+    """
+    import shutil
+
+    tmp = tempfile.mkdtemp(prefix="check18_selftest_")
+    ok = True
+    try:
+        # --- Fixture layout ---
+        #   <tmp>/config/default.cfg          <- realA is the default
+        #   <tmp>/modules/99_testmod/realA/   <- realization dirs (both present)
+        #   <tmp>/modules/99_testmod/realB/
+        #   <tmp>/docs/module_99.md           <- the AI doc under test (two variants)
+
+        cfg_dir = os.path.join(tmp, "config")
+        gams_mod_dir = os.path.join(tmp, "modules", "99_testmod")
+        docs_dir = os.path.join(tmp, "docs")
+
+        os.makedirs(cfg_dir)
+        os.makedirs(os.path.join(gams_mod_dir, "realA"))
+        os.makedirs(os.path.join(gams_mod_dir, "realB"))
+        os.makedirs(docs_dir)
+
+        cfg_path = os.path.join(cfg_dir, "default.cfg")
+        with open(cfg_path, "w") as f:
+            f.write('cfg$gms$testmod <- "realA"\n')
+
+        # ---- assertion 1: positive control — doc claims realB (wrong) ----
+        doc_positive = os.path.join(docs_dir, "module_99.md")
+        with open(doc_positive, "w") as f:
+            f.write("# Module 99 testmod\n")
+            f.write("**Default Realization**: `realB`\n")
+
+        gams_modules_dir = os.path.join(tmp, "modules")
+        mismatches = check_doc_default_labels(
+            "99", "testmod", "realA",
+            docs_dir=docs_dir,
+            gams_modules_dir=gams_modules_dir,
+        )
+        if mismatches:
+            print("  SELF-TEST PASS: positive control flagged mismatch"
+                  f" (claimed realB, actual realA) on line {mismatches[0]['line']}")
+        else:
+            print("  SELF-TEST FAIL: positive control did NOT flag doc claiming"
+                  " realB as default (actual default is realA)")
+            ok = False
+
+        # ---- assertion 2: clean control — doc claims realA (correct) ----
+        with open(doc_positive, "w") as f:
+            f.write("# Module 99 testmod\n")
+            f.write("**Default Realization**: `realA`\n")
+
+        mismatches_clean = check_doc_default_labels(
+            "99", "testmod", "realA",
+            docs_dir=docs_dir,
+            gams_modules_dir=gams_modules_dir,
+        )
+        if not mismatches_clean:
+            print("  SELF-TEST PASS: clean control produced no mismatches"
+                  " (doc correctly states realA)")
+        else:
+            print("  SELF-TEST FAIL: clean control wrongly flagged a correct doc"
+                  f" ({mismatches_clean})")
+            ok = False
+
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    if ok:
+        print("check_default_realizations self-test: PASS")
+        sys.exit(0)
+    else:
+        print("check_default_realizations self-test: FAIL")
+        sys.exit(1)
+
+
 def main():
+    if "--self-test" in sys.argv:
+        self_test()  # self_test() calls sys.exit() internally
+
     show_fix = "--fix" in sys.argv
 
     name_to_num = get_module_name_to_number()

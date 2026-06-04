@@ -174,7 +174,110 @@ def find_typo_allow_markers(text: str) -> list[str]:
     return typos
 
 
+def self_test() -> int:
+    """Positive-control self-test using a self-contained temp fixture.
+
+    Asserts:
+      1. A doc citing a fabricated variable (``vm_NOTREAL``) that is absent from
+         the GAMS declarations IS flagged as a mismatch.
+      2. A doc citing a declared variable (``vm_real``) is NOT flagged.
+      3. An EMPTY GAMS index + empty doc produces 0 doc vars — the check is
+         vacuously green, which is the known silent-failure mode.  We surface
+         this explicitly (does NOT cause a FAIL — but is printed as a WARNING so
+         callers can see it; addressed by ensuring the fixture above is non-empty).
+
+    The test builds its index by applying the same regexes used by
+    build_gams_index() to a synthetic in-memory GAMS text — so a regression that
+    breaks the regex-based detection would also break the self-test.
+    """
+    import tempfile
+
+    ok = True
+    print("check_gams_variables self-test")
+    print("------------------------------")
+
+    # --- Build a synthetic GAMS index from fixture text (same regex path as
+    #     build_gams_index, no real tree required).
+    fixture_gams_text = (
+        "Variables\n"
+        "  vm_real(j,i)  'a real declared variable'\n"
+        ";\n"
+        "Positive Variables vm_real;\n"
+    )
+    gams_index: set[str] = set()
+    gams_index.update(GAMS_INTERFACE_RE.findall(fixture_gams_text))
+    gams_index.update(GAMS_NUMBERED_RE.findall(fixture_gams_text))
+    gams_index.update(GAMS_CORE_SCALAR_RE.findall(fixture_gams_text))
+
+    if "vm_real" not in gams_index:
+        print("  SELF-TEST FAIL: fixture GAMS text did not index vm_real")
+        ok = False
+    else:
+        print("  [index build] vm_real indexed from fixture: OK")
+
+    # --- Positive-control: doc cites vm_NOTREAL (fabricated) — must be flagged.
+    doc_flag_text = (
+        "## Section\n"
+        "The variable `vm_NOTREAL` is used here.\n"
+    )
+    per_doc_allow_flag = collect_per_doc_allow(doc_flag_text)
+    doc_vars_flag = set(DOC_VAR_RE.findall(doc_flag_text))
+    filtered_flag = filter_doc_vars(doc_flag_text, doc_vars_flag, per_doc_allow_flag)
+    mismatches_flag = [v for v in filtered_flag if v not in gams_index]
+
+    if "vm_NOTREAL" not in mismatches_flag:
+        print("  SELF-TEST FAIL [positive-control]: vm_NOTREAL was NOT flagged — "
+              "fabricated variable escaped detection")
+        ok = False
+    else:
+        print("  [positive-control] vm_NOTREAL flagged as nonexistent: OK")
+
+    # --- Clean control: doc cites vm_real (declared) — must NOT be flagged.
+    doc_clean_text = (
+        "## Section\n"
+        "The variable `vm_real` handles this.\n"
+    )
+    per_doc_allow_clean = collect_per_doc_allow(doc_clean_text)
+    doc_vars_clean = set(DOC_VAR_RE.findall(doc_clean_text))
+    filtered_clean = filter_doc_vars(doc_clean_text, doc_vars_clean, per_doc_allow_clean)
+    mismatches_clean = [v for v in filtered_clean if v not in gams_index]
+
+    if mismatches_clean:
+        print(f"  SELF-TEST FAIL [clean-control]: vm_real was wrongly flagged: "
+              f"{mismatches_clean}")
+        ok = False
+    else:
+        print("  [clean-control] vm_real not flagged (correctly passes): OK")
+
+    # --- Vacuous-green check: empty GAMS index + empty doc → 0 vars checked.
+    #     This is the known silent-failure mode (R8 finding I2 / R7-deferred):
+    #     the check returns 0 on empty input, giving a confident green that proves
+    #     nothing.  We surface it explicitly.  This does NOT fail the self-test
+    #     (it is expected behaviour of the current code), but the print makes it
+    #     visible so a future hardening pass can decide to exit non-zero on 0 vars.
+    empty_gams_index: set[str] = set()
+    empty_doc_text = ""
+    empty_doc_vars = set(DOC_VAR_RE.findall(empty_doc_text))
+    empty_filtered = filter_doc_vars(empty_doc_text, empty_doc_vars, set())
+    empty_mismatches = [v for v in empty_filtered if v not in empty_gams_index]
+    empty_total_vars = len(empty_filtered)
+    if empty_total_vars == 0 and len(empty_mismatches) == 0:
+        print("  [vacuous-green WARNING] empty GAMS index + empty doc → 0 vars "
+              "checked, 0 mismatches — check would report confident green that "
+              "proves nothing. (Not a FAIL; surfaced for awareness.)")
+    else:
+        print(f"  [vacuous-green] unexpected: vars={empty_total_vars}, "
+              f"mismatches={len(empty_mismatches)}")
+
+    print()
+    print(f"SELF-TEST {'PASS' if ok else 'FAIL'}")
+    return 0 if ok else 1
+
+
 def main() -> int:
+    if "--self-test" in sys.argv:
+        return self_test()
+
     summary_only = "--summary-only" in sys.argv
     target_module = None
     args = sys.argv[1:]

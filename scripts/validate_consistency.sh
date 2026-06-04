@@ -1022,6 +1022,7 @@ else
     check_warning "Bare-cite checker not found: $BARE_CITES_SCRIPT"
 fi
 
+# Check 26: doc unit claims vs canonical declarations.gms units (advisory)
 print_section "26/28" "Checking doc unit claims vs declarations.gms canonical units (advisory)..."
 
 UNITS_SCRIPT="$AGENT_DIR/scripts/check_units.py"
@@ -1039,6 +1040,7 @@ else
     check_warning "Unit checker not found: $UNITS_SCRIPT"
 fi
 
+# Check 27: hedged-as-fact claims on interface-identifier lines (advisory)
 print_section "" "Checking hedged-as-fact claims on interface-identifier lines (advisory)..."
 
 HEDGED_SCRIPT="$AGENT_DIR/scripts/check_hedged_claims.py"
@@ -1056,6 +1058,7 @@ else
     check_warning "Hedged-claims checker not found: $HEDGED_SCRIPT"
 fi
 
+# Check 28: doc .scale-value claims vs scaling.gms canonical (advisory)
 print_section "" "Checking doc .scale-value claims vs scaling.gms canonical (advisory)..."
 
 SCALING_SCRIPT="$AGENT_DIR/scripts/check_scaling.py"
@@ -1107,6 +1110,21 @@ if [ $ERRORS -gt 0 ] || [ $WARNINGS -gt 0 ]; then
     log ""
     log "Fix errors first, then review warnings to determine if action needed."
     log "See AGENT.md and core_docs/Response_Guidelines.md for authoritative sources."
+fi
+
+# Structural guard (pipeline-audit R8 I2): every section's print_section runs
+# unconditionally, so SECTION_NUM must equal SECTION_TOTAL on a complete run. A
+# mismatch means a whole section was silently skipped (a continue, a dead if, or
+# a dropped block) - the verdict would be a green that verified less than it
+# claims. This closes the "completed=1 proves REACHED, not RAN" gap; catch it loudly.
+if [ "$SECTION_NUM" -ne "$SECTION_TOTAL" ]; then
+    VALIDATOR_COMPLETED=1   # we did reach here; suppress the generic ABORT message
+    echo ""
+    log_color "${RED}FATAL: section-count mismatch: ran $SECTION_NUM of $SECTION_TOTAL sections.${NC}" "FATAL: ran $SECTION_NUM/$SECTION_TOTAL sections"
+    log "A section was silently skipped (or SECTION_TOTAL is stale). The verdict is"
+    log "structurally INVALID and MUST NOT be recorded as a pass."
+    echo "VALIDATOR_RESULT: completed=1 sections=$SECTION_NUM/$SECTION_TOTAL verdict=ABORTED"
+    exit 99
 fi
 
 # ============

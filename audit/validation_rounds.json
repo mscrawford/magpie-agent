@@ -32,7 +32,7 @@
   "created": "2026-03-07",
   "instructions": "Append new rounds to the 'rounds' array. Each round must include all fields. Bug sources: 'doc_error' = bug in the AI documentation, 'answerer_confabulation' = agent invented wrong info despite docs being correct, 'ambiguous' = unclear which caused the error. Each new round MUST include at least 1 regression question from the top-level 'regression_questions' array (added 2026-05-23); score against expected_answer_summary; if regression, set drift_observed=true and update used_in_rounds. Severity tiers + audit format: audit/flywheel_rubric.md.",
   "rubric_path": "audit/flywheel_rubric.md",
-  "rubric_version": "1.1",
+  "rubric_version": "1.2",
   "root_cause_vocabulary_note": "bugs_by_root_cause keys: doc_error (doc wrong AND answer wrong); doc_error_answerer_beat_it (doc wrong but answer right - LATENT, fix anyway); answerer_confabulation (doc correct, answer wrong); answerer_style_or_framing; process_gap; ambiguous. See flywheel_rubric.md sec 1.5."
  },
  "regression_questions": [
@@ -5894,14 +5894,8 @@
   "total_docs_validated": 85,
   "module_docs_validated": 46,
   "non_module_docs_validated": 33,
-  "total_bugs_found": 865,
-  "total_bugs_fixed": 650,
-  "validator_checks": 28,
-  "validator_sub_checks": 43,
-  "gams_variables_verified": 953,
-  "gams_equations_verified": 139,
-  "gams_realizations_verified": 75,
-  "file_line_citations_verified": 2598,
+  "approx_total_bugs_found": 865,
+  "approx_total_bugs_fixed": 650,
   "last_validation_date": "2026-06-03",
   "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly",
   "doc_push_2026_05_30": {
@@ -5948,6 +5942,7 @@
    "verifier_record": "R38+R39: 35 upheld, 3 corrected, 0 false refutations, 0 citation_failed - validated in production",
    "key_finding": "reference/GAMS docs' MAgPIE example code was never code-verified and is high-yield (35 bugs/5C in R39); the agent's low-yield prediction was wrong",
    "note": "All commits local then pushed to mscrawford. Develop worktree left mounted (user review). Session cumulative R33-R39: ~191 confirmed bugs fixed, 15 Critical, 35 module + 6 reference docs."
-  }
+  },
+  "approx_bug_counts_note": "approx_total_bugs_* are hand-aggregated across the heterogeneous per-round schema + the doc_push_* blocks; approximate, not machine-reconciled. The 4 GAMS verified-counts + validator_checks/sub_checks were DELETED (pipeline-audit R8 I1: orphaned snapshots; R7 deleted their updater refresh_aggregate_counts.py; live counts are in latest_result.json + checker outputs)."
  }
 }

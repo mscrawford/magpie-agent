@@ -186,7 +186,23 @@ def main():
             sys.exit(2)
         aligned = sha.startswith(live) or live.startswith(sha[:10])
         print(f"  local HEAD: {live} {'✓ aligned' if aligned else '✗ MISMATCH'}")
-        sys.exit(0 if aligned else 1)
+        # Canary (pipeline-audit R8 I4): compare the stored renv.lock sha256 in
+        # version_pins.json against the live hash. Detects that input/renv.lock advanced
+        # since the pin was captured, i.e. the pinned clone may no longer reflect what the
+        # user's runs consume. Previously this comparison was prose-only in the helper.
+        canary_ok = True
+        pins_file = agent_dir / "project" / "version_pins.json"
+        if pins_file.is_file():
+            stored_hash = json.loads(pins_file.read_text()).get("lock_file_sha256", "")
+            live_hash = hashlib.sha256(Path(lock_path).read_bytes()).hexdigest()
+            if stored_hash and stored_hash != live_hash:
+                canary_ok = False
+                print(f"  pin canary: STALE - {lock_path} sha256 changed since "
+                      f"version_pins.json was captured ({stored_hash[:10]} -> {live_hash[:10]}). "
+                      f"Re-run without --check to refresh the pin + clone.")
+            elif stored_hash:
+                print(f"  pin canary: OK (renv.lock sha256 matches version_pins.json)")
+        sys.exit(0 if (aligned and canary_ok) else 1)
 
     # Already at the pinned SHA? No-op.
     if (dest / ".git").exists():

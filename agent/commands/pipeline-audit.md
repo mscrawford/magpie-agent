@@ -10,7 +10,7 @@
 
 **Out of scope**: behavioral answer-quality — that is the semantic flywheel (`audit/validation_rounds.json` + `/validate-semantic`). This audits the *machinery*, not the *answers*.
 
-**Companion docs**: see `audit/flywheel_rubric.md` for severity scoring; `agent/helpers/verifiers.md` for the 17 anti-confabulation MANDATEs that Lens 4 audits as a target surface.
+**Companion docs**: see `audit/flywheel_rubric.md` for severity scoring; `agent/helpers/verifiers.md` for the anti-confabulation MANDATEs (its `## MANDATE` headers) that Lens 4 audits as a target surface.
 
 ---
 
@@ -47,7 +47,7 @@ Lens 5 is magpie-specific — it replaces preproc-agent's R→GAMS-boundary lens
 
 - **Lens 4 (instruction-surface)** — three angles:
    1. **AGENT.md vs deployed copies**: `diff AGENT.md ../AGENT.md && diff AGENT.md ../CLAUDE.md` — any drift?
-   2. **AGENT.md vs verifiers.md**: the AGENT.md short-index table in Step 1d should match the 17 MANDATEs in verifiers.md. Numbering, trigger keywords, and rule names must agree.
+   2. **AGENT.md vs verifiers.md**: the AGENT.md short-index table in Step 1d should match the MANDATEs enumerated in verifiers.md (its `## MANDATE N` headers — count derivable by grep, do not hardcode it on a third surface). Numbering, trigger keywords, and rule names must agree.
    3. **Cross-references**: every link in AGENT.md, helpers/*, commands/* to a file path or section should resolve. Stale `module_XX.md` references, broken anchor links, missing reference docs — all findings.
 
 - **Lens 5 (cross-doc consistency)** — pick:
