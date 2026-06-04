@@ -8,7 +8,8 @@
 
 ## Active
 
-- **R44 diagnostic flywheel on the weak spots** — DESIGNED 2026-06-04, not yet run. Full design: `archive/rounds/round44_design.md`. A current-quality analysis (latest-score-per-module, `audit/tools/viz_validation_coverage.py` figs 5–7) isolated the weak spots the all-rounds mean had smeared out:
+- **R44 diagnostic flywheel on the weak spots** — ✅ RAN 2026-06-04, **weak spots RESOLVED** (raw mean 9.28, zero doc bugs, logged in `validation_rounds.json` R44). Design: `archive/rounds/round44_design.md`. Outcome: **M20 processing 4.0(R27)→9.5** (the R27 failure was answerer_confabulation vs an already-correct doc); **driver→demand→production chain** P1=8.0/P4=9.5, recovered from R41's shared 6.0; all parameterization-vs-mechanism lens checks passed; M54/M71 stale but no drift. **Lens bridge: no escalation** — `verifier_gap`s were single-occurrence (MANDATE-12/16/18 once each), not a recurring machinery pattern, so no focused lens audit is warranted (design §5). G4 anchor drift FALSE. No doc fixes needed. Closes the weak-spot follow-up below. Original design + rationale retained for the method (lens-bridge instrumentation is reusable):
+  - A current-quality analysis (latest-score-per-module, `audit/tools/viz_validation_coverage.py` figs 5–7) isolated the weak spots the all-rounds mean had smeared out:
   - **M20 processing** last scored **4.0 (R27)** on "primary→secondary conversion" — but that predates the R30–R32 doc push (111 bugs fixed), so the 4.0 is **unverified against current docs**. HIGH priority re-test.
   - **M09 drivers / M15 food / M17 production** scored 6.0 at R41 — but that was **one shared question** (a driver→demand→production chain trace), so the weak *area* is that chain, not three independent modules. HIGH priority.
   - **M54 phosphorus (R28=9), M71 lvst-disagg (R22=8)** were healthy when last tested; only *stale*. Drift-check, LOW priority.
