@@ -1,6 +1,6 @@
 {
   "ledger_version": "1.0",
-  "captured_at": "2026-06-03",
+  "captured_at": "2026-06-04",
   "_purpose": "Track GAMS modules / variables / equations / realizations named in agent-loaded text or prior round results, so future flywheel probes don't accidentally measure recognition rather than capability. See audit/flywheel_rubric.md \u00a75 (round composition) and \u00a78 (stability mechanisms).",
   "schema": {
     "name": "string \u2014 exact GAMS module / variable / equation / realization name as it appears in source",
@@ -44,11 +44,12 @@
       "source_files": [
         "R20 Q1, Q2, Q3 (forestry interactions with carbon); 9 mentions",
         "R29 (auto-appended)",
-        "R41 (auto-appended)"
+        "R41 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 44
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_14",
@@ -91,11 +92,12 @@
       "source_files": [
         "R19 Q1; MANDATE 9 worked example (cost-variable attribution)",
         "R25 R25 Q4 (factor costs consumer attribution; Pattern D test)",
-        "R28 (auto-appended)"
+        "R28 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 31
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_35",
@@ -106,11 +108,12 @@
       "source_files": [
         "R21 Q3 (secdforest carbon, PR #876); R20 Q1, Q3",
         "R29 (auto-appended)",
-        "R41 (auto-appended)"
+        "R41 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-04-20",
       "first_named_round": 20,
-      "retirement_eligible_after": 44
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_71",
@@ -179,11 +182,12 @@
       ],
       "source_files": [
         "R19 Q3; R21 Q2 (nlp_ipopt default)",
-        "R25 R25 Q2 (nlp_apr17 solver scalars; Phase 2b sweep test)"
+        "R25 R25 Q2 (nlp_apr17 solver scalars; Phase 2b sweep test)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 28
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_56",
@@ -239,11 +243,12 @@
       ],
       "source_files": [
         "peatland questions",
-        "R32 doc-improvement push (2026-05-30, doc-audit)"
+        "R32 doc-improvement push (2026-05-30, doc-audit)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 35
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_16",
@@ -276,11 +281,12 @@
         "R28 (auto-appended)",
         "R29 (auto-appended)",
         "R30 doc-improvement push (2026-05-30, doc-audit)",
-        "R41 (auto-appended)"
+        "R41 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 44
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_41",
@@ -336,11 +342,12 @@
       ],
       "source_files": [
         "R20 Q2 (timber)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-04-20",
       "first_named_round": 20,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_11",
@@ -353,11 +360,12 @@
         "R25 R25 Q3 (q11_cost_reg N-MACC cost chain; Phase 2c sweep test)",
         "R27 (auto-appended)",
         "R28 (auto-appended)",
-        "R42 (auto-appended)"
+        "R42 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 45
+      "retirement_eligible_after": 46
     },
     {
       "name": "vm_water_available",
@@ -1083,11 +1091,12 @@
         "round_result"
       ],
       "source_files": [
-        "R25 R25 Q4 surfaced \u2014 employment as missing M38 consumer (Pattern D gap)"
+        "R25 R25 Q4 surfaced \u2014 employment as missing M38 consumer (Pattern D gap)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-05-25",
       "first_named_round": 25,
-      "retirement_eligible_after": 28
+      "retirement_eligible_after": 46
     },
     {
       "name": "magpie4_helper",
@@ -1171,11 +1180,12 @@
         "round_result"
       ],
       "source_files": [
-        "R27 Q4 transport"
+        "R27 Q4 transport",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
-      "retirement_eligible_after": 30
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_20",
@@ -1212,11 +1222,12 @@
       ],
       "source_files": [
         "R28 (auto-appended)",
-        "R29 (auto-appended)"
+        "R29 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 28,
-      "retirement_eligible_after": 32
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_37",
@@ -1225,11 +1236,12 @@
         "round_result"
       ],
       "source_files": [
-        "R28 (auto-appended)"
+        "R28 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 28,
-      "retirement_eligible_after": 31
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_39",
@@ -1238,11 +1250,12 @@
         "round_result"
       ],
       "source_files": [
-        "R28 (auto-appended)"
+        "R28 (auto-appended)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 28,
-      "retirement_eligible_after": 31
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_54",
@@ -1293,11 +1306,12 @@
         "round_result"
       ],
       "source_files": [
-        "R31 doc-improvement push (2026-05-30, doc-audit)"
+        "R31 doc-improvement push (2026-05-30, doc-audit)",
+        "R43 (auto-appended)"
       ],
       "first_named_at": "2026-05-30",
       "first_named_round": 31,
-      "retirement_eligible_after": 34
+      "retirement_eligible_after": 46
     },
     {
       "name": "module_13",
