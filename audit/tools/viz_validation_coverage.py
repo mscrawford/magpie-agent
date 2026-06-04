@@ -3,7 +3,7 @@
 thoroughly validated, measured by (a) how often a module/doc has come up across
 flywheel rounds and (b) the quality (score) of the answers.
 
-Source of truth: audit/validation_rounds.json (43 rounds, 182 questions).
+Source of truth: audit/validation_rounds.json (per-round flywheel results; counts read live).
 Schema drifted across rounds, so module/score/bug extraction is defensive.
 
 Outputs PNGs into audit/tools/viz_out/.
@@ -187,7 +187,7 @@ def fig_coverage_map():
     cb=fig.colorbar(sm, ax=ax, fraction=0.025, pad=0.01)
     cb.set_label("Mean flywheel score (answer quality)", fontsize=9)
     ax.set_title("MAgPIE agent: module validation coverage map\n"
-                 "cell = module, color = mean answer-quality score, n = times tested across 43 flywheel rounds; grey = never tested",
+                 f"cell = module, color = mean answer-quality score, n = times tested across {len(rounds)} flywheel rounds; grey = never tested",
                  fontsize=12, weight="bold")
     fig.tight_layout()
     p=os.path.join(OUT,"1_module_coverage_map.png"); fig.savefig(p,dpi=150,bbox_inches="tight"); plt.close(fig)
@@ -429,7 +429,7 @@ def fig_recency_scatter():
 # ============ FIGURE 8: dual-axis global health timeline (semantic + structural) ====
 def fig_global_timeline():
     from datetime import datetime
-    DATE_FLOOR = datetime(2026,2,1)  # project start; guards typo'd dates (e.g. R5 '2025-03-07')
+    DATE_FLOOR = datetime(2026,2,1)  # project start; defensive guard against any pre-project typo'd round date
     def pdate(s):
         try:
             dt = datetime.strptime(str(s)[:10], "%Y-%m-%d")
@@ -472,7 +472,7 @@ def fig_global_timeline():
     axT.tick_params(axis="y",labelcolor="#2166ac")
     axTb.set_ylabel("Bugs / round",color="#b2182b",fontsize=9); axTb.tick_params(axis="y",labelcolor="#b2182b")
     axT.set_zorder(axTb.get_zorder()+1); axT.patch.set_visible(False)
-    axT.set_title("AXIS 1 — Semantic answer quality (validation_rounds.json, 43 rounds)",fontsize=10.5,weight="bold",loc="left")
+    axT.set_title(f"AXIS 1 — Semantic answer quality (validation_rounds.json, {len(rounds)} rounds)",fontsize=10.5,weight="bold",loc="left")
     axT.grid(True,alpha=0.2)
     # --- bottom: structural machinery health ---
     pd_=[x[0] for x in struct]
@@ -484,7 +484,7 @@ def fig_global_timeline():
     for x in struct:
         axB.text(x[0],sum(x[1].values())+1.5,str(int(sum(x[1].values()))),ha="center",fontsize=7.5,color="#444")
     axB.set_ylabel("Pipeline-audit findings",fontsize=10)
-    axB.set_title("AXIS 2 — Structural / machinery health (pipeline_audit_rounds.json, 8 rounds; stacked by severity)",fontsize=10.5,weight="bold",loc="left")
+    axB.set_title(f"AXIS 2 — Structural / machinery health (pipeline_audit_rounds.json, {len(pa)} rounds; stacked by severity)",fontsize=10.5,weight="bold",loc="left")
     axB.grid(True,axis="y",alpha=0.2)
     axB.legend(fontsize=8,ncol=4,loc="upper right",framealpha=0.9,title="severity")
     axT.legend(fontsize=8,loc="lower right",framealpha=0.9)
