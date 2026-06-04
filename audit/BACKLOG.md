@@ -8,7 +8,13 @@
 
 ## Active
 
-- **Bomb-rate follow-up** — R26 (mean 8.2) and R27 (7.1) ran 2026-05-29 (logged in `validation_rounds.json`), both below the R24 campaign's >= 8.5 target. The re-measure is done; the goal is NOT durably met. Decide whether a further targeted sweep (e.g. M20 + the R27-flagged docs) is warranted, or accept the current mean and close the campaign.
+- **R44 diagnostic flywheel on the weak spots** — DESIGNED 2026-06-04, not yet run. Full design: `archive/rounds/round44_design.md`. A current-quality analysis (latest-score-per-module, `audit/tools/viz_validation_coverage.py` figs 5–7) isolated the weak spots the all-rounds mean had smeared out:
+  - **M20 processing** last scored **4.0 (R27)** on "primary→secondary conversion" — but that predates the R30–R32 doc push (111 bugs fixed), so the 4.0 is **unverified against current docs**. HIGH priority re-test.
+  - **M09 drivers / M15 food / M17 production** scored 6.0 at R41 — but that was **one shared question** (a driver→demand→production chain trace), so the weak *area* is that chain, not three independent modules. HIGH priority.
+  - **M54 phosphorus (R28=9), M71 lvst-disagg (R22=8)** were healthy when last tested; only *stale*. Drift-check, LOW priority.
+  - The round is instrumented as a **lens bridge**: each `answerer_confabulation` bug is also tagged with the verifier MANDATE that should have caught it (`verifier_gap`). A MANDATE that recurs across probes = machinery problem → escalate to a *focused* lens audit (not a full `/pipeline-audit`); idiosyncratic `doc_error`s = local fix, done. Escalation table in the design §5.
+  - Supersedes the M20 sweep contemplated in the Bomb-rate item below.
+- **Bomb-rate follow-up** — R26 (mean 8.2) and R27 (7.1) ran 2026-05-29 (logged in `validation_rounds.json`), both below the R24 campaign's >= 8.5 target. The re-measure is done; the goal is NOT durably met. Decide whether a further targeted sweep (e.g. M20 + the R27-flagged docs) is warranted, or accept the current mean and close the campaign. (NOTE: the M20 part is now folded into the R44 diagnostic round above.)
 
 ## Validator hardening (open mechanization gaps)
 
