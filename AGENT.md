@@ -2,9 +2,8 @@
 
 **📍 FILE LOCATION NOTE**: You are reading the SOURCE file in `/magpie/magpie-agent/AGENT.md`
 - ✅ **THIS IS THE CORRECT FILE TO EDIT** for AI documentation updates
-- ⚠️ Deployed copies exist in parent: `../AGENT.md` (canonical, tool-agnostic) AND `../CLAUDE.md` (Claude Code's conventional name) — DO NOT EDIT those
-- 🔄 After editing, sync both copies: `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md`
-- ⚠️ **AGENT.md is the canonical name; CLAUDE.md is one deployment target** — Claude Code auto-loads `CLAUDE.md`, but the file content is identical. Other tools (Cursor → `.cursorrules`, Aider → `CONVENTIONS.md`, etc.) can point at `../AGENT.md` directly. Drift between source and ANY deployed copy is a Check-10 validator failure.
+- ⚠️ Deployed copies live in the parent — `../AGENT.md` (canonical, tool-agnostic) and `../CLAUDE.md` (Claude Code auto-loads this); **DO NOT EDIT those**. Content is identical; other tools (Cursor → `.cursorrules`, Aider → `CONVENTIONS.md`) can point at `../AGENT.md`. Drift between source and ANY deployed copy is a Check-10 validator failure.
+- 🔄 After editing, sync both: `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md`
 - 📝 Always commit changes to the magpie-agent repo, not the main MAgPIE repo
 
 ---
@@ -53,14 +52,7 @@ for label,path in [('magpie','magpie-agent/audit/validation_rounds.json'),('prep
 
 **⚡ MOST IMPORTANT RULE ⚡**
 
-**Before answering ANY MAgPIE question, check the AI documentation FIRST!**
-
-- Module questions → `modules/module_XX.md` (AI docs in current directory)
-- Advanced patterns → `core_docs/Query_Patterns_Reference.md`
-- Response guidelines → `core_docs/Response_Guidelines.md`
-- Tool usage → `core_docs/Tool_Usage_Patterns.md`
-- Only go to raw GAMS code if docs don't have what you need (but DO verify in code for high-stakes claims — see Step 2b)
-- For GAMS code → `../modules/XX_name/realization/file.gms` (parent directory)
+**Before answering ANY MAgPIE question, check the AI documentation FIRST** — `modules/module_XX.md`, `core_docs/` (routing detail in Step 1 + the Documentation Map). Only go to raw GAMS code (`../modules/XX_name/realization/file.gms`) if docs don't cover it — but DO verify in code for high-stakes claims (Step 2b).
 
 **This documentation was created to save you time and ensure accuracy. Use it!**
 
@@ -76,40 +68,11 @@ for label,path in [('magpie','magpie-agent/audit/validation_rounds.json'),('prep
    - If `../AGENT.md` is missing → run `/bootstrap` for setup
    - If already exists → proceed to context check
 
-2. **THEN**: Run the **session startup checklist** (see `agent/helpers/session_startup.md`):
-   - **Pull latest magpie-agent** (teammates may have pushed improvements)
-   - **Fetch MAgPIE develop** (detect new commits without changing working tree)
-   - Check MAgPIE version & git branch
-   - Check documentation sync freshness (commits since last sync)
-   - Check for recent model runs in `output/`
-   - Store findings internally; include a brief status line in greeting
+2. **THEN**: Run the **session startup checklist** (`agent/helpers/session_startup.md`) — pull latest magpie-agent, fetch MAgPIE develop, check version / branch / sync-freshness / recent-runs, and store findings for a brief status line in the greeting.
 
-3. **THEN**: Greet the user warmly with status and capabilities:
+3. **THEN**: Greet the user warmly with status and capabilities — use the **verbatim welcome template** in `agent/helpers/session_startup.md` (§ Full greeting template), filling in version / branch / sync badge / runs from the startup checks.
 
-```
-👋 Welcome to MAgPIE Agent!
-
-📊 MAgPIE [version] on [branch] | Docs: [🟢/🟡/🔴] ([N] commits behind) | Runs: [status]
-
-I'm your AI assistant for the MAgPIE land-use model. I have curated documentation covering all 46 modules — just ask me anything!
-
-  • "How does livestock work?"
-  • "Can I safely modify Module X?"
-  • "My model is infeasible — help me debug it"
-  • "What does this GAMS code mean?"
-
-🔍 Behind the scenes, I automatically check documentation freshness, load specialized debugging/scenario helpers, and read known-pitfall warnings before answering.
-
-🧠 I learn from our conversations — if you correct me or share insights, I record them so future sessions benefit.
-
-💡 New here? Type /guide for a quick orientation.
-   Need more? /sync is also available.
-```
-
-**If working on the MAgPIE AI Documentation Project:**
-1. Read: `README.md` (project orientation — note: this is for documentation-project work only, not MAgPIE Q&A)
-2. Read live state from: `audit/BACKLOG.md` (single source of truth for open work), `audit/validation_rounds.json` (semantic flywheel), `audit/pipeline_audit_rounds.json` (structural audits), `audit/get_under_control_plan.md` (R24 campaign, complete -- archive-ready), `project/sync_log.json` (MAgPIE sync state), `audit/global/agent_lessons.md` (system-wide lessons), recent commits. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
-3. Ask user: "What should I work on?"
+**If working on the MAgPIE AI Documentation Project** (not MAgPIE Q&A): read `README.md` for orientation, then live state from `audit/BACKLOG.md` (open-work SSOT), `audit/validation_rounds.json` (semantic flywheel), `audit/pipeline_audit_rounds.json` (structural audits), `audit/get_under_control_plan.md`, `project/sync_log.json`, `audit/global/agent_lessons.md`, and recent commits — then ask the user what to work on. (Historical v1.0 snapshot: `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
 
 **If answering MAgPIE questions:** Follow the workflow below.
 
@@ -254,30 +217,7 @@ If the user's module appears in that list, run Step 1c. If not (single realizati
 
 **Why hoisted**: ~150 lines of binding rules don't belong in always-loaded AGENT.md context; auto-loading on relevant triggers saves tokens, and a dedicated MANDATE doc with binding language separates "must enforce" from "FYI".
 
-**Short index** (so you know what's there):
-
-| # | MANDATE | Trigger |
-|---|---------|---------|
-| 1 | Formula provenance | Math expressions |
-| 2 | Causal-mechanism provenance | Cross-module claims |
-| 3 | Default-parameter verification | `c<N>_*`, `s<N>_*`, `sm_*` defaults |
-| 4 | Capability vs default | Any mechanism description |
-| 5 | Pseudocode labeling | Code-like illustrations |
-| 6 | Module characterization lookup | "Module X handles Y" |
-| 7 | Variable-name lookup | `vm_*`, `pm_*`, `v<N>_*`, etc. |
-| 8 | Realization-name verification | Realization names |
-| 9 | Cost-variable attribution | `vm_cost_*` |
-| 10 | Set-sum non-expansion | `sum(set, ...)` |
-| 11 | Range non-truncation | Age classes, year ranges |
-| 12 | Exact set-member labels | Set element references |
-| 13 | Interface-parameter consumer grep | New `pm_*`/`vm_*`/`im_*` |
-| 14 | Deprecated-name italics | Renamed variables/equations |
-| 15 | Post-rename global grep | Any global rename |
-| 16 | Citation full-path + post-merge line numbers | `file:line` citations |
-| 17 | One-hop reads (direct vs transitive consumer) | "M_X uses vm_FOO" claims |
-| 18 | Producer/declaration attribution (DECLARED/POPULATED/READ) | "X comes from M_Y", `vm_*` source |
-| 19 | Realization structure from the specific realization's files | Non-default realization eq count/structure |
-| 20 | Solution-level `.l/.lo` reads in greps | Any consumer/producer grep |
+**Short index** (full numbered table + binding text in `verifiers.md` — load it when a trigger fires). The 20 MANDATEs cluster into: **provenance** (formula, causal-mechanism, producer/declaration DECLARED-POPULATED-READ); **identifier lookups** (variable, equation, realization, module-characterization, default-parameter, cost-variable attribution); **grep discipline** (interface-parameter consumer grep, one-hop direct-vs-transitive, set-sum non-expansion, range non-truncation, exact set-member labels, solution-level `.l/.lo`); **rename hygiene** (deprecated-name italics, post-rename global grep, citation full-path + post-merge line numbers); plus capability-vs-default and pseudocode labeling.
 
 **Validation tracking**: See `audit/validation_rounds.json` for the full audit history (scores, bugs, root causes). The rubric for scoring is `audit/flywheel_rubric.md`. Future agents append new rounds to validation_rounds.json. Severity tiers and immutable anchor examples are in flywheel_rubric.md §1.
 
@@ -321,18 +261,7 @@ This supplements the "docs first" workflow — docs are still the starting point
 
 ### Step 3: Working with GAMS Code (CRITICAL)
 
-**BEFORE** reading, writing, explaining, or debugging GAMS code, **ALWAYS load the relevant GAMS reference docs**:
-
-| When you need to... | Load this reference |
-|---------------------|-------------------|
-| Read/write any MAgPIE GAMS code | `reference/GAMS_MAgPIE_Patterns.md` (**always load first**) — module structure, naming conventions, MAgPIE idioms |
-| Understand sets, parameters, variables, equations | `reference/GAMS_Fundamentals.md` — core GAMS concepts |
-| Understand loops, conditionals, `$()` syntax | `reference/GAMS_Control_Structures.md` |
-| Understand `sum()`, `prod()`, macros, includes | `reference/GAMS_Advanced_Features.md` |
-| Understand built-in functions, string ops | `reference/GAMS_Functions_Operations.md` |
-| Follow best practices, debugging, performance | `reference/GAMS_Best_Practices.md` |
-
-**The MAgPIE Patterns reference is mandatory** for any GAMS work. Load additional references as needed for the specific task.
+**BEFORE** reading, writing, explaining, or debugging GAMS code, **ALWAYS load `reference/GAMS_MAgPIE_Patterns.md` first** (module structure, naming conventions, MAgPIE idioms — mandatory for any GAMS work), then pull the specific reference as needed: `GAMS_Fundamentals.md` (sets / params / vars / equations), `GAMS_Control_Structures.md` (loops, conditionals, `$()`), `GAMS_Advanced_Features.md` (`sum()` / `prod()` / macros / includes), `GAMS_Functions_Operations.md` (built-ins, string ops), `GAMS_Best_Practices.md` (debugging, performance).
 
 **See `core_docs/Response_Guidelines.md` for complete workflow details, token efficiency, and quality checklist.**
 
@@ -412,60 +341,11 @@ When reporting documentation sync status, use these badges:
 
 ---
 
-## 📚 COMPLETE DOCUMENTATION STRUCTURE
+## 📚 DOCUMENTATION MAP
 
-MAgPIE has **comprehensive AI-readable documentation** (~342,000 words across modules/, core_docs/, cross_module/, reference/, agent/) organized into three categories:
+The knowledge base spans four locations: `modules/` (all 46 modules — `module_XX.md` + `module_XX_notes.md`); `core_docs/` (Core_Architecture, Module_Dependencies, Data_Flow, Query_Patterns_Reference, Response_Guidelines, Tool_Usage_Patterns, Bug_Taxonomy); `cross_module/` (land / water / carbon / nitrogen balances, modification_safety_guide, circular_dependency_resolution); `reference/` (GAMS_*.md, Verification_Protocol).
 
-### Core Documentation (~65,000 words)
-**Location**: `core_docs/`, `reference/`, `cross_module/`
-
-| File | Use For |
-|------|---------|
-| **Core_Architecture.md** | "How does MAgPIE execute?" "What's the folder structure?" |
-| **Module_Dependencies.md** | "What modules depend on X?" "Can I modify Y?" |
-| **Data_Flow.md** | "Where does this data come from?" |
-| **Query_Patterns_Reference.md** | Complex query patterns, parameterization vs. mechanistic modeling |
-| **Response_Guidelines.md** | Token efficiency, examples, quality checklist, complete workflows |
-| **Tool_Usage_Patterns.md** | Best practices for AI agent tools (file operations, shell commands, paths) |
-| **Bug_Taxonomy.md** | 14 recurring doc error patterns, prevention strategies, improvement flywheel |
-| **Verification_Protocol.md** | Step-by-step module verification, accuracy checks (in `reference/`) |
-
-### Module Documentation (~48,000 lines)
-**Location**: `modules/`
-
-**Coverage**: All 46 modules documented with equations, parameters, dependencies, assumptions.
-**File pattern**: `module_XX.md` + `module_XX_notes.md` (user feedback)
-
-### Cross-Module Analysis (~5,400 lines)
-**Location**: `cross_module/`
-
-| File | Purpose |
-|------|---------|
-| **land_balance_conservation.md** | Land area conservation (strict equality) |
-| **water_balance_conservation.md** | Water supply/demand (inequality with buffer) |
-| **carbon_balance_conservation.md** | Carbon stocks and CO2 emissions |
-| **nitrogen_food_balance.md** | Nitrogen tracking + food supply=demand |
-| **modification_safety_guide.md** | Safety protocols for high-centrality modules |
-| **circular_dependency_resolution.md** | 26 circular dependencies, resolution mechanisms |
-
-### Quick Reference Table
-
-```
-Question Type                              → Check Here First
-─────────────────────────────────────────────────────────────────
-"How does MAgPIE execute?"                 → Core_Architecture.md
-"How does module X work?"                  → module_XX.md
-"What depends on module X?"                → Module_Dependencies.md
-"Where does data file X come from?"        → Data_Flow.md
-"Is X modeled mechanistically?"            → Query_Patterns_Reference.md
-"How do I write efficient responses?"      → Response_Guidelines.md
-"Tool usage best practices?"               → Tool_Usage_Patterns.md
-"Common doc errors to avoid?"              → Bug_Taxonomy.md
-"How to verify module docs?"               → reference/Verification_Protocol.md
-"Is land/water/carbon conserved?"          → cross_module/*_balance.md
-"Is it safe to modify module X?"           → cross_module/modification_safety_guide.md
-"How do I set up scenario X?"              → agent/helpers/ (auto-loaded)
-```
+**"Which file answers which question?"** is the MANDATORY WORKFLOW Step 1 above; **helper routing** is the Auto-Loading table. Full architecture inventory with per-file descriptions: `core_docs/Core_Architecture.md`.
 
 ---
 
@@ -529,15 +409,7 @@ Question Type                              → Check Here First
 
 ⚠️ **ASYMMETRY WARNING**: You can verify MAgPIE claims (🟢 code access), but NOT other models (🔴 at best)
 
-**Required Disclosure Pattern:**
-```
-"MAgPIE uses [X methodology] (🟢 verified: modules/NN_xxx/realization/file.gms:123).
-
-Other IAMs may use different approaches:
-- Model Y: [claim] (🔴 inferred from training, NOT verified)
-
-⚠️ I can only verify MAgPIE code. For authoritative comparisons, consult published comparison studies."
-```
+**Required disclosure pattern**: state each MAgPIE claim with 🟢 + `modules/NN_xxx/realization/file.gms:line`; mark any other-model claim 🔴 (inferred from training, NOT verified); then add — "I can only verify MAgPIE code; for authoritative comparisons consult published comparison studies."
 
 **Never present unverified claims about other models as facts.**
 
@@ -554,30 +426,7 @@ Other IAMs may use different approaches:
 2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (the run's summary prints the live check count). It catches wrong names, stale citations, and convention violations automatically.
 3. **VERIFY BEFORE CITING** — If you haven't read a file THIS session, don't cite its line numbers. Line numbers drift as code evolves.
 
-### Bug Distribution (where errors actually occur)
-
-| Error Class | % of All Bugs | Automated? |
-|-------------|--------------|------------|
-| Wrong file:line citations | 71% | ✅ Check 17 |
-| Wrong realization names | 6% | ✅ Check 16 |
-| Wrong variable names | 8% | ✅ Check 14 |
-| Wrong line content | 12% | Manual |
-| Wrong equation names | 2% | ✅ Check 15 |
-| Wrong defaults/filenames | 1% | Manual |
-
-### High-Risk vs Low-Risk Content
-
-| HIGH RISK (verify carefully) | LOW RISK (generally accurate) |
-|------------------------------|-------------------------------|
-| "Verified Against" footers | Equation formulas (0 bugs in 165 blocks) |
-| Advisory/troubleshooting sections | Set names (immune to hallucination) |
-| File:line citations | Constraint types (=e=, =l=, =g=) |
-| Realization directory names | Variable names in formal equations |
-| Parameter default values | Cross-module dependency claims |
-| **magpie4 source-of-truth citations** | |
-| Output-interpretation answers grounded in GAMS code rather than magpie4 source | |
-
-### Cascade Effect
+### Cascade Effect (stays inline — gates citation accuracy)
 
 Wrong realization name → wrong file path → wrong file size → ALL line citations invalid.
 **Always verify realization names FIRST** before writing any file:line citations.
@@ -586,13 +435,9 @@ Wrong realization name → wrong file path → wrong file size → ALL line cita
 
 report.mif variables can be COMPUTED in magpie4 (combinations / aggregations of GAMS outputs). Citing only the GAMS source omits the magpie4 layer that constructed the variable. Always check `agent/helpers/magpie4_reference.md` for any report.mif claim — it pins to the renv-locked magpie4 version (`project/version_pins.json`) and has the dispatch source for the relevant `reportX` function. (Regression questions G3 + G4 in `validation_rounds.json` schema v1.3 specifically guard this.)
 
-### For Writing Automation Scripts
+### Bug distribution, risk stratification & audit notes
 
-macOS ships bash 3.x: no associative arrays (`declare -A`), no `grep -P`. Use Python for complex cross-referencing. See existing scripts in `scripts/` for patterns.
-
-### For Future Audit Sessions
-
-Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See `core_docs/Bug_Taxonomy.md` for the documented patterns and the improvement flywheel methodology.
+The where-errors-occur table, high-vs-low-risk content stratification, the macOS-bash automation note, and the future-audit-focus guidance are hoisted to `core_docs/Bug_Taxonomy.md` (§ Bug Distribution & Risk Stratification) — maintainer-facing flywheel reference, loaded on doc-edit / maintenance triggers rather than every session.
 
 ---
 
@@ -608,64 +453,18 @@ Syntactic audits (variable names, equation names, realization names, citations) 
 
 ## 🔄 Internal iteration loop
 
-The agent records lessons directly during sessions. There is no external user-submission inbox — improvement happens through the agent-user iteration that produces commits to this repo.
-
-- Each `module_XX.md` may have a `module_XX_notes.md` with warnings, lessons, corrections, and examples
-- Always read notes files when answering about a module
-
-### Where the agent writes lessons
-
-```
-User corrections / agent discoveries during sessions
-  → modules/module_XX_notes.md   (module-specific lessons — written directly by agent)
-  → agent/helpers/*.md Lessons Learned  (helper improvements — written directly by agent)
-  → audit/global/agent_lessons.md  (system-wide lessons)
-```
-
-**When to record a lesson**:
-- ✅ After you **correct yourself** or the user corrects you — append to the appropriate notes / Lessons Learned section and tell the user: "✅ Recorded — I've saved this correction so future sessions get it right."
-- ✅ After a **long debugging session** where new patterns were discovered
-- ✅ When the user expresses **frustration with documentation** quality or gaps that turns into a usable fix
-- ❌ Do NOT record on routine Q&A sessions where nothing new surfaced
+The agent records lessons directly during sessions (no external inbox; improvement = agent-user iteration → commits to this repo). **Destinations + duplicate-check protocol** are under "Capturing corrections and new knowledge" above (→ `modules/module_XX_notes.md`, helper `Lessons Learned`, `audit/global/agent_lessons.md`). **When to record**: after you or the user correct a claim; after a long debugging session that surfaced a new pattern; when doc-quality frustration yields a usable fix. **Not** on routine Q&A where nothing new surfaced. (Each `module_XX.md` may have a `module_XX_notes.md` — always read it when answering about that module.)
 
 ---
 
-## 📐 DOCUMENT HIERARCHY & READING ORDER
+## 📐 DOCUMENT READING ORDER
 
-**When answering MAgPIE questions, read in this order:**
+- **MAgPIE question** → AGENT.md (routing) → `modules/module_XX.md` (facts) → `module_XX_notes.md` (warnings — always) → `Query_Patterns_Reference.md` / `Response_Guidelines.md` (depth) → `cross_module/*.md` (safety/balance) → `core_docs/` (architecture) → `reference/GAMS_*.md` (code work).
+- **report.mif / IAMC variable / model output** → `agent/helpers/magpie4_reference.md` (version-pinned R reporting layer) + `agent/helpers/interpreting_outputs.md`.
+- **Input data / preprocessing** → `PREPROC_AGENT.md` (madrat / mrcommons / etc.) + `core_docs/Data_Flow.md`.
+- **Writing/editing docs** → `reference/Verification_Protocol.md` + `core_docs/Bug_Taxonomy.md`, then run `scripts/validate_consistency.sh`.
 
-```
-User asks MAgPIE question
-  → AGENT.md (tells you WHERE to look)
-  → modules/module_XX.md (FACTS about the module)
-  → module_XX_notes.md (WARNINGS/LESSONS - always check)
-  → Query_Patterns_Reference.md (for complex query patterns)
-  → Response_Guidelines.md (for quality/efficiency guidance)
-  → cross_module/*.md (SYSTEM-LEVEL if safety/dependencies)
-  → core_docs/ (ARCHITECTURE if structural question)
-  → reference/GAMS_*.md (GAMS CODE if writing/debugging code)
-
-User asks about report.mif / IAMC variable / model output
-  → agent/helpers/magpie4_reference.md (magpie4 R reporting layer — version-pinned)
-  → agent/helpers/interpreting_outputs.md (output file structure + workflows)
-  → modules/module_XX.md (only if magpie4 reads GAMS variables you need to understand)
-
-User asks about input data / preprocessing
-  → PREPROC_AGENT.md (R preprocessing pipeline — madrat / mrcommons / etc.)
-  → core_docs/Data_Flow.md (file-by-file source mapping for the consumed inputs)
-
-User asks to WRITE or EDIT module documentation
-  → reference/Verification_Protocol.md (verification steps)
-  → core_docs/Bug_Taxonomy.md (14 error patterns to avoid)
-  → AGENT.md Critical Warnings (top lessons)
-  → After editing: run scripts/validate_consistency.sh
-```
-
-**DO NOT read** (noise for MAgPIE questions):
-- ❌ README.md, project/ directory (only for documentation project work)
-
-**For complete document hierarchy, conflict resolution, and quality assurance:**
-- See `core_docs/Response_Guidelines.md`
+**DO NOT read for MAgPIE Q&A**: `README.md`, `project/` (documentation-project work only). Full hierarchy + conflict resolution: `core_docs/Response_Guidelines.md`.
 
 ---
 
@@ -698,29 +497,13 @@ When updating or creating documentation, prefer pointers to canonical sources ov
 
 ## 📚 Additional Resources
 
-**For detailed guidance on specific topics:**
-
-- **Token efficiency** → `core_docs/Response_Guidelines.md` (progressive depth strategy, budget examples)
-- **Numerical examples** → `core_docs/Response_Guidelines.md` (illustrative vs. actual data)
-- **Complex query patterns** → `core_docs/Query_Patterns_Reference.md` (5 patterns with workflows)
-- **Parameterization detection** → `core_docs/Query_Patterns_Reference.md` (Pattern 4 + Appendix)
-- **Complete example walkthrough** → `core_docs/Response_Guidelines.md` (carbon pricing → forest growth)
-- **Document role hierarchy** → `core_docs/Response_Guidelines.md` (precedence, conflicts, quality assurance)
-- **First-time setup** → `/bootstrap`
-
-**The AI documentation exists to make your job easier AND more accurate. Use it!**
+Depth on token efficiency, numerical-example labeling, complex query patterns (5 workflows), parameterization detection (Pattern 4 + Appendix), the carbon-pricing → forest-growth walkthrough, and the document-role hierarchy lives in `core_docs/Response_Guidelines.md` and `core_docs/Query_Patterns_Reference.md`. First-time setup: `/bootstrap`.
 
 ---
 
-## 🔄 KEEPING DOCUMENTATION IN SYNC
+## 🔄 Keeping documentation in sync
 
-Documentation freshness is checked **automatically** at session start (session_startup.md Step 0 fetches MAgPIE develop, Step 2 counts new commits and displays a staleness badge).
-
-For **deep sync** (reading commit diffs and updating module docs), use `/sync`.
-
-### Sync Tracking
-
-**Location**: `project/sync_log.json` — tracks last sync date, commit hash, and modules reviewed.
+Freshness is auto-checked at session start (session_startup.md fetches MAgPIE develop, counts new commits, displays a staleness badge). For **deep sync** (reading commit diffs, updating module docs) use `/sync`. State tracked in `project/sync_log.json` (last sync date, commit hash, modules reviewed).
 
 
 ---

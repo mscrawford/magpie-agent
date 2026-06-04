@@ -323,6 +323,43 @@ synced, future Claude instances receive NONE of the documented lessons.
 
 ---
 
+## Bug Distribution & Risk Stratification
+
+*(Hoisted from AGENT.md QUALITY GUARD to keep the always-loaded router lean. These are maintainer-facing flywheel stats; the binding "Three Rules" and the citation-cascade insight remain inline in AGENT.md.)*
+
+### Bug Distribution (where errors actually occur)
+
+| Error Class | % of All Bugs | Automated? |
+|-------------|--------------|------------|
+| Wrong file:line citations | 71% | ✅ Check 17 |
+| Wrong realization names | 6% | ✅ Check 16 |
+| Wrong variable names | 8% | ✅ Check 14 |
+| Wrong line content | 12% | Manual |
+| Wrong equation names | 2% | ✅ Check 15 |
+| Wrong defaults/filenames | 1% | Manual |
+
+### High-Risk vs Low-Risk Content
+
+| HIGH RISK (verify carefully) | LOW RISK (generally accurate) |
+|------------------------------|-------------------------------|
+| "Verified Against" footers | Equation formulas (0 bugs in 165 blocks) |
+| Advisory/troubleshooting sections | Set names (immune to hallucination) |
+| File:line citations | Constraint types (=e=, =l=, =g=) |
+| Realization directory names | Variable names in formal equations |
+| Parameter default values | Cross-module dependency claims |
+| **magpie4 source-of-truth citations** | |
+| Output-interpretation answers grounded in GAMS code rather than magpie4 source | |
+
+### For Writing Automation Scripts
+
+macOS ships bash 3.x: no associative arrays (`declare -A`), no `grep -P`. Use Python for complex cross-referencing. See existing scripts in `scripts/` for patterns.
+
+### For Future Audit Sessions
+
+Syntactic audits (variable names, equation names, realization names, citations) are now saturated (<1 bug per angle). Future audits should focus on **semantic accuracy** — do descriptions match code behavior? See the documented patterns above and the improvement flywheel methodology.
+
+---
+
 ## Adding New Patterns
 
 When you discover a new bug class:

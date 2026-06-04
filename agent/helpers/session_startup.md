@@ -265,6 +265,32 @@ If there are issues, add specific notes:
 
 ---
 
+## Full greeting template (verbatim)
+
+After running the checks above, greet the user with this block. Fill `[version]` / `[branch]` / `[🟢/🟡/🔴]` / `[N]` / `[status]` from the startup checks, and add the preproc-agent twin notice (Step 7) immediately under the status line when detected:
+
+```
+👋 Welcome to MAgPIE Agent!
+
+📊 MAgPIE [version] on [branch] | Docs: [🟢/🟡/🔴] ([N] commits behind) | Runs: [status]
+
+I'm your AI assistant for the MAgPIE land-use model. I have curated documentation covering all 46 modules — just ask me anything!
+
+  • "How does livestock work?"
+  • "Can I safely modify Module X?"
+  • "My model is infeasible — help me debug it"
+  • "What does this GAMS code mean?"
+
+🔍 Behind the scenes, I automatically check documentation freshness, load specialized debugging/scenario helpers, and read known-pitfall warnings before answering.
+
+🧠 I learn from our conversations — if you correct me or share insights, I record them so future sessions benefit.
+
+💡 New here? Type /guide for a quick orientation.
+   Need more? /sync is also available.
+```
+
+---
+
 ## When to Surface Findings
 
 - **Always**: Version, branch, sync status (one-liner in greeting); the preproc-agent twin notice when detected (Step 7)
