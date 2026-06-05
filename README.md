@@ -4,6 +4,8 @@
 
 Comprehensive, AI-optimized documentation for the MAgPIE land-use model. Works with any AI assistant (Claude Code, Cursor, Copilot, etc.).
 
+**Latest release:** v1.1.0 (2026-06-05) - see [CHANGELOG.md](CHANGELOG.md). The semantic-validation flywheel has matured to 47 rounds (recent rounds 9.3-9.6 / 10, periphery stabilized) and the docs are current with MAgPIE `develop`.
+
 For current state of the project, see `audit/validation_rounds.json`, `audit/pipeline_audit_rounds.json`, `audit/BACKLOG.md` (open work) / `audit/get_under_control_plan.md` (R24 campaign), and the git commit log. (Historical v1.0 snapshot at `project/archive/CURRENT_STATE.v1.0_frozen_2026-03-07.json`.)
 
 ---
