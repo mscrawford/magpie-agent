@@ -171,7 +171,9 @@ for rd in rounds:
             if sc is not None:
                 mod[m]["scores"].append(sc)
                 if isinstance(rnum,(int,float)):
-                    mod[m]["score_rounds"].append((rnum, sc))  # (round, score) pairs, in order
+                    # (round, score, breadth) — breadth = #modules this question tested,
+                    # so the map can flag scores set only by broad cross-module probes.
+                    mod[m]["score_rounds"].append((rnum, sc, len(mods)))
             if bg is not None: mod[m]["bugs"] += bg/max(len(mods),1)  # share bugs across modules
             mod[m]["rounds"].append(rnum)
         for k in get_nonmod_keys(q):
@@ -193,17 +195,30 @@ for rd in rounds:
 
 # all 46 modules, fill zeros for untested
 all_mods = sorted(MOD_TO_CAT.keys())
+BREADTH_FLAG = 6  # a single question testing >= this many modules is a "cross-module" breadth probe
 def mstats(m):
     d=mod.get(m)
     if not d or d["n"]==0:
-        return dict(n=0, mean=None, latest=None, latest_round=None, rwfreq=0.0, bugs=0.0)
-    sr=d["score_rounds"]
-    latest = sr[-1][1] if sr else None
-    latest_round = sr[-1][0] if sr else None
+        return dict(n=0, mean=None, latest=None, latest_round=None, rwfreq=0.0, bugs=0.0,
+                    latest_breadth=None, latest_cross_module=False)
+    sr=d["score_rounds"]  # list of (round, score, breadth)
     # recency-weighted frequency: each scored test weighted DECAY^(MAXR-round)
-    rwfreq = sum(DECAY**(MAXR-rnd) for rnd,_ in sr)
+    rwfreq = sum(DECAY**(MAXR-rnd) for rnd,_,_ in sr)
+    # "latest" = the most-recent ROUND that scored this module; within that round AVERAGE
+    # all questions touching it. Same round => equally recent, so this avoids the arbitrary
+    # last-question-by-list-order tie-break (which let one broad probe overwrite a focused one).
+    # latest_breadth = tightest probe in that round, used to flag scores set only by broad questions.
+    if sr:
+        latest_round = max(t[0] for t in sr)
+        in_round = [t for t in sr if t[0]==latest_round]
+        latest = float(np.mean([t[1] for t in in_round]))
+        latest_breadth = min(t[2] for t in in_round)
+    else:
+        latest_round = latest = latest_breadth = None
     return dict(n=d["n"], mean=float(np.mean(d["scores"])) if d["scores"] else None,
-                latest=latest, latest_round=latest_round, rwfreq=rwfreq, bugs=d["bugs"])
+                latest=latest, latest_round=latest_round, rwfreq=rwfreq, bugs=d["bugs"],
+                latest_breadth=latest_breadth,
+                latest_cross_module=(latest_breadth is not None and latest_breadth>=BREADTH_FLAG))
 STAT = {m:mstats(m) for m in all_mods}
 
 # per non-module doc: latest score + round, mean, n (mirrors mstats)
@@ -410,7 +425,8 @@ def fig_current_quality_map():
                          lw=(2.5 if stale else 1.5),
                          hatch=("////" if stale else None)))
             label=f"{m:02d} {MOD_NAME.get(m,'')}"
-            sub = "untested" if s["latest"] is None else f"R{int(s['latest_round'])}  {s['latest']:.1f}"
+            cross = s.get("latest_cross_module")
+            sub = "untested" if s["latest"] is None else f"R{int(s['latest_round'])}  {s['latest']:.1f}{'*' if cross else ''}"
             ax.text(i+0.48,y+0.62,label,ha="center",va="center",fontsize=7.0,color=txtcol,weight="bold")
             ax.text(i+0.48,y+0.30,sub,ha="center",va="center",fontsize=6.5,color=txtcol)
         y+=1
@@ -423,7 +439,12 @@ def fig_current_quality_map():
                  f"cell color = score at the latest round that tested it; 'R## x.x' = that round + score; "
                  f"red hatched = last tested before R{STALE_BEFORE} (score may be outdated)",
                  fontsize=11.5, weight="bold")
-    fig.tight_layout()
+    if any(STAT[m].get("latest_cross_module") for m in all_mods):
+        fig.text(0.5, 0.012,
+                 f"* latest score came from a single cross-module answer (one question testing >={BREADTH_FLAG} modules at once), "
+                 "so every module it touched shares that one score",
+                 ha="center", fontsize=7.8, style="italic", color="#555")
+    fig.tight_layout(rect=[0,0.03,1,1])
     p=os.path.join(OUT,"5_current_quality_map.png"); fig.savefig(p,dpi=150,bbox_inches="tight"); plt.close(fig)
     return p
 
