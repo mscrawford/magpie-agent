@@ -56,7 +56,8 @@
     27,
     29,
     42,
-    43
+    43,
+    47
    ],
    "drift_observed": false
   },
@@ -6603,17 +6604,215 @@
      "doc_errors_latent": []
     }
    ]
+  },
+  {
+   "round": 47,
+   "date": "2026-06-05",
+   "commit_before": "631b2a1 (magpie-agent main, R45+R46) + uncommitted non-module viz + R47 doc fix; MAgPIE develop @ ee98739fd",
+   "commit_after": "pending (1 doc fix: circular_dependency_resolution.md:248 yields-endogeneity Major)",
+   "answerer_model": "claude-sonnet-4-6 (Agent model:sonnet, magpie-helper)",
+   "auditor_model": "claude-opus-4-8 (Agent model:opus, general-purpose)",
+   "type": "full",
+   "scope": "CAPSTONE: cross_module/ + fact-bearing core_docs/ re-validation. User flagged that the module-keyed 'least-verified' framing (and the quality-map viz) left the non-module corpus a blind spot; the new fig-9 non-module doc-quality map confirmed it (entire corpus STALE @R30, several docs with bad pre-fix scores: Core_Architecture 0, mod_safety 3, circular_deps 5, Module_Dependencies 5). This round (a) re-confirms R30's Critical fixes hold (R13-style), (b) re-tests the never-re-validated worst docs. Last standing-campaign round; afterwards semantic validation is reactive. Design: audit/archive/rounds/round47_design.md.",
+   "summary": {
+    "total_bugs_reported_by_auditors": 3,
+    "auditor_false_positives_withdrawn": 0,
+    "auditor_root_cause_corrections": 0,
+    "total_bugs_net": 3,
+    "bugs_by_severity": {
+     "critical": 0,
+     "major": 2,
+     "minor": 1,
+     "informational": 0
+    },
+    "bugs_by_root_cause": {
+     "doc_error": 0,
+     "doc_error_answerer_beat_it": 1,
+     "answerer_confabulation": 2
+    },
+    "mean_score": 9.5,
+    "doc_quality_mean": 10.0,
+    "n_questions_doc_quality": 5,
+    "doc_quality_mean_method": "Raw mean = (P1 10 + P2 10 + P3 10 + P4 7 + P5 10 + G1 10)/6 = 9.5. doc_quality EXCLUDES P4 (its 2 bugs are exclusively answerer_confabulation citation-drift vs a verified-correct doc), leaving P1/P2/P3/P5/G1 all at 10 -> 10.0, n=5. IMPORTANT honesty note: doc_quality 10.0 means every ANSWER was correct, NOT zero doc defects -- this round FOUND + FIXED one Major latent doc bug (P3: circular_dependency_resolution.md:248 said 'Yields (14) are fixed parameters from calibration'; reality q14_yield_crop makes vm_yld ENDOGENOUS via the current-timestep decision var vm_tau -- the answerer beat the doc by reading code, so P3's answer scored 10 but the doc was wrong). P4's 7 is answerer-side citation drift (cited preloop.gms:156 for pm_land_start which is at :15-16, and declarations.gms:14 vs :19), NOT a Module_Dependencies doc defect.",
+    "score_range": [
+     7,
+     10
+    ],
+    "r30_critical_fixes_reconfirmed": "ALL THREE HELD. P1: Core_Architecture loop-iteration (was score-0 '2-5 times'; now correctly 'runs ONCE by default' with s15_elastic_demand=0; grep confirms zero '2-5' remaining). P2: modification_safety_guide centrality + the 10 vm_land direct consumers + 32 cost terms (was score-3; now verbatim-correct). P4: Module_Dependencies/module_10 vm_land consumer set -- M14/M71/M80/M11/M39 correctly EXCLUDED (was the R30 phantom-consumer Critical; the doc is now correct, the round-7 score is answerer citation drift not a doc error).",
+    "capstone_verdict": "The non-module corpus is in MUCH better shape than the fig-9 'before' (all-R30-pre-fix-red) implied: 5/6 probes clean, all R30 Critical fixes held, and the historically-WORST doc (nitrogen_food_balance 4.0@R7 -> P5 10) is now clean. BUT not perfect: the persistently-weak circular_dependency_resolution.md (4.0@R8 -> 5.0@R30) still carried one Major latent error (yields-endogeneity), now fixed. This vindicates the user's instinct to check the non-module docs -- the module-centric campaign would never have surfaced it.",
+    "regression_anchors": {
+     "G1": {
+      "score": 10,
+      "drift_observed": false,
+      "trend": "STABLE/load-bearing. Module 14 default managementcalib_aug19 (only realization), EXACTLY 2 equations q14_yield_crop + q14_yield_past; correctly avoids the R22-corrected q14_yieldcalib confabulation; s14_yld_past_switch default 0.25. Used R22/23/25/26/27/29/42/43/47."
+     }
+    },
+    "doc_fixes_applied": [
+     "circular_dependency_resolution.md:248 - replaced 'Within timestep: Yields (14) are fixed parameters from calibration' (Major, doc_error_answerer_beat_it) with the accurate split: the calibrated baseline i14_yields_calib is fixed but realized vm_yld is ENDOGENOUS via current-timestep vm_tau (q14_yield_crop, simultaneous NLP not a within-timestep cycle); pasture yields q14_yield_past use the LAGGED pcm_tau as the cross-timestep cycle-breaker. (Citation corrected to full path on validator Check-25 flag.)"
+    ],
+    "user_goal_signal": "Capstone of the campaign, pivoted to the cross_module/core_docs blind spot the user identified. raw 9.5, doc_q 10.0, R30 Critical fixes ALL held, 1 Major latent doc bug found + fixed. Combined with R45 (10.0) + R46 (9.5): the module periphery is clean AND the non-module corpus is now re-confirmed (modulo the 4 balance/data-flow docs still on R30 scores, drift-check only). Campaign goal met; semantic validation -> reactive mode."
+   },
+   "questions": [
+    {
+     "id": "R47-P1",
+     "archetype": "edge-case + timing (R30 score-0 re-confirm)",
+     "modules_tested": [
+      15,
+      16,
+      80,
+      9
+     ],
+     "docs_tested": [
+      "core_docs/Core_Architecture.md",
+      "modules/module_15.md"
+     ],
+     "question": "By default, how many times does the nonlinear optimization loop run per timestep? Does s15_elastic_demand change this + default?",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "r30_fix_held": true,
+     "notes": "10/10. R30 FIX HELD: Core_Architecture now correctly says the loop runs ONCE by default (s15_elastic_demand=0, sm_intersolve WHILE mechanism); zero '2-5 times' remaining. s15_maxiter=10/s15_convergence=0.005 elastic params verified.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R47-P2",
+     "archetype": "conservation + safety (R30 score-3 re-confirm)",
+     "modules_tested": [
+      10,
+      11,
+      56,
+      52
+     ],
+     "docs_tested": [
+      "cross_module/modification_safety_guide.md",
+      "modules/module_11.md"
+     ],
+     "question": "Which modules are highest-centrality/most dangerous to modify? What breaks if you change vm_land/q10_land_area or M11 cost aggregation?",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "r30_fix_held": true,
+     "notes": "10/10. R30 FIX HELD: centrality (M11=28,M10=17,M56=16,M17=14), the 10 vm_land direct consumers (22/29/30/31/32/34/35/50/58/59 - incl M58 via m58_LandMerge macro-arg, M22 via .lo form), 32 q11_cost_reg terms w/ vm_reward_cdr_aff sole negative - all verbatim-correct.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R47-P3",
+     "archetype": "timing/sequencing (persistently-weak doc)",
+     "modules_tested": [
+      13,
+      14,
+      52,
+      56
+     ],
+     "docs_tested": [
+      "cross_module/circular_dependency_resolution.md"
+     ],
+     "question": "How are the tau<->yield (13<->14) and carbon-stock/GHG-pricing (52<->56) circular dependencies resolved? Name the cycle-breaking parameter + file:line.",
+     "score": 10,
+     "bugs_found": 1,
+     "bugs_critical": 0,
+     "bugs_major": 1,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "r30_fix_held": true,
+     "notes": "ANSWER 10/10 (correctly named pcm_tau + pcm_carbon_stock as cycle-breakers). But the answerer BEAT THE DOC: circular_dependency_resolution.md:248 said 'Yields (14) are fixed parameters from calibration' - WRONG (q14_yield_crop makes vm_yld endogenous via vm_tau). doc_error_answerer_beat_it (Major by future-reader harm), FIXED this round.",
+     "doc_errors_latent": [
+      "circular_dependency_resolution.md:248 yields-fixed-parameters -> yields-endogenous-via-vm_tau (FIXED this round)"
+     ]
+    },
+    {
+     "id": "R47-P4",
+     "archetype": "provenance (R20 anchor / R30 phantom-consumer re-confirm)",
+     "modules_tested": [
+      10,
+      29,
+      30,
+      31,
+      32,
+      34,
+      35,
+      14,
+      71,
+      80
+     ],
+     "docs_tested": [
+      "core_docs/Module_Dependencies.md",
+      "modules/module_10.md"
+     ],
+     "question": "Which modules CONSUME vm_land, which PROVIDE to it? Is M14/M80/M71 a consumer?",
+     "score": 7,
+     "bugs_found": 2,
+     "bugs_critical": 0,
+     "bugs_major": 1,
+     "bugs_minor": 1,
+     "bugs_informational": 0,
+     "r30_fix_held": true,
+     "notes": "R30 PHANTOM-CONSUMER FIX HELD: the docs correctly exclude M14/M71/M80/M11/M39 from the vm_land consumer set; the 10-consumer set is correct. Score 7 is purely ANSWERER citation drift (NOT doc errors): B1 Major - cited preloop.gms:156 + a fabricated module_14.md:757 ref for pm_land_start (actual :15-16; module_14.md has NEITHER citation - verified); B2 Minor - declarations.gms:14 (block header) vs :19 (the vm_land line).",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R47-P5",
+     "archetype": "conservation-law (worst-doc re-test: 4.0@R7)",
+     "modules_tested": [
+      50,
+      51,
+      15,
+      16,
+      18
+     ],
+     "docs_tested": [
+      "cross_module/nitrogen_food_balance.md",
+      "modules/module_50.md"
+     ],
+     "question": "How does MAgPIE enforce (a) soil-N balance and (b) food supply=demand? Name the balancing equations + file:line.",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "r30_fix_held": true,
+     "notes": "10/10. The historically-WORST doc (4.0@R7) is now CLEAN: q50_nr_bal_crp =g= form + vm_nr_eff fixed-in-presolve (fertilizer the free balancing var) + 'no inter-period soil-N stock / not a strict conservation law' + q16_supply_crops -> q21_trade_glo hard global supply>=demand all verified.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R47-G1",
+     "archetype": "calibration_anchor (module 14 default realization)",
+     "modules_tested": [
+      14
+     ],
+     "docs_tested": [
+      "modules/module_14.md"
+     ],
+     "question": "What is the default realization of module 14 (yields)? List the equations defined in its equations.gms.",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "drift_observed": false,
+     "notes": "10/10, drift FALSE. managementcalib_aug19 (only realization), exactly 2 eqs q14_yield_crop + q14_yield_past, no q14_yieldcalib confabulation, s14_yld_past_switch=0.25. Used R22/23/25/26/27/29/42/43/47.",
+     "doc_errors_latent": []
+    }
+   ]
   }
  ],
  "cumulative_stats": {
-  "total_rounds": 46,
+  "total_rounds": 47,
   "total_docs_validated": 85,
   "module_docs_validated": 46,
   "non_module_docs_validated": 33,
-  "approx_total_bugs_found": 889,
-  "approx_total_bugs_fixed": 652,
+  "approx_total_bugs_found": 892,
+  "approx_total_bugs_fixed": 653,
   "last_validation_date": "2026-06-05",
-  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly->R43 validate-teammate-edits + periphery: raw 9.57 (HIGHEST on record), doc_quality 10.0, ZERO doc bugs; teammate f4f44b0 module_80.md+module_37.md validated ACCURATE; M58 peatland bypasses M52 (parameterized), M73 no-HWP verified; G1=10 G2=10 drift FALSE->R44 DIAGNOSTIC weak-spot re-test (targeted): raw 9.28; M20 processing 4.0(R27)->9.5 RESOLVED (R27 was answerer_confab vs a correct doc); driver->demand->production chain P1=8.0/P4=9.5 recovered from R41's shared 6.0; ALL parameterization-vs-mechanism lens checks PASSED (P1/P2/P3/P4); ZERO doc bugs (doc_quality 10.0, incl 1 synthesis root-cause correction P5 doc_error->answerer_confab after verifying module_71.md/module_21.md directly); verifier_gaps sparse+idiosyncratic (MANDATE-12/16/18 once each, NO recurrence) -> NO lens-audit escalation per round44_design section 5; G4 drift FALSE (pin 2.70.0@a360d8c verified fresh).->R45 least-verified set A (M57/M53/M62/M45/M55 + G3): raw 10.0, doc_q 10.0, ZERO Minor+ bugs; weak spots M57/M53 (both @7 R41) RESOLVED to clean 10 on fresh parameterization probes; all 4 parameterization-vs-mechanism lens checks PASSED; 2 trivial doc-hygiene fixes (module_53.md:71 citation drift, module_56.md:675 t_all); 1 auditor false-positive (PR#869 BEF) withdrawn after git/sync_log verify->R46 least-verified set B (M13/M22/M28/M18/M12 + G2): raw 9.5, doc_q 10.0, ZERO doc bugs; weak sub-9 modules M13/M22 (both @8 R41) held at 9 (new sub-10s are answerer label/citation slips, not doc defects); R16 age-class TRUNCATION anchor PASSED (ac=62 elements, not ac140); G2 carbon-stock producer/consumer anchor HELD (drift FALSE, R26 regression stays healed); 3 Minor bugs all answerer-side vs correct docs, 0 doc fixes",
+  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly->R43 validate-teammate-edits + periphery: raw 9.57 (HIGHEST on record), doc_quality 10.0, ZERO doc bugs; teammate f4f44b0 module_80.md+module_37.md validated ACCURATE; M58 peatland bypasses M52 (parameterized), M73 no-HWP verified; G1=10 G2=10 drift FALSE->R44 DIAGNOSTIC weak-spot re-test (targeted): raw 9.28; M20 processing 4.0(R27)->9.5 RESOLVED (R27 was answerer_confab vs a correct doc); driver->demand->production chain P1=8.0/P4=9.5 recovered from R41's shared 6.0; ALL parameterization-vs-mechanism lens checks PASSED (P1/P2/P3/P4); ZERO doc bugs (doc_quality 10.0, incl 1 synthesis root-cause correction P5 doc_error->answerer_confab after verifying module_71.md/module_21.md directly); verifier_gaps sparse+idiosyncratic (MANDATE-12/16/18 once each, NO recurrence) -> NO lens-audit escalation per round44_design section 5; G4 drift FALSE (pin 2.70.0@a360d8c verified fresh).->R45 least-verified set A (M57/M53/M62/M45/M55 + G3): raw 10.0, doc_q 10.0, ZERO Minor+ bugs; weak spots M57/M53 (both @7 R41) RESOLVED to clean 10 on fresh parameterization probes; all 4 parameterization-vs-mechanism lens checks PASSED; 2 trivial doc-hygiene fixes (module_53.md:71 citation drift, module_56.md:675 t_all); 1 auditor false-positive (PR#869 BEF) withdrawn after git/sync_log verify->R46 least-verified set B (M13/M22/M28/M18/M12 + G2): raw 9.5, doc_q 10.0, ZERO doc bugs; weak sub-9 modules M13/M22 (both @8 R41) held at 9 (new sub-10s are answerer label/citation slips, not doc defects); R16 age-class TRUNCATION anchor PASSED (ac=62 elements, not ac140); G2 carbon-stock producer/consumer anchor HELD (drift FALSE, R26 regression stays healed); 3 Minor bugs all answerer-side vs correct docs, 0 doc fixes->R47 CAPSTONE cross_module/core_docs re-validation (user-flagged blind spot): raw 9.5, doc_q 10.0; ALL THREE R30 Critical fixes HELD (Core_Architecture loop-once, mod_safety centrality/vm_land-consumers, Module_Dependencies phantom-consumer exclusion); worst-ever doc nitrogen_food_balance 4.0@R7->10; found+fixed 1 Major latent doc bug in persistently-weak circular_dependency_resolution.md (yields-endogeneity); P4 score-7 = answerer citation drift not doc defect. Campaign -> reactive mode.",
   "doc_push_2026_05_30": {
    "rounds": "R30-R32",
    "docs": 30,

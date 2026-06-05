@@ -245,7 +245,7 @@ pm_yields_semi_calib(j,kve,w) [14] → vm_prod(j,kcr) [17]
 **Resolution Type**: **Temporal Feedback** + **Iterative Convergence**
 
 **How It Works**:
-1. **Within timestep**: Yields (14) are **fixed parameters** from calibration
+1. **Within timestep**: the *calibrated yield baseline* `i14_yields_calib` (14) is a fixed parameter, but the realized yield `vm_yld` is **endogenous** — `q14_yield_crop` scales it by the current-timestep decision variable `vm_tau` (`modules/14_yields/managementcalib_aug19/equations.gms:14-16`), so the 14↔13 coupling is a *simultaneous* NLP, not a within-timestep cycle. Pasture yields (`q14_yield_past`) instead use the **lagged** `pcm_tau(j,'crop')` (previous timestep) — the actual cross-timestep cycle-breaker (`modules/14_yields/managementcalib_aug19/equations.gms:35-39`; `pcm_tau` updated `modules/13_tc/endo_jan22/postsolve.gms:16`).
 2. **Production** (17) and **livestock** (70) optimized simultaneously
 3. **Across timesteps**: Manure from livestock(t) affects yields(t+1)
 4. **Calibration**: Requires multiple runs to match observed yields

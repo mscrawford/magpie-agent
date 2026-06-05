@@ -48,6 +48,58 @@ MOD_TO_CAT = {m:c for c,ms in CATEGORIES.items() for m in ms}
 CAT_ORDER = list(CATEGORIES.keys())
 CAT_COLOR = dict(zip(CAT_ORDER, plt.cm.tab10(np.linspace(0,1,len(CAT_ORDER)))))
 
+# ---- non-module docs (cross_module/ + core_docs/) — the module-keyed maps miss these ----
+# value = (group_kind, short display label)
+NONMOD_DOCS = {
+    "land_balance_conservation":      ("cross_module", "land balance"),
+    "water_balance_conservation":     ("cross_module", "water balance"),
+    "carbon_balance_conservation":    ("cross_module", "carbon balance"),
+    "nitrogen_food_balance":          ("cross_module", "N+food balance"),
+    "circular_dependency_resolution": ("cross_module", "circular deps"),
+    "modification_safety_guide":      ("cross_module", "mod safety"),
+    "Core_Architecture":              ("core_fact",    "architecture"),
+    "Module_Dependencies":            ("core_fact",    "dependencies"),
+    "Data_Flow":                      ("core_fact",    "data flow"),
+    "Query_Patterns_Reference":       ("core_instr",   "query patterns"),
+    "Response_Guidelines":            ("core_instr",   "response guide"),
+    "Tool_Usage_Patterns":            ("core_instr",   "tool usage"),
+    "Bug_Taxonomy":                   ("core_instr",   "bug taxonomy"),
+}
+NONMOD_GROUPS = {
+    "cross_module/ (balance + safety)": ["land_balance_conservation","water_balance_conservation",
+        "carbon_balance_conservation","nitrogen_food_balance","circular_dependency_resolution","modification_safety_guide"],
+    "core_docs/ (fact-bearing)": ["Core_Architecture","Module_Dependencies","Data_Flow"],
+    "core_docs/ (instruction*)": ["Query_Patterns_Reference","Response_Guidelines","Tool_Usage_Patterns","Bug_Taxonomy"],
+}
+
+def norm_nonmod(s):
+    """Map a docs_tested path or a round label/topic to a canonical non-module doc key."""
+    s = str(s)
+    if re.search(r"module_\d+", s):  # a module doc, handled by the module maps
+        return None
+    stem = os.path.basename(s).replace(".md", "").strip()
+    for key in NONMOD_DOCS:
+        if key.lower() == stem.lower():
+            return key
+    for key in NONMOD_DOCS:  # label may be a fragment or embed the key
+        if key.lower() in s.lower():
+            return key
+    return None
+
+def get_nonmod_keys(q):
+    keys = set()
+    dt = q.get("docs_tested")
+    if isinstance(dt, list):
+        for p in dt:
+            k = norm_nonmod(p)
+            if k: keys.add(k)
+    for f in ("label", "topic", "target"):
+        v = q.get(f)
+        if isinstance(v, str):
+            k = norm_nonmod(v)
+            if k: keys.add(k)
+    return keys
+
 # ---- defensive extractors ----
 def get_modules(q):
     """Return set of module ints tested by a question."""
@@ -101,7 +153,7 @@ rounds = data["rounds"]
 
 mod = defaultdict(lambda: {"n":0,"scores":[],"bugs":0.0,"rounds":[],"score_rounds":[]})  # per module
 round_summary = []  # (round, mean_score, total_bugs)
-nonmod = defaultdict(lambda: {"n":0,"scores":[],"bugs":0.0})
+nonmod = defaultdict(lambda: {"n":0,"scores":[],"bugs":0.0,"score_rounds":[]})
 
 MAXR = max(r.get("round") for r in rounds if isinstance(r.get("round"),(int,float)))
 DECAY = 0.92  # per-round recency decay for recency-weighted frequency
@@ -122,10 +174,12 @@ for rd in rounds:
                     mod[m]["score_rounds"].append((rnum, sc))  # (round, score) pairs, in order
             if bg is not None: mod[m]["bugs"] += bg/max(len(mods),1)  # share bugs across modules
             mod[m]["rounds"].append(rnum)
-        for p in get_nonmodule_docs(q):
-            nonmod[p]["n"]+=1
-            if sc is not None: nonmod[p]["scores"].append(sc)
-            if bg is not None: nonmod[p]["bugs"]+=bg
+        for k in get_nonmod_keys(q):
+            nonmod[k]["n"]+=1
+            if sc is not None:
+                nonmod[k]["scores"].append(sc)
+                if isinstance(rnum,(int,float)): nonmod[k]["score_rounds"].append((rnum,sc))
+            if bg is not None: nonmod[k]["bugs"]+=bg
     # round-level summary from explicit summary if present, else from questions
     summ = rd.get("summary",{})
     ms = summ.get("mean_score")
@@ -151,6 +205,15 @@ def mstats(m):
     return dict(n=d["n"], mean=float(np.mean(d["scores"])) if d["scores"] else None,
                 latest=latest, latest_round=latest_round, rwfreq=rwfreq, bugs=d["bugs"])
 STAT = {m:mstats(m) for m in all_mods}
+
+# per non-module doc: latest score + round, mean, n (mirrors mstats)
+def nmstats(k):
+    d=nonmod.get(k)
+    if not d or not d.get("score_rounds"):
+        return dict(n=(d["n"] if d else 0), mean=None, latest=None, latest_round=None, bugs=(d["bugs"] if d else 0.0))
+    sr=sorted(d["score_rounds"])  # by round
+    return dict(n=d["n"], mean=float(np.mean(d["scores"])), latest=sr[-1][1], latest_round=sr[-1][0], bugs=d["bugs"])
+NONMOD_STAT={k:nmstats(k) for k in NONMOD_DOCS}
 
 # ================= FIGURE 1: module coverage map (category-grouped heatmap) =====
 def fig_coverage_map():
@@ -496,8 +559,48 @@ def fig_global_timeline():
     p=os.path.join(OUT,"8_global_health_timeline.png"); fig.savefig(p,dpi=150,bbox_inches="tight"); plt.close(fig)
     return p
 
+# ================= FIGURE 9: non-module doc quality map ======================
+def fig_doc_quality_map():
+    fig,ax=plt.subplots(figsize=(12,5.4))
+    cmap=plt.cm.RdYlGn; norm=plt.Normalize(4,10)
+    y=0; yticks=[]; ylabels=[]
+    maxcols=max(len(v) for v in NONMOD_GROUPS.values())
+    for grp,keys in NONMOD_GROUPS.items():
+        yticks.append(y+0.5); ylabels.append(grp)
+        for i,k in enumerate(keys):
+            s=NONMOD_STAT[k]
+            stale = s["latest_round"] is not None and s["latest_round"]<STALE_BEFORE
+            if s["latest"] is None:
+                color="#d9d9d9"; txtcol="#555"
+            else:
+                color=cmap(norm(s["latest"])); r,g,b,_=color
+                txtcol="white" if (0.299*r+0.587*g+0.114*b)<0.55 else "black"
+            ax.add_patch(Rectangle((i,y),0.96,0.96,facecolor=color,
+                         edgecolor=("#b2182b" if stale else "white"),
+                         lw=(2.5 if stale else 1.5),
+                         hatch=("////" if stale else None)))
+            sub = (("N/A" if "instruction" in grp else "untested") if s["latest"] is None
+                   else f"R{int(s['latest_round'])}  {s['latest']:.1f}")
+            ax.text(i+0.48,y+0.62,NONMOD_DOCS[k][1],ha="center",va="center",fontsize=7.3,color=txtcol,weight="bold")
+            ax.text(i+0.48,y+0.30,sub,ha="center",va="center",fontsize=6.6,color=txtcol)
+        y+=1
+    ax.set_xlim(0,maxcols); ax.set_ylim(0,y); ax.invert_yaxis()
+    ax.set_yticks(yticks); ax.set_yticklabels(ylabels,fontsize=9.5,weight="bold"); ax.set_xticks([])
+    for sp in ax.spines.values(): sp.set_visible(False)
+    sm=plt.cm.ScalarMappable(cmap=cmap,norm=norm); sm.set_array([])
+    cb=fig.colorbar(sm,ax=ax,fraction=0.03,pad=0.01); cb.set_label("Latest answer-quality score",fontsize=9)
+    ax.set_title("MAgPIE agent: NON-MODULE doc quality (cross_module/ + core_docs/)\n"
+                 f"cell = latest score + round; grey = not semantically scored; "
+                 f"red hatched = last tested before R{STALE_BEFORE} (score may be outdated)\n"
+                 "* instruction docs are agent operating guides — validated by use + pipeline audits, not the semantic flywheel",
+                 fontsize=10.5,weight="bold")
+    fig.tight_layout()
+    p=os.path.join(OUT,"9_nonmodule_doc_quality.png"); fig.savefig(p,dpi=150,bbox_inches="tight"); plt.close(fig)
+    return p
+
 paths=[fig_coverage_map(), fig_thoroughness_scatter(), fig_score_trend(), fig_category_aggregate(),
-       fig_current_quality_map(), fig_trajectory(), fig_recency_scatter(), fig_global_timeline()]
+       fig_current_quality_map(), fig_trajectory(), fig_recency_scatter(), fig_global_timeline(),
+       fig_doc_quality_map()]
 
 # ---- text summary for the user ----
 print("=== DATASET ===")
@@ -516,6 +619,17 @@ weak=[m for m in tested if STAT[m]['n']>=2]
 for m in sorted(weak,key=lambda m:STAT[m]['mean'])[:8]:
     s=STAT[m]
     print(f"  M{m:02d} {MOD_NAME.get(m,''):12s} n={s['n']:2d}  mean={s['mean']:.1f}")
+print()
+print("=== NON-MODULE DOCS (cross_module/ + core_docs/) — latest score per doc ===")
+for grp,keys in NONMOD_GROUPS.items():
+    print(f"  [{grp}]")
+    for k in keys:
+        s=NONMOD_STAT[k]
+        if s["latest"] is None:
+            print(f"    {NONMOD_DOCS[k][1]:16s} latest=N/A (not semantically scored)")
+        else:
+            flag=" <-- STALE" if (s["latest_round"] is not None and s["latest_round"]<STALE_BEFORE) else ""
+            print(f"    {NONMOD_DOCS[k][1]:16s} latest={s['latest']:.1f} (R{int(s['latest_round'])})  mean={s['mean']:.1f}  n={s['n']}{flag}")
 print()
 print("=== CURRENT QUALITY (latest score per module) ===")
 print(f"stale threshold: last tested before R{STALE_BEFORE}")
