@@ -82,7 +82,8 @@
     27,
     29,
     41,
-    43
+    43,
+    46
    ],
    "drift_observed": false,
    "r26_note": "Drifted at R26 (populator-list recurrence). Doc root-cause fixed in R26 (module_56.md + module_52.md -> 29/31/32/34/35/59); expect recovery next re-measure.",
@@ -103,7 +104,8 @@
    "used_in_rounds": [
     24,
     28,
-    42
+    42,
+    45
    ],
    "drift_observed": false
   },
@@ -6255,17 +6257,363 @@
      "notes": "1 Informational: answer attributed im_feed_baskets to q71_feed_rum_liv, but the feed-basket multiplication lives in q71_feed_forage. ROOT-CAUSE CORRECTED from the P5 auditor's 'doc_error' to 'answerer_confabulation': module_71.md separates the two equations correctly (q71_feed_rum_liv L43 vs q71_feed_forage L68) - the answerer conflated, the doc is right. No doc fix. Confirms stale modules retained pre-push quality."
     }
    ]
+  },
+  {
+   "round": 45,
+   "date": "2026-06-05",
+   "commit_before": "638e1d9 (magpie-agent main, AGENT.md F5 trim); MAgPIE develop @ ee98739fd",
+   "commit_after": "pending (2 doc fixes: module_53.md:71 citation drift, module_56.md:675 t->t_all)",
+   "answerer_model": "claude-sonnet-4-6 (Agent model:sonnet, magpie-helper)",
+   "auditor_model": "claude-opus-4-8 (Agent model:opus, general-purpose)",
+   "type": "full",
+   "scope": "Least-verified-module flywheel (set A). User goal: confirm answer-quality is stabilizing in a good place on the THINNEST / weakest-scoring modules that the broad R41-R43 sweeps and the R44 diagnostic did NOT re-confirm. Coverage analysis (latest-score-per-module over R1-R44) isolated: M57 MACC (6 tests, last R41, score 7 - weakest low-coverage), M53 methane (8 tests, R41, score 7), M62 material (4 tests - THINNEST in the model), M45 climate (5 tests, classic parameterization trap), M55 awms (6 tests). 5 new probes biased to parameterization-vs-mechanism + default-state archetypes (the failure modes most likely on these modules) + G3 magpie4 regression (rotated in, last used R42). Design: audit/archive/rounds/round45_design.md.",
+   "summary": {
+    "total_bugs_reported_by_auditors": 5,
+    "auditor_false_positives_withdrawn": 1,
+    "auditor_root_cause_corrections": 0,
+    "total_bugs_net": 4,
+    "bugs_by_severity": {
+     "critical": 0,
+     "major": 0,
+     "minor": 0,
+     "informational": 4
+    },
+    "bugs_by_root_cause": {
+     "doc_error": 1,
+     "doc_error_answerer_beat_it": 1,
+     "answerer_confabulation": 2
+    },
+    "mean_score": 10.0,
+    "doc_quality_mean": 10.0,
+    "n_questions_doc_quality": 6,
+    "doc_quality_mean_method": "Raw mean = (P1 10 + P2 10 + P3 10 + P4 10 + P5 10 + G3 10)/6 = 10.0. ALL SIX scored a clean 10 (zero Minor+ bugs), so the answerer_confabulation-exclusion set is empty and doc_quality == raw mean = 10.0. The 4 net informational items: P1-I1 (module_56.md:675 im_pollutant_prices (t,i,..) vs declaration (t_all,..); doc_error_answerer_beat_it, FIXED), P1-I2 (M50 'reduces baseline emissions' loose - M50 uses an NUE transform not (1-mitigation); answerer_confab), P4-I1 (ic55_awms_shr cited only else-branch presolve.gms:23-24, omits if-branch :20; answerer_confab), P5-latent (module_53.md:71 ent_ferm Tier-2 citation 14-16,44 drifted - line 44 now AWMS comment; doc_error class 10, FIXED). The P3 'PR #869 misattribution' fix-suggestion was a FALSE POSITIVE, withdrawn: PR #869 IS georg-schroeter/ipopt_part1 and per sync_log.json that PR was the forestry overhaul that renamed f14_ipcc_bce(2D)->fm_ipcc_bef(1D); module_45.md:230 is CORRECT (verified vs git log #869 merge + current modules/14_yields/managementcalib_aug19/presolve.gms:29). The auditor inferred 'unrelated to BEF' from the branch name; verify-before-asserting caught it.",
+    "score_range": [
+     10,
+     10
+    ],
+    "weak_spot_verdict": "RESOLVED. The two weakest low-coverage modules (M57 MACC @7 R41, M53 methane @7 R41) BOTH scored a clean 10 on fresh parameterization-angle probes - the prior 7s were answerer noise / since-fixed, NOT current doc defects. The thinnest module (M62 material, 4 lifetime tests) scored 10. All FOUR parameterization-vs-mechanism lens checks (P1 MACC exogenous-curve, P3 climate data-distribution, P4 awms rule-based+IPCC-param, P5 methane ent_ferm mechanistic-structure-but-param-Ym) PASSED - the answerer correctly distinguished parameterization from mechanism on every probe, including the subtle ent_ferm 'mechanistic in structure / parameterized in coefficients' case without over-claiming.",
+    "regression_anchors": {
+     "G3": {
+      "score": 10,
+      "drift_observed": false,
+      "trend": "STABLE/load-bearing. magpie4 source-of-truth: v2.70.0 @ a360d8c9ec read from project/version_pins.json (NOT hardcoded), resolution 'sha', renv.lock cross-checked (pin NOT stale), workspace clone correctly flagged NOT source-of-truth. Version-pin discipline CORRECT. Used R24/28/42/45."
+     }
+    },
+    "doc_fixes_applied": [
+     "module_53.md:71 - ent_ferm Tier-2 methodology citation 'equations.gms:14-16,44' -> '13-19, 21-29' (line 44 had drifted to the AWMS comment block after the residue-burn-share change; 13-19 is the gross-energy comment, 21-29 the formula). Class 10 stale citation.",
+     "module_56.md:675 - im_pollutant_prices interface-variable signature '(t,i,...)' -> '(t_all,i,...)' to match declarations.gms:9 and the 10 other in-doc instances. Cosmetic internal inconsistency."
+    ],
+    "user_goal_signal": "Two-round campaign requested to confirm quality is stabilizing in a good place on least-verified modules. R45 (set A, thinnest/weakest 5): raw 10.0, doc_quality 10.0, ZERO Minor+ bugs, 2 trivial doc-hygiene fixes. With R43 (9.57) and R44 (9.28, both doc_q 10.0), this is a strong stabilization signal on the under-swept PERIPHERY, not just the swept core."
+   },
+   "questions": [
+    {
+     "id": "R45-P1",
+     "archetype": "parameterization-vs-mechanism + default/switch",
+     "modules_tested": [
+      57,
+      56,
+      51,
+      53
+     ],
+     "question": "How does the MACC module (57) achieve GHG abatement? (a) curves mechanistic or exogenous input? (b) which emission sources + connection to GHG-pricing (56)? (c) active by default or only under a non-default switch? Name interface vars/equations/switches + file:line.",
+     "score": 10,
+     "bugs_found": 2,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 2,
+     "lens_check": "PASS - MACC curves correctly identified as exogenous PBL tables (f57_maccs_*.cs3) indexed in preloop; im_maccs_mitigation is a table lookup with no dynamic feedback, not a mechanistic computation.",
+     "notes": "10/10 ACCURATE. Both default realizations (on_aug22, price_aug22), the price->step->mitigation->cost chain, 5 emission sources, M50/M51/M53 consumer set, M56 pricing via vm_emissions_reg/q56_emis_pricing, all scalar defaults (s57_maxmac_* = -1, s57_implicit_*), and 'off by default' (zero NPi2025 prices -> step 1 -> mitigation 0) all verified. 2 informational: I1 module_56.md:675 (t,i,..) vs decl (t_all,..) [doc_error_answerer_beat_it, FIXED]; I2 'mitigation reduces baseline emissions for M50' loose - M50 uses an NUE transform [answerer_confab]. Self-tagged docs-only but earned green on code re-verify.",
+     "doc_errors_latent": [
+      "module_56.md:675 im_pollutant_prices signature t vs t_all (FIXED this round)"
+     ]
+    },
+    {
+     "id": "R45-P2",
+     "archetype": "cross-module causal chain + default/switch",
+     "modules_tested": [
+      62,
+      16,
+      20,
+      17
+     ],
+     "question": "Trace material-use demand (62) determination + satisfaction. (a) endogenous or exogenous? (b) entry into supply-demand balance (16/17), role of processing (20)? (c) default behavior? Name demand var + the equation adding it to total demand + file:line.",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "lens_check": "PASS - vm_dem_material set by q62 =e= to input-data/presolved params (no optimization vars on RHS); p62_scaling_factor uses vm_dem_food.l (prior-solve LEVEL) so it is fixed before the current solve = exogenous, correctly distinguished from endogenous within-period response.",
+     "notes": "10/10 ACCURATE, zero bugs. All 5 q16_supply_* term-line citations (crops:24, livestock:36, secondary:46, residues:54, forestry:87-sole-term) exact; s62_include_bioplastic=1 / s62_max_dem_bioplastic=0 defaults verified; 'material demand NOT routed through M20' confirmed (zero vm_dem_material refs in 20_processing). Exceptionally precise.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R45-P3",
+     "archetype": "parameterization/provenance trap (uses-data != models)",
+     "modules_tested": [
+      45,
+      14,
+      52,
+      58
+     ],
+     "question": "What does module 45 (climate) actually do? (a) simulate climate or distribute exogenous Koeppen-Geiger data? (b) which downstream consumers, for what? (c) name interface parameter + file:line. Parameterized vs mechanistic.",
+     "score": 10,
+     "bugs_found": 1,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 1,
+     "lens_check": "PASS - pm_climate_class is exogenous Koeppen-Geiger input ($include koeppen_geiger.cs3), static across timesteps, zero equations/variables; 'distributes data, does not model climate' is correct.",
+     "notes": "10/10 ACCURATE. Zero eqs/vars confirmed; pm_climate_class(j,clcl) the sole interface param (input.gms:10-13); 31 clcl members exact; the FOUR-consumer set (M14/M52/M58/M59) verified COMPLETE via grep (R20-anchor missed-consumer failure mode does NOT apply). The lone auditor flag (PR #869 'misattribution' in module_45.md:230 BEF footnote) was a FALSE POSITIVE - PR #869 = ipopt_part1 DID rename f14_ipcc_bce->fm_ipcc_bef per sync_log + git log; doc is correct, NO fix.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R45-P4",
+     "archetype": "cross-module causal chain + parameterization",
+     "modules_tested": [
+      55,
+      50,
+      51,
+      70
+     ],
+     "question": "Trace nitrogen flows from livestock manure. (a) M55 confinement-vs-grazing split mechanistic or IPCC/input? (b) N into soil budget (50) + emissions (51)? (c) activity driver (70)? Name awms->50 / awms->51 interface vars + file:line.",
+     "score": 10,
+     "bugs_found": 1,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 1,
+     "lens_check": "PASS - AWMS split is rule-based (feed-source type) + exogenous shares (ic55_manure_fuel_shr, ic55_awms_shr) via =e= identities, no optimization of the split; emission factors f51_ef3_* are IPCC input params. Correctly characterized as not-mechanistic.",
+     "notes": "10/10 ACCURATE. Four AWMS categories + q55_bal_intake_* eqs + the (1-im_development_state)*0.25 residue split + q55_bal_manure mass balance + all M50 (q50_nr_inputs/_pasture) and M51 (q51_emissions_man_crop/_awms incl. no-NUE-on-awms/_man_past) consumers + M70 vm_feed_intake driver verified. 1 informational: ic55_awms_shr cited only else-branch presolve.gms:23-24, omits if-branch :20 [answerer_confab; behavioral claim correct].",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R45-P5",
+     "archetype": "quantitative + conservation-law (emission accounting)",
+     "modules_tested": [
+      53,
+      70,
+      55,
+      56
+     ],
+     "question": "Trace CH4 emissions. (a) distinct sources in module 53? (b) each EF mechanistic or input data, activity driver (70/rice/55)? (c) routing to GHG-pricing (56)? Name emission vars/eqs + file:line.",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "lens_check": "PASS - ent_ferm correctly 'mechanistic in STRUCTURE (energy-balance feed_intake x ge x Ym, endogenous to feed composition) with PARAMETERIZED fixed IPCC Tier-2 Ym coefficients (0.03/0.065, 1/55.65 hardcoded)'; other 3 sources flat activity x input-EF. The subtle case handled WITHOUT over-claiming (no claim that MAgPIE models rumen biochemistry).",
+     "notes": "10/10 ACCURATE. Four CH4 sources + their equations + the hardcoded-scalar vs input-EF distinction for all four + activity drivers (M70/M30/M55/M18) + rice EF-not-indexed-by-w + resid_burn no-MACC + full M56 routing (q56_emis_pricing->emission_cost_annual->emission_costs->vm_emission_costs) + 12/44*28 GWP=28 cap all verified. Latent doc bug FIXED: module_53.md:71 ent_ferm Tier-2 citation drifted (line 44 now AWMS) -> 13-19, 21-29 [doc_error class 10].",
+     "doc_errors_latent": [
+      "module_53.md:71 ent_ferm Tier-2 citation 14-16,44 -> 13-19,21-29 (FIXED this round)"
+     ]
+    },
+    {
+     "id": "R45-G3",
+     "archetype": "calibration_anchor (magpie4 source-of-truth / version pin)",
+     "modules_tested": [
+      "magpie4 helper",
+      "version_pins.json",
+      "renv.lock"
+     ],
+     "question": "Which version of magpie4 does this agent's source-of-truth clone reflect, and how was that version determined? Cite the file(s) you read.",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "drift_observed": false,
+     "lens_check": "n/a (regression anchor)",
+     "notes": "10/10, drift FALSE. v2.70.0 @ a360d8c9ec read from project/version_pins.json (NOT hardcoded), resolution 'sha', renv.lock cross-checked (pin not stale), workspace clone correctly flagged NOT source-of-truth. Read the 3 right files (helper + version_pins.json + renv.lock). Used R24/28/42/45.",
+     "doc_errors_latent": []
+    }
+   ]
+  },
+  {
+   "round": 46,
+   "date": "2026-06-05",
+   "commit_before": "638e1d9 (magpie-agent main) + uncommitted R45 doc fixes (module_53.md, module_56.md); MAgPIE develop @ ee98739fd",
+   "commit_after": "pending (record-only, ZERO doc fixes this round - all 3 Minor bugs answerer-side vs correct docs)",
+   "answerer_model": "claude-sonnet-4-6 (Agent model:sonnet, magpie-helper)",
+   "auditor_model": "claude-opus-4-8 (Agent model:opus, general-purpose)",
+   "type": "full",
+   "scope": "Least-verified-module flywheel (set B) - second round of the user's two-round stabilization campaign. Targets the NEXT tier of under-verified modules, weighted to the SUB-9-SCORING ones and the R16 Critical-anchor structural area, using HARDER archetypes absent from R45 (timing/sequencing, conservation-law, edge-case): M13 tech-change (R41, score 8), M22 land-conservation (R41, score 8), M28 age-class (R16 ac300/62-element truncation anchor area), M18 residues (thin), M12 interest-rate (thin) + G2 carbon-stock regression (rotated in, last R43). Design: audit/archive/rounds/round46_design.md. A genuine stress test of the periphery, not a victory lap.",
+   "summary": {
+    "total_bugs_reported_by_auditors": 3,
+    "auditor_false_positives_withdrawn": 0,
+    "auditor_root_cause_corrections": 0,
+    "total_bugs_net": 3,
+    "bugs_by_severity": {
+     "critical": 0,
+     "major": 0,
+     "minor": 3,
+     "informational": 0
+    },
+    "bugs_by_root_cause": {
+     "doc_error": 0,
+     "doc_error_answerer_beat_it": 0,
+     "answerer_confabulation": 3
+    },
+    "mean_score": 9.5,
+    "doc_quality_mean": 10.0,
+    "n_questions_doc_quality": 3,
+    "doc_quality_mean_method": "Raw mean = (P1 9 + P2 9 + P3 10 + P4 9 + P5 10 + G2 10)/6 = 9.5. doc_quality EXCLUDES the 3 questions whose only bugs are answerer_confabulation (P1, P2, P4 - the docs were correct, the answerer was sloppy), leaving P3/P5/G2 all at 10 -> doc_quality 10.0, n=3. CRITICAL: ZERO doc bugs across all 6 questions. The 3 Minor bugs are ALL answerer-side vs verified-correct docs: P1 called v13_tau_core a 'free variable' (declared 'positive variable'; doc says 'decision variable' correctly); P2 cited presolve_ini.gms:20-26 for the 4 protected pools (those lines compute over all 7 land pools; the 4-pool claim is substantively correct, grounded in realization.gms:17-18, and module_22.md carries the same correct framing); P4 wrote 'BG only dm,nr' (the dm_nr set is /dm,nr,c/ - module_18.md:133 ALREADY correctly lists 'dm, nr, c'; the answerer anchored on the set NAME). All three verified doc-correct, so NO doc fixes.",
+    "score_range": [
+     9,
+     10
+    ],
+    "weak_spot_verdict": "RESOLVED. The two weak sub-9 modules M13 (tech-change @8 R41) and M22 (land-conservation @8 R41) scored 9 each on fresh hard-archetype probes - the prior 8s did NOT reproduce as doc defects (the new sub-10s are answerer label/citation slips, not doc errors). TWO historically-fragile ANCHORS both held: (1) the R16 Critical age-class TRUNCATION anchor PASSED at 10 - answer correctly stated the ac set = 62 elements (ac0..ac300 + acx), NOT truncated to ac140/acx; module_28.md:27 explicitly says 'do NOT truncate'; (2) the G2 vm_carbon_stock producer-vs-consumer anchor (which regressed R22->R26) held at 10, drift FALSE - DECLARED-in-M56 / POPULATED-by-29/31/32/34/35/59 / READ-by-M52 all correct across module_52.md, module_56.md, carbon_balance_conservation.md; the R26 regression is fully healed.",
+    "regression_anchors": {
+     "G2": {
+      "score": 10,
+      "drift_observed": false,
+      "trend": "STABLE/load-bearing, REGRESSION HEALED. vm_carbon_stock DECLARED M56 price_aug22/declarations.gms:34 (NOT M52); POPULATED by 29(crop)/31(past)/32(forestry)/34(urban fixed 0)/35(natveg)/59(soilc); READ by M52 q52_emis_co2_actual equations.gms:16-19; M56 prices it DIRECTLY via q56_emis_pricing_co2 (c56_carbon_stock_pricing default actualNoAcEst), NOT via vm_emissions_reg. All verified vs code; docs correct across module_52/56 + carbon_balance_conservation. The R22->R23->R26 regression (recovered R27) stays healed. Used R22/23/25/26/27/29/41/43/46."
+     }
+    },
+    "doc_fixes_applied": [],
+    "user_goal_signal": "Round 2 of 2. R46 (set B, next-tier 5 + G2): raw 9.5, doc_quality 10.0, ZERO doc bugs. Both rounds of the campaign now show doc_quality 10.0 with zero documentation defects on the least-verified modules. Two historically-fragile anchors (R16 age-class truncation, G2 carbon-stock producer/consumer) both held. Quality is stabilizing in a good place - confirmed across the model periphery, not just the swept core."
+   },
+   "questions": [
+    {
+     "id": "R46-P1",
+     "archetype": "quantitative + timing (cost chain)",
+     "modules_tested": [
+      13,
+      14,
+      38,
+      11
+     ],
+     "question": "How is land-use intensity tau determined (module 13)? (a) decision variable or fixed? (b) cost of raising tau + which eq/var carries it to the objective (38/11)? (c) tau->yields (14), what is conservation tau (f_btc2)?",
+     "score": 9,
+     "bugs_found": 1,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 1,
+     "bugs_informational": 0,
+     "lens_check": "PASS - tau IS a genuine endogenous decision variable (positive variable v13_tau_core, optimized under .lo/.up bounds + cost penalty entering objective via vm_tech_cost->q11_cost_reg); correctly distinguished from the derived vm_tau/v13_tau_consv.",
+     "notes": "9/10 ACCURATE. endo_jan22 default, full cost chain (q13_cost_tc (1+r)^15 -> q13_tech_cost r/(1+r) -> q13_tech_cost_sum -> vm_tech_cost -> q11_cost_reg), Module-38-NOT-on-path verified (grep clean), q14_yield_crop tau/fm_tau1995, conservation-tau q13_tau/q13_tau_consv default-OFF (c13_croparea_consv=0) all verified. 1 Minor: answer called v13_tau_core a 'free variable' - declared 'positive variable' (declarations.gms:8-9); harmless (cites the operative .lo/.up correctly); doc says 'decision variable' correctly, so answerer_confab not doc error.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R46-P2",
+     "archetype": "conservation-law + default/switch",
+     "modules_tested": [
+      22,
+      35,
+      10,
+      29
+     ],
+     "question": "How does MAgPIE enforce land conservation (module 22)? (a) hard constraint or cost? (b) which land pools, constrains natveg(35)/cropland(29) via land balance(10)? (c) default - what protected, any switch off by default?",
+     "score": 9,
+     "bugs_found": 1,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 1,
+     "bugs_informational": 0,
+     "lens_check": "PASS - pm_land_conservation = min(WDPA-input target, current) + restoration deltas; pure parameter arithmetic on f22_wdpa_baseline (preloop.gms:31), no equation/optimization feedback, not mechanistic. Correctly characterized.",
+     "notes": "9/10 ACCURATE. 'Module 22 has NO equations' verified (realization.gms phases); the four consumer constraints (q35_natveg_conservation =g=, q29_land_snv, M31 vm_land.lo(past), M10 q10_land_area transitivity) verified incl set-based sums (no R16 enumeration); defaults c22_protect_scenario=none, c22_base_protect=WDPA, c35_ad_policy=npi, c13_croparea_consv=0 all verified. 1 Minor: cited presolve_ini.gms:20-26 for the 4 protected pools (those lines compute over all 7 land; 4-pool claim correct, grounded realization.gms:17-18); same framing in module_22.md, so doc-consistent not a doc error.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R46-P3",
+     "archetype": "timing/sequencing (R16 Critical truncation anchor)",
+     "modules_tested": [
+      28,
+      35,
+      32,
+      52
+     ],
+     "question": "How do age classes work (module 28)? (a) what set, how many elements / max age class? (b) how does land move between age classes over time, per-timestep? (c) how do forestry(32)/natveg(35)/carbon(52) use them? Exact set + full extent.",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "lens_check": "R16 ANCHOR PASSED - ac set = 62 elements (ac0..ac300 in 5-yr steps = 61 + acx absorbing), independently counted from core/sets.gms:269-275. NOT truncated (R16 failure mode was ac140/acx), NOT over-stated. module_28.md:27 explicitly says 'do NOT truncate'.",
+     "notes": "10/10 ACCURATE, zero bugs. Set extent exact; aging index-shift s35_shift=m_timestep_length_forestry/5 per-timestep in M35 presolve; ac_est/ac_sub dynamic sets; M52 Chapman-Richards over (ord(ac)-1); im_forest_ageclass weights; all 4 default realizations (M28 oct24, M32 dynamic_may24, M35 pot_forest_may24, M52 normal_dec17) confirmed. Both doc AND answer correct on the historically-Critical truncation anchor.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R46-P4",
+     "archetype": "causal chain + quantitative",
+     "modules_tested": [
+      18,
+      17,
+      53,
+      60
+     ],
+     "question": "Trace crop residues (module 18). (a) AG/BG computed from production(17)? (b) AG pool split among uses (recycle/burn/remove/bioenergy 60)? (c) which flows drive emissions (resid-burn CH4 in 53)?",
+     "score": 9,
+     "bugs_found": 1,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 1,
+     "bugs_informational": 0,
+     "lens_check": "PASS - residue burning parameterized: q18_res_field_burn sets vm_res_ag_burn =e= exogenous Smil-1999 burn shares (i18_res_use_burn via c18_burn_scen) blended by exogenous im_development_state; no endogenous feedback. Correctly characterized.",
+     "notes": "9/10 ACCURATE. All 5 default realizations + q18_prod_res_ag_reg/bg_reg formulas + q18_res_field_balance 3-fates + q18_res_field_burn parameterization + q18_translate kcr->kres + nonused18 + downstream emission routing (q53_emissions_resid_burn 0.0027 no-MACC, q51_emissions_resid_burn/_resid, M50 vm_res_recycling) verified. 1 Minor: wrote 'BG only dm,nr' - dm_nr set is /dm,nr,c/ (includes carbon); module_18.md:133 ALREADY correctly lists 'dm, nr, c', so answerer anchored on the set name (answerer_confab), doc correct.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R46-P5",
+     "archetype": "default + edge-case (discounting)",
+     "modules_tested": [
+      12,
+      11,
+      13,
+      38
+     ],
+     "question": "How does interest rate enter MAgPIE (module 12)? (a) endogenous or exogenous regional time series, default source? (b) where USED - discount/annuitize investment (13/38) into objective (11)? (c) uniform global or regional, time-varying?",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "lens_check": "PASS - pm_interest exogenous: computed once in select_apr20/preloop.gms:22-26 from GDP-derived im_development_state (M09), no equations in M12, no endogenous feedback; M13/M38 only READ it.",
+     "notes": "10/10 ACCURATE, zero bugs. c12_interest_rate=gdp_dependent default + formula (s12_interest_lic=0.10/hic=0.04) + coupling-mode no-regional-dim + the three discount factors ((1+r)^15 in q13_cost_tc, r/(1+r) in q13_tech_cost, (r+d)/(1+r) with d=0.05 in q38_cost_prod_capital) + regional(t,i)+time-varying + the M70 fbask_jan16 not_used.txt distinction (only fbask_jan16_sticky uses pm_interest) all verified.",
+     "doc_errors_latent": []
+    },
+    {
+     "id": "R46-G2",
+     "archetype": "calibration_anchor (vm_carbon_stock producer/consumer - regression healed)",
+     "modules_tested": [
+      52,
+      56,
+      29,
+      31,
+      32,
+      34,
+      35,
+      59
+     ],
+     "question": "Walk through how vm_carbon_stock is computed in Module 52 and where it enters the GHG-policy cost in Module 56. Cite equations and file:line.",
+     "score": 10,
+     "bugs_found": 0,
+     "bugs_critical": 0,
+     "bugs_major": 0,
+     "bugs_minor": 0,
+     "bugs_informational": 0,
+     "drift_observed": false,
+     "lens_check": "n/a (regression anchor)",
+     "notes": "10/10, drift FALSE. The R22->R26-regressing anchor HELD: vm_carbon_stock DECLARED M56 declarations.gms:34 (NOT M52), POPULATED by 29/31/32/34(fixed 0)/35/59, READ by M52 q52_emis_co2_actual:16-19; M56 prices DIRECTLY via q56_emis_pricing_co2 (default actualNoAcEst) NOT via vm_emissions_reg; full chain to vm_emission_costs->M11. Producer/consumer correct across module_52/56 + carbon_balance_conservation. Used R22/23/25/26/27/29/41/43/46.",
+     "doc_errors_latent": []
+    }
+   ]
   }
  ],
  "cumulative_stats": {
-  "total_rounds": 44,
+  "total_rounds": 46,
   "total_docs_validated": 85,
   "module_docs_validated": 46,
   "non_module_docs_validated": 33,
-  "approx_total_bugs_found": 882,
-  "approx_total_bugs_fixed": 650,
-  "last_validation_date": "2026-06-04",
-  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly->R43 validate-teammate-edits + periphery: raw 9.57 (HIGHEST on record), doc_quality 10.0, ZERO doc bugs; teammate f4f44b0 module_80.md+module_37.md validated ACCURATE; M58 peatland bypasses M52 (parameterized), M73 no-HWP verified; G1=10 G2=10 drift FALSE->R44 DIAGNOSTIC weak-spot re-test (targeted): raw 9.28; M20 processing 4.0(R27)->9.5 RESOLVED (R27 was answerer_confab vs a correct doc); driver->demand->production chain P1=8.0/P4=9.5 recovered from R41's shared 6.0; ALL parameterization-vs-mechanism lens checks PASSED (P1/P2/P3/P4); ZERO doc bugs (doc_quality 10.0, incl 1 synthesis root-cause correction P5 doc_error->answerer_confab after verifying module_71.md/module_21.md directly); verifier_gaps sparse+idiosyncratic (MANDATE-12/16/18 once each, NO recurrence) -> NO lens-audit escalation per round44_design section 5; G4 drift FALSE (pin 2.70.0@a360d8c verified fresh).",
+  "approx_total_bugs_found": 889,
+  "approx_total_bugs_fixed": 652,
+  "last_validation_date": "2026-06-05",
+  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly->R43 validate-teammate-edits + periphery: raw 9.57 (HIGHEST on record), doc_quality 10.0, ZERO doc bugs; teammate f4f44b0 module_80.md+module_37.md validated ACCURATE; M58 peatland bypasses M52 (parameterized), M73 no-HWP verified; G1=10 G2=10 drift FALSE->R44 DIAGNOSTIC weak-spot re-test (targeted): raw 9.28; M20 processing 4.0(R27)->9.5 RESOLVED (R27 was answerer_confab vs a correct doc); driver->demand->production chain P1=8.0/P4=9.5 recovered from R41's shared 6.0; ALL parameterization-vs-mechanism lens checks PASSED (P1/P2/P3/P4); ZERO doc bugs (doc_quality 10.0, incl 1 synthesis root-cause correction P5 doc_error->answerer_confab after verifying module_71.md/module_21.md directly); verifier_gaps sparse+idiosyncratic (MANDATE-12/16/18 once each, NO recurrence) -> NO lens-audit escalation per round44_design section 5; G4 drift FALSE (pin 2.70.0@a360d8c verified fresh).->R45 least-verified set A (M57/M53/M62/M45/M55 + G3): raw 10.0, doc_q 10.0, ZERO Minor+ bugs; weak spots M57/M53 (both @7 R41) RESOLVED to clean 10 on fresh parameterization probes; all 4 parameterization-vs-mechanism lens checks PASSED; 2 trivial doc-hygiene fixes (module_53.md:71 citation drift, module_56.md:675 t_all); 1 auditor false-positive (PR#869 BEF) withdrawn after git/sync_log verify->R46 least-verified set B (M13/M22/M28/M18/M12 + G2): raw 9.5, doc_q 10.0, ZERO doc bugs; weak sub-9 modules M13/M22 (both @8 R41) held at 9 (new sub-10s are answerer label/citation slips, not doc defects); R16 age-class TRUNCATION anchor PASSED (ac=62 elements, not ac140); G2 carbon-stock producer/consumer anchor HELD (drift FALSE, R26 regression stays healed); 3 Minor bugs all answerer-side vs correct docs, 0 doc fixes",
   "doc_push_2026_05_30": {
    "rounds": "R30-R32",
    "docs": 30,

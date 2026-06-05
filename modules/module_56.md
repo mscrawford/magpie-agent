@@ -672,7 +672,7 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 
 ### 6.1 Pricing Parameters
 
-**im_pollutant_prices(t,i,pollutants,emis_source)** - Configured GHG prices (USD17MER/Mg)
+**im_pollutant_prices(t_all,i,pollutants,emis_source)** - Configured GHG prices (USD17MER/Mg)
 **Constructed in:** `preloop.gms:35-123` through multi-stage configuration process
 **Citation:** `declarations.gms:9`
 

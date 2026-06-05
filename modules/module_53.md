@@ -68,7 +68,7 @@ Module 53 calculates **methane (CH4) emissions** from **4 agricultural sources**
 
 **Mechanism**: Microbial fermentation of feed in the rumen releases CH4, which is exhaled/belched by animals (realization.gms:10).
 
-**IPCC methodology**: Tier 2 approach based on feed intake and gross energy (equations.gms:14-16,44).
+**IPCC methodology**: Tier 2 approach based on feed intake and gross energy (equations.gms:13-19, 21-29).
 
 #### Equation: q53_emissionbal_ch4_ent_ferm
 
