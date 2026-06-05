@@ -36,9 +36,9 @@ MAgPIE processes approximately 72 MB of input data across ~172 files through a s
 - Food supply: `input/f15_supply2intake_ratio_FAO.cs3`
 - Livestock production: `modules/70_livestock/fbask_jan16/input/f70_hist_prod_livst.cs3`
 
-**Land Use (LUH2 - Land-Use Harmonization v2):**
-- Initial land use: `input/luh2_side_layers_0.5.mz`
-- Land-use layers: `modules/10_land/landmatrix_dec18/input/fm_luh2_side_layers()`
+**Land Use:**
+- Initial land use (LUH3 - CMIP7 input4MIPs v3.1.1, via `mrlandcore::calcLanduseInitialisation`): `modules/10_land/input/avl_land_t.cs3` -> `f10_land`
+- LUH2 side layers (biodiversity / secondary-forest shares, via `mrmagpie::calcLuh2SideLayers`): `input/luh2_side_layers_0.5.mz`, `modules/10_land/landmatrix_dec18/input/fm_luh2_side_layers()`
 
 **Climate & Emissions (IPCC):**
 - Emission factors: `modules/58_peatland/input/f58_ipcc_wetland_ef2.cs3`
@@ -411,7 +411,7 @@ Complete flow for CO2 emissions from land-use change:
 **Historical Alignment:**
 - FAO crop yields (regional level)
 - FAO production quantities
-- LUH2 land-use patterns
+- LUH3 land-use patterns
 - National forest inventories
 
 **Validation Metrics:**

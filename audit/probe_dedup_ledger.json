@@ -47,11 +47,12 @@
         "R41 (auto-appended)",
         "R43 (auto-appended)",
         "R46 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_14",
@@ -79,11 +80,12 @@
         "R28 (auto-appended)",
         "R29 (auto-appended)",
         "R41 (auto-appended)",
-        "R44 (auto-appended)"
+        "R44 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 47
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_38",
@@ -115,11 +117,12 @@
         "R41 (auto-appended)",
         "R43 (auto-appended)",
         "R46 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-04-20",
       "first_named_round": 20,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_71",
@@ -181,11 +184,12 @@
         "R41 (auto-appended)",
         "R44 (auto-appended)",
         "R46 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-04-20",
       "first_named_round": 20,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_80",
@@ -228,11 +232,12 @@
       "source_files": [
         "R19 Q4 (irrigation); MANDATE 3, 4 worked examples (s42_pumping)",
         "R29 (auto-appended)",
-        "R42 (auto-appended)"
+        "R42 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 45
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_22",
@@ -260,11 +265,12 @@
         "peatland questions",
         "R32 doc-improvement push (2026-05-30, doc-audit)",
         "R43 (auto-appended)",
-        "R45 (auto-appended)"
+        "R45 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 48
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_16",
@@ -281,11 +287,12 @@
         "R41 (auto-appended)",
         "R44 (auto-appended)",
         "R45 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 6,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_10",
@@ -304,11 +311,12 @@
         "R43 (auto-appended)",
         "R44 (auto-appended)",
         "R46 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-03-07",
       "first_named_round": 1,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_41",
@@ -319,11 +327,12 @@
       "source_files": [
         "R19 Q4 (area_equipped_for_irrigation)",
         "R29 (auto-appended)",
-        "R42 (auto-appended)"
+        "R42 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 45
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_45",
@@ -351,11 +360,12 @@
         "R19 Q5 (som \u2014 soil organic matter)",
         "R28 (auto-appended)",
         "R29 (auto-appended)",
-        "R42 (auto-appended)"
+        "R42 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-03-08",
       "first_named_round": 19,
-      "retirement_eligible_after": 45
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_73",
@@ -387,11 +397,12 @@
         "R43 (auto-appended)",
         "R44 (auto-appended)",
         "R46 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-05-16",
       "first_named_round": 21,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "vm_water_available",
@@ -733,11 +744,12 @@
         "R29 (auto-appended)",
         "R41 (auto-appended)",
         "R44 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_17",
@@ -753,11 +765,12 @@
         "R41 (auto-appended)",
         "R44 (auto-appended)",
         "R45 (auto-appended)",
-        "R46 (auto-appended)"
+        "R46 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 49
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_43",
@@ -768,11 +781,12 @@
       "source_files": [
         "R23 Q2 (water-balance hard-constraint primary)",
         "R29 (auto-appended)",
-        "R42 (auto-appended)"
+        "R42 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 23,
-      "retirement_eligible_after": 45
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_44",
@@ -1162,11 +1176,12 @@
         "R29 (auto-appended)",
         "R41 (auto-appended)",
         "R44 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-05-24",
       "first_named_round": 24,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_18",
@@ -1212,11 +1227,12 @@
         "R27 Q3 pasture",
         "R29 (auto-appended)",
         "R41 (auto-appended)",
-        "R47 (auto-appended)"
+        "R47 (auto-appended)",
+        "R48 (auto-appended)"
       ],
       "first_named_at": "2026-05-29",
       "first_named_round": 27,
-      "retirement_eligible_after": 50
+      "retirement_eligible_after": 51
     },
     {
       "name": "module_40",

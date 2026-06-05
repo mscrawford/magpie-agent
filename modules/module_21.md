@@ -619,19 +619,14 @@ Module 21 implements the **regional trade balance mechanism** that ensures globa
 
 ### Dependency Chains
 
-**Centrality Rank**: 6 of 46 modules
-**Total Connections**: 9 (provides to 8 modules, depends on 1)
 **Hub Type**: **Processing Hub** (aggregates regional supply/demand and balances via trade)
+**Interface connectivity** (verified vs code, develop @ee98739fd): provides to **1 module**, depends on **2 modules**. M21's ONLY produced interface variables are the three trade-cost variables; the bidirectional coupling with demand/production is the C5 cycle below (M21 *reads* their variables, it does not provide variables back to them).
 
-**Provides To** (8 modules):
-1. **Module 11 (Costs)** - Trade costs (`vm_cost_trade_tariff`, `vm_cost_trade_margin`, `vm_cost_trade_feasibility`)
-2. **Module 16 (Demand)** - Supply signals (import/export flows affect food availability)
-3. **Module 17 (Production)** - Trade flows inform production decisions
-4. **Module 73 (Timber)** - Timber trade balance
-5. Plus 4 other modules receiving trade flow information
+**Provides To** (1 module):
+1. **Module 11 (Costs)** - Trade costs `vm_cost_trade_tariff`, `vm_cost_trade_margin`, `vm_cost_trade_feasibility` (declared `modules/21_trade/selfsuff_reduced/declarations.gms:21-23`; consumed only by M11 at `modules/11_costs/default/equations.gms:30-32`). These are M21's only produced interface variables.
 
-**Depends On** (1 direct dependency):
-1. **Module 16 (Demand)** - Regional supply requirements (`vm_supply`)
+**Depends On** (2 direct dependencies):
+1. **Module 16 (Demand)** - Regional supply (`vm_supply`)
 2. **Module 17 (Production)** - Regional production totals (`vm_prod_reg`)
 
 **Key Position**: Module 21 acts as the **trade intermediary** between regional production (Module 17) and regional demand (Module 16), ensuring global market clearing.

@@ -322,7 +322,7 @@ Emissions tracked by land type and carbon pool (21 sources total = 7 land types 
 - `primforest_soilc`: Soil carbon from primary forest
 - `forestry_litc`: Litter carbon from plantations
 
-**Mapping** (`emis_land` set, `core/sets.gms:332-335`):
+**Mapping** (`emis_land` set, `core/sets.gms:332-354`):
 - Links emission sources to land types and carbon pools
 - Example: `crop_vegc . (crop) . (vegc)`
 
