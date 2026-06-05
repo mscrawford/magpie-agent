@@ -701,6 +701,21 @@ find . -name "Response_Guidelines.md"
 
 ---
 
+## 🌐 Web Fetch: Use Directly, Not Via Subagent
+
+**For a single known URL** (e.g. a package README, a GitHub page), use `WebFetch` directly — do not spawn a subagent.
+
+Subagents are appropriate for open-ended web research across multiple URLs. For one URL they add latency, hide what was actually read, and introduce a summarisation layer that can paraphrase incorrectly. Using `WebFetch` directly keeps the fetched content visible and verifiable in the session.
+
+```
+✅ WebFetch("https://github.com/pik-piam/gms", "what does this package do?")
+❌ Agent("fetch https://github.com/pik-piam/gms and tell me what it does")
+```
+
+The anti-confabulation rules apply here too: if you haven't read the source directly this session, don't describe what a package does from training data.
+
+---
+
 ## 📚 Related Documentation
 
 - **AGENT.md**: General agent instructions and workflows
