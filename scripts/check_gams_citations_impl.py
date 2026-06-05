@@ -11,12 +11,20 @@ Checks:
      c<N>_*/q<N>_*) appears within ~80 chars of a citation, verify the
      identifier appears at or near the cited line (within +/-5 lines).
      Pattern 12 (Content-Level Citation Mismatch) — R1 Cluster 2.
+  5. Adjacent-line drift pre-flag: a single-line cite of an equation NAME
+     (qNN_*, defined exactly once per equations.gms) whose definition lands
+     within +/-5 of the cited line but >=2 lines off it; i.e. the cite drifted
+     onto a similar-content NEIGHBOR block. Equation names disambiguate which
+     block is meant (vm_/pm_/scalars recur, so are excluded). Advisory.
+     Closes the "too tolerant of similar-content neighbors" gap (BACKLOG R25).
 
 Reports:
   FILE: missing file
   LINE: out-of-range line (start or end of range)
   AMBIG: bare-basename with multiple-realization ambiguity (WARN)
   CONTENT: identifier not found near cited line (WARN, content mismatch)
+  STRICT: declarations.gms/input.gms identifier not at the EXACT cited line (WARN)
+  DRIFT: single-line equation-name cite drifted within the +/-5 window (WARN)
 """
 
 import subprocess, re, os, sys, shutil, tempfile, textwrap
@@ -30,6 +38,31 @@ CITATION_RE = re.compile(r'((?:core/|modules/[\w/]+/)?[\w/]+\.gms):(\d+)(?:-(\d+
 
 # GAMS identifier classes (used by Pattern 12 content check)
 GAMS_ID_RE = re.compile(r'`((?:vm|pm|v|p|i|f|s|c|cm|sm|im|fm|pcm|ic|ov|oq|q)\d*_[a-zA-Z][\w]*)`')
+
+# Equation-name subclass (qNN_*). An equation is DEFINED exactly once per
+# equations.gms (the `qNN_name(dom) ..` line), so its definition line is an
+# unambiguous citation anchor, used by the adjacent-line drift pre-flag (Check 5).
+# vm_/pm_/scalars recur across every using-equation and are deliberately NOT in
+# this class (their "nearest occurrence" is ambiguous, so drift can't be inferred).
+EQ_NAME_RE = re.compile(r'q\d+_')
+
+
+def eq_span_end(lines, def_line, total_lines, max_scan=40):
+    """Line number of the `;` terminating the equation that starts at def_line.
+
+    Scans at most max_scan lines forward from def_line (1-based) for the
+    statement terminator. GAMS equations always end in `;`, so the fallback
+    (def_line + max_scan, clamped) only matters for malformed/truncated input.
+    Used by both the DRIFT pre-flag (Check 5) and the CONTENT check's
+    equation-body-cite guard to tell a legitimate body-line citation (cited line
+    INSIDE the named equation's [def..terminator] span) from a real drift.
+    """
+    end = def_line
+    for i in range(def_line, min(total_lines, def_line + max_scan) + 1):
+        end = i
+        if i - 1 < len(lines) and lines[i - 1].rstrip().endswith(';'):
+            break
+    return end
 
 # Contrastive-phrase patterns: when a backticked identifier is preceded by
 # language like "instead of", "not", "differs from", "unlike", "rather than",
@@ -137,6 +170,44 @@ def self_test():
             for i in range(1, 86):
                 f.write(f'* line {i}\n')
 
+        # v2/equations.gms: two equations on KNOWN lines, for the adjacent-line
+        # drift pre-flag (assertion D). q58_foo is DEFINED at line 4, q58_bar at
+        # line 9, a stack of similar `q58_*(i2) ..` blocks that mirrors module_53's
+        # four near-identical q53_emissionbal_ch4_* equations (the real "similar-
+        # content neighbor" geometry the +/-5 fingerprint window is too loose for).
+        eqlines = [
+            "*' equation header",             # 1
+            "*' explanatory comment",         # 2
+            "",                                # 3
+            " q58_foo(i2) ..",                # 4  <- q58_foo DEFINITION
+            '   vm_a(i2,"x") =e= pm_b(i2);',  # 5
+            "",                                # 6
+            "*' comment about the bar flow",  # 7
+            "",                                # 8
+            " q58_bar(i2) ..",                # 9  <- q58_bar DEFINITION
+            '   vm_c(i2,"y") =e= pm_d(i2);',  # 10
+            "",                                # 11
+            "*' trailing filler",             # 12
+            "*' trailing filler",             # 13
+            "*' trailing filler",             # 14
+            "",                                # 15
+            " q58_long(i2) ..",               # 16 <- q58_long DEFINITION (long eq)
+            "   vm_e(i2) =e= vm_f(i2)",       # 17
+            "     + vm_g(i2)",                # 18
+            "     + vm_h(i2)",                # 19
+            "     + vm_i(i2)",                # 20
+            "     + vm_j(i2)",                # 21
+            "     + vm_k(i2)",                # 22
+            "     + vm_l(i2)",                # 23
+            "     + vm_m(i2)",                # 24 <- body line, 8 lines from def 16
+            "     + vm_n(i2);",               # 25 <- q58_long TERMINATOR (`;`)
+            "",                                # 26
+            "*' filler after the long eq",    # 27
+            "*' filler after the long eq",    # 28
+        ]
+        with open(os.path.join(v2_dir, 'equations.gms'), 'w') as f:
+            f.write("\n".join(eqlines) + "\n")
+
         # config/default.cfg — sets peatland default to v2
         with open(os.path.join(magpie_root, 'config', 'default.cfg'), 'w') as f:
             f.write('cfg$gms$peatland <- "v2"\n')
@@ -153,6 +224,14 @@ def self_test():
             Citation B (bare basename, must resolve to default v2): declarations.gms:80
 
             Citation C (full path, in-range realization): modules/58_peatland/v2/declarations.gms:80
+
+            Citation D (adjacent-line drift): the `q58_foo` balance at modules/58_peatland/v2/equations.gms:7
+
+            Citation E (clean control): the `q58_bar` balance at modules/58_peatland/v2/equations.gms:9
+
+            Citation F (in-equation body cite, >5 from def): the `q58_long` aggregate at modules/58_peatland/v2/equations.gms:24
+
+            Citation G (out-of-equation cite, must still flag): the `q58_long` aggregate at modules/58_peatland/v2/equations.gms:28
         """)
         with open(os.path.join(agent_dir, 'modules', 'module_58.md'), 'w') as f:
             f.write(doc)
@@ -208,6 +287,52 @@ def self_test():
                   "flagged as out-of-range (v2 has 85 lines — should be in range)")
             ok = False
 
+        # ── Assertion D: equation-name adjacent-line drift must be pre-flagged ─
+        # q58_foo is DEFINED at line 4 but cited single-line at :7 (delta -3,
+        # INSIDE the +/-5 fingerprint window). The fingerprint check alone passes
+        # it (q58_foo IS within +/-5 of line 7); the new equation-name drift
+        # pre-flag (Check 5) must catch it and point at the real definition line.
+        drift_lines = [ln for ln in stdout.splitlines()
+                       if ln.lstrip().startswith('DRIFT:')]
+        if not any('q58_foo' in ln and '~:4' in ln for ln in drift_lines):
+            print("  SELF-TEST FAIL [D]: q58_foo cited at :7 but defined at line 4 "
+                  "(adjacent-line drift inside the +/-5 window) was NOT pre-flagged "
+                  "as DRIFT; fingerprint tightening regressed")
+            print(f"  Output was:\n{stdout}")
+            ok = False
+        # Clean control: q58_bar cited at its OWN definition line (9) must NOT flag.
+        bar_fp = [ln for ln in drift_lines if 'q58_bar' in ln]
+        if bar_fp:
+            print("  SELF-TEST FAIL [D]: q58_bar cited at its definition line was "
+                  "incorrectly flagged as DRIFT (false positive)")
+            for e in bar_fp:
+                print(f"    {e}")
+            ok = False
+
+        # ── Assertion E: CONTENT equation-body-cite guard ────────────────────
+        # q58_long is DEFINED at line 16 and spans 16..25. Citation F cites a BODY
+        # line (:24, 8 lines from the def, beyond the +/-5 fingerprint), so the
+        # CONTENT guard must SUPPRESS it (legitimate in-equation provenance cite,
+        # the module_54.md `q11_cost_reg`:25 pattern). Citation G cites OUTSIDE the
+        # equation (:28), so CONTENT must STILL fire. Net: exactly ONE CONTENT
+        # warning should mention q58_long.
+        #   0 -> guard over-suppressed a genuine far-cite (Citation G missed)
+        #   2 -> guard failed to suppress the legitimate body cite (Citation F FP)
+        long_content = [ln for ln in stdout.splitlines()
+                        if ln.lstrip().startswith('CONTENT:') and 'q58_long' in ln]
+        if len(long_content) == 0:
+            print("  SELF-TEST FAIL [E]: CONTENT guard OVER-suppressed; the "
+                  "out-of-equation cite q58_long:28 should still be flagged as CONTENT")
+            print(f"  Output was:\n{stdout}")
+            ok = False
+        elif len(long_content) >= 2:
+            print("  SELF-TEST FAIL [E]: CONTENT guard did NOT suppress the "
+                  "legitimate in-equation body cite q58_long:24 (defined :16, spans "
+                  ":16-25); equation body-line provenance cites would false-positive")
+            for e in long_content:
+                print(f"    {e}")
+            ok = False
+
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
 
@@ -217,6 +342,12 @@ def self_test():
         print("  [B] Bare-basename cite at line 80 correctly resolves to default v2/ "
               "(85 lines) and passes — f4f44b0 bare-cite resolution intact")
         print("  [C] Full-path cite to v2/ at line 80 correctly passes")
+        print("  [D] Single-line equation-name cite drifted onto a neighbor block "
+              "(q58_foo cited :7, defined :4) correctly pre-flagged as DRIFT; clean "
+              "control (q58_bar at its def line) correctly not flagged")
+        print("  [E] CONTENT equation-body-cite guard: in-equation body cite "
+              "(q58_long :24, spans :16-25) correctly suppressed; out-of-equation "
+              "cite (q58_long :28) correctly still flagged")
         return 0
     else:
         print("SELF-TEST FAIL: one or more assertions failed (see above)")
@@ -645,6 +776,61 @@ def main():
                                 f"Strict-line check for {basename} — update citation to ~:{closest}."
                             )
 
+            # EQUATION-NAME ADJACENT-BLOCK DRIFT pre-flag (Check 5; Task 3 / R25
+            # follow-up). The +/-5 fingerprint loop below passes a cite whenever
+            # the identifier appears ANYWHERE within +/-5 lines, so a single-line
+            # cite that drifted onto a similar-content NEIGHBOR equation still
+            # passes silently (BACKLOG: "too tolerant of similar-content
+            # neighbors"). Equation NAMES (qNN_*) are defined EXACTLY ONCE per
+            # equations.gms, so unlike vm_/pm_/scalars (which recur in every
+            # using-equation, making the nearest occurrence ambiguous) an equation
+            # name's definition line is an unambiguous anchor.
+            #
+            # CRITICAL FP guard (verified on corpus 2026-06-05): docs frequently
+            # and CORRECTLY cite a BODY line of a multi-line equation to pin where
+            # a variable is consumed/produced, while naming that equation for
+            # context (e.g. module_18.md cites `q50_nr_withdrawals` at :40/:41 to
+            # show where vm_res_biomass_ag/_bg are read; module_30.md cites
+            # `q29_carbon` at :31 where vm_carbon_stock_croparea is read). The
+            # cited line is INSIDE the named equation's own [def..terminator] span
+            # there, so it is NOT drift. We therefore flag ONLY when the cited line
+            # lands OUTSIDE the named equation's span entirely (i.e. on a neighbor
+            # block) yet the name is still within +/-5. That is unambiguous drift.
+            #   * declarations.gms/input.gms: handled by the STRICT block above.
+            #   * ranges: excluded (legitimately span comment + equation).
+            #   * vm_/pm_/etc.: excluded (recurrence makes drift ambiguous).
+            is_eqname_file = (basename not in ('declarations.gms', 'input.gms')
+                              and basename not in SCAFFOLDING_BASENAMES)
+            if is_eqname_file and is_single_line and start <= total_lines:
+                for gid in nearby_ids:
+                    if not EQ_NAME_RE.match(gid):
+                        continue
+                    # Definition line(s) of this equation name within +/-5. In
+                    # equations.gms the name appears once (at the `qNN_(dom) ..`
+                    # definition); empty => out of window, left to the CONTENT scan.
+                    occ = [
+                        i for i in range(tight_start, tight_end + 1)
+                        if i - 1 < len(lines)
+                        and re.search(rf"\b{re.escape(gid)}\b", lines[i - 1])
+                    ]
+                    if not occ or any(abs(o - start) <= 1 for o in occ):
+                        continue  # not nearby, or a fencepost off-by-one (not drift)
+                    def_line = min(occ, key=lambda x: abs(x - start))
+                    # Span the named equation (def line -> its `;` terminator).
+                    span_end = eq_span_end(lines, def_line, total_lines)
+                    if def_line <= start <= span_end:
+                        continue  # cited line is inside the named equation's body
+                    delta = def_line - start
+                    sign = "+" if delta > 0 else ""
+                    content_miss += 1
+                    warnings.append(
+                        f"  DRIFT: `{gid}` cited at {gms_hint}:{start} lands outside "
+                        f"its equation block (defined at {def_line}..{span_end}, "
+                        f"{sign}{delta} from the cited line) yet within the +/-5 "
+                        f"fingerprint window; likely an adjacent-block citation "
+                        f"drift. Update citation to ~:{def_line}."
+                    )
+
             for gid in nearby_ids:
                 if gid in tight_text:
                     continue
@@ -655,6 +841,26 @@ def main():
                 for i in range(wide_start, wide_end + 1):
                     if i - 1 < len(lines) and re.search(rf"\b{re.escape(gid)}\b", lines[i - 1]):
                         actual_lines.append(i)
+                # EQUATION-BODY-CITE guard (same rationale as Check 5; verified on
+                # corpus 2026-06-05). A doc may NAME an equation but cite a BODY
+                # line deeper than +/-5 into its block to pin a consumed/produced
+                # variable; e.g. module_54.md names `q11_cost_reg` while citing
+                # :25 (where vm_p_fert_costs is summed), though q11_cost_reg is
+                # DEFINED at :15. The name then sits >5 lines from the cited line,
+                # so the fingerprint misses it, yet the cite is CORRECT, not drift.
+                # If gid is an equation name whose [def..terminator] span CONTAINS
+                # the cited line (and the whole cited range), the cite is
+                # in-equation: skip the CONTENT warning. (vm_/pm_ are NOT
+                # span-anchored, so they remain subject to the normal +/-5 check.)
+                if EQ_NAME_RE.match(gid) and actual_lines:
+                    in_equation = False
+                    for d in actual_lines:
+                        se = eq_span_end(lines, d, total_lines)
+                        if d <= start <= se and (not end or end <= se):
+                            in_equation = True
+                            break
+                    if in_equation:
+                        continue  # legitimate in-equation body-line cite, not drift
                 content_miss += 1
                 if actual_lines:
                     # Report the closest occurrence + delta
