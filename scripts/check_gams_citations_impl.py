@@ -31,10 +31,19 @@ import subprocess, re, os, sys, shutil, tempfile, textwrap
 from collections import defaultdict
 
 
-# Match a citation followed by an OPTIONAL range end:
-#   `file.gms:50`        → start=50, end=None
-#   `file.gms:50-75`     → start=50, end=75
-CITATION_RE = re.compile(r'((?:core/|modules/[\w/]+/)?[\w/]+\.gms):(\d+)(?:-(\d+))?')
+# Match a citation followed by an OPTIONAL range end and OPTIONAL comma-list
+# continuation (the pervasive discontiguous multi-line cite format):
+#   `file.gms:50`            → start=50, end=None,  cont=None
+#   `file.gms:50-75`         → start=50, end=75,    cont=None
+#   `file.gms:25,24,26`      → start=25, end=None,  cont=",24,26"   (3 single lines)
+#   `file.gms:14-16, 21-29`  → start=14, end=16,    cont=", 21-29"  (range + a range)
+#   `file.gms:66, 77, 131`   → start=66, end=None,  cont=", 77, 131" (3 single lines)
+# An OPTIONAL single space after each comma is allowed: both `:N,M` and `:N, M`
+# occur in the corpus (~100 no-space + ~64 spaced). A DIGIT must follow the comma,
+# so prose like "file.gms:50, and ..." does NOT match (the first cite stands
+# alone). The only residual ambiguity ("file.gms:50, 9000 widgets") does not
+# occur in this corpus (all 64 spaced matches verified to be line-lists 2026-06-05).
+CITATION_RE = re.compile(r'((?:core/|modules/[\w/]+/)?[\w/]+\.gms):(\d+)(?:-(\d+))?((?:, ?\d+(?:-\d+)?)+)?')
 
 # GAMS identifier classes (used by Pattern 12 content check)
 GAMS_ID_RE = re.compile(r'`((?:vm|pm|v|p|i|f|s|c|cm|sm|im|fm|pcm|ic|ov|oq|q)\d*_[a-zA-Z][\w]*)`')
@@ -165,10 +174,20 @@ def self_test():
             for i in range(1, 19):
                 f.write(f'* line {i}\n')
 
-        # v2/declarations.gms — 85 lines (default realization)
+        # v2/declarations.gms: 85 lines (default realization). Lines 24/25/26
+        # carry real one-per-line var declarations (v58_alpha/beta/gamma) for the
+        # comma-list STRICT sibling-guard test (assertion F); the v30_betr_missing
+        # FP geometry: three vars named together, each on its own listed line.
         with open(os.path.join(v2_dir, 'declarations.gms'), 'w') as f:
             for i in range(1, 86):
-                f.write(f'* line {i}\n')
+                if i == 24:
+                    f.write(' v58_alpha(j)   alpha var (mio. ha)\n')
+                elif i == 25:
+                    f.write(' v58_beta(j)    beta var (mio. ha)\n')
+                elif i == 26:
+                    f.write(' v58_gamma(j)   gamma var (mio. ha)\n')
+                else:
+                    f.write(f'* line {i}\n')
 
         # v2/equations.gms: two equations on KNOWN lines, for the adjacent-line
         # drift pre-flag (assertion D). q58_foo is DEFINED at line 4, q58_bar at
@@ -232,6 +251,14 @@ def self_test():
             Citation F (in-equation body cite, >5 from def): the `q58_long` aggregate at modules/58_peatland/v2/equations.gms:24
 
             Citation G (out-of-equation cite, must still flag): the `q58_long` aggregate at modules/58_peatland/v2/equations.gms:28
+
+            Comma-list STRICT fixture (vars at sibling lines; table row for full-window id capture):
+
+            | `v58_alpha` | `v58_beta` | `v58_gamma` | modules/58_peatland/v2/declarations.gms:24,25,26 |
+
+            Citation I (comma-list out-of-range continuation, no space): modules/58_peatland/off/declarations.gms:5,200
+
+            Citation J (comma-list out-of-range continuation, WITH space): modules/58_peatland/off/declarations.gms:6, 250
         """)
         with open(os.path.join(agent_dir, 'modules', 'module_58.md'), 'w') as f:
             f.write(doc)
@@ -333,6 +360,39 @@ def self_test():
                 print(f"    {e}")
             ok = False
 
+        # ── Assertion F: comma-list multi-cite STRICT sibling guard ───────────
+        # The table-row cite names v58_alpha/beta/gamma at declarations.gms:24,25,26;
+        # those vars live at lines 24/25/26 respectively. Each is at ONE listed
+        # line, so STRICT must NOT flag any (the v30_betr_missing FP class). Teeth:
+        # without comma-list parsing + the sibling guard, beta@25 and gamma@26
+        # (not at the parsed primary :24) would each be flagged STRICT.
+        strict_warns = [ln for ln in stdout.splitlines()
+                        if ln.lstrip().startswith('STRICT:')
+                        and ('v58_alpha' in ln or 'v58_beta' in ln or 'v58_gamma' in ln)]
+        if strict_warns:
+            print("  SELF-TEST FAIL [F]: comma-list cite :24,25,26 naming three vars "
+                  "at those exact lines was flagged STRICT; the sibling-line guard or "
+                  "comma-list parsing regressed")
+            for e in strict_warns:
+                print(f"    {e}")
+            ok = False
+
+        # ── Assertion G: comma-list continuation existence-checking ───────────
+        # Citation I (`:5,200`, no space) and J (`:6, 250`, WITH space) both cite
+        # off/declarations.gms (18 lines), so the :200 and :250 CONTINUATIONS are
+        # out of range and must each be flagged as a LINE error. Covers both
+        # comma-list spellings. Teeth: if continuations were dropped (old
+        # behavior), they are never parsed, never checked, and no error appears.
+        for bad in ('200', '250'):
+            spelling = 'no-space (:5,200)' if bad == '200' else 'spaced (:6, 250)'
+            if (f'off/declarations.gms:{bad}' not in stdout
+                    and f'off\\declarations.gms:{bad}' not in stdout):
+                print(f"  SELF-TEST FAIL [G]: out-of-range comma-list continuation "
+                      f"off/declarations.gms:{bad} ({spelling}, file has 18 lines) was "
+                      f"NOT flagged; comma-list continuations not existence-checked")
+                print(f"  Output was:\n{stdout}")
+                ok = False
+
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
 
@@ -348,6 +408,10 @@ def self_test():
         print("  [E] CONTENT equation-body-cite guard: in-equation body cite "
               "(q58_long :24, spans :16-25) correctly suppressed; out-of-equation "
               "cite (q58_long :28) correctly still flagged")
+        print("  [F] Comma-list STRICT sibling guard: :24,25,26 naming three vars at "
+              "those exact lines correctly NOT flagged (v30_betr_missing FP class)")
+        print("  [G] Comma-list continuation existence-checked: out-of-range :200 in "
+              "a `:5,200` cite correctly flagged as LINE error")
         return 0
     else:
         print("SELF-TEST FAIL: one or more assertions failed (see above)")
@@ -483,6 +547,23 @@ def main():
             gms_hint = cit_match.group(1)
             start = int(cit_match.group(2))
             end = int(cit_match.group(3)) if cit_match.group(3) else None
+            # Comma-list continuation, e.g. `equations.gms:25,24,26` or `:20,27-28`.
+            # Each `,N` or `,N-M` is an ADDITIONAL cited line/range for the SAME
+            # concept. Parse them so every listed line gets existence-checked and
+            # so the content/strict checks accept an identifier found at ANY listed
+            # line (else a doc naming three vars at :25,24,26 false-positives on the
+            # parsed primary :25). Stored as a hashable tuple for the citation key.
+            extra = ()
+            if cit_match.group(4):
+                pairs = []
+                for tok in cit_match.group(4).split(',')[1:]:
+                    tok = tok.strip()  # may carry a leading space from `:N, M`
+                    if '-' in tok:
+                        a, b = tok.split('-', 1)
+                        pairs.append((int(a), int(b)))
+                    else:
+                        pairs.append((int(tok), None))
+                extra = tuple(pairs)
 
             # Capture nearby backticked GAMS identifiers. For PROSE: tighter
             # window — back to previous cite (or 40 chars, whichever is closer)
@@ -552,7 +633,7 @@ def main():
                             nearby_ids.update(found)
                             break
 
-            key = (doc_file, mod_num, gms_hint, start, end)
+            key = (doc_file, mod_num, gms_hint, start, end, extra)
             if key not in citations:
                 citations[key] = nearby_ids
             else:
@@ -567,13 +648,17 @@ def main():
     warnings = []
 
     def sort_key(item):
-        (doc_file, mod_num, gms_hint, start, end), _ = item
+        (doc_file, mod_num, gms_hint, start, end, _extra), _ = item
         return (doc_file, mod_num, gms_hint, start, end if end is not None else -1)
 
-    for (doc_file, mod_num, gms_hint, start, end), nearby_ids in sorted(citations.items(), key=sort_key):
+    for (doc_file, mod_num, gms_hint, start, end, extra), nearby_ids in sorted(citations.items(), key=sort_key):
         actual = None
         basename = os.path.basename(gms_hint)
         doc_short = os.path.basename(doc_file)
+        # Every cited (start, end) range for this citation: the primary plus any
+        # comma-list continuations. Drives existence-checking of every listed line
+        # and lets the content/strict checks accept an identifier at ANY listed line.
+        line_ranges = [(start, end)] + list(extra)
 
         # Full-path citation — best case. If the doc cited a full path
         # (modules/... or core/...) and that file doesn't exist, the path
@@ -693,10 +778,24 @@ def main():
         lines = get_lines(actual)
         total_lines = len(lines)
 
-        # Check both start and end of range. In non-module docs (mod_num=None),
-        # surface as advisory — pedagogical format examples (e.g.,
-        # `presolve.gms:123` in README citation-format sections) are common.
-        for line_num, label in [(start, 'start')] + ([(end, 'end')] if end else []):
+        # All listed lines must exist. Every cited (start, end) range is checked,
+        # not just the primary; closes the Pattern-10 gap where comma-list
+        # continuations (`:25,24,26`) silently dropped their 2nd..Nth line numbers.
+        all_cited_in_range = all(
+            rs <= total_lines and (re_ is None or re_ <= total_lines)
+            for rs, re_ in line_ranges
+        )
+        existence_checks = []
+        for ridx, (rs, re_) in enumerate(line_ranges):
+            tag = 'start' if ridx == 0 else f'cite{ridx + 1}'
+            existence_checks.append((rs, tag))
+            if re_:
+                existence_checks.append((re_, tag + '-end'))
+
+        # Check each listed line. In non-module docs (mod_num=None), surface as
+        # advisory; pedagogical format examples (e.g., `presolve.gms:123` in
+        # README citation-format sections) are common.
+        for line_num, label in existence_checks:
             if line_num > total_lines:
                 delta = line_num - total_lines
                 if mod_num is None:
@@ -714,11 +813,11 @@ def main():
         # scaffolding-file cites (realization.gms / module.gms which are
         # $include directives, not variable-definition sources).
         if doc_short in PEDAGOGICAL_DOCS:
-            if start <= total_lines and (not end or end <= total_lines):
+            if all_cited_in_range:
                 valid += 1
             continue
         if os.path.basename(actual) in SCAFFOLDING_BASENAMES:
-            if start <= total_lines and (not end or end <= total_lines):
+            if all_cited_in_range:
                 valid += 1
             continue
 
@@ -731,7 +830,16 @@ def main():
             # suggested fix".
             tight_start = max(1, start - 5)
             tight_end = min(total_lines, (end if end else start) + 5)
-            tight_text = "\n".join(lines[tight_start - 1:tight_end])
+            # tight_text spans +/-5 around EVERY cited line (primary + comma-list
+            # continuations), so an identifier near ANY listed line passes the
+            # fingerprint; a `:22,49,60,71` cite legitimately names content at all
+            # four. (tight_start/tight_end stay the PRIMARY window for messages.)
+            near_idx = set()
+            for rs, re_ in line_ranges:
+                ws = max(1, rs - 5)
+                we = min(total_lines, (re_ if re_ else rs) + 5)
+                near_idx.update(range(ws, we + 1))
+            tight_text = "\n".join(lines[i - 1] for i in sorted(near_idx) if i - 1 < len(lines))
 
             # STRICT-LINE check (R25 Phase 1 follow-up): for declarations.gms
             # and input.gms files, the identifier should be at EXACTLY the
@@ -752,10 +860,21 @@ def main():
             is_single_line = end is None
             is_path_specific = '/' in gms_hint
             if is_strict_target and is_single_line and is_path_specific and start <= total_lines:
-                cited_line_text = lines[start - 1] if start - 1 < len(lines) else ""
+                # The exact single lines this cite names: the primary plus any
+                # comma-list continuation that is itself a single line. An
+                # identifier is correctly cited if it sits at ANY of them, since
+                # declarations.gms is one-identifier-per-line (e.g. `:25,24,26`
+                # naming three vars at 25/24/26 is correct, not drift). Range
+                # continuations are excluded (a span, not a single-line anchor).
+                strict_lines = [start] + [rs for rs, re_ in extra if re_ is None]
                 for gid in nearby_ids:
-                    if not re.search(rf"\b{re.escape(gid)}\b", cited_line_text):
-                        # Identifier missing from cited line. Find where it
+                    at_cited = any(
+                        s - 1 < len(lines)
+                        and re.search(rf"\b{re.escape(gid)}\b", lines[s - 1])
+                        for s in strict_lines
+                    )
+                    if not at_cited:
+                        # Identifier at NONE of the cited lines. Find where it
                         # actually lives (within wider window so we suggest
                         # a fix even when fingerprint would also flag it).
                         scan_start = max(1, start - 5)
@@ -801,7 +920,9 @@ def main():
             #   * vm_/pm_/etc.: excluded (recurrence makes drift ambiguous).
             is_eqname_file = (basename not in ('declarations.gms', 'input.gms')
                               and basename not in SCAFFOLDING_BASENAMES)
-            if is_eqname_file and is_single_line and start <= total_lines:
+            # `not extra`: a comma-list enumerates multiple lines deliberately, so
+            # single-line adjacent-block drift does not apply to it.
+            if is_eqname_file and is_single_line and not extra and start <= total_lines:
                 for gid in nearby_ids:
                     if not EQ_NAME_RE.match(gid):
                         continue
@@ -882,7 +1003,7 @@ def main():
                         f"(identifier referenced by name in prose, not in cited block)."
                     )
 
-        if start <= total_lines and (not end or end <= total_lines):
+        if all_cited_in_range:
             valid += 1
 
     total = valid + file_missing + line_over

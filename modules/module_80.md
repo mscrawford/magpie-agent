@@ -664,7 +664,7 @@ For `nlp_ipopt` the same `s80_optfile` switch instead selects `ipopt.opt` (value
 - Enable automatic variable/equation scaling
 - Improves numerical stability
 
-**magpie.solprint** = 0 (normal), = 1 (if infeasible) (solve.gms:16, 174):
+**magpie.solprint** = 0 (normal), = 1 (if infeasible) (lp_nlp_apr17/solve.gms:16, 174):
 - 0: Suppress detailed solve output (normal)
 - 1: Print full solve details to LST file (when debugging failures)
 
@@ -811,9 +811,9 @@ vm_cost_glo.up = Inf;
 
 ### 7. **Second Solve Statement (`s80_secondsolve`) Purpose Unclear**
 
-**What the code does**: If `s80_secondsolve = 1`, repeat each solve statement immediately (solve.gms:66, 77, 131, 140, 190, etc.).
+**What the code does**: If `s80_secondsolve = 1`, repeat each solve statement immediately (lp_nlp_apr17/solve.gms:66, 77, 131, 140, 190, etc.).
 
-**Documented purpose**: "Improved model results, in particular for matching LHS and RHS of equations" (solve.gms:62-63).
+**Documented purpose**: "Improved model results, in particular for matching LHS and RHS of equations" (lp_nlp_apr17/solve.gms:62-63).
 
 **Observation**: Default is 0 (disabled) (input.gms:11). Rarely enabled in practice.
 
