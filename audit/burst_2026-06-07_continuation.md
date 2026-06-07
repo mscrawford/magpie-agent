@@ -37,6 +37,26 @@ C2-2/3/4/C5-5/6) - BACKLOG notes only.
 
 ---
 
+## UPDATE 2026-06-07 (third window) — Cluster A DONE; C2-1 NOT actionable as written
+
+Worked on branch `burst-2026-06-07-audit` (origin/mscrawford). Value-first: committed + **pushed** after each step. Gate PASS (39 checks, 0 errors) and selftest PASS (14/14 controls) at every commit.
+
+**CLUSTER A — COMPLETE (3 commits, all pushed).**
+- `3b1c722` **(a) harness leverage fix**: `selftest_validator.sh` now requires each per-check control to print `SELFTEST_OK <name>` as its OWN exact line (`grep -qx`, anchored — a flawed neuter-test surfaced that a plain `grep -q` lets `SELFTEST_OK foo` match a substring of `SELFTEST_OK foo_bar`; fixed). Exit-0-without-sentinel is now a FAIL. Added the sentinel to all 9 already-registered self-tests. Negative path proven (neutered one sentinel → harness correctly FAILed).
+- `58e515e` **(c) 3 gating checks**: real synthesize-bug-first `--self-test`s for **15** `check_gams_equations` (factored `build_equation_index(modules_root)` + `find_doc_eq_mismatches`), **16** `check_gams_realizations` (factored the index builders + `find_realization_issues`; fixture cites `fabricated_jan99`), **25** `check_no_bare_cites` (drove existing `scan_doc`). Registered (item d). Neuter-tested each (broke the detector regex → self-test FAILed → restored). Normal-mode output unchanged (153/153 eqns, 0 bare cites, advisory cross-module list).
+- `8f031b5` **(c) 2 advisory checks**: **20** `check_param_defaults` (drove `scan_doc` with an injected `defaults_map`), **24** `check_renames` (factored `find_rename_hits_in_text` out of the `os.walk` loop; hoisted `ALLOWLIST_LINE_RE` to module scope; dropped the already-dead local `ITALIC_HISTORICAL_RE`). Registered. Neuter-tested each. Normal-mode unchanged (64 claims/0 mismatches; 3 renames/0 refs).
+- **All 14 registered check_*.py now have a neuter-tested positive control.**
+
+**Item (b) "main() exit 2 on UNIMPLEMENTED --self-test" — satisfied by construction (reasoned deviation from the literal stubs).** After Cluster A, every check_*.py implements `--self-test`, so none can masquerade. The argparse-based checks already exit 2 on an unrecognized flag for free; the `sys.argv`-based ones now have real handlers. The harness sentinel (a) is the enforcement layer for any FUTURE registered check that forgets one. I did NOT add dead exit-2 stubs to 14 already-implemented files (they'd be unreachable). The harness comment documents the "implement a real --self-test before registering" contract.
+
+**C2-1 — NOT ACTIONABLE AS WRITTEN (the deletion is a regression; verify's safety claim CORRECTED).** Empirically tested: deleting the `if mod_num is None:` BARE branch in `check_gams_citations_impl.py` (now ~:705-713) drives the gate **PASS → FAIL** (`errors=1, verdict=FAIL`; Check-17 reports `❌ ... 11 problems`, e.g. `FILE: nlp_apr17/solve.gms:103 (in Infeasibility_Debugging_Guide.md) — bare hint ... module None_*`). Root cause: the branch's `continue` is **load-bearing** — it keeps non-module-doc pedagogical/placeholder cites in the advisory `ambig` bucket. Deleting it lets them fall through to `file_missing` (`issues = file_missing + line_over; if issues>0: sys.exit(1)` at impl:1012-1029) → the validate_consistency.sh Check-17 harness (which only treats exit-0 as pass) goes red. The R10 `pipeline_round10_verify/C2-1.md` "deletion is mechanically safe" conclusion **missed the continue's flow-control role** (it reasoned "ambig isn't gated → safe"). REVERTED; nothing committed for C2-1. The branch's only genuine defect is a cosmetic MISLABEL ("bare-basename" for placeholder/wildcard full-paths the regex can't parse) — advisory-only and **gate-suppressed**, so near-zero impact. Future options (user decision): (a) relabel the advisory string only (safe, cosmetic); (b) narrow `CITATION_RE`/FILE-branch to recognize `modules/XX_.../` and `modules/NN/*/` placeholders; (c) won't-fix. Recommend (c) or (a) — the finding was already CORRECTED (impact overstated).
+
+**Pipeline-audit re-measure — NOT run.** Not warranted now: Cluster A is directly verifiable (14/14 sentineled controls), and C2-1 is resolved as not-actionable. A fresh ~10-agent workflow is premature and was not an explicit opt-in; left for the user to trigger if they want confirmation.
+
+**STILL untouched** (BACKLOG notes only): R9 C3-3/C3-4/C6-5; R10 C2-2/3/4 + C5-5/6; the stable-check-ID refactor ("Validator check IDs" in BACKLOG).
+
+---
+
 Deferred to the next usage window (session cap). The working tree is **gate-clean**
 (`validate_consistency.sh`: 43 checks, 0 errors, PASS) and contains no half-applied
 machinery — a safe deferral point. Nothing is committed or pushed. Branch: `main`
