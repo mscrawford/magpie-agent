@@ -1,5 +1,42 @@
 # Compute-burst continuation checkpoint — 2026-06-07
 
+## NEXT-SESSION TRIGGER PROMPT (paste into a fresh session to resume)
+
+```
+You are the magpie-agent. Resume the deferred NEXT STAGE of the 2026-06-07 audit burst.
+FIRST read audit/burst_2026-06-07_continuation.md in full + the BACKLOG "Validator check IDs"
+item. Work on branch burst-2026-06-07-audit (already pushed to origin/mscrawford). Before
+starting, confirm the 5h usage window has headroom (~/.claude/.statusline-burn + usage-log.csv)
+- this stage is moderately heavy. Then do, committing + pushing value-first after EACH step so
+a cap can't lose progress:
+
+1. CLUSTER A - harden the validator self-test harness (R9 C4-1..7, corroborated by R10 C1-1).
+   The 5 still-untested checks: 15 (check_gams_equations.py), 16 (check_gams_realizations.py),
+   25 (check_no_bare_cites.py) [gating] + 20 (check_param_defaults.py), 24 (check_renames.py)
+   [advisory]. (23/26 were retired in Cluster B.)
+   a. selftest_validator.sh: require a "SELFTEST_OK <name>" stdout sentinel per per-check
+      control, NOT exit-0 (so a check that ignores --self-test can't mint a false pass).
+   b. each check_*.py main(): exit 2 on an unimplemented --self-test.
+   c. add REAL --self-tests to 15/16/25 first, then 20/24: factor each check's detection into a
+      fixture-accepting function per the check_default_realizations.py convention (tempdir
+      fixture, positive + clean control, print SELFTEST_OK on pass). Synthesize the known bug
+      FIRST; assert the check flags it (exit 1 + denominator > 0; treat 0/0 as FAIL).
+   d. register in SELFTEST_SCRIPTS only AFTER a real test exists.
+   e. neuter-test each: break the check's regex, confirm its --self-test now FAILS, then restore.
+   f. run scripts/selftest_validator.sh (PASS) + scripts/validate_consistency.sh (0 errors);
+      redeploy AGENT.md if touched (cp to ../AGENT.md + ../CLAUDE.md). Commit + push.
+2. C2-1 - delete the advisory-only branch check_gams_citations_impl.py:702-710 (mis-bins
+   placeholder/wildcard full-path cites as "bare"; NOT a Check-25 merge - the lens's merge
+   framing was rejected by verify). Confirm no external consumer; run the gate; commit + push.
+3. Update this continuation file + BACKLOG; record a pipeline-audit re-measure round if warranted.
+
+Rules: push ONLY to origin (mscrawford fork) - NEVER pik-piam. A vacuously-passing self-test is
+worse than none (neuter-test each). Leave the NOT-actionable items (R9 C3-3/C3-4/C6-5; R10
+C2-2/3/4/C5-5/6) - BACKLOG notes only.
+```
+
+---
+
 Deferred to the next usage window (session cap). The working tree is **gate-clean**
 (`validate_consistency.sh`: 43 checks, 0 errors, PASS) and contains no half-applied
 machinery — a safe deferral point. Nothing is committed or pushed. Branch: `main`
