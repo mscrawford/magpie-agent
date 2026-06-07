@@ -226,7 +226,6 @@ sum(pollutant_nh3no2_51,vm_emissions_reg(i2,emis_source_n51,pollutant_nh3no2_51)
 **From Module 50 (NR Soil Budget)**:
 - `vm_nr_eff(i)`: Cropland nitrogen use efficiency (0-1) (`equations.gms:26,34,46,59`)
 - `vm_nr_eff_pasture(i)`: Pasture nitrogen use efficiency (0-1) (`equations.gms:37,80`)
-- `vm_manure_recycling(i,"nr")`: Manure nitrogen recycled to cropland (Mt N) (`equations.gms:25`)
 - `vm_nr_inorg_fert_reg(i,"crop")`: Inorganic fertilizer on cropland (Mt N) (`equations.gms:33`)
 - `vm_nr_inorg_fert_reg(i,"past")`: Inorganic fertilizer on pasture (Mt N) (`equations.gms:36`)
 
@@ -235,6 +234,7 @@ sum(pollutant_nh3no2_51,vm_emissions_reg(i2,emis_source_n51,pollutant_nh3no2_51)
 - `vm_res_ag_burn(i,kcr,"dm")`: Residue dry matter burned (Mt DM) (`equations.gms:52`)
 
 **From Module 55 (AWMS)**:
+- `vm_manure_recycling(i,"nr")`: Manure nitrogen recycled to cropland (Mt N) (`equations.gms:25`)
 - `vm_manure_confinement(i,kli,awms_conf,"nr")`: Manure nitrogen in confinement systems (Mt N) (`equations.gms:69`)
 - `vm_manure(i,kli,awms_prp,"nr")`: Manure nitrogen in pasture systems (Mt N) (`equations.gms:78`)
 
@@ -250,7 +250,7 @@ sum(pollutant_nh3no2_51,vm_emissions_reg(i2,emis_source_n51,pollutant_nh3no2_51)
 - `vm_emissions_reg(i,emis_source,pollutants)`: Regional emissions by source and pollutant — **declared by Module 56** (`modules/56_ghg_policy/price_aug22/declarations.gms:40`, dimensioned `(i, emis_source, pollutants)`, units Tg per yr). Module 51's `equations.gms:9-16` are equation declarations that produce values for this variable, not its declaration.
   - Pollutants: n2o_n_direct, nh3_n, no2_n, no3_n (Module 56 sets.gms)
   - Sources: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som (`sets.gms:15-16`)
-  - Indirect: n2o_n_indirect (calculated in equation 8) (Module 56 sets.gms,196)
+  - Indirect: n2o_n_indirect (calculated in equation 8) (`modules/56_ghg_policy/price_aug22/sets.gms:195`)
 
 ---
 

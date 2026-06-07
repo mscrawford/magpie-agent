@@ -34,7 +34,7 @@ The module provides extensive configurability through 6 key switches that determ
 | Switch | Purpose | Default | Range |
 |--------|---------|---------|-------|
 | `c56_pollutant_prices` | Price scenario (e.g., 1.5°C, 2°C, NDC) | R34M410-SSP2-NPi2025 | 100+ scenarios |
-| `c56_emis_policy` | Which gases/sources are priced | reddnatveg_nosoil | 60+ policies |
+| `c56_emis_policy` | Which gases/sources are priced | reddnatveg_nosoil | 44 policies |
 | `c56_carbon_stock_pricing` | Which carbon pools for LULUCF accounting | actualNoAcEst | actual / actualNoAcEst |
 | `c56_cprice_aff` | Price used for afforestation decisions | secdforest_vegc | Various options |
 | `s56_c_price_induced_aff` | Enable C-price driven afforestation | 1 (ON) | 0=OFF, 1=ON |
@@ -63,7 +63,7 @@ For annual (recurring) emissions (CH4, N2O, annual CO2), the emissions subject t
 **Components:**
 
 - **v56_emis_pricing(i,emis_annual,pollutants)**: Emissions used for pricing calculation (Tg/yr)
-- **vm_emissions_reg(i,emis_annual,pollutants)**: Actual regional emissions from the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland) (Tg/yr)
+- **vm_emissions_reg(i,emis_annual,pollutants)**: Actual regional emissions from the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland) (Tg/yr)
 - **emis_annual**: Recurring emission sources (fertilizer, livestock, etc.)
 
 **Conceptual Meaning:**
@@ -491,7 +491,7 @@ Multiplies prices by emission policy matrix (`f56_emis_policy`), which contains 
 
 **Policy Matrix (`f56_emis_policy.csv`):**
 
-Dimensions: 60+ policies × 15 pollutants × 20+ emission sources
+Dimensions: 44 policies × 16 pollutants × 31 emission sources
 
 Example policies:
 - **"none":** All entries = 0 (no pricing)
@@ -563,6 +563,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 **vm_emission_costs(i)** - Total regional emission costs (mio. USD17MER/yr)
 **Provided to:** Module 11 (Costs) → Enters objective function
+**Also read post-solve by:** Module 15 (food) as vm_emission_costs.l for GHG-tax revenue recycling (`modules/15_food/anthro_iso_jun22/intersolve.gms:23`).
 **Calculated by:** Equation q56_emission_costs
 **Citation:** `declarations.gms:39`
 
@@ -587,7 +588,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 ### 4.2 Inputs (Received from Other Modules)
 
-**From the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland):**
+**From the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland):**
 
 - **vm_emissions_reg(i,emis_source,pollutants)**: Regional emissions by source and gas (Tg/yr)
 
@@ -633,7 +634,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 ## 5. Configuration Scenarios
 
-Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
+Module 56 provides 100+ price scenarios and 44 policy scenarios. Key examples:
 
 ### 5.1 Price Scenarios (c56_pollutant_prices)
 
@@ -675,6 +676,7 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 **im_pollutant_prices(t_all,i,pollutants,emis_source)** - Configured GHG prices (USD17MER/Mg)
 **Constructed in:** `preloop.gms:35-123` through multi-stage configuration process
 **Citation:** `declarations.gms:9`
+**Consumed by:** Module 57 (MACCs) reads im_pollutant_prices to set MACC abatement steps (`modules/57_maccs/on_aug22/preloop.gms:24-25`), in addition to the within-M56 cost equations.
 
 ---
 
@@ -711,13 +713,13 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 ### 7.1 No Physical Emission Calculation
 
 - **Does NOT calculate** emissions (CH4, N2O, CO2)
-- **DOES price** emissions calculated by the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland)
+- **DOES price** emissions calculated by the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland)
 - Emission calculation is in source modules (livestock, soils, land-use change, etc.)
 
 ### 7.2 No Carbon Sequestration Modeling
 
 - **Does NOT model** tree growth, photosynthesis, or carbon uptake rates
-- **DOES reward** CDR calculated by Module 32 (Forestry) and Module 35 (Natural Vegetation)
+- **DOES reward** CDR calculated by Module 32 (Forestry) via vm_cdr_aff. (Module 35 natural-vegetation regrowth carbon is priced via the vm_carbon_stock CO2 stock-change pathway, not via this reward.)
 - Carbon dynamics are in Module 52 (Carbon)
 
 ### 7.3 No Mitigation Technology Specification
@@ -754,7 +756,7 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 
 **Why:** CO2 from land-use change is a stock change, not a flow. Must compare time steps.
 
-**Implication:** First time step (1995) has no previous stock → emissions are initialization artifacts → zeroed via `preloop.gms:70`
+**Implication:** First time step (1995) has no previous stock → emissions are initialization artifacts (`preloop.gms:8-11`) → their cost is zero because GHG prices are zeroed for years <= sm_fix_SSP2 (`preloop.gms:70`).
 
 ---
 
@@ -794,7 +796,7 @@ Module 56 provides 100+ price scenarios and 60+ policy scenarios. Key examples:
 
 **Why:** Single price scenario can generate many policy variants (e.g., "price CO2 only" vs. "price all gases") without creating separate price files.
 
-**Implication:** Policy flexibility without data duplication. Can test 60 policies × 100 scenarios = 6000 combinations from 160 data files.
+**Implication:** Policy flexibility without data duplication. Can test 44 policies × 100+ scenarios without additional data files.
 
 ---
 
@@ -829,8 +831,8 @@ grep "^[ ]*q56_" modules/56_ghg_policy/price_aug22/declarations.gms | wc -l
 
 3. **Check CH4/N2O caps:**
    ```gams
-   * Max CH4 price ≤ 4920 × 12/44 × 28 ≈ $37,709/Tg CH4
-   * Max N2O-N price ≤ 4920 × 12/44 × 265 × 44/28 ≈ $499,320/Tg N
+   * Max CH4 price ≤ 4920 × 12/44 × 28 ≈ $37,571/Tg CH4
+   * Max N2O-N price ≤ 4920 × 12/44 × 265 × 44/28 ≈ $558,771/Tg N
    ```
 
 ---
@@ -1021,7 +1023,7 @@ Even with high global C prices, countries with low development state receive red
 
 ### 12.2 Receives Emissions From
 
-- **Emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland):** Regional emissions by source and gas (`vm_emissions_reg`)
+- **Emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland):** Regional emissions by source and gas (`vm_emissions_reg`). Module 57 (MACCs) only reads vm_emissions_reg; it does not populate it.
 - **Sources:** Livestock CH4, fertilizer N2O, land-use change CO2, peatland CO2, soil C, etc.
 
 ---
@@ -1060,10 +1062,10 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 - Constructs complex price scenarios through multi-stage preloop configuration (preloop.gms:35-123)
 - Calculates discounted CDR rewards for afforestation with price foresight
 - Distinguishes one-off (deforestation) vs. annual (fertilizer) emissions via annuity factors
-- Provides 100+ price scenarios × 60+ policy scenarios = vast policy space
+- Provides 100+ price scenarios x 44 policy scenarios = vast policy space
 
 **What It Doesn't Do:**
-- Calculate emissions (done by the emission modules: 51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland)
+- Calculate emissions (done by the emission modules: 51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland)
 - Model carbon sequestration (done by Modules 32, 35, 52)
 - Specify mitigation technologies (emergent from cost minimization)
 - Model climate system or carbon markets
@@ -1071,7 +1073,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 **Critical Principle:** Module 56 **creates incentives**, not mandates. Land-use decisions respond to prices via MAgPIE's cost minimization, finding least-cost mitigation portfolios.
 
 **Key Dependencies:**
-- **Upstream:** Emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 57 MACC-adjusted, 58 peatland), Forestry CDR (32), Carbon stocks (29,31,32,34,35,59; M30 via vm_carbon_stock_croparea), Discount rates (12)
+- **Upstream:** Emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland), Forestry CDR (32), Carbon stocks (29,31,32,34,35,59; M30 via vm_carbon_stock_croparea), Discount rates (12)
 - **Downstream:** Module 11 (Costs) → Objective function → ALL land-use decisions
 - **No circular dependencies**
 

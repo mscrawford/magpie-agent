@@ -207,7 +207,7 @@ minimize vm_cost_glo = Σ costs - Σ benefits
 | `vm_yld(j,kve,w)` | Realized yields | tDM/ha/yr |
 | `vm_carbon_stock(j,land,c_pools,stockType)` | Carbon storage | mio. tC |
 | `vm_tau(j,tautype)` | Technology change factor | 1 |
-| `v21_trade(i_ex,i_im,k_trade)` | Trade flows | mio. tDM |
+| `v21_trade(i_ex,i_im,k_trade)` | Bilateral trade flows (non-default; only in `selfsuff_reduced_bilateral22` realization -- default `selfsuff_reduced` uses `v21_excess_prod`/`v21_excess_dem` instead) | mio. tDM |
 | `vm_watdem(wat_dem,j)` | Water use by sector | mio. m³ |
 
 **Core Constraint Types:**
@@ -216,8 +216,9 @@ minimize vm_cost_glo = Σ costs - Σ benefits
 q14_yield_crop(j2,kcr,w) ..
     vm_yld(j2,kcr,w) =e=
         sum(ct, i14_yields_calib(ct,j2,kcr,w))
-        * sum((cell(i2,j2), supreg(h2,i2)),
-            vm_tau(j2,"crop") / fm_tau1995(h2));
+        * vm_tau(j2,"crop")
+        / sum((cell(i2,j2), supreg(h2,i2)), fm_tau1995(h2));
+* (modules/14_yields/managementcalib_aug19/equations.gms:14-16)
 ```
 
 #### 3.5 Phase 4: Output Extraction (postsolve.gms)

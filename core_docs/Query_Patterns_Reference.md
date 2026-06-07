@@ -152,7 +152,7 @@ Location: Module 10 (Land), used in Module 59
 Convergence: 15% annual movement toward equilibrium
 Formula: i59_lossrate(t) = 1 - 0.85^timestep_length
 Rates:
-- 5 years: 44% of gap closed
+- 5 years: 44% of carbon lost (0.85^5 = 0.444 remaining; ~56% of the gap closed)
 - 10 years: 80% of gap closed
 - 20 years: 96% of gap closed
 ```

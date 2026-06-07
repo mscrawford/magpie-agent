@@ -202,9 +202,9 @@ Before answering code-specific questions, verify documentation is current:
 **Modules with multiple realizations** (check before answering — dynamic, since the previous static list omitted half the cases including hubs M10/M14/M52/M56):
 
 ```bash
-# Run this to see which modules have >1 realization (currently ~40 of 46):
+# Run this to see which modules have >1 realization (currently 22 of 46):
 for m in ../modules/*/; do
-  count=$(ls -d ${m}*/ 2>/dev/null | wc -l)
+  count=$(ls -d ${m}*/ 2>/dev/null | grep -v '/input/$' | wc -l)
   [ "$count" -gt 1 ] && basename "$m" | cut -d_ -f1
 done | tr '\n' ', '
 ```
@@ -433,7 +433,7 @@ Wrong realization name → wrong file path → wrong file size → ALL line cita
 
 ### magpie4 cascade
 
-report.mif variables can be COMPUTED in magpie4 (combinations / aggregations of GAMS outputs). Citing only the GAMS source omits the magpie4 layer that constructed the variable. Always check `agent/helpers/magpie4_reference.md` for any report.mif claim — it pins to the renv-locked magpie4 version (`project/version_pins.json`) and has the dispatch source for the relevant `reportX` function. (Regression questions G3 + G4 in `validation_rounds.json` schema v1.3 specifically guard this.)
+report.mif variables can be COMPUTED in magpie4 (combinations / aggregations of GAMS outputs). Citing only the GAMS source omits the magpie4 layer that constructed the variable. Always check `agent/helpers/magpie4_reference.md` for any report.mif claim — it pins to the renv-locked magpie4 version (`project/version_pins.json`) and has the dispatch source for the relevant `reportX` function. (Regression questions G3 + G4 in `validation_rounds.json` specifically guard this.)
 
 ### Bug distribution, risk stratification & audit notes
 

@@ -509,7 +509,7 @@ vm_emissions_reg(i,emis_oneoff,"co2_c") =
   (pcm_carbon_stock - vm_carbon_stock) / timestep_length
 ```
 
-**Climate Scenarios** (Module 52, `modules/52_carbon/normal_dec17/input.gms:22-23`):
+**Climate Scenarios** (Module 52, `modules/52_carbon/normal_dec17/input.gms:8-23`):
 - `cc`: Time-varying carbon densities from LPJmL climate projections
 - `nocc`: Fixed at 1995 levels
 - `nocc_hist`: Historical until sm_fix_cc, then frozen
@@ -694,7 +694,7 @@ v59_som_pool(j,land) = lossrate × target + (1-lossrate) × legacy
 
 *Note: This is a simplified example. Actual LPJmL projections include complex climate-vegetation feedbacks.*
 
-**Configuration** (Module 52, `modules/52_carbon/normal_dec17/input.gms:22-23`):
+**Configuration** (Module 52, `modules/52_carbon/normal_dec17/input.gms:8-23`):
 - `c52_carbon_scenario = "cc"`: Use time-varying LPJmL projections
 - `c52_carbon_scenario = "nocc"`: Fix carbon densities at 1995 (no climate effect)
 

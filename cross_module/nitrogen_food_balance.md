@@ -180,7 +180,7 @@ Regional self-sufficiency is managed through `vm_supply` and trade variables (`v
 
 **Trade Costs**: Transport costs proportional to distance (Module 21)
 
-**Source**: Module 21, `modules/21_trade/selfsuff_reduced/equations.gms:10-25`
+**Source**: Module 21, `modules/21_trade/selfsuff_reduced/equations.gms:12-14` (q21_trade_glo) and `:31-35` (q21_trade_reg).
 
 ---
 

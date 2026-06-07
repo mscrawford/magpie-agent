@@ -1088,6 +1088,57 @@
         "I3": "pipeline-audit.md MANDATE count -> SSOT (dropped the '17' literal x2); validation_rounds.json rubric_version 1.1->1.2; verifiers.md:344 scope marker; validate_consistency.sh # Check 26/27/28 comments",
         "I4": "sync_magpie4_clone.py --check canary wired + magpie4_reference.md points at it"
       }
+    },
+    {
+      "round": 9,
+      "date": "2026-06-07",
+      "commit": null,
+      "auditor_model": "claude-opus (pipeline_audit_round.workflow.js: lens + per-finding adversarial verify + synthesis)",
+      "round_type": "consolidation C3/C4/C6 subset (first real run of the reusable workflow; round-901 was a 1-lens smoke validation)",
+      "lenses_run": [
+        "C3-drift",
+        "C4-untested-testers",
+        "C6-coherence"
+      ],
+      "findings_total": 15,
+      "by_severity": {
+        "CRITICAL": 1,
+        "HIGH": 4,
+        "MEDIUM": 7,
+        "LOW": 3
+      },
+      "by_lens": {
+        "C3-drift": 4,
+        "C4-untested-testers": 7,
+        "C6-coherence": 4
+      },
+      "verify_stage": "per-finding adversarial verify: 12 verified, 11 UPHELD, 1 CORRECTED, 0 REFUTED, 0 CITATION_FAILED",
+      "root_cause_clusters": [
+        {
+          "cluster": "Cluster A (HIGH): false-GREEN validator harness. 6 check_*.py (gating 15/16/25 + advisory 20/24/23/26) have no real --self-test; selftest_validator.sh trusts exit-0, so a check that ignores --self-test mints a false positive control and gating checks go GREEN on a 0/0 denominator if their regex breaks. CI blocks on this guard health.",
+          "findings": [
+            "C4-1",
+            "C4-2",
+            "C4-3",
+            "C4-4",
+            "C4-5",
+            "C4-6",
+            "C4-7"
+          ],
+          "candidate_intervention": "Harden selftest_validator.sh to require a SELFTEST_OK sentinel (not exit-0) + make check_*.py exit 2 on unimplemented --self-test; then add real --self-test (synthesize-bug-first, denominator>0, 0/0=fail) to gating checks 15/16/25, then advisory. DEFERRED to a focused next round (validator-machinery surgery)."
+        },
+        {
+          "cluster": "Cluster B (MEDIUM): hand-copied derived values drift (no binding check). modules/README.md:34 '40 checks' (live 43); README.md:7 '47 rounds' (live 48->50).",
+          "findings": [
+            "C3-1",
+            "C3-2"
+          ],
+          "candidate_intervention": "Deferral, not a new check: mirror README.md:109 live-count phrasing; defer the round count to validation_rounds.json. FIXED 2026-06-07."
+        }
+      ],
+      "report_path": "audit/archive/rounds/pipeline_audit_round9_findings.md",
+      "guards_added": [],
+      "status": "triaged (workflow). FIXED 2026-06-07: C6-1 (CRITICAL flywheel_rubric.md:30 fbask anchor inverted -> corrected + rubric v1.2->v2.0 bump), C6-2 (AGENT.md schema v1.3 de-hardcoded), C6-3 (rubric 14->15 classes), C6-4 (verifiers.md lessons-count 0->3), C3-1, C3-2. DEFERRED to next round: Cluster A (C4-1..7 harness hardening), C3-3/C3-4/C6-5 (UNVERIFIED). See audit/burst_2026-06-07_continuation.md."
     }
   ]
 }

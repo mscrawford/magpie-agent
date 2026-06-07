@@ -31,7 +31,7 @@ Each module documentation includes:
 9. **Summary** — Quick reference
 10. **AI Agent Response Patterns** — Query routing
 
-Doc-vs-code accuracy is mechanically guarded by `scripts/validate_consistency.sh` (40 checks across naming, citations, realizations, variables, equations, dependencies). The semantic-flywheel rounds (`../audit/validation_rounds.json`) probe doc accuracy from the answer side.
+Doc-vs-code accuracy is mechanically guarded by `scripts/validate_consistency.sh` (run it; the summary prints the live check count, across naming, citations, realizations, variables, equations, dependencies). The semantic-flywheel rounds (`../audit/validation_rounds.json`) probe doc accuracy from the answer side.
 
 ---
 

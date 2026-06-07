@@ -95,23 +95,26 @@ pcm_land(j2,land) = vm_land.l(j2,land);
 Module 10 (Land) ────────────→ Module 52 (Carbon)
        ↑                             │
        │                             ↓
-  pm_carbon_density ←──── vm_carbon_stock
-  (previous timestep)     (current timestep)
+  pcm_carbon_stock ←──── vm_carbon_stock
+  (previous timestep)    (current timestep)
 ```
 
 **Resolution**:
 1. **Timestep t-1**: Optimize vm_land(t-1) → generates vm_carbon_stock(t-1)
-2. **Postsolve t-1**: pm_carbon_density(t-1) ← f(vm_carbon_stock(t-1))
-3. **Timestep t**: Use pm_carbon_density(t-1) as **fixed parameter** for land costs
-4. **No circular dependency** within timestep t (carbon density is fixed)
+2. **Postsolve t-1**: pcm_carbon_stock(t-1) ← vm_carbon_stock(t-1)
+3. **Timestep t**: Use pcm_carbon_stock(t-1) as **fixed parameter** for CO2 emissions / GHG cost
+4. **No circular dependency** within timestep t (previous carbon stock is fixed)
 
 **Code Evidence**:
 ```gams
 * Module 56: modules/56_ghg_policy/price_aug22/postsolve.gms:8
 pcm_carbon_stock(j,land,ag_pools,stockType) = vm_carbon_stock.l(j,land,ag_pools,stockType);
 
-* Module 29/30 (land conversion costs), equations.gms:
-* Uses pm_carbon_density from PREVIOUS timestep for conversion costs
+* Module 52 (carbon), modules/52_carbon/normal_dec17/equations.gms:
+* q52_emis_co2_actual reads pcm_carbon_stock (PREVIOUS timestep) and vm_carbon_stock
+* (current timestep) to compute CO2 emissions across timesteps.
+* (Land conversion costs themselves are area-based, Module 39 q39_cost_landcon,
+* and do NOT use carbon density.)
 ```
 
 **Convergence**: Guaranteed (no iteration within timestep)
@@ -295,7 +298,7 @@ pm_land_conservation(t,j,land,consv_type) [22] → vm_land.lo(j,land_natveg) [10
 1. **All variables optimized together** in single solve
 2. **Equations form system**:
    ```
-   sum(land, vm_land(j,land)) = sum(land, pcm_land(j,land))  [q10_land, 10]
+   sum(land, vm_land(j,land)) = sum(land, pcm_land(j,land))  [q10_land_area, 10]
    vm_land(j,land_natveg) ≥ pm_land_conservation(t,j,land_natveg,"protect")  [22, bounds]
    ```
 3. **Solver ensures consistency** of all constraints

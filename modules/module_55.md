@@ -289,7 +289,7 @@ sum((awms_conf,kli),
 
 **`ic55_awms_shr(i,kli,awms_conf)`** (`declarations.gms:12`): Share of confined manure managed in each system (0-1)
 - Updated in presolve phase (`presolve.gms:19-26`)
-- **Historical period** (≤ `sm_fix_SSP2`, typically 2015): Fixed at SSP2 baseline (`presolve.gms:20`)
+- **Historical period** (≤ `sm_fix_SSP2`, 2025 by default): Fixed at SSP2 baseline (`presolve.gms:20`)
 - **Future period**: Scenario-dependent with population-weighted country blending (`presolve.gms:23-24`)
 
 **Blending Formula** (`presolve.gms:23-24`):
