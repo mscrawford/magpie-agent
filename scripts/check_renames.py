@@ -62,8 +62,89 @@ def is_exempt(rel_path: str, exempt_patterns: list[str]) -> bool:
     return False
 
 
+# Allowlist marker lines (e.g. `<!-- check-gams-vars: allow -->`) MUST name old
+# names to suppress Check 14, so rename-hits on those lines are skipped. Hoisted
+# to module scope so find_rename_hits_in_text() and --self-test can share it.
+ALLOWLIST_LINE_RE = re.compile(r"check-gams-vars:\s*allow")
+
+
+def find_rename_hits_in_text(text, compiled):
+    """Return [(old_name, lineno), ...] for non-exempt rename hits in `text`.
+
+    Skips italicised historical refs (*old_name*) and allowlist-marker lines.
+    `compiled` is a list of (compiled_pattern, rename_dict). Factored out of
+    main()'s os.walk loop so --self-test can drive it on synthetic text.
+    """
+    hits = []
+    for pattern, rename in compiled:
+        for m in pattern.finditer(text):
+            # Skip italicized historical references: `*old_name*`
+            # (the doc convention for "no longer current identifier").
+            if m.start() > 0 and text[m.start() - 1] == "*":
+                end = m.end()
+                if end < len(text) and text[end] == "*":
+                    continue
+            # Skip allowlist marker lines: they MUST name old names
+            # to suppress Check 14 flags.
+            line_start = text.rfind("\n", 0, m.start()) + 1
+            line_end = text.find("\n", m.end())
+            if line_end == -1:
+                line_end = len(text)
+            line = text[line_start:line_end]
+            if ALLOWLIST_LINE_RE.search(line):
+                continue
+            lineno = text.count("\n", 0, m.start()) + 1
+            hits.append((rename["old"], lineno))
+    return hits
+
+
+def self_test():
+    """Positive + clean controls on synthetic text + a synthetic rename (no tree).
+
+    Synthesize the known bug FIRST, then assert the check flags it:
+      Positive:     text uses the OLD name `pcm_tau` (bare)  -> exactly 1 hit.
+      Clean (new):  text uses only the NEW name `pm_tau`     -> 0 hits.
+      Clean (ital): OLD name italicised as *pcm_tau* (historical) -> 0 hits.
+    Driven through find_rename_hits_in_text() with a synthetic compiled pattern.
+    Exits 0 (prints SELFTEST_OK) iff all three hold; 1 otherwise.
+    """
+    rename = {"old": "pcm_tau", "new": "pm_tau"}
+    compiled = [(re.compile(r"\b" + re.escape(rename["old"]) + r"\b"), rename)]
+    ok = True
+
+    hits_pos = find_rename_hits_in_text("The factor `pcm_tau` drives yields.\n", compiled)
+    if len(hits_pos) == 1 and hits_pos[0][0] == "pcm_tau":
+        print(f"  SELF-TEST PASS [positive]: old name pcm_tau flagged on line {hits_pos[0][1]}")
+    else:
+        print(f"  SELF-TEST FAIL [positive]: bare old name pcm_tau not flagged once; got {hits_pos}")
+        ok = False
+
+    hits_new = find_rename_hits_in_text("The factor `pm_tau` drives yields.\n", compiled)
+    if not hits_new:
+        print("  SELF-TEST PASS [clean-new]: new name pm_tau not flagged")
+    else:
+        print(f"  SELF-TEST FAIL [clean-new]: new name wrongly flagged: {hits_new}")
+        ok = False
+
+    hits_ital = find_rename_hits_in_text("Historically *pcm_tau* was used.\n", compiled)
+    if not hits_ital:
+        print("  SELF-TEST PASS [clean-italic]: *pcm_tau* historical ref skipped")
+    else:
+        print(f"  SELF-TEST FAIL [clean-italic]: italic historical ref wrongly flagged: {hits_ital}")
+        ok = False
+
+    if ok:
+        print("check_renames self-test: PASS")
+        print("SELFTEST_OK check_renames")
+        return 0
+    print("check_renames self-test: FAIL")
+    return 1
+
+
 def main() -> int:
     args = sys.argv[1:]
+    if "--self-test" in args:
+        return self_test()
     summary_only = "--summary-only" in args
 
     renames = load_renames()
@@ -87,9 +168,6 @@ def main() -> int:
         pattern = re.compile(r"\b" + re.escape(old) + r"\b")
         compiled.append((pattern, r))
 
-    ITALIC_HISTORICAL_RE = re.compile(r"\*([A-Za-z_][A-Za-z0-9_]*)\*")
-    ALLOWLIST_LINE_RE = re.compile(r"check-gams-vars:\s*allow")
-
     total_hits = 0
     per_rename: dict[str, list[tuple[str, int]]] = {}
 
@@ -110,28 +188,13 @@ def main() -> int:
                     text = path.read_text(encoding="utf-8", errors="ignore")
                 except OSError:
                     continue
-                for pattern, rename in compiled:
-                    if is_exempt(rel, rename.get("exempt_paths", [])):
-                        continue
-                    for m in pattern.finditer(text):
-                        # Skip italicized historical references: `*old_name*`
-                        # (the doc convention for "no longer current identifier").
-                        if m.start() > 0 and text[m.start() - 1] == "*":
-                            end = m.end()
-                            if end < len(text) and text[end] == "*":
-                                continue
-                        # Skip allowlist marker lines: they MUST name old names
-                        # to suppress Check 14 flags.
-                        line_start = text.rfind("\n", 0, m.start()) + 1
-                        line_end = text.find("\n", m.end())
-                        if line_end == -1:
-                            line_end = len(text)
-                        line = text[line_start:line_end]
-                        if ALLOWLIST_LINE_RE.search(line):
-                            continue
-                        lineno = text.count("\n", 0, m.start()) + 1
-                        per_rename.setdefault(rename["old"], []).append((rel, lineno))
-                        total_hits += 1
+                file_compiled = [
+                    (pattern, rename) for pattern, rename in compiled
+                    if not is_exempt(rel, rename.get("exempt_paths", []))
+                ]
+                for old, lineno in find_rename_hits_in_text(text, file_compiled):
+                    per_rename.setdefault(old, []).append((rel, lineno))
+                    total_hits += 1
 
     if total_hits == 0:
         print("✅ No references to historically-renamed identifiers found")
