@@ -50,9 +50,23 @@ jobs:
           echo "Pinned magpie commit: $sha"
 
       - name: Clone MAgPIE model at pinned commit
+        env:
+          PIN_SHA: ${{ steps.pin.outputs.sha }}
         run: |
           git clone --filter=blob:none https://github.com/magpiemodel/magpie.git magpie
-          git -C magpie checkout "${{ steps.pin.outputs.sha }}"
+          # The pin is a develop commit, and the public mirror can briefly lag it.
+          # If the exact pin isn't reachable yet, fall back to the develop tip (loud
+          # warning) so the guard-health self-test + validator still run instead of
+          # the whole job dying at rig assembly. (Previously a hard `git checkout`
+          # broke CI for days when the pin led the public mirror -- see BACKLOG.)
+          if git -C magpie checkout "$PIN_SHA" 2>/dev/null; then
+            echo "checked out pinned commit $PIN_SHA"
+          elif git -C magpie checkout origin/develop 2>/dev/null; then
+            echo "::warning::pinned commit $PIN_SHA not in public mirror yet; fell back to origin/develop tip"
+          else
+            echo "::warning::pinned commit $PIN_SHA and origin/develop unavailable; falling back to origin/HEAD"
+            git -C magpie checkout origin/HEAD
+          fi
           git -C magpie log -1 --format='checked out %h %ci %s'
 
       - name: Assemble deployed layout and deploy AGENT.md
