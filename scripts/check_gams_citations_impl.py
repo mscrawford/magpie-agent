@@ -514,6 +514,11 @@ def main():
         os.path.join(agent_dir, 'README.md'),
     ]
     scan_paths = [p for p in scan_paths if os.path.exists(p)]
+    if shutil.which('rg') is None:
+        print("ERROR: ripgrep (rg) is required by check_gams_citations_impl but was not "
+              "found on PATH. Install it (apt-get install ripgrep / brew install ripgrep).",
+              file=sys.stderr)
+        sys.exit(2)
     result = subprocess.run(
         ['rg', '-n', r'\w+\.gms:\d+'] + scan_paths,
         capture_output=True, text=True

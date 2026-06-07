@@ -41,6 +41,13 @@ jobs:
         with:
           python-version: '3.x'
 
+      # check_gams_citations_impl.py shells out to ripgrep for its doc scan, and
+      # the guard-health self-test re-invokes it as a subprocess. ubuntu runners do
+      # NOT ship `rg`, so without this the self-test crashed (FileNotFoundError),
+      # turning the blocking guard-health step red even though the docs were fine.
+      - name: Install ripgrep (required by check_gams_citations_impl.py)
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
       - name: Read pinned magpie commit from sync_log.json
         id: pin
         run: |
