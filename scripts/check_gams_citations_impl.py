@@ -704,11 +704,19 @@ def main():
         # surfaces in the warnings stream so it gets seen.
         if not actual:
             if mod_num is None:
+                # Non-module doc (cross_module/, core_docs/, reference/, helpers,
+                # AGENT.md, README.md): an unresolved .gms cite here is ADVISORY,
+                # not an error. It is EITHER a true bare basename OR a placeholder/
+                # wildcard full path (e.g. modules/XX_.../ or modules/NN/*/) that
+                # CITATION_RE can't parse (its prefix capture breaks on '.' / '*').
+                # The `continue` is load-bearing: it keeps these out of the gated
+                # file_missing bucket. Do NOT delete this branch (see BACKLOG C2-1).
                 ambig += 1  # count in ambig bucket (same as other advisory warns)
                 warnings.append(
-                    f"  BARE: {gms_hint}:{start} (in {doc_short}) — bare-basename "
-                    f"citation in non-module doc; if this is a real reference "
-                    f"(not a pedagogical example), use full path per MANDATE 16"
+                    f"  UNRESOLVED-NM: {gms_hint}:{start} (in {doc_short}) - unresolved "
+                    f".gms citation in a non-module doc (a bare basename, or a placeholder/"
+                    f"wildcard full path the resolver can't parse); if it is a real "
+                    f"reference, use a concrete full path per MANDATE 16"
                 )
                 continue
 
@@ -1033,7 +1041,7 @@ def main():
             # Warnings (bare-basename ambiguity, possible Pattern 12 mismatch) are
             # advisory; do not fail the validator. Surface counts inline so users
             # can act on them without blocking the main pipeline.
-            print(f"Advisory warnings: {ambig} bare-basename ambiguity, {content_miss} possible Pattern-12 content mismatch (not counted as errors)")
+            print(f"Advisory warnings: {ambig} non-module/ambiguous citation notes, {content_miss} possible Pattern-12 content mismatch (not counted as errors)")
             for w in sorted(set(warnings))[:5]:
                 print(w)
             if len(warnings) > 5:
