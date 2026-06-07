@@ -750,7 +750,10 @@ def main() -> int:
     verbose = "--verbose" in args
 
     if "--self-test" in args:
-        return _self_test()
+        rc = _self_test()
+        if rc == 0:
+            print("SELFTEST_OK check_consumer_attribution")
+        return rc
 
     if not (MAGPIE_DIR / "main.gms").is_file() or not (MAGPIE_DIR / "modules").is_dir():
         print(f"⚠️  GAMS codebase not found at {MAGPIE_DIR} - skipping consumer-attribution check")

@@ -11,7 +11,7 @@
 #   1. CLEAN tree         -> verdict=PASS, exit 0                  (no false positive)
 #   2. PLANTED defect     -> verdict=FAIL, exit 1, defect named, completed=1
 #   3. FORCED early exit   -> exit 99, "ABORTED"                   (death safety net)
-#   4. PER-CHECK controls -> each load-bearing check_*.py --self-test passes
+#   4. PER-CHECK controls -> each load-bearing check_*.py --self-test prints SELFTEST_OK
 #   5. SECTION-COUNT skip  -> stale SECTION_TOTAL -> exit 99       (skip safety net)
 #
 # Run this before trusting any clean validate_consistency.sh result, and in CI.
@@ -92,7 +92,14 @@ fi
 # ---- 4: per-check positive controls (each load-bearing check_*.py --self-test) ----
 # Binds the load-bearing checks end-to-end (pipeline-audit R8 I2). A check that
 # silently stops catching its bug class fails here -- proven: neutering a detector
-# makes its --self-test exit non-zero. ADD new --self-test scripts to this list.
+# makes its --self-test exit non-zero. ADD new --self-test scripts to this list
+# ONLY after the check actually implements a real --self-test (registering an
+# unimplemented one would mint a false positive control -- finding C4-4).
+#
+# Sentinel requirement (pipeline-audit R9 C4 / R10 C1): a check that IGNORES
+# --self-test falls through to a normal corpus run and exits 0, minting a FALSE
+# positive control. So we require each --self-test to print "SELFTEST_OK <name>"
+# on stdout, NOT merely exit 0. Exit-0-without-the-sentinel is treated as a FAIL.
 echo "[4/5] per-check positive controls (--self-test)"
 SELFTEST_SCRIPTS=(check_gams_citations_impl check_default_realizations check_gams_variables \
                   check_doc_var_existence check_scaling check_consumer_attribution \
@@ -100,10 +107,17 @@ SELFTEST_SCRIPTS=(check_gams_citations_impl check_default_realizations check_gam
 for s in "${SELFTEST_SCRIPTS[@]}"; do
     if [ ! -f "$SCRIPT_DIR/$s.py" ]; then
         fail "$s.py missing (expected a --self-test)"
-    elif python3 "$SCRIPT_DIR/$s.py" --self-test >/dev/null 2>&1; then
+        continue
+    fi
+    st_out="$(python3 "$SCRIPT_DIR/$s.py" --self-test 2>&1)"; st_rc=$?
+    # -qx: the sentinel must be its OWN exact line, so "SELFTEST_OK foo" cannot
+    # be satisfied by a substring of "SELFTEST_OK foo_bar" (prefix-name collision).
+    if [ "$st_rc" -eq 0 ] && grep -qx "SELFTEST_OK $s" <<<"$st_out"; then
         pass "$s --self-test"
+    elif [ "$st_rc" -eq 0 ]; then
+        fail "$s --self-test exited 0 but printed no 'SELFTEST_OK $s' sentinel (check may be ignoring --self-test)"
     else
-        fail "$s --self-test FAILED (its positive control did not hold)"
+        fail "$s --self-test FAILED (exit $st_rc; positive control did not hold)"
     fi
 done
 

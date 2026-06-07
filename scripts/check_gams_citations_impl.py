@@ -420,7 +420,10 @@ def self_test():
 
 def main():
     if '--self-test' in sys.argv:
-        sys.exit(self_test())
+        rc = self_test()
+        if rc == 0:
+            print("SELFTEST_OK check_gams_citations_impl")
+        sys.exit(rc)
 
     agent_dir = sys.argv[1]
     magpie_root = sys.argv[2]

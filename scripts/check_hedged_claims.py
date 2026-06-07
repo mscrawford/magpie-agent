@@ -89,7 +89,10 @@ def _self_test():
 
 def main():
     if "--self-test" in sys.argv:
-        return _self_test()
+        rc = _self_test()
+        if rc == 0:
+            print("SELFTEST_OK check_hedged_claims")
+        return rc
     files = [f for f in sorted(glob.glob(str(AGENT_DIR / "modules" / "module_*.md")))
              if "_notes.md" not in f]
     out, total = [], 0

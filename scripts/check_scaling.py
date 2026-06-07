@@ -194,7 +194,10 @@ def self_test() -> int:
 
 def main() -> int:
     if "--self-test" in sys.argv:
-        return self_test()
+        rc = self_test()
+        if rc == 0:
+            print("SELFTEST_OK check_scaling")
+        return rc
     summary = "--summary" in sys.argv
     js = "--json" in sys.argv
 

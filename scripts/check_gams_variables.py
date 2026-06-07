@@ -276,7 +276,10 @@ def self_test() -> int:
 
 def main() -> int:
     if "--self-test" in sys.argv:
-        return self_test()
+        rc = self_test()
+        if rc == 0:
+            print("SELFTEST_OK check_gams_variables")
+        return rc
 
     summary_only = "--summary-only" in sys.argv
     target_module = None

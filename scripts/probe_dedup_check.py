@@ -328,7 +328,10 @@ def main():
     args = ap.parse_args()
 
     if args.self_test:
-        sys.exit(_self_test())
+        rc = _self_test()
+        if rc == 0:
+            print("SELFTEST_OK probe_dedup_check")
+        sys.exit(rc)
 
     if args.append_latest:
         if args.append_from_round is not None:

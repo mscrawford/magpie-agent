@@ -299,7 +299,10 @@ def main():
     args = ap.parse_args()
 
     if args.self_test:
-        sys.exit(_self_test())
+        rc = _self_test()
+        if rc == 0:
+            print("SELFTEST_OK check_module_realizations")
+        sys.exit(rc)
 
     defaults = load_default_realizations()
     module_map = load_module_map()
