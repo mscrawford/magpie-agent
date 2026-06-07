@@ -68,7 +68,7 @@ If you modified AGENT.md itself during the session:
 cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md
 ```
 
-(Validator's Check 23 will fail if AGENT.md drifts from its deployed copies.)
+(Validator's Check 10 will fail if AGENT.md drifts from its deployed copies.)
 
 ---
 
