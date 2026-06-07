@@ -118,8 +118,10 @@ for s in "${SELFTEST_SCRIPTS[@]}"; do
         pass "$s --self-test"
     elif [ "$st_rc" -eq 0 ]; then
         fail "$s --self-test exited 0 but printed no 'SELFTEST_OK $s' sentinel (check may be ignoring --self-test)"
+        printf '%s\n' "$st_out" | sed 's/^/          | /'
     else
         fail "$s --self-test FAILED (exit $st_rc; positive control did not hold)"
+        printf '%s\n' "$st_out" | sed 's/^/          | /'
     fi
 done
 
