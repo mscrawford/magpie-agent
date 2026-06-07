@@ -103,7 +103,8 @@ fi
 echo "[4/5] per-check positive controls (--self-test)"
 SELFTEST_SCRIPTS=(check_gams_citations_impl check_default_realizations check_gams_variables \
                   check_doc_var_existence check_scaling check_consumer_attribution \
-                  check_hedged_claims check_module_realizations probe_dedup_check)
+                  check_hedged_claims check_module_realizations probe_dedup_check \
+                  check_gams_equations check_gams_realizations check_no_bare_cites)
 for s in "${SELFTEST_SCRIPTS[@]}"; do
     if [ ! -f "$SCRIPT_DIR/$s.py" ]; then
         fail "$s.py missing (expected a --self-test)"

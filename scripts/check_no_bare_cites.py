@@ -59,7 +59,64 @@ def scan_doc(doc_path: Path) -> list[tuple[int, str]]:
     return violations
 
 
+def self_test() -> int:
+    """Positive + clean controls on synthetic temp docs (real tree untouched).
+
+    Synthesize the known bug FIRST, then assert the check flags it:
+      Positive:  a non-module doc with a BARE cite `equations.gms:20` -> must flag.
+      Clean:     the same cite in full-path form -> must NOT flag.
+      Allowlist: a per-line `<!-- check-bare-cite -->` marker -> must NOT flag.
+    Exits 0 (prints SELFTEST_OK) iff all three hold; 1 otherwise.
+    """
+    import shutil
+    import tempfile
+
+    ok = True
+    tmp = Path(tempfile.mkdtemp(prefix="check25_selftest_"))
+    try:
+        pos = tmp / "Bad.md"
+        pos.write_text("See equations.gms:20 for the constraint.\n", encoding="utf-8")
+        v_pos = scan_doc(pos)
+        if v_pos:
+            print(f"  SELF-TEST PASS [positive]: bare cite flagged on line {v_pos[0][0]}")
+        else:
+            print("  SELF-TEST FAIL [positive]: bare cite `equations.gms:20` NOT flagged")
+            ok = False
+
+        clean = tmp / "Good.md"
+        clean.write_text(
+            "See modules/56_ghg_policy/default/equations.gms:20 for the constraint.\n",
+            encoding="utf-8",
+        )
+        v_clean = scan_doc(clean)
+        if not v_clean:
+            print("  SELF-TEST PASS [clean]: full-path cite not flagged")
+        else:
+            print(f"  SELF-TEST FAIL [clean]: full-path cite wrongly flagged: {v_clean}")
+            ok = False
+
+        allow = tmp / "Allow.md"
+        allow.write_text("See equations.gms:20 <!-- check-bare-cite -->\n", encoding="utf-8")
+        v_allow = scan_doc(allow)
+        if not v_allow:
+            print("  SELF-TEST PASS [allowlist]: per-line marker suppresses the flag")
+        else:
+            print(f"  SELF-TEST FAIL [allowlist]: marker did not suppress: {v_allow}")
+            ok = False
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    if ok:
+        print("check_no_bare_cites self-test: PASS")
+        print("SELFTEST_OK check_no_bare_cites")
+        return 0
+    print("check_no_bare_cites self-test: FAIL")
+    return 1
+
+
 def main() -> int:
+    if "--self-test" in sys.argv:
+        return self_test()
     summary_only = "--summary-only" in sys.argv
 
     docs: list[Path] = []
