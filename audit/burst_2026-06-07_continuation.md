@@ -19,10 +19,13 @@ Progressed and committed (branch, no push):
 - **R49 + R50 recorded** to `validation_rounds.json` (now 50 rounds); **R9 recorded** to `pipeline_audit_rounds.json` (now 9). Record script: `audit/archive/rounds/burst_record_R49_R50_R9.py`.
 - Round-901 smoke artifacts deleted (C6-3 fixed; superseded by R9).
 
-**STILL PENDING (next window):**
-- **R9 Cluster A** (the 4-HIGH false-GREEN harness): deferred deliberately — it needs per-check refactoring of validator machinery (factor each gating check's detection into a fixture-accepting function + a synthesize-bug-first `--self-test`, per the `check_default_realizations.py` convention) + a `SELFTEST_OK` sentinel in `selftest_validator.sh`. Risky surgery; do it unhurried. Full plan in §"PENDING" item 1 below.
-- **C1/C2/C5 pipeline-audit (round 10)** — §"PENDING" item 4 below.
-- C3-3 / C3-4 / C6-5 remain NOT-actionable (UNVERIFIED — re-verify first).
+**C1/C2/C5 pipeline-audit (round 10): DONE + recorded** (pipeline_audit_rounds.json now 10). It corroborated Cluster A (C1-1) and made the R7 zero-catch retirements actionable. Findings: `audit/archive/rounds/pipeline_audit_round10_findings.md`.
+
+**STILL PENDING (next window) — recommended sequence (R10 set the order):**
+1. **Cluster B retirements FIRST** (R10 C5-1/3/4; already R7-approved per BACKLOG.md:45, just never applied). One bundled removal sweep: delete Check 4 (`validate_consistency.sh:309-332`, all-`check_pass` → can never fail); delete Check 23 (`:947-966`) + `check_multi_section_consistency.py` (253 LOC) + its 3 allowlist entries; delete Check 26 (`:1025-1041`) + `check_units.py` (277 LOC); decrement `SECTION_TOTAL`; repoint `maintenance_protocol.md:37` + `session_cleanup.md:71`. Do this FIRST — it drops 2 of the 7 untested checks, shrinking Cluster A's scope 7→5.
+2. **Cluster A harness hardening** (R9 C4-1..7, corroborated by R10 C1-1): `SELFTEST_OK <name>` sentinel in `selftest_validator.sh` + exit-2 on unimplemented `--self-test` + synthesize-bug-first `--self-test`s for the gating checks (factor each detection into a fixture-accepting function, per the `check_default_realizations.py` convention). Risky per-check surgery; do it unhurried. Full plan in §"PENDING" item 1 below (scope now 5 checks after step 1).
+3. **C2-1**: delete the advisory-only branch `check_gams_citations_impl.py:702-710` (mis-bins placeholder/wildcard cites as "bare"; NOT a Check-25 merge — the lens's merge framing was rejected by verify). Independent of A/B.
+- **NOT actionable** (UNVERIFIED or load-bearing on inspection — BACKLOG notes only): R9 C3-3/C3-4/C6-5; R10 C2-2/3/4 + C5-5/6 (e.g. `verifiers.md` MANDATE 9 is the sole human-review guard for the R3 bug — do not demote/renumber).
 
 ---
 

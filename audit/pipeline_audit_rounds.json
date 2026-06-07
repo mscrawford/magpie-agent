@@ -1139,6 +1139,74 @@
       "report_path": "audit/archive/rounds/pipeline_audit_round9_findings.md",
       "guards_added": [],
       "status": "triaged (workflow). FIXED 2026-06-07: C6-1 (CRITICAL flywheel_rubric.md:30 fbask anchor inverted -> corrected + rubric v1.2->v2.0 bump), C6-2 (AGENT.md schema v1.3 de-hardcoded), C6-3 (rubric 14->15 classes), C6-4 (verifiers.md lessons-count 0->3), C3-1, C3-2. DEFERRED to next round: Cluster A (C4-1..7 harness hardening), C3-3/C3-4/C6-5 (UNVERIFIED). See audit/burst_2026-06-07_continuation.md."
+    },
+    {
+      "round": 10,
+      "date": "2026-06-07",
+      "commit": null,
+      "auditor_model": "claude-opus (pipeline_audit_round.workflow.js: lens + per-finding adversarial verify + synthesis)",
+      "round_type": "consolidation C1/C2/C5 subset (completes the R9 sweep; standing bias delete/merge/simplify)",
+      "lenses_run": [
+        "C1-dead",
+        "C2-redundant",
+        "C5-overcomplexity"
+      ],
+      "findings_total": 10,
+      "by_severity": {
+        "CRITICAL": 0,
+        "HIGH": 1,
+        "MEDIUM": 4,
+        "LOW": 5
+      },
+      "by_lens": {
+        "C1-dead": 1,
+        "C2-redundant": 4,
+        "C5-overcomplexity": 5
+      },
+      "verify_stage": "per-finding adversarial verify: 5 verified, 1 UPHELD, 4 CORRECTED, 0 REFUTED, 0 CITATION_FAILED (verify rejected the lens's 'merge' framing on C2-1/C5-1/C5-3/C5-4 -> CORRECTED to delete/retire)",
+      "root_cause_clusters": [
+        {
+          "cluster": "C1-1 (HIGH): CORROBORATES R9 Cluster A from the liveness angle - 7 checks ship an unimplemented --self-test that falls through to the live scan and exits 0 (false positive control); gating 15/16/25 can go GREEN on a 0/0 denominator. Latent false-GREEN.",
+          "findings": [
+            "C1-1"
+          ],
+          "candidate_intervention": "Execute the already-approved/deferred R9 Cluster A plan (do NOT open a new item). SEQUENCE AFTER Cluster B (B retires 2 of the 7 -> scope 7->5, drops checks 23/26).",
+          "adds_surface": true
+        },
+        {
+          "cluster": "Cluster B / C5 (MEDIUM): the R7-approved zero-catch retirements (BACKLOG.md:45), approved then deferred, now at their named resumption point. Cost > lifetime catches.",
+          "findings": [
+            "C5-1",
+            "C5-3",
+            "C5-4"
+          ],
+          "candidate_intervention": "ONE bundled removal sweep: delete Check 4 (validate_consistency.sh:309-332, all-check_pass can-never-fail); delete Check 23 (:947-966) + check_multi_section_consistency.py (253 LOC) + its 3 allowlist entries; delete Check 26 (:1025-1041) + check_units.py (277 LOC); decrement SECTION_TOTAL; repoint maintenance_protocol.md:37 + session_cleanup.md:71. adds_surface=false. DO FIRST (shrinks Cluster A scope).",
+          "adds_surface": false
+        },
+        {
+          "cluster": "C2-1 (MEDIUM): check_gams_citations_impl.py:702-710 advisory mis-bins placeholder/wildcard full-path cites as 'bare'. NOT a Check-25 duplicate (different regex semantics; gate already discards these lines).",
+          "findings": [
+            "C2-1"
+          ],
+          "candidate_intervention": "Delete the advisory-only branch (no external consumer). Reject the lens's 'merge with Check 25' rationale. Independent of A/B.",
+          "adds_surface": false
+        },
+        {
+          "cluster": "C2-2/3/4 + C5-5/6 (LOW, UNVERIFIED): weak 'duplicated intent' / minor dead-arg items; each candidate's own analysis shows merging loses a load-bearing guard or is harmless.",
+          "findings": [
+            "C2-2",
+            "C2-3",
+            "C2-4",
+            "C5-5",
+            "C5-6"
+          ],
+          "candidate_intervention": "No action; BACKLOG notes only (e.g. verifiers.md M9 is the sole human-review guard for the R3 bug - do not demote/renumber).",
+          "adds_surface": false
+        }
+      ],
+      "report_path": "audit/archive/rounds/pipeline_audit_round10_findings.md",
+      "guards_added": [],
+      "status": "triaged (workflow); READ-ONLY, fixes user-reviewed. Feeds the next-window batch: do Cluster B retirements FIRST, then R9/R10 Cluster A harness hardening, then C2-1. See audit/burst_2026-06-07_continuation.md."
     }
   ]
 }
