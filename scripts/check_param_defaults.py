@@ -241,7 +241,57 @@ def scan_doc(doc_path, defaults_map):
     return mismatches, skipped
 
 
+def self_test():
+    """Positive + clean controls via scan_doc() with an injected defaults_map.
+
+    Synthesize the known bug FIRST, then assert the check flags it:
+      Positive: doc claims `s99_foo` (default 0.9) but config says 0.5 -> mismatch.
+      Clean:    doc claims `s99_foo` (default 0.5) matching config       -> none.
+    No real tree or config/default.cfg is touched (defaults_map is injected and
+    cfg_val is found, so the input.gms lookup branch is never reached).
+    Exits 0 (prints SELFTEST_OK) iff both hold; 1 otherwise.
+    """
+    import shutil
+    import tempfile
+
+    ok = True
+    defaults_map = {"s99_foo": "0.5"}
+    tmp = tempfile.mkdtemp(prefix="check20_selftest_")
+    try:
+        doc_path = os.path.join(tmp, "module_99.md")
+
+        with open(doc_path, "w") as f:
+            f.write("The buffer `s99_foo` (default 0.9) controls X.\n")
+        mismatches, _skipped = scan_doc(doc_path, defaults_map)
+        if any(m["name"] == "s99_foo" for m in mismatches):
+            print(f"  SELF-TEST PASS [positive]: drifted default flagged "
+                  f"(claimed {mismatches[0]['claimed']} vs actual {mismatches[0]['actual']})")
+        else:
+            print(f"  SELF-TEST FAIL [positive]: `s99_foo` 0.9-vs-0.5 drift NOT flagged; got {mismatches}")
+            ok = False
+
+        with open(doc_path, "w") as f:
+            f.write("The buffer `s99_foo` (default 0.5) controls X.\n")
+        mismatches_clean, _ = scan_doc(doc_path, defaults_map)
+        if not mismatches_clean:
+            print("  SELF-TEST PASS [clean]: matching default not flagged")
+        else:
+            print(f"  SELF-TEST FAIL [clean]: matching default wrongly flagged: {mismatches_clean}")
+            ok = False
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    if ok:
+        print("check_param_defaults self-test: PASS")
+        print("SELFTEST_OK check_param_defaults")
+        return 0
+    print("check_param_defaults self-test: FAIL")
+    return 1
+
+
 def main():
+    if "--self-test" in sys.argv:
+        return self_test()
     verbose = "--verbose" in sys.argv
     defaults_map = parse_default_cfg()
     allowlist = load_allowlist()

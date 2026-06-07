@@ -222,6 +222,7 @@ def self_test():
 
     if ok:
         print("check_default_realizations self-test: PASS")
+        print("SELFTEST_OK check_default_realizations")
         sys.exit(0)
     else:
         print("check_default_realizations self-test: FAIL")

@@ -309,27 +309,14 @@ fi
 # ===============================
 # Check 4: Duplicate Equations
 # ===============================
-print_section "4/28" "Checking duplicate equations..."
-
-# Check for common equations mentioned in multiple places
-# q70_feed
-Q70_LOCATIONS=$(grep -l "q70_feed" modules/module_70.md core_docs/*.md 2>/dev/null | wc -l | tr -d ' ')
-if [ "$Q70_LOCATIONS" -gt 0 ]; then
-    check_pass "q70_feed: Found in $Q70_LOCATIONS files (cross-references expected)"
-fi
-
-# q52_carbon_growth / Chapman-Richards
-Q52_LOCATIONS=$(grep -l "q52_carbon\|Chapman-Richards" modules/module_52.md cross_module/carbon_balance_conservation.md 2>/dev/null | wc -l | tr -d ' ')
-if [ "$Q52_LOCATIONS" -eq 2 ]; then
-    check_pass "Carbon growth equation: Referenced in module_52.md and carbon_balance (expected)"
-else
-    check_pass "Carbon growth equation: Found in $Q52_LOCATIONS files"
-fi
-
-# Check for contradictory equation descriptions (manual review needed)
-log ""
-log "    NOTE: Duplicate equations with different descriptions require manual review"
-log "    Common patterns: module_XX.md (detailed) vs. cross_module/*.md (overview)"
+print_section "4/28" "Checking duplicate equations... [RETIRED]"
+# RETIRED 2026-06-07 (pipeline-audit R7/R10 finding C5-1): this check only ever
+# called check_pass -- no check_warning/check_error path existed -- so it was
+# structurally incapable of failing and caught nothing in its lifetime. Kept as
+# a numbered tombstone so section auto-numbering and all by-number "Check N"
+# references stay stable. Proper removal (stable check IDs) is the deferred fix;
+# see audit/BACKLOG.md "Validator check IDs".
+log "    (retired: zero-catch by construction; see BACKLOG 'Validator check IDs')"
 
 # =================================
 # Check 5: Entry Point Consistency
@@ -944,26 +931,14 @@ fi
 # dimensions (set-alias normalized). Catches rename stragglers like the M14
 # pcm_tau h→j drift. Advisory mode (variants are usually legitimate context).
 # ===============================================
-print_section "23/28" "Checking multi-section dimension consistency..."
-
-CONSISTENCY_SCRIPT="$AGENT_DIR/scripts/check_multi_section_consistency.py"
-if [ -f "$CONSISTENCY_SCRIPT" ]; then
-    if CONSISTENCY_OUTPUT=$(python3 "$CONSISTENCY_SCRIPT" --summary-only 2>&1); then CONSISTENCY_EXIT=0; else CONSISTENCY_EXIT=$?; fi
-    ARITY_COUNT=$(echo "$CONSISTENCY_OUTPUT" | grep -oE "Arity mismatches \(likely drift\): [0-9]+" | grep -oE "[0-9]+" || true)
-    VARIANT_COUNT=$(echo "$CONSISTENCY_OUTPUT" | grep -oE "Signature variants .*: [0-9]+" | grep -oE "[0-9]+" | tail -1 || true)
-    if [ -z "$ARITY_COUNT" ]; then ARITY_COUNT=0; fi
-    if [ -z "$VARIANT_COUNT" ]; then VARIANT_COUNT=0; fi
-    if [ "$ARITY_COUNT" = "0" ]; then
-        check_pass "Multi-section consistency: 0 arity mismatches ($VARIANT_COUNT variants advisory)"
-    else
-        check_warning "Multi-section consistency: $ARITY_COUNT arity mismatch(es), $VARIANT_COUNT variant(s) [advisory]"
-        echo "$CONSISTENCY_OUTPUT" | grep -E "^  module_" | head -5 | while read -r line; do
-            log "    $line"
-        done
-    fi
-else
-    check_warning "Multi-section consistency checker not found: $CONSISTENCY_SCRIPT"
-fi
+print_section "23/28" "Checking multi-section dimension consistency... [RETIRED]"
+# RETIRED 2026-06-07 (pipeline-audit R7/R10 finding C5-3): advisory-only (never
+# gated); check_multi_section_consistency.py emitted a perpetual false-positive
+# floor (signature "variants" are legitimate context variation) with zero
+# lifetime real catches. Script + its 3 allowlist entries deleted. Tombstone
+# keeps numbering stable; proper removal (stable check IDs) is deferred --
+# see audit/BACKLOG.md "Validator check IDs".
+log "    (retired: zero-catch advisory; see BACKLOG 'Validator check IDs')"
 
 # ===============================================
 # Check 24: Historical-rename references (I5)
@@ -1023,22 +998,14 @@ else
 fi
 
 # Check 26: doc unit claims vs canonical declarations.gms units (advisory)
-print_section "26/28" "Checking doc unit claims vs declarations.gms canonical units (advisory)..."
-
-UNITS_SCRIPT="$AGENT_DIR/scripts/check_units.py"
-if [ -f "$UNITS_SCRIPT" ]; then
-    UNITS_OUTPUT=$(python3 "$UNITS_SCRIPT" --summary 2>&1)
-    UNITS_COUNT=$(echo "$UNITS_OUTPUT" | grep -oE "[0-9]+ mismatch" | grep -oE "[0-9]+" || echo "?")
-    if [ "$UNITS_COUNT" = "0" ]; then
-        check_pass "Doc unit claims match canonical declarations"
-    else
-        # Advisory: warning only. Drift here is sometimes legitimate
-        # (e.g., doc abbreviates "USD17MER" as "USD"); reviewer triages.
-        check_warning "$UNITS_COUNT doc unit claim(s) differ from canonical (advisory; run scripts/check_units.py for details)"
-    fi
-else
-    check_warning "Unit checker not found: $UNITS_SCRIPT"
-fi
+print_section "26/28" "Checking doc unit claims vs declarations.gms canonical units... [RETIRED]"
+# RETIRED 2026-06-07 (pipeline-audit R7/R10 finding C5-4): advisory-only (never
+# gated); check_units.py emitted a perpetual false-positive floor (legitimate
+# unit abbreviations, e.g. USD vs USD17MER) with zero lifetime real catches.
+# Script deleted (it owned no allowlist entries). Tombstone keeps numbering
+# stable; proper removal (stable check IDs) is deferred -- see
+# audit/BACKLOG.md "Validator check IDs".
+log "    (retired: zero-catch advisory; see BACKLOG 'Validator check IDs')"
 
 # Check 27: hedged-as-fact claims on interface-identifier lines (advisory)
 print_section "" "Checking hedged-as-fact claims on interface-identifier lines (advisory)..."

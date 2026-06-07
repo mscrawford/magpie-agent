@@ -352,9 +352,12 @@ q11_cost_reg(i2) =e= ... - vm_reward_cdr_aff(i2);  * Subtract reward
 ```
 Module 30 (Croparea) → vm_prod(j,k) → Module 17 → vm_prod_reg(i,kall) → Module 21 (Trade)
                                                                       → Module 16 (Demand)
-                                                                      → Module 11 (Costs)
-                                                                      → Module 73 (Timber)
-                                                                      → 9 other modules
+                                                                      → Module 18 (Residues)
+                                                                      → Module 20 (Processing)
+                                                                      → Module 38 (Factor Costs)
+                                                                      → Module 50 (Nr Soil Budget)
+                                                                      → Module 70 (Livestock)
+                                                                      → Module 71 (Disagg Lvst)
 ```
 
 **Implication**: Breaking Module 17 breaks the entire production-trade-demand system
@@ -475,7 +478,7 @@ vm_prod_reg(i,kall) =e= sum(cell(i,j), vm_prod(j,k)) + external_prod(i,k);
 
 | Switch | Default | Options | Impact |
 |--------|---------|---------|--------|
-| `c56_pollutant_prices` | SSP2-NPi2025 | 100+ IAM scenarios | Price trajectory (0-1000+ USD/tCO2) |
+| `c56_pollutant_prices` | R34M410-SSP2-NPi2025 | 100+ IAM scenarios | Price trajectory (0-1000+ USD/tCO2) |
 | `c56_emis_policy` | reddnatveg_nosoil | 60+ policies | Which emissions priced |
 | `c56_carbon_stock_pricing` | actualNoAcEst | actual / actualNoAcEst | Accounting method |
 | `s56_c_price_induced_aff` | 1 (ON) | 0/1 | Enable afforestation CDR |

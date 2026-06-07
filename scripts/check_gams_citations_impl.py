@@ -420,7 +420,10 @@ def self_test():
 
 def main():
     if '--self-test' in sys.argv:
-        sys.exit(self_test())
+        rc = self_test()
+        if rc == 0:
+            print("SELFTEST_OK check_gams_citations_impl")
+        sys.exit(rc)
 
     agent_dir = sys.argv[1]
     magpie_root = sys.argv[2]
@@ -511,6 +514,11 @@ def main():
         os.path.join(agent_dir, 'README.md'),
     ]
     scan_paths = [p for p in scan_paths if os.path.exists(p)]
+    if shutil.which('rg') is None:
+        print("ERROR: ripgrep (rg) is required by check_gams_citations_impl but was not "
+              "found on PATH. Install it (apt-get install ripgrep / brew install ripgrep).",
+              file=sys.stderr)
+        sys.exit(2)
     result = subprocess.run(
         ['rg', '-n', r'\w+\.gms:\d+'] + scan_paths,
         capture_output=True, text=True
@@ -701,11 +709,19 @@ def main():
         # surfaces in the warnings stream so it gets seen.
         if not actual:
             if mod_num is None:
+                # Non-module doc (cross_module/, core_docs/, reference/, helpers,
+                # AGENT.md, README.md): an unresolved .gms cite here is ADVISORY,
+                # not an error. It is EITHER a true bare basename OR a placeholder/
+                # wildcard full path (e.g. modules/XX_.../ or modules/NN/*/) that
+                # CITATION_RE can't parse (its prefix capture breaks on '.' / '*').
+                # The `continue` is load-bearing: it keeps these out of the gated
+                # file_missing bucket. Do NOT delete this branch (see BACKLOG C2-1).
                 ambig += 1  # count in ambig bucket (same as other advisory warns)
                 warnings.append(
-                    f"  BARE: {gms_hint}:{start} (in {doc_short}) — bare-basename "
-                    f"citation in non-module doc; if this is a real reference "
-                    f"(not a pedagogical example), use full path per MANDATE 16"
+                    f"  UNRESOLVED-NM: {gms_hint}:{start} (in {doc_short}) - unresolved "
+                    f".gms citation in a non-module doc (a bare basename, or a placeholder/"
+                    f"wildcard full path the resolver can't parse); if it is a real "
+                    f"reference, use a concrete full path per MANDATE 16"
                 )
                 continue
 
@@ -1030,7 +1046,7 @@ def main():
             # Warnings (bare-basename ambiguity, possible Pattern 12 mismatch) are
             # advisory; do not fail the validator. Surface counts inline so users
             # can act on them without blocking the main pipeline.
-            print(f"Advisory warnings: {ambig} bare-basename ambiguity, {content_miss} possible Pattern-12 content mismatch (not counted as errors)")
+            print(f"Advisory warnings: {ambig} non-module/ambiguous citation notes, {content_miss} possible Pattern-12 content mismatch (not counted as errors)")
             for w in sorted(set(warnings))[:5]:
                 print(w)
             if len(warnings) > 5:

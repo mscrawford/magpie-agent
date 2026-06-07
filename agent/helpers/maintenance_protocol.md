@@ -34,7 +34,7 @@ Documentation health is maintained through three complementary layers, each catc
 
 **Key principle**: This layer is cheap and fast — never skip it after editing docs.
 
-**Advisory allowlist**: `audit/advisory_allowlist.json` suppresses known false-positives from advisory checks (currently `check_param_defaults` for unit-rendering FPs, `check_multi_section_consistency` for prose-shorthand FPs). Each entry documents the reason. **Audit on every `/pipeline-audit` run** — if a suppression no longer applies (regex tightened, doc rewritten, unit convention standardised), delete the entry and let the validator surface the case again. To add a new suppression, append an `{check, file, key, reason, added, added_in_round}` object to the `allowlist` array.
+**Advisory allowlist**: `audit/advisory_allowlist.json` suppresses known false-positives from advisory checks (currently `check_param_defaults` for unit-rendering FPs; `check_multi_section_consistency` and `check_units` were retired 2026-06-07, see `audit/BACKLOG.md` "Validator check IDs"). Each entry documents the reason. **Audit on every `/pipeline-audit` run** — if a suppression no longer applies (regex tightened, doc rewritten, unit convention standardised), delete the entry and let the validator surface the case again. To add a new suppression, append an `{check, file, key, reason, added, added_in_round}` object to the `allowlist` array.
 
 ### Layer 2 — Code Sync (manual, triggered by MAgPIE updates)
 

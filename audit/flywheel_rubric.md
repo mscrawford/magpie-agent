@@ -1,8 +1,8 @@
-# Flywheel rubric (v1.2)
+# Flywheel rubric (v2.0)
 
 Used by the Opus auditor to score Sonnet magpie-agent answers in semantic-validation rounds (`/validate-semantic`). Designed to maximize stability across rounds (so trends are real) while staying sensitive to actual agent improvements.
 
-**Version**: 1.2 (2026-05-29). Bumps required for any change to severity criteria, anchor examples, or bug-class definitions. Adding new bug classes and extending the regression-question set is permitted at minor versions (1.x). See §9 Changelog.
+**Version**: 2.0 (2026-06-07). Bumps required for any change to severity criteria, anchor examples, or bug-class definitions. Adding new bug classes and extending the regression-question set is permitted at minor versions (1.x). See §9 Changelog.
 
 **Anchor examples are immutable across rubric versions** — they are the empirical reference points that prevent rubric drift. If reality contradicts an anchor, fix the underlying issue or bump the major version; do not silently re-interpret the anchor.
 
@@ -27,7 +27,7 @@ Opus assigns each bug exactly one tier via top-down decision-tree match. **First
 - Fabricated formula presented as the code's actual implementation.
 
 **Anchor examples** (immutable):
-- 2026-03-07 (R3): agent described livestock feed as using non-default `fbask_jan16` mechanics when default config has been `fbask_jul23` for years. Cascading: wrong feed basket equations, wrong variables, wrong calibration parameters cited. → **Critical** (cascading wrong-realization).
+- 2026-03-07 (R3): agent described livestock feed as using `fbask_jul23` mechanics (a non-existent realization) when the default config is `fbask_jan16` (the only realizations are `fbask_jan16` and `fbask_jan16_sticky`). Cascading: wrong feed basket equations, wrong variables, wrong calibration parameters cited. → **Critical** (cascading wrong-realization).
 - 2026-04-20 (R20, doc bug): module doc cited `pm_carbon_density_ac` as having three consumers when commit added two more (M32 afforestation + NDC presolve); answerer trusted the doc and missed the consumers. → **Critical** (doc said wrong consumer set; user would have missed two modules in a refactor).
 - 2026-03-08 (R16): agent claimed age classes go to `ac140, acx`; actual set extends to `ac300` (62 elements). Doc was correct at line 443; agent truncated. → **Critical** (downstream calculations off by 35× in element count).
 
@@ -230,7 +230,7 @@ The authoritative source for the full text and expected-answer details is `audit
 ### Bugs Found:
 - **Bug ID**: QN-BX
 - **Severity**: [Critical / Major / Minor / Informational]
-- **Class**: [one of the 14 classes from §3]
+- **Class**: [one of the 15 classes from §3]
 - **Trigger**: [which §1 trigger matched]
 - **Claim in answer**: "exact quote"
 - **Reality in code**: what the code actually does
@@ -259,7 +259,7 @@ These exist specifically to prevent rubric drift across rounds:
 1. **Immutable anchor examples** (§1) — each tier has 2-3 historical anchors that bound the meaning. New bugs are scored relative to them.
 2. **Decision-tree triggers**, not feeling — pick the first trigger that fires, not the tier that "feels right".
 3. **Tie-breaker pulls down** (§1) — when ambiguous between two tiers, the lower one is chosen. Tracked via `tier_uncertainty` so excessive downgrade can be detected.
-4. **Finite bug-class list** (§3) — 14 classes; new classes added only at minor versions with rationale.
+4. **Finite bug-class list** (§3) — 15 classes; new classes added only at minor versions with rationale.
 5. **Probe-dedup ledger** (`audit/probe_dedup_ledger.json`) — prevents rounds from re-probing names already in rule text (would conflate recognition with capability).
 6. **Calibration anchors** (§6) — 1-2 questions recur every round. A regressing anchor flags something broke; a stable anchor with rising score is real improvement.
 
@@ -270,3 +270,4 @@ These exist specifically to prevent rubric drift across rounds:
 - **v1.0 (2026-05-23)**: Initial hoist from `agent/commands/validate-semantic.md`. Severity tiers and bug-class list preserved verbatim from prior practice; anchor examples drawn from R3, R6, R16, R20, R21 detailed bug records in `audit/validation_rounds.json`. Established §5 (round composition with regression questions) and §6 (initial regression-question set G1/G2) as new structural requirements.
 - **v1.1 (2026-05-24)**: Extended the §6 regression-question set with G3 (magpie4 source-of-truth / version-pin discipline) and G4 (magpie4 getReport dispatch structure), following the 2026-05-24 magpie4 lean-scaffolding initiative (commit d44823f). G1 expected-answer text in §6 corrected to remove the non-existent `q14_yieldcalib` reference (R22 audit had already corrected the JSON; v1.0 rubric was stale on this point). §1 severity tiers unchanged — the existing "Invented variable name", "Citation drift", and "Module attribution" triggers cover magpie4-specific bugs naturally (with `report*` function names and the two-clone source-of-truth distinction as the new surface).
 - **v1.2 (2026-05-29)**: Added §1.5 "Latent doc bugs" - record a `doc_error_answerer_beat_it` when the answer is correct but relied on a wrong doc, and fix it regardless of the answer score - with the G2 regression as its immutable anchor. Added bug class 15 (flywheel-specific, beyond the 14 Bug_Taxonomy patterns). Added §4 "Round-level doc-quality mean". Closes the score-the-answer-not-the-doc blind spot that let the G2 anchor regress R22->R23->R26. Companion edits: validate-semantic.md Steps 3/5/5b; validation_rounds.json schema 1.3.
+- **v2.0 (2026-06-07)**: Corrected the R3 Critical anchor (§1) — it had the livestock feed-basket realization inverted (default was stated as `fbask_jul23`; the actual default is `fbask_jan16`, and `fbask_jul23` never existed — only `fbask_jan16` and `fbask_jan16_sticky`). Anchor-example facts corrected per the §1 fix-or-major-bump rule; the cascading-wrong-realization lesson is preserved. Major bump because an anchor example changed (pipeline-audit R9 finding C6-1). Also fixed two stale "14 classes" back-references (§7 template, §8 stability mechanisms) to "15 classes" (class 15 was added at v1.2).
