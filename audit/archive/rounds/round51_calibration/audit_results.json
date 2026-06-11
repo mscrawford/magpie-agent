@@ -1,0 +1,900 @@
+{
+ "results": [
+  {
+   "fixture_id": "fixture_01",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_01.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/29_cropland/"
+   ],
+   "notes": "default.cfg:795 sets cfg$gms$cropland <- \"detail_apr24\" (comment: def = detail_apr24). Realizations present: detail_apr24, simple_apr24. Answer's default claim and \"detailed representation\" wording both match code. No contradictions."
+  },
+  {
+   "fixture_id": "fixture_02",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "The croparea module (30) default realization is `detail_apr24` ... Verified against modules/30_croparea/detail_apr24/declarations.gms.",
+     "severity": "Critical",
+     "bug_class": "8 (Stale/wrong realization) escalated via \u00a71 Critical trigger 'Wrong realization claimed as default'",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg:896: cfg$gms$croparea    <- \"simple_apr24\"               # def = simple_apr24  (line 894 lists detail_apr24 only as an alternative option). Module 30 has exactly two realizations: simple_apr24/ and detail_apr24/. detail_apr24 is the default of module 29 cropland (default.cfg: cfg$gms$cropland <- \"detail_apr24\"), which the answer appears to have conflated.",
+     "verify_cmd": "grep -nE 'cfg\\$gms\\$croparea' /tmp/magpie_develop_ro/config/default.cfg -> line 896: cfg$gms$croparea <- \"simple_apr24\"  # def = simple_apr24; ls -d /tmp/magpie_develop_ro/modules/30_croparea/*/ -> detail_apr24/ simple_apr24/"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_02.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/30_croparea/",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/realization.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/realization.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/declarations.gms"
+   ],
+   "notes": "Default croparea realization is simple_apr24 (default.cfg:896), not detail_apr24. Answer conflated module 29 (cropland, default detail_apr24) with module 30. vm_area(j,kcr,w) claim is correct (declared in both realizations). Footer cites the wrong (non-default) file. Critical per wrong-realization-as-default anchor."
+  },
+  {
+   "fixture_id": "fixture_03",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "From Module 50 (NR Soil Budget): vm_manure_recycling(i,'nr') -- manure nitrogen recycled to cropland (Mt N), read at equations.gms:25.",
+     "severity": "Major",
+     "bug_class": "Wrong module attribution (producer/consumer distinction) \u2014 class 15 / wrong-source-module",
+     "code_evidence": "vm_manure_recycling is DECLARED only in Module 55 (AWMS): /tmp/magpie_develop_ro/modules/55_awms/ipcc2006_aug16/declarations.gms:21 'vm_manure_recycling(i, npk) Manure being recycled to croplands (mio t X)' and POPULATED by Module 55 q55_manure_recycling at equations.gms:83-87 ('vm_manure_recycling(i2,npk) =e= sum((awms_conf,kli), vm_manure_confinement... * i55_manure_recycling_share...)'). Module 50 only READS it (/tmp/magpie_develop_ro/modules/50_nr_soil_budget/macceff_aug22/equations.gms:27 '+ vm_manure_recycling(i2,\"nr\")'), same as Module 51 (/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/equations.gms:25 'vm_manure_recycling(i2,\"nr\")'). The producing/source module is 55, not 50.",
+     "verify_cmd": "grep -rln vm_manure_recycling /tmp/magpie_develop_ro/modules/*/*/declarations.gms  ->  only 55_awms/ipcc2006_aug16/declarations.gms and 55_awms/off/declarations.gms (NOT module 50 or 51)"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_03.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/55_awms/ipcc2006_aug16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/55_awms/ipcc2006_aug16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/equations.gms",
+    "/tmp/magpie_develop_ro/modules/50_nr_soil_budget/macceff_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/50_nr_soil_budget/macceff_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/",
+    "/tmp/magpie_develop_ro/modules/55_awms/"
+   ],
+   "notes": "Citation (rescaled_jan21/equations.gms:25), var name, index (i,'nr'), and M51-consumes are all correct. The error is provenance: vm_manure_recycling is produced by Module 55 (AWMS), not Module 50. M50 is a co-consumer. Question asks \"from which module\" so the wrong source is the central claim -> Major."
+  },
+  {
+   "fixture_id": "fixture_04",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 2,
+   "findings": [
+    {
+     "flagged_claim": "It computes an annual fire risk as a function of climate drivers (temperature and precipitation) and standing biomass, and releases the corresponding carbon when forest burns.",
+     "severity": "Critical",
+     "bug_class": "Conceptual pseudo-code / fabricated mechanism (Class 4; trigger: fabricated formula presented as the code's actual implementation)",
+     "code_evidence": "presolve.gms:14-15 computes p35_disturbance_loss_secdf/_primf = standing AREA (pc35_secdforest / pcm_land 'primforest') * f35_forest_lost_share * m_timestep_length_forestry. input.gms:32 declares f35_forest_lost_share as 'table ... Share of area damaged by forest fires (1)' \u2014 an exogenous input share. No temperature/precipitation/fire-risk/biomass computation exists.",
+     "verify_cmd": "grep -rin 'risk|temperature|precipitation|rainfall|standing' /tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/ -> exit 1, no matches; positive control grep 'wildfire' returned sets.gms:12,15 (grep functional). Loss is area*exogenous_share, not a climate-driven risk function; multiplier is standing area (mio. ha), not biomass."
+    },
+    {
+     "flagged_claim": "Module 35 (natveg, default pot_forest_may24) represents wildfire disturbance dynamically.",
+     "severity": "Major",
+     "bug_class": "Missing default-state caveat (mechanism described as active when off by default; tier-3 trigger)",
+     "code_evidence": "input.gms:27 sets default s35_forest_damage / 2 / = 'Damage from shifting agriculture is faded out by c35_forest_damage_end'. presolve.gms:20-21 (mode 2) uses ONLY f35_forest_lost_share(i,'shifting_agriculture'), faded by (1-p35_damage_fader(t)). Wildfire (combined_loss, sets.gms:14-15) enters ONLY under mode 3 (presolve.gms:25-26), which is not the default.",
+     "verify_cmd": "grep -n 's35_forest_damage' /tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/input.gms -> line 27 default '/ 2 /'; grep -n combined_loss presolve.gms -> only lines 25-26 (mode 3). Under default config the disturbance is faded-out shifting-agriculture, not active wildfire."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_04.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/35_natveg/",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/input.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/sets.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/declarations.gms"
+   ],
+   "notes": "Default realization + param names correct, but the central mechanism is fabricated: loss = standing AREA * exogenous input share (f35_forest_lost_share), no temp/precip/biomass/risk function. Default mode (s35_forest_damage=2) is faded shifting-agriculture, not active wildfire. \ud83d\udfe2 tag misapplied."
+  },
+  {
+   "findings": [
+    {
+     "flagged_claim": "vm_cost_prod_crop ... is computed in Module 11 (costs) as part of the regional cost aggregation q11_cost_reg, which assembles total production cost before global summation.",
+     "severity": "Critical",
+     "bug_class": "Wrong module attribution for a cost variable (producer-vs-consumer confusion)",
+     "code_evidence": "Populated in Module 38: /tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/equations.gms:15 'q38_cost_prod_labor(i2).. vm_cost_prod_crop(i2,\"labor\") =e= ...' and :21 'q38_cost_prod_capital(i2).. vm_cost_prod_crop(i2,\"capital\")=e=...'; declared at declarations.gms:16. Module 11 only READS it on the RHS: /tmp/magpie_develop_ro/modules/11_costs/default/equations.gms:15 'q11_cost_reg(i2) .. v11_cost_reg(i2) =e= sum(factors,vm_cost_prod_crop(i2,factors)) + ...'. Default realization is sticky_feb18 per /tmp/magpie_develop_ro/config/default.cfg:1235 'cfg$gms$factor_costs <- \"sticky_feb18\"'.",
+     "verify_cmd": "grep -rn 'vm_cost_prod_crop' /tmp/magpie_develop_ro/modules/ -> only LHS (=e=) populators are q38_cost_prod_labor/q38_cost_prod_capital in 38_factor_costs; q11_cost_reg in 11_costs has it inside sum() on the RHS. grep -n 'factor_costs' /tmp/magpie_develop_ro/config/default.cfg -> line 1235 cfg$gms$factor_costs <- \"sticky_feb18\"."
+    }
+   ],
+   "fixture_id": "fixture_05",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 1,
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_05.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/equations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/declarations.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg"
+   ],
+   "notes": "Answer attributes computation of vm_cost_prod_crop to Module 11/q11_cost_reg. Code: Module 38 (factor_costs, default sticky_feb18) declares+populates it via q38_cost_prod_labor/capital; q11_cost_reg only sums it on the RHS. Matches rubric's named Critical trigger (non-Module-38 cost-var attribution)."
+  },
+  {
+   "findings": [
+    {
+     "flagged_claim": "40 of the 46 modules have multiple realizations. Only about six are single-realization; the large majority offer two or more interchangeable realizations.",
+     "severity": "Major",
+     "bug_class": "6 - Hardcoded counts drift (fabricated count for a realization list)",
+     "code_evidence": "Directory listing of /tmp/magpie_develop_ro/modules/*/ : 22 modules have >1 non-input realization dir, 24 have exactly 1. E.g. modules/14_yields/ has only managementcalib_aug19; modules/52_carbon/ only normal_dec17; modules/56_ghg_policy/ only price_aug22; modules/80_optimization/ has 4 (lp_nlp_apr17, nlp_apr17, nlp_ipopt, nlp_par); modules/70_livestock/ has 2 (fbask_jan16, fbask_jan16_sticky).",
+     "verify_cmd": "cd /tmp/magpie_develop_ro && for m in modules/*/; do c=$(ls -d ${m}*/ | grep -v '/input/$' | wc -l); [ $c -gt 1 ] && echo multi; done | wc -l  =>  22 multi (and 24 single). Per-module sorted listing confirms exactly 22 with >=2 realizations, 24 with 1."
+    }
+   ],
+   "fixture_id": "fixture_06",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_06.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/",
+    "/tmp/magpie_develop_ro/modules/14_yields/",
+    "/tmp/magpie_develop_ro/modules/52_carbon/",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/",
+    "/tmp/magpie_develop_ro/modules/80_optimization/",
+    "/tmp/magpie_develop_ro/modules/70_livestock/"
+   ],
+   "notes": "Claim of 40 multi / 6 single is inverted: code shows 22 multi-realization, 24 single. Verified by directory count + per-module listing + positive control (70_livestock=2). Single Major fabricated-count bug."
+  },
+  {
+   "fixture_id": "fixture_07",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_07.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/59_som/",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/realization.gms"
+   ],
+   "notes": "Default som realization = cellpool_jan23 (default.cfg confirms). Exactly two realizations: cellpool_jan23 + static_jan19 (input/ is not a realization). Answer's claims all match code. realization.gms text says \"cellpool_aug23\" internally but dir is jan23 \u2014 a stale code comment, not an answer error."
+  },
+  {
+   "fixture_id": "fixture_08",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "By default MAgPIE establishes afforested land as managed plantations. The switch `s32_aff_plantation` defaults to 1, so afforested area follows plantation growth curves rather than natural regrowth.",
+     "severity": "Critical",
+     "bug_class": "13 Wrong parameter default value (inverted Boolean default)",
+     "code_evidence": "modules/32_forestry/dynamic_may24/input.gms:35 declares `s32_aff_plantation ... 0=natveg 1=plantations (1) / 0 /` (GAMS default value is /0/). config/default.cfg:992 `cfg$gms$s32_aff_plantation <- 0   # def = 0`. presolve.gms:58-61: if s32_aff_plantation=0 -> p32_carbon_density_ac(...,\"aff\",...) = pm_carbon_density_secdforest_ac_uncalib (natveg regrowth); =1 -> plantation curve. So default (0) = natural regrowth, NOT plantation.",
+     "verify_cmd": "grep -rn 's32_aff_plantation' /tmp/magpie_develop_ro/config/default.cfg /tmp/magpie_develop_ro/modules/32_forestry/ -> config/default.cfg:992: 'cfg$gms$s32_aff_plantation <- 0   # def = 0'; input.gms:35: '... / 0 /'; presolve.gms:58 'if(s32_aff_plantation = 0,' assigns secdforest (natveg) density"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_08.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/input.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/"
+   ],
+   "notes": "Inverted Boolean default. s32_aff_plantation default is 0 (natveg/natural regrowth), not 1 (plantation) per both default.cfg:992 and input.gms:35 GAMS decl /0/. Answer's yes/no conclusion is reversed. Realization dynamic_may24 and module 32 attribution are correct."
+  },
+  {
+   "fixture_id": "fixture_09",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "Module 52 takes over via q52_emis_co2_actual and computes the emission, which is then routed to Module 56 for carbon pricing -- i.e. M56 receives the soilc CO2 emission from M52, the intermediary between stock and price.",
+     "severity": "Critical",
+     "bug_class": "4 (Conceptual pseudo-code / wrong mechanism) + producer-vs-consumer (G2 anchor)",
+     "code_evidence": "modules/56_ghg_policy/price_aug22/equations.gms:19-22 q56_emis_pricing_co2 reads vm_carbon_stock and pcm_carbon_stock DIRECTLY: 'v56_emis_pricing(i2,emis_oneoff,\"co2_c\") =e= sum(...,(pcm_carbon_stock(...,\"actual\") - vm_carbon_stock(...,\"%c56_carbon_stock_pricing%\"))/m_timestep_length)'. M52's q52_emis_co2_actual (normal_dec17/equations.gms:16-19) is a PARALLEL reader producing vm_emissions_reg(...,\"co2_c\"), which M56 consumes only for emis_annual (equations.gms:15-17), NOT for the oneoff CO2 pricing path. config/default.cfg:1817 c56_carbon_stock_pricing<-\"actualNoAcEst\" differs from M52's hardcoded \"actual\" slice, proving M56 recomputes independently rather than receiving M52's emission.",
+     "verify_cmd": "grep -n 'vm_emissions_reg' modules/56_ghg_policy/price_aug22/equations.gms -> line17 (emis_annual only) & line40 (comment); grep -n c56_carbon_stock_pricing config/default.cfg -> 'actualNoAcEst'; q56_emis_pricing_co2 at equations.gms:19-22 reads vm_carbon_stock directly. M56 is a parallel consumer of the stock, not a recipient of M52's emission."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_09.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/equations.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/static_jan19/equations.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/static_jan19/preloop.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/equations.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/scaling.gms"
+   ],
+   "notes": "M59 populates vm_carbon_stock soilc; M52 (q52_emis_co2_actual->vm_emissions_reg) and M56 (q56_emis_pricing_co2) are PARALLEL readers of the stock. M56's oneoff CO2 pricing reads the stock directly (actualNoAcEst slice), NOT M52's emission. Answer's \"M52 is the intermediary between stock and price\" inverts the topology. G2 anchor."
+  },
+  {
+   "fixture_id": "fixture_10",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "The land balance is enforced by `q10_land_area(j2)` at `modules/10_land/landmatrix_dec18/equations.gms:20`.",
+     "severity": "Major",
+     "bug_class": "10 - Stale file:line citation",
+     "code_evidence": "equations.gms:13-15 hold q10_land_area: '13: q10_land_area(j2) ..' / '14:  sum(land, vm_land(j2,land)) =e=' / '15:  sum(land, pcm_land(j2,land));'. Cited line 20 is '  sum(land_from, vm_lu_transitions(j2,land_from,land_to)) =e=', which is the body of a DIFFERENT equation q10_transition_to (declared at line 19).",
+     "verify_cmd": "grep -n 'q10_land_area\\|q10_transition_to' /tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/equations.gms -> '13: q10_land_area(j2) ..' and '19: q10_transition_to(j2,land_to) ..'; awk 'NR==20' -> 'sum(land_from, vm_lu_transitions(j2,land_from,land_to)) =e='"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_10.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/10_land/",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/equations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms"
+   ],
+   "notes": "Eq name (q10_land_area), formula (lines 14-15 verbatim), realization (landmatrix_dec18, default+only), and \"constant over time\" semantics all correct. Sole error: cited line 20 lands inside q10_transition_to (transition matrix), not the land-balance eq at 13-15. Citation drift to materially different content = Major."
+  },
+  {
+   "fixture_id": "fixture_11",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 4,
+   "findings": [
+    {
+     "flagged_claim": "Land conversion costs use carbon density with a one-timestep lag. ... pm_carbon_density from the PREVIOUS timestep enters as a fixed parameter for conversion costs, so converting carbon-rich land is more expensive.",
+     "severity": "Critical",
+     "bug_class": "Fabricated formula / conceptual pseudo-code (class 4)",
+     "code_evidence": "modules/39_landconversion/calib/equations.gms:11-15 q39_cost_landcon: vm_cost_landcon = (vm_landexpansion*i39_cost_establish - vm_landreduction*i39_reward_reduction) * pm_interest/(1+pm_interest). No carbon density term. presolve.gms:12-16 sets i39_cost_establish from flat scalars s39_cost_establish_crop/past/forestry/urban (per land type, not carbon).",
+     "verify_cmd": "grep -rn 'carbon' /tmp/magpie_develop_ro/modules/39_landconversion/ -> (no output: carbon density absent from entire module 39). cat .../calib/equations.gms shows q39_cost_landcon uses i39_cost_establish + pm_interest only."
+    },
+    {
+     "flagged_claim": "pm_carbon_density from the PREVIOUS timestep enters as a fixed parameter for conversion costs",
+     "severity": "Critical",
+     "bug_class": "Hallucinated variable name (class 2)",
+     "code_evidence": "No parameter named pm_carbon_density (bare) exists in /tmp/magpie_develop_ro/modules; only pm_carbon_density_ac / _secdforest_ac / _plantation_ac / _other_ac (52_carbon/normal_dec17/declarations.gms:9-13) and the input parameter fm_carbon_density exist.",
+     "verify_cmd": "grep -rn 'pm_carbon_density(' /tmp/magpie_develop_ro/modules/ -> empty; positive control grep -rln 'fm_carbon_density' returns 30_croparea/.../equations.gms etc. (grep works). grep 'pm_carbon_density ' minus _ac/_secdforest/_other/_plantation -> empty."
+    },
+    {
+     "flagged_claim": "In the land-allocation modules (29/30), pm_carbon_density ... enters as a fixed parameter for conversion costs",
+     "severity": "Major",
+     "bug_class": "Wrong module attribution (class 4)",
+     "code_evidence": "Land conversion costs are computed in module 39 (modules/39_landconversion/module.gms:8 '@title Land Conversion Costs'; only realization = calib). Modules 29/30 use fm_carbon_density for carbon STOCKS (30_croparea/simple_apr24/equations.gms:49-51 q30_carbon ... vm_carbon_stock_croparea =e= sum(...vm_area)*sum(ct,fm_carbon_density(...))), not conversion costs.",
+     "verify_cmd": "cat module.gms (39) shows only calib realization, title 'Land Conversion Costs'. grep 'carbon' 30_croparea/simple_apr24/*.gms shows only q30_carbon stock calc, no conversion cost."
+    },
+    {
+     "flagged_claim": "pm_carbon_density from the PREVIOUS timestep ... This is how the carbon and land systems exchange information across timesteps.",
+     "severity": "Major",
+     "bug_class": "Conceptual pseudo-code / wrong mechanism (class 4)",
+     "code_evidence": "Where carbon density is used for stocks it is the CURRENT timestep ct (core/sets.gms:218 'set ct(t) Current time period'); e.g. 30_croparea/simple_apr24/equations.gms:51 uses sum(ct, fm_carbon_density(ct,...)). The cross-timestep mechanism in q39_cost_landcon is the annuity factor pm_interest (equations.gms:15), not a carbon-density lag.",
+     "verify_cmd": "grep 'set ct' core/sets.gms -> 'set ct(t) Current time period;'. equations.gms:15 shows '* sum((cell(i2,j2),ct),pm_interest(ct,i2)/(1+pm_interest(ct,i2)))'."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_11.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/39_landconversion/module.gms",
+    "/tmp/magpie_develop_ro/modules/39_landconversion/calib/equations.gms",
+    "/tmp/magpie_develop_ro/modules/39_landconversion/calib/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/39_landconversion/calib/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/39_landconversion/calib/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/29_cropland/",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/declarations.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg"
+   ],
+   "notes": "Answer fundamentally wrong: land conversion costs (q39_cost_landcon, module 39 only realization=calib) use flat per-ha i39_cost_establish/i39_reward_reduction + pm_interest annuity; no carbon density anywhere in module 39. Bare pm_carbon_density doesn't exist (only _ac variants/fm_carbon_density). Modules 29/30 use carbon density for stocks at CURRENT (ct) timestep, not a prev-timestep conversion-cost lag."
+  },
+  {
+   "fixture_id": "fixture_12",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_12.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/equations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/start.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/"
+   ],
+   "notes": "All claims verified. q10_land_area at equations.gms:13-15, formula sum(land,vm_land(j2,land))=e=sum(land,pcm_land(j2,land)) is verbatim. landmatrix_dec18 is default (cfg:232) and only realization. Set-based framing matches code comment line 11. Inverse of R16 anchor (kept set-based correctly)."
+  },
+  {
+   "fixture_id": "fixture_13",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 2,
+   "findings": [
+    {
+     "flagged_claim": "The regional total across all animal classes is carried by `vm_feed_intake_total(i)`, computed in `q70_feed_intake`.",
+     "severity": "Critical",
+     "bug_class": "Hallucinated variable name (class 2)",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/declarations.gms:18 declares `vm_feed_intake(i,kap,kall)  Regional feed intake including byproducts (mio. tDM per yr)` \u2014 there is NO `vm_feed_intake_total` anywhere in declarations.gms (lines 9-29 list every variable/equation). The real variable is indexed (i,kap,kall), retaining animal-class (kap) and feed-item (kall) dimensions, not a regional scalar (i).",
+     "verify_cmd": "Read /tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/declarations.gms -> positive variables: v70_feed_intake_pre, vm_dem_feed, vm_cost_prod_livst, vm_cost_prod_fish; variables: vm_feed_balanceflow, vm_feed_intake(i,kap,kall); no vm_feed_intake_total present."
+    },
+    {
+     "flagged_claim": "MAgPIE aggregates feed intake ... q70_feed_intake [computes the] regional total across all animal classes",
+     "severity": "Critical",
+     "bug_class": "Conceptual pseudo-code / fabricated mechanism (class 4)",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/equations.gms:39-42: `q70_feed_intake(i2,kap,kall) .. vm_feed_intake(i2,kap,kall) =e= v70_feed_intake_pre(i2,kap,kall)*(1-s70_feed_intake_weight_balanceflow) + vm_dem_feed(i2,kap,kall)*s70_feed_intake_weight_balanceflow;` \u2014 LHS keeps kap and kall indices; this equation does NOT sum/aggregate across animal types. No across-animal-class aggregation occurs here.",
+     "verify_cmd": "Read /tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/equations.gms -> q70_feed_intake LHS is vm_feed_intake(i2,kap,kall), fully indexed by animal class kap and feed item kall; no sum(kap,...)."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_13.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/equations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/module.gms"
+   ],
+   "notes": "vm_dem_feed(i,kap,kall) claim and fbask_jan16 default (default.cfg:2146) are correct. But the core answer invents vm_feed_intake_total(i) (real var is vm_feed_intake(i,kap,kall), decl:18) and falsely claims q70_feed_intake aggregates across animal classes (eq retains kap,kall). Bash grep -r unreliable in tree; relied on direct Reads."
+  },
+  {
+   "fixture_id": "fixture_14",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "Trade in MAgPIE is represented by the optimization variable `v21_trade(i_ex,i_im,k_trade)` -- bilateral trade flows between exporting and importing regions, in mio. tDM. (tagged with a green/verified badge, no realization caveat)",
+     "severity": "Critical",
+     "bug_class": "Hallucinated/wrong-realization variable (class 2) \u2014 variable presented as authoritative does not exist in the DEFAULT realization",
+     "code_evidence": "config/default.cfg:650 `cfg$gms$trade <- \"selfsuff_reduced\"             # def = selfsuff_reduced` \u2014 the default realization is selfsuff_reduced. v21_trade(i_ex,i_im,k_trade) is declared ONLY in the non-default selfsuff_reduced_bilateral22/declarations.gms:23. The default selfsuff_reduced/declarations.gms:18-20 instead declares v21_excess_dem(k_trade), v21_excess_prod(h,k_trade), v21_import_for_feasibility(h,k_trade); its equations.gms uses a global self-sufficiency pool (q21_trade_glo, q21_excess_dem, q21_excess_supply) with NO i_ex/i_im bilateral indices.",
+     "verify_cmd": "grep -n 'cfg$gms$trade ' config/default.cfg -> line 650 def=selfsuff_reduced; grep -rn 'v21_trade' modules/21_trade/selfsuff_reduced/ -> exit 1 (absent); grep -rn 'v21_trade' .../selfsuff_reduced_bilateral22/declarations.gms -> line 23 present. Positive control: grep 'v21_excess_dem' default decl -> line 18 present."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_14.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced/equations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced_bilateral22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced_bilateral22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced_bilateral22/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/80_optimization/module.gms",
+    "/tmp/magpie_develop_ro/modules/80_optimization/nlp_par/solve.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms"
+   ],
+   "notes": "Answer names v21_trade(i_ex,i_im,k_trade) as THE trade var with a verified badge, but default realization is selfsuff_reduced (cfg:650), where that var does not exist; bilateral matrix is only in non-default selfsuff_reduced_bilateral22. Wrong-realization Critical (R3 anchor). vm_land/vm_prod/vm_cost_glo all real."
+  },
+  {
+   "fixture_id": "fixture_15",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_15.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/35_natveg/",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/sets.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/input.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/declarations.gms"
+   ],
+   "notes": "All claims verified. Default/only realization pot_forest_may24 (default.cfg). p35_disturbance_loss_secdf/primf computed from f35_forest_lost_share + f35_forest_shock (presolve 14-32, both confirmed input tables). 'wildfire' is a set label (sets.gms:12,15), not mechanistic. Parameterization-not-mechanism framing correct."
+  },
+  {
+   "fixture_id": "fixture_16",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "The livestock module (70) default realization is `fbask_jan16_sticky`, which applies sticky (inertial) feed-basket adjustment so baskets move toward target compositions gradually.",
+     "severity": "Critical",
+     "bug_class": "8 (Stale/wrong realization) escalated to Critical via \u00a71 trigger 1 (wrong realization claimed as default)",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg:2146 -> `cfg$gms$livestock <- \"fbask_jan16\"                        # def = fbask_jan16`; line 2144 comment `(fbask_jan16): default feed basket realization`; line 2145 marks `fbask_jan16_sticky` as the capital-stock alternative.",
+     "verify_cmd": "grep -n 'livestock' /tmp/magpie_develop_ro/config/default.cfg -> line 2146: `cfg$gms$livestock <- \"fbask_jan16\"   # def = fbask_jan16`. Positive control grep 'gms$yields' returned managementcalib_aug19 (grep works). ls modules/70_livestock/*/ -> only fbask_jan16 and fbask_jan16_sticky exist."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_16.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/"
+   ],
+   "notes": "Question asks for the default realization; answer inverts it (claims fbask_jan16_sticky; code default is fbask_jan16, default.cfg:2146). Exact R3/v2.0 Critical anchor. The two variable claims (vm_dem_feed(i,kap,kall), vm_cost_prod_livst) are both correct and valid in fbask_jan16, so no cascade, but the headline is wrong."
+  },
+  {
+   "fixture_id": "fixture_17",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "by module 13 (TC), which adjusts technological-change expectations based on the cropland share under conservation (endo_jan22/presolve.gms:40). \ud83d\udfe2 All five react to binding conservation targets.",
+     "severity": "Major",
+     "bug_class": "Missing default-state caveat (rubric \u00a71 Major trigger; Bug_Taxonomy class 13-adjacent)",
+     "code_evidence": "modules/13_tc/endo_jan22/presolve.gms:38 'if(c13_croparea_consv = 1,' wraps the line-40 usage 'p13_cropland_consv_shr(t,j)$(pcm_land(j,\"crop\") > 0) = sum(consv_type, pm_land_conservation(t,j,\"crop\",consv_type))/pcm_land(j,\"crop\");'. config/default.cfg:309 'cfg$gms$c13_croparea_consv <- 0      # def = 0'. So module 13's consumption of pm_land_conservation is dead code in a default run; it does NOT react by default. Modules 29/31/32/35 are unconditional (e.g. 31_past/endo_jun13/presolve.gms:9 vm_land.lo(j,\"past\")=sum(consv_type,pm_land_conservation...); 35 presolve.gms:162 vm_land.lo primforest).",
+     "verify_cmd": "grep -nE 'c13_croparea_consv' /tmp/magpie_develop_ro/config/default.cfg -> 'cfg$gms$c13_croparea_consv <- 0      # def = 0'; Read modules/13_tc/endo_jan22/presolve.gms:38-40 -> usage is inside 'if(c13_croparea_consv = 1, ...)'"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_17.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/22_land_conservation/area_based_apr22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/22_land_conservation/module.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/exo/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/29_cropland/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/31_past/endo_jun13/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/"
+   ],
+   "notes": "5-module consumer list (29,31,32,35,13) all verified in code; M13 cite endo_jan22/presolve.gms:40 exact. Bug: \"all five react\" omits that M13's path is gated by c13_croparea_consv=0 (default OFF), so TC does not react in a default run. Other 4 react unconditionally."
+  },
+  {
+   "fixture_id": "fixture_18",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "The alternative `fbask_jan16_sticky` adds inertial feed-basket adjustment but is not the default.",
+     "severity": "Major",
+     "bug_class": "Conceptual pseudo-code / wrong mechanism attribution (class 4)",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/realization.gms:8-10: 'The fbask_jan16_sticky realization of the livestock module is based on the fbask_jan16 realization, and only differs from it by implementing capital stocks as introduced in the `sticky_feb18` factor cost module realization.' Lines 81-88 describe production 'sticking' via persistent capital stocks (s70_depreciation_rate). input.gms:34 defines s70_depreciation_rate /0.05/; presolve.gms:93 depreciates p70_capital. The stickiness is capital/production inertia, NOT feed-basket adjustment; feed baskets are identical preprocessed inputs in both realizations (realization.gms:21-78).",
+     "verify_cmd": "Read realization.gms:8-10,81-93 + grep s70_depreciation_rate -> 'only differs ... by implementing capital stocks'; s70_depreciation_rate /0.05/; p70_capital depreciation in presolve.gms:93. No feed-basket-inertia mechanism exists; feed baskets are shared preprocessed inputs."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_18.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/70_livestock/",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/realization.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/equations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/input.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/presolve.gms"
+   ],
+   "notes": "Default fbask_jan16 and alternative fbask_jan16_sticky both verified correct (config line 2146; only 2 realizations exist). Error: 'sticky' = capital-stock production inertia (sticky_feb18-derived), NOT feed-basket adjustment. Question's core (the default) is answered correctly; mechanism gloss of the alternative is wrong -> Major."
+  },
+  {
+   "fixture_id": "fixture_19",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 2,
+   "findings": [
+    {
+     "flagged_claim": "By default module 42 uses `agr_sector_aug13`",
+     "severity": "Critical",
+     "bug_class": "Wrong parameter default value (class 13) / wrong default realization",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg:1319 -> `cfg$gms$water_demand<- \"all_sectors_aug13\"            # def = all_sectors_aug13`. Two realizations exist: agr_sector_aug13/ and all_sectors_aug13/. The stated default is the inverse of reality (matches R3 inverted-default Critical anchor).",
+     "verify_cmd": "grep -n 'water_demand' /tmp/magpie_develop_ro/config/default.cfg -> line 1319: cfg$gms$water_demand<- \"all_sectors_aug13\"  # def = all_sectors_aug13"
+    },
+    {
+     "flagged_claim": "which accounts for agricultural water demand only (irrigation)",
+     "severity": "Critical",
+     "bug_class": "Module described as if a non-default realization were active (class 13 cascading)",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg:1315-1318 describes the actual default all_sectors_aug13 as 'manufacturing, electricity and domestic demand are retrieved from WATERGAP data'; agr_sector_aug13 is the irrigation-reserved-fraction one. /tmp/magpie_develop_ro/core/sets.gms:247 -> `wat_dem Water demand sectors / agriculture, domestic, manufacturing, electricity, ecosystem /` (5 sectors, not irrigation-only).",
+     "verify_cmd": "sed -n '1314,1319p' default.cfg + grep -n 'wat_dem' core/sets.gms -> line 247: wat_dem = agriculture,domestic,manufacturing,electricity,ecosystem"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_19.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/agr_sector_aug13/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/agr_sector_aug13/sets.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/sets.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms"
+   ],
+   "notes": "Default is all_sectors_aug13 (cfg:1319, '# def = all_sectors_aug13'), not agr_sector_aug13. Coverage 'irrigation only' fits the NON-default realization; default covers all 5 wat_dem sectors. vm_watdem(wat_dem,j) IS correct (declarations.gms:29, both realizations). Two intertwined Criticals = R3 inverted-default anchor."
+  },
+  {
+   "fixture_id": "fixture_20",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "No module reads it at the solution level (.l/.lo/.fx) in presolve/postsolve; solution-level access is not used for vm_land.",
+     "severity": "Critical",
+     "bug_class": "Hallucinated/false-negative honest disclaim (claimed access does not exist when it does)",
+     "code_evidence": "modules/10_land/landmatrix_dec18/postsolve.gms:9 'pcm_land(j,land) = vm_land.l(j,land);' (RHS read of .l in postsolve). modules/59_som/cellpool_jan23/postsolve.gms:9 'pc59_land_before(j,land) = vm_land.l(j,land);'. modules/22_land_conservation/area_based_apr22/presolve_ini.gms:86 '- vm_land.lo(j,\"crop\")' (RHS read of .lo in presolve). modules/32_forestry/dynamic_may24/presolve.gms:19 '+ (vm_land.l(j,\"past\") - vm_land.lo(j,\"past\"))' (RHS reads in presolve).",
+     "verify_cmd": "grep -rn 'vm_land\\.' modules/ -> 28 hits including the four RHS reads above; positive control grep 'vm_land(' modules/10_land/.../declarations.gms returned the declaration (grep functioning)."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_20.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/22_land_conservation/area_based_apr22/presolve_ini.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/presolve.gms"
+   ],
+   "notes": "Answer's flat negative claim is false. Multiple modules read vm_land at solution level: M10 & M59 postsolve read .l (inter-timestep carryover, SOM tracking); M22 presolve & M32 forestry presolve read .lo/.l. M35 postsolve too. Direct analog of the false-negative-disclaim Critical trigger."
+  },
+  {
+   "fixture_id": "fixture_21",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_21.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/realization.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/agr_sector_aug13/realization.gms"
+   ],
+   "notes": "Default confirmed: config/default.cfg \"cfg$gms$water_demand<- all_sectors_aug13\". all_sectors realization.gms models ag endogenously + manufacturing/electricity/domestic via WATERGAP. agr_sector keeps non-ag exogenous (agriculture-only endogenous). Both realizations exist. All claims hold."
+  },
+  {
+   "fixture_id": "fixture_22",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "Yes. By default `s15_elastic_demand = 1`, so food demand responds to prices via the iterative demand-price loop... Module 15 ... recomputes demand against shadow prices each intersolve iteration.",
+     "severity": "Critical",
+     "bug_class": "13 - Wrong parameter default value (inverted Boolean default)",
+     "code_evidence": "config/default.cfg:412-414: '# * switch between exogenous and endogenous food demand / # *  options: 0 (exogenous food demand) and 1 (endogenous food demand) / cfg$gms$s15_elastic_demand <- 0  # def =0'. input.gms:66: 's15_elastic_demand ... (1=elastic 0=exogenous) (1) / 0 /' (GAMS default 0). intersolve.gms:30: 'if (s15_elastic_demand = 1 AND m_year(t) > sm_fix_SSP2,' -> the price loop only runs when =1, which is NOT the default.",
+     "verify_cmd": "grep -n 's15_elastic_demand' /tmp/magpie_develop_ro/config/default.cfg -> '414:cfg$gms$s15_elastic_demand <- 0            # def =0'. Confirmed by Read of input.gms:66 (default / 0 /) and intersolve.gms:30 (loop gated on =1)."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_22.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/15_food/",
+    "/tmp/magpie_develop_ro/modules/15_food/anthro_iso_jun22/input.gms",
+    "/tmp/magpie_develop_ro/modules/15_food/anthro_iso_jun22/intersolve.gms"
+   ],
+   "notes": "Answer inverts the default: claims s15_elastic_demand=1 (price-elastic) but config/default.cfg:414 sets it to 0 (exogenous). Inverted-Boolean-default Critical trigger. Realization name anthro_iso_jun22 and mechanism description are correct, but the default-active framing is wrong."
+  },
+  {
+   "findings": [
+    {
+     "flagged_claim": "Land-use intensity is the parameter `pm_tau(j,tautype)`, set in the TC module (13) and held fixed during the optimization.",
+     "severity": "Critical",
+     "bug_class": "Hallucinated variable name",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms:8-13 declares `positive variable ... vm_tau(j,tautype) Overall agricultural land use intensity tau at cluster level (1)`. No identifier `pm_tau` exists anywhere. tau is a VARIABLE solved endogenously (eq q13_tau / local name `n`), not a held-fixed parameter, in the default realization.",
+     "verify_cmd": "rg -rn 'pm_tau' /tmp/magpie_develop_ro/ => (no output, exit 0); rg -rn 'vm_tau' /tmp/magpie_develop_ro/ => declared in modules/13_tc/endo_jan22/declarations.gms:13 under `positive variable`; rg 'gms.tc' config/default.cfg => `cfg$gms$tc <- \"endo_jan22\"`"
+    },
+    {
+     "flagged_claim": "is the parameter `pm_tau` ... held fixed during the optimization",
+     "severity": "Major",
+     "bug_class": "GAMS prefix confusion",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms: `n(j2,tautype) =e= sum(... v13_tau_core(h2,tautype) + ... v13_tau_consv(h2,tautype))` shows tau is endogenously solved (a variable), not fixed. It is fixed (`n.fx`) only in the NON-default `exo` realization (modules/13_tc/exo/presolve.gms). Answer never states the active realization (M2 fail), making the false 'held fixed' claim.",
+     "verify_cmd": "rg -n 'n.fx' /tmp/magpie_develop_ro/modules/13_tc/exo/presolve.gms => `n.fx(j,tautype) = sum(... p13_tau_core ... p13_tau_consv)` (exo only); endo_jan22/equations.gms uses `n(j2,tautype) =e= ...` (solved variable)"
+    }
+   ],
+   "fixture_id": "fixture_23",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 2,
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_23.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/13_tc/",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/realization.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/exo/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/equations.gms"
+   ],
+   "notes": "Core answer inverted: tau is the VARIABLE vm_tau (default endo_jan22, solved endogenously), not parameter pm_tau (which does not exist). The question literally asks parameter-vs-variable; answer is wrong. Mechanism claim (scales yields in M14 via q14_yield_crop) is correct but cites wrong name."
+  },
+  {
+   "findings": [
+    {
+     "flagged_claim": "It endogenously determines pasture management",
+     "severity": "Minor",
+     "bug_class": "4 - Conceptual pseudo-code / imprecise mechanism characterization",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/31_past/endo_jun13/realization.gms:8-18 - '@description ... pasture area and related carbon stocks are modelled endogenously ...' and '@limitations No consideration of ... explicit pasture management options and of related degradation of pastures.' The realization endogenously determines pasture AREA and carbon stocks, NOT pasture management (management is an explicit stated limitation).",
+     "verify_cmd": "Read /tmp/magpie_develop_ro/modules/31_past/endo_jun13/realization.gms -> lines 8-18 confirm area+carbon endogenous, management explicitly NOT modeled (limitation). Also grep q31_ equations.gms shows q31_prod/q31_carbon/q31_cost_prod_past - production/carbon/cost, no management-option equation."
+    }
+   ],
+   "fixture_id": "fixture_24",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_24.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/31_past/",
+    "/tmp/magpie_develop_ro/modules/31_past/endo_jun13/",
+    "/tmp/magpie_develop_ro/modules/31_past/endo_jun13/realization.gms",
+    "/tmp/magpie_develop_ro/modules/31_past/endo_jun13/equations.gms"
+   ],
+   "notes": "Core claim correct: default.cfg:969 'cfg$gms$past <- \"endo_jun13\"' (def=endo_jun13); only realizations are endo_jun13 + static, so static is the non-default alt. Minor: realization.gms models pasture AREA+carbon endogenously, NOT \"pasture management\" (explicit @limitations). Would not cause wrong action."
+  },
+  {
+   "fixture_id": "fixture_25",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "No. By default `s56_c_price_induced_aff = 0`, so carbon prices do NOT trigger additional afforestation; afforestation responds only to explicit NPI/NDC policy targets.",
+     "severity": "Critical",
+     "bug_class": "Wrong parameter default value (class 13) / inverted Boolean default",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg:1741 `cfg$gms$s56_c_price_induced_aff <- 1   # def = 1`; /tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/input.gms:69 `s56_c_price_induced_aff   Switch for C price driven re-afforestation (1=on 0=off) / 1 /`",
+     "verify_cmd": "grep -n s56_c_price_induced_aff /tmp/magpie_develop_ro/config/default.cfg -> `1741:cfg$gms$s56_c_price_induced_aff <- 1   # def = 1`. Confirms default is 1 (ON), inverting the answer's claim of 0 (OFF)."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_25.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/input.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/preloop.gms"
+   ],
+   "notes": "Default is s56_c_price_induced_aff = 1 (ON), not 0. Answer inverts the Boolean: carbon-price-driven re-afforestation IS enabled by default in the default price_aug22 realization. Confirmed in both default.cfg:1741 and input.gms:69."
+  },
+  {
+   "fixture_id": "fixture_26",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "`vm_tau(i,tautype)` is indexed by region `i` and tau type. ... It gives the agricultural land-use intensity per region",
+     "severity": "Major",
+     "bug_class": "Suffix truncation / wrong index domain (Class 3 - wrong spatial index)",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms:13 ` vm_tau(j,tautype)  Overall agricultural land use intensity tau at cluster level (1)` ; identical decl in /tmp/magpie_develop_ro/modules/13_tc/exo/declarations.gms:9. Variable is indexed by cluster j, NOT region i, and is explicitly at cluster level not per region.",
+     "verify_cmd": "grep -rln 'vm_tau(j,tautype)' /tmp/magpie_develop_ro/modules/13_tc/ -> both endo_jan22 and exo declarations.gms; grep -rn 'vm_tau(i' /tmp/magpie_develop_ro/modules/ -> no matches (empty). Default realization endo_jan22 per config/default.cfg:293 cfg$gms$tc <- \"endo_jan22\"."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_26.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/exo/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/exo/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/exo/postsolve.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg"
+   ],
+   "notes": "Question asks vm_tau index domain. Answer says vm_tau(i,tautype)/per-region; code declares vm_tau(j,tautype) at cluster level in both realizations (default endo_jan22). Wrong index is the exact thing asked. Major per tie-breaker (no Critical trigger fires; var name+prefix correct)."
+  },
+  {
+   "fixture_id": "fixture_27",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_27.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/input.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/equations.gms"
+   ],
+   "notes": "Default s56_c_price_induced_aff=1 confirmed (default.cfg:1741; input.gms:69 \"1=on 0=off\"). preloop.gms:60 sets fader p56_fader_cpriceaff to this value; equations.gms:73-79 scales vm_reward_cdr_aff by it. Setting 0 zeroes reward. Default realization=price_aug22 (default.cfg:1613). All claims correct."
+  },
+  {
+   "fixture_id": "fixture_28",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "The CO2 cost is applied in `q56_carbon_pricing`, which multiplies priced emissions by the carbon-price path.",
+     "severity": "Critical",
+     "bug_class": "9 (Wrong equation name) / 2 (Hallucinated name) - invented equation presented as authoritative",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/equations.gms: the only equations are q56_emis_pricing (L15), q56_emis_pricing_co2 (L19), q56_emission_cost_annual (L29), q56_emission_cost_oneoff (L45), q56_emission_costs (L56), q56_reward_cdr_aff_reg (L67), q56_reward_cdr_aff (L73). No q56_carbon_pricing. CO2 cost chain: q56_emis_pricing_co2 -> q56_emission_cost_oneoff/_annual (x im_pollutant_prices) -> q56_emission_costs sets vm_emission_costs(i2) (L56-58).",
+     "verify_cmd": "grep -rln 'q56_carbon_pricing' /tmp/magpie_develop_ro/  ->  (no output, exit 1); positive control grep -rln 'q56_emis_pricing_co2' /tmp/magpie_develop_ro/modules/56_ghg_policy/  ->  matches equations.gms. Confirms q56_carbon_pricing absent, real eqs present."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_28.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms"
+   ],
+   "notes": "q56_carbon_pricing does not exist (default realization price_aug22). Real CO2-cost chain: q56_emis_pricing_co2 -> q56_emission_cost_oneoff/_annual -> q56_emission_costs(=vm_emission_costs). 2nd claim (feeds vm_emission_costs into objective via q11_cost_reg L26) is correct. Core answer to \"which equation\" is a fabricated name -> Critical."
+  },
+  {
+   "fixture_id": "fixture_29",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "`vm_area(j,kcr)` is indexed by cluster `j` and crop `kcr`. It gives the cropland area allocated to each crop in each cell.",
+     "severity": "Major",
+     "bug_class": "3 - Suffix truncation (index-domain truncation of interface variable)",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/declarations.gms:18: ` vm_area(j,kcr,w)                       Agricultural production area (mio. ha)` (identical in detail_apr24/declarations.gms:21). The variable is 3-dimensional, indexed by j, kcr, AND w (water supply type: rainfed/irrigated, per core/sets.gms:241: `w Water supply type / rainfed, irrigated /`). The answer omits the w index.",
+     "verify_cmd": "grep -n 'vm_area(' /tmp/magpie_develop_ro/modules/30_croparea/*/declarations.gms -> simple_apr24/declarations.gms:18: vm_area(j,kcr,w); detail_apr24/declarations.gms:21: vm_area(j,kcr,w). Default realization = simple_apr24 (config/default.cfg:896: cfg$gms$croparea <- \"simple_apr24\")."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_29.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/core/sets.gms"
+   ],
+   "notes": "vm_area is declared vm_area(j,kcr,w) in both realizations (default simple_apr24). Answer drops the w (water supply type: rainfed/irrigated) index. Question asks exactly for the index domain, so the truncation is the central error. Rated Major (tie-breaker down from Critical: name correct, GAMS would flag dim mismatch immediately)."
+  },
+  {
+   "fixture_id": "fixture_30",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_30.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms"
+   ],
+   "notes": "All claims verified. Declared+populated in M70 fbask_jan16 (default, cfg:2146); declarations.gms:12 cite exact, domain (i,factors) correct; populated equations.gms:60,65. M11 (costs/default) consumes it in q11_cost_reg (equations.gms:19) = regional aggregation. No contradictions."
+  },
+  {
+   "fixture_id": "fixture_31",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "Soil organic carbon is carried by the optimization variable `vm_soil_carbon(j)`, populated by the SOM module (59). \ud83d\udfe2",
+     "severity": "Critical",
+     "bug_class": "2 - Hallucinated variable name",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/declarations.gms:40: `v59_som_pool(j,land)  Soil organic matter pool (mio. tC)` is the actual SOC variable. No `vm_soil_carbon` exists anywhere. equations.gms:62-63 shows v59_som_pool feeds `vm_carbon_stock(j2,land,\"soilc\",stockType)`.",
+     "verify_cmd": "grep -rln -F 'vm_soil_carbon' /tmp/magpie_develop_ro/ -> (no output, absent); positive control grep -rln 'vm_carbon_stock' -> many hits (grep works); grep -n vm_/v59_ declarations.gms -> line 40 v59_som_pool(j,land)"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_31.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/59_som/",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/equations.gms"
+   ],
+   "notes": "Q: which var holds SOC. Answer claims `vm_soil_carbon(j)` (tagged green). No such variable exists in the repo (grep absent; positive control confirms grep works). Actual carrier is module-local `v59_som_pool(j,land)` in default cellpool_jan23, feeding vm_carbon_stock soilc. Invented variable name presented as authoritative = Critical."
+  },
+  {
+   "fixture_id": "fixture_32",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_32.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/52_carbon/",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/",
+    "/tmp/magpie_develop_ro/modules/52_carbon/module.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/realization.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/equations.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg"
+   ],
+   "notes": "Single realization normal_dec17 confirmed by dir listing + module.gms MODULETYPES (1 $include). Default confirmed at config/default.cfg:1556. Module provides carbon density/pools (declarations.gms) - answer's \"carbon stock accounting\" summary is accurate. No contradictions."
+  },
+  {
+   "fixture_id": "fixture_33",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "`vm_tech_cost(i)` is computed in Module 11 (costs) as the annuitized technological-change cost component of the objective.",
+     "severity": "Critical",
+     "bug_class": "Wrong module attribution for a cost variable (rubric \u00a71 Critical trigger; bug class 2/12 family)",
+     "code_evidence": "vm_tech_cost is DECLARED in Module 13: /tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms:10 ' vm_tech_cost(i)  Total Annuitized costs of TC (mio. USD17MER per yr)'. POPULATED (=e=) in Module 13: /tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms:45 'q13_tech_cost_sum(i2) .. vm_tech_cost(i2) =e= sum(tautype, v13_tech_cost(i2, tautype));'. Module 11 only READS it on the RHS: /tmp/magpie_develop_ro/modules/11_costs/default/equations.gms:22 '+ vm_tech_cost(i2)' inside q11_cost_reg.",
+     "verify_cmd": "grep -rn 'vm_tech_cost' /tmp/magpie_develop_ro/modules/ -> declaration+=e= only in 13_tc (declarations.gms:10, equations.gms:45); module 11 appears only at default/equations.gms:22 (RHS read). grep -n 'vm_tech_cost' /tmp/magpie_develop_ro/modules/11_costs/default/declarations.gms -> no match (positive control: vm_cost_glo found at line 9). Default realization confirmed: config/default.cfg:293 'cfg$gms$tc <- \"endo_jan22\"'."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_33.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/exo/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/declarations.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg"
+   ],
+   "notes": "Q asks which module COMPUTES vm_tech_cost. Answer says M11; code shows M13 (tc, default endo_jan22) declares+populates it (q13_tech_cost_sum, eq:45); M11 only sums it into v11_cost_reg (RHS, eq:22). 'Annuitized' and 'summed into global cost' subclaims are correct, but module attribution is wrong = Critical per cost-var trigger."
+  },
+  {
+   "fixture_id": "fixture_34",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_34.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms"
+   ],
+   "notes": "All claims verified. vm_tech_cost(i) declared in 13_tc/endo_jan22 (default) declarations.gms:10 (exact). Computed via q13_tech_cost_sum equations.gms:45 (=e= LHS). Consumed in 11_costs/default q11_cost_reg equations.gms:22, feeding vm_cost_glo objective. Default realizations confirmed in default.cfg:293 (tc) and :236 (costs)."
+  },
+  {
+   "findings": [
+    {
+     "flagged_claim": "the default is `normal_apr22`",
+     "severity": "Critical",
+     "bug_class": "13 Wrong parameter default value / wrong realization as default",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg: `cfg$gms$carbon <- \"normal_dec17\"  # def = normal_dec17`",
+     "verify_cmd": "grep 'cfg$gms$carbon' /tmp/magpie_develop_ro/config/default.cfg -> cfg$gms$carbon <- \"normal_dec17\" (def = normal_dec17)"
+    },
+    {
+     "flagged_claim": "Module 52 (carbon) has two realizations: the older `normal_dec17` and the newer `normal_apr22`",
+     "severity": "Critical",
+     "bug_class": "2 Hallucinated/invented realization name presented as authoritative",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/52_carbon/module.gms:16 only `$Ifi \"%carbon%\" == \"normal_dec17\"`; ls of 52_carbon shows only input/, module.gms, normal_dec17/",
+     "verify_cmd": "ls -d /tmp/magpie_develop_ro/modules/52_carbon/*/ -> only input/ and normal_dec17/; grep -rl normal_apr22 /tmp/magpie_develop_ro/ | wc -l -> 0 (positive control normal_dec17 -> 4)"
+    },
+    {
+     "flagged_claim": "with normal_apr22 adding updated stock parameters",
+     "severity": "Major",
+     "bug_class": "4 Conceptual pseudo-code / fabricated behavior",
+     "code_evidence": "No normal_apr22 realization exists (module.gms:16 lists only normal_dec17), so any described behavior of it is fabricated",
+     "verify_cmd": "grep -rl normal_apr22 /tmp/magpie_develop_ro/ | wc -l -> 0"
+    }
+   ],
+   "fixture_id": "fixture_35",
+   "verdict": "FUNDAMENTALLY_FLAWED",
+   "n_findings": 3,
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_35.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/modules/52_carbon/",
+    "/tmp/magpie_develop_ro/modules/52_carbon/module.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg"
+   ],
+   "notes": "Module 52 has ONE realization, normal_dec17, which is also the default. The answer invents a second realization normal_apr22 (0 hits repo-wide; positive control normal_dec17=4 files) and wrongly names it default. Wrong-default + invented name = two Criticals; fabricated behavior of nonexistent realization = Major."
+  },
+  {
+   "fixture_id": "fixture_36",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_36.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms"
+   ],
+   "notes": "All 4 claims verified: default=sticky_feb18 (default.cfg:1235); declared at declarations.gms:16 vm_cost_prod_crop(i,factors); populated by q38_cost_prod_labor (eq:15) + q38_cost_prod_capital (eq:21); M11 consumes via q11_cost_reg (11_costs/default/equations.gms:15). No contradictions."
+  },
+  {
+   "fixture_id": "fixture_37",
+   "verdict": "ACCURATE",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_cal/fixtures/fixture_37.md",
+    "/tmp/r51_cal/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/sets.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/equations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/nl_fix.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms"
+   ],
+   "notes": "All claims verified. vm_tau(j,tautype) declared at decl.gms:13 (exact citation), positive var, endogenous via q13_tau. Default TC=endo_jan22; default yields=managementcalib_aug19 uses vm_tau to scale yields (eq.gms:14-16). vm_tech_cost declared M13, enters M11 costs. j=LPJ cells. No contradictions."
+  }
+ ]
+}
