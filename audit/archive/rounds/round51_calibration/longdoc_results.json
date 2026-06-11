@@ -1,0 +1,305 @@
+{
+ "results": [
+  {
+   "doc_id": "module_30",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "**Default realization**: `detail_apr24` (per `config/default.cfg`: `cfg$gms$croparea <- \"detail_apr24\"`)",
+     "doc_location": "Line 4 (document header, under the title)",
+     "severity": "Critical",
+     "bug_class": "Wrong realization claimed as default (\u00a71 Critical trigger: 'Wrong realization claimed as default for a module the user wants to modify')",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg:896 reads `cfg$gms$croparea    <- \"simple_apr24\"               # def = simple_apr24`. The default is simple_apr24, NOT detail_apr24. The header also fabricates the cfg line content: default.cfg never contains `cfg$gms$croparea <- \"detail_apr24\"`. (Note: the doc's own body contradicts the header and is correct \u2014 lines 39 and 56 state simple_apr24 is the DEFAULT and detail_apr24 is the alternative; the realization callout lines 11-16 are also correct.)",
+     "verify_cmd": "grep -n 'cfg\\$gms\\$croparea ' /tmp/magpie_develop_ro/config/default.cfg  ->  `896:cfg$gms$croparea    <- \"simple_apr24\"               # def = simple_apr24`. ls -d /tmp/magpie_develop_ro/modules/30_croparea/*/ -> detail_apr24/, simple_apr24/ both exist; config selects simple_apr24."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_longdoc/module_30/module_30.md",
+    "/tmp/r51_longdoc/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/30_croparea/module.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/input.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/sets.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/not_used.txt",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/input.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/sets.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/29_cropland/simple_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/29_cropland/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/18_residues/",
+    "/tmp/magpie_develop_ro/modules/32_forestry/",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/",
+    "/tmp/magpie_develop_ro/modules/41_area_equipped_for_irrigation/",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/",
+    "/tmp/magpie_develop_ro/modules/50_nr_soil_budget/",
+    "/tmp/magpie_develop_ro/modules/53_methane/",
+    "/tmp/magpie_develop_ro/modules/59_som/"
+   ],
+   "notes": "Body is highly accurate (equations, line cites, declarations, scalar defaults, sets, consumer sets, presolve/preloop all verified). Sole error: header line 4 names detail_apr24 as default (code=simple_apr24); self-contradicted by the doc's own body, which is correct. tier_uncertainty: contradiction self-corrects within 8 lines, but the canonical Critical trigger fires."
+  },
+  {
+   "doc_id": "module_51",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "vm_manure_recycling(i2,\"nr\"): Nitrogen from manure recycled to cropland \u2014 **declared by Module 50 NR Soil Budget** (modules/55_awms/ipcc2006_aug16/declarations.gms:21)",
+     "doc_location": "line 40 (Equation 1 'Manure on Cropland Emissions', Components list)",
+     "severity": "Major",
+     "bug_class": "Latent doc error / wrong module attribution (producer/declaration)",
+     "code_evidence": "vm_manure_recycling is DECLARED in Module 55 (AWMS), not Module 50. /tmp/magpie_develop_ro/modules/55_awms/ipcc2006_aug16/declarations.gms:21 -> ' vm_manure_recycling(i, npk)  Manure being recycled to croplands (mio t X)'. Module 50 (50_nr_soil_budget/macceff_aug22/declarations.gms) declares vm_nr_eff/vm_nr_eff_pasture/vm_nr_inorg_fert_reg but NOT vm_manure_recycling. The doc's prose ('declared by Module 50') contradicts both the code AND its own inline citation (which points to the Module-55 file) and its own Data Flow section (line 237) + Critical Interfaces table (line 455), both of which correctly attribute vm_manure_recycling to Module 55 (AWMS).",
+     "verify_cmd": "grep -rn 'vm_manure_recycling' /tmp/magpie_develop_ro/modules/*/*/declarations.gms  =>  only matches in 55_awms (ipcc2006_aug16/declarations.gms:21 and off/declarations.gms:11); grep 'vm_manure_recycling' /tmp/magpie_develop_ro/modules/50_nr_soil_budget/macceff_aug22/declarations.gms => no match. Module-50 decls instead: vm_nr_inorg_fert_reg(:10), vm_nr_eff(:12), vm_nr_eff_pasture(:13)."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_longdoc/module_51/module_51.md",
+    "/tmp/r51_longdoc/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/equations.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/realization.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/sets.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/input.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/55_awms/ipcc2006_aug16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/55_awms/ipcc2006_aug16/sets.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/sets.gms",
+    "/tmp/magpie_develop_ro/modules/57_maccs/on_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/57_maccs/on_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/18_residues/flexcluster_jul23/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/50_nr_soil_budget/macceff_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms"
+   ],
+   "notes": "Doc is highly accurate: default realization, all 8 eqns + formulas + line cites, vm_emissions_reg/im_maccs_mitigation/pollutant_nh3no2_51 decls, awms sets, scalars (0.5), upstream var decls all verified correct. One prose attribution error: line 40 says vm_manure_recycling is declared by Module 50, but code+citation+rest-of-doc show Module 55."
+  },
+  {
+   "doc_id": "module_42",
+   "verdict": "SIGNIFICANT_ERRORS",
+   "n_findings": 2,
+   "findings": [
+    {
+     "flagged_claim": "Default Realization: agr_sector_aug13. Confirmed in config/default.cfg: cfg$gms$water_demand <- \"agr_sector_aug13\".",
+     "doc_location": "Lines 3, 9-10 (header + Default Realization callout box)",
+     "severity": "Critical",
+     "bug_class": "Wrong parameter default value / wrong realization claimed as default (Bug class 13 + fabricated config citation)",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg:1319 reads `cfg$gms$water_demand<- \"all_sectors_aug13\"            # def = all_sectors_aug13`. The default is all_sectors_aug13, NOT agr_sector_aug13. The doc's 'Confirmed in config/default.cfg' citation is fabricated (states the opposite of the actual config line). Note the doc body (lines 55-59, 567) correctly identifies all_sectors_aug13 as DEFAULT, so the header contradicts the body; but the header makes a false, explicit config-citation claim a reader would act on.",
+     "verify_cmd": "grep -n 'water_demand' /tmp/magpie_develop_ro/config/default.cfg -> line 1319: cfg$gms$water_demand<- \"all_sectors_aug13\"  # def = all_sectors_aug13"
+    },
+    {
+     "flagged_claim": "Realization: agr_sector_aug13 (more comprehensive than all_sectors_aug13) ... Alternative agr_sector_aug13 accounts for agricultural water demand only (excludes industrial/domestic).",
+     "doc_location": "Line 3 (and line 10 callout)",
+     "severity": "Major",
+     "bug_class": "Inverted realization characterization (module-characterization error)",
+     "code_evidence": "The comparative is inverted: all_sectors_aug13 is the more comprehensive realization. agr_sector_aug13/presolve.gms:38-40 fixes vm_watdem.fx(\"electricity\",j)=0 and vm_watdem.fx(\"domestic\",j)=0 and assigns manufacturing a crude s42_reserved_fraction share, i.e. it does NOT model non-agricultural sectors from WATERGAP SSP data. all_sectors_aug13/input.gms:95-99 + presolve.gms:40-54 load WATERGAP SSP1/2/3 non-ag demands per sector. So all_sectors_aug13 (the actual default) is the comprehensive one; the header labels the wrong realization 'more comprehensive'.",
+     "verify_cmd": "grep -n 'manufacturing\\|electricity\\|domestic' /tmp/magpie_develop_ro/modules/42_water_demand/agr_sector_aug13/presolve.gms -> lines 38-40 fix electricity=0, domestic=0, manufacturing=reserved_fraction"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_longdoc/module_42/module_42.md",
+    "/tmp/r51_longdoc/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/module.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/equations.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/sets.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/input.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/realization.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/agr_sector_aug13/sets.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/agr_sector_aug13/presolve.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms",
+    "/tmp/magpie_develop_ro/modules/09_drivers/aug17/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/43_water_availability/total_water_aug13/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms"
+   ],
+   "notes": "Header metadata inverts the default realization (claims agr_sector_aug13 w/ fabricated config citation; actual default is all_sectors_aug13) and the 'more comprehensive' comparative. Body is accurate and self-consistently describes all_sectors_aug13: equations, declarations, all s42 defaults, consumer/producer attributions, and core/sets.gms:247 all verified correct."
+  },
+  {
+   "doc_id": "module_70",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 2,
+   "findings": [
+    {
+     "flagged_claim": "Title 'Module 70: Livestock (fbask_jan16_sticky)', plus '**Realization**: `fbask_jan16_sticky`' and '**Alternative**: `fbask_jan16_sticky` (same methodology ... 8 equations)'. The header labels the documented/primary realization as the non-default sticky one and repeats `fbask_jan16_sticky` in the Alternative field, contradicting the correct default callout three lines later.",
+     "doc_location": "Lines 1, 4-5 (header block); contradicts lines 12-13 (default callout) and the body which leads with fbask_jan16 (7 equations)",
+     "severity": "Minor",
+     "bug_class": "Stale/mislabeled realization name (class 8)",
+     "code_evidence": "/tmp/magpie_develop_ro/config/default.cfg:2146 `cfg$gms$livestock <- \"fbask_jan16\"  # def = fbask_jan16`. Only two realizations exist: /tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/ and /fbask_jan16_sticky/. fbask_jan16/equations.gms has 7 equations (lines 17-70); fbask_jan16_sticky/equations.gms has 8 (adds q70_investment + investment-based q70_cost_prod_liv_capital, lines 72-82). The doc body and line 12-13 correctly identify fbask_jan16 as default; only the title/Realization/Alternative header fields mislabel it.",
+     "verify_cmd": "grep -n 'livestock' /tmp/magpie_develop_ro/config/default.cfg | grep 'gms' -> line 2146: cfg$gms$livestock <- \"fbask_jan16\"; ls -d /tmp/magpie_develop_ro/modules/70_livestock/*/ -> fbask_jan16/ and fbask_jan16_sticky/ only"
+    },
+    {
+     "flagged_claim": "Regional intercept pseudocode block: 'i70_cost_regr(i,kli,\"cost_regr_a\") = (... ) - f70_cost_regr(kli,\"cost_regr_b\") * livestock_productivity(t_past_last,i,sys)' uses the name `livestock_productivity` (no i70_ prefix).",
+     "doc_location": "Line 524 (regional intercept illustrative formula block)",
+     "severity": "Informational",
+     "bug_class": "Conceptual pseudo-code / name imprecision (class 4)",
+     "code_evidence": "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/preloop.gms:83 uses the correctly-prefixed `i70_livestock_productivity(t_past,i,sys)` inside sum(sys_to_kli(sys,kli),...). The doc uses the correct name i70_livestock_productivity everywhere else; this one illustrative block drops the i70_ prefix.",
+     "verify_cmd": "sed -n '83p' /tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/preloop.gms -> contains 'sum(sys_to_kli(sys,kli),i70_livestock_productivity(t_past,i,sys))'"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_longdoc/module_70/module_70.md",
+    "/tmp/r51_longdoc/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/70_livestock/module.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/input.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/sets.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/scaling.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16/realization.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/equations.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/input.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/fbask_jan16_sticky/sets.gms",
+    "/tmp/magpie_develop_ro/modules/53_methane/ipcc2006_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/55_awms/ipcc2006_aug16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/16_demand/sector_may15/equations.gms",
+    "/tmp/magpie_develop_ro/modules/16_demand/sector_may15/sets.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/equations.gms",
+    "/tmp/magpie_develop_ro/modules/71_disagg_lvst/foragebased_jul23/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/71_disagg_lvst/foragebased_jul23/sets.gms",
+    "/tmp/magpie_develop_ro/modules/31_past/endo_jun13/equations.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms"
+   ],
+   "notes": "Doc is highly accurate: all 7 eqs, formulas, defaults (ssp2, 0.385, 1, 0.05), var/eq names, declaration/preloop/presolve/postsolve/scaling citations, kli_rum/kli_rd/kap memberships, and M11/M14/M16/M53/M55/M71/M31 interface attributions verified against code. Only header mislabels the documented realization vs the correct default callout (Minor) + one pseudocode name drop (Info)."
+  },
+  {
+   "doc_id": "module_13",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 2,
+   "findings": [
+    {
+     "flagged_claim": "Key Change (f_btc2): The output variable `vm_tau` is now at super-region level (h) rather than cluster level (j), allowing spatial variation in intensification based on conservation area shares.",
+     "doc_location": "Line 111 (Core Equations > Overall Tau at Cluster Level q13_tau > Key Change)",
+     "severity": "Major",
+     "bug_class": "Suffix truncation / wrong variable index domain (Class 3-analog: semantic scope inverted)",
+     "code_evidence": "modules/13_tc/endo_jan22/declarations.gms:13 declares `vm_tau(j,tautype)  Overall agricultural land use intensity tau at cluster level (1)` \u2014 index is j (cluster), NOT h (super-region). The producing equation modules/13_tc/endo_jan22/equations.gms:52 is `q13_tau(j2,tautype)..` producing vm_tau at cluster j. The doc's line 111 inverts the direction: it says vm_tau moved TO super-region (h) FROM cluster (j); the truth is the reverse (it is at cluster j). The doc itself states the correct direction at lines 109, 152, and 157 ('cluster level (j) rather than super-region level (h)'), making line 111 a self-contradicting inverted claim. Moving to coarser h would also reduce, not enable, the spatial variation the sentence claims.",
+     "verify_cmd": "grep -n 'vm_tau' /tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms -> '13: vm_tau(j,tautype)  Overall agricultural land use intensity tau at cluster level (1)'; grep -n 'q13_tau(' /tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms -> '52: q13_tau(j2,tautype)..'"
+    },
+    {
+     "flagged_claim": "pcm_land(j,land) | Module 10 (Land) | Previous timestep land areas for cost scaling | presolve.gms:8-9",
+     "doc_location": "Line 141 (Interface Variables > Inputs table, Source column)",
+     "severity": "Informational",
+     "bug_class": "Stale file:line citation (Class 10), 1-line off-by-one to adjacent same-content",
+     "code_evidence": "In modules/13_tc/endo_jan22/presolve.gms the pcm_land usage is at lines 9-10 (`pc13_land(i,\"pastr\") = sum(cell(i,j),pcm_land(j,\"past\"));` line 9; `pc13_land(i,\"crop\") = sum(cell(i,j),pcm_land(j,\"crop\"));` line 10), not 8-9. Line 8 is blank. Off-by-one; adjacent lines carry the same content, so a reader is not misled.",
+     "verify_cmd": "grep -n 'pcm_land' /tmp/magpie_develop_ro/modules/13_tc/endo_jan22/presolve.gms -> '9: ...pcm_land(j,\"past\")...' and '10: ...pcm_land(j,\"crop\")...' (line 8 is blank)"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_longdoc/module_13/module_13.md",
+    "/tmp/r51_longdoc/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/sets.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/input.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/realization.gms",
+    "/tmp/magpie_develop_ro/modules/12_interest_rate/select_apr20/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/equations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/nl_fix.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/22_land_conservation/area_based_apr22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/09_drivers/aug17/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/"
+   ],
+   "notes": "Doc is largely accurate: default realization, all 5 equations, switch defaults, interface providers/consumers, M38-non-consumer disclaimer all verified correct. One real contradiction: line 111 inverts vm_tau's spatial domain (says it moved to super-region h; code = cluster j, declarations.gms:13), self-contradicting lines 109/152/157. Plus a 1-line off-by-one citation."
+  },
+  {
+   "doc_id": "module_38",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "vm_cost_prod_crop(i,factors) ... consumed by Module 17 (via q17_prod_reg, both factors) and Module 36 (via q36_employment ...)",
+     "doc_location": "Section 2.2 Variables, line 121",
+     "severity": "Critical",
+     "bug_class": "Wrong consumer/module attribution for a cost variable (Bug class 15 / wrong-consumer-set; R20 anchor)",
+     "code_evidence": "Module 17 does NOT consume vm_cost_prod_crop. /tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/equations.gms:10-11 q17_prod_reg only sums vm_prod into vm_prod_reg ('vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k));') with no vm_cost_prod_crop. The actual second consumer is Module 11: /tmp/magpie_develop_ro/modules/11_costs/default/equations.gms:15 'q11_cost_reg(i2) .. v11_cost_reg(i2) =e= sum(factors,vm_cost_prod_crop(i2,factors))'. The doc's own Sections 5 (line 335), 6 (line 357) and 14.1 (line 618) correctly name M11/q11_cost_reg, so line 121 also internally contradicts the rest of the doc. M17 is in fact a PRODUCER (vm_prod_reg, vm_prod) that M38 consumes (equations.gms:16,35,43) - a producer/consumer inversion.",
+     "verify_cmd": "grep -n 'vm_cost_prod_crop' .../17_production/flexreg_apr16/equations.gms -> exit 1 (no match); grep -n 'vm_cost_prod_crop' .../11_costs/default/equations.gms -> '15: q11_cost_reg(i2) .. v11_cost_reg(i2) =e= sum(factors,vm_cost_prod_crop(i2,factors))'. Positive control: grep 'vm_' .../36_employment/exo_may22/equations.gms returns matches (grep works in this tree)."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_longdoc/module_38/module_38.md",
+    "/tmp/r51_longdoc/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/equations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/input.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/sets.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_feb18/realization.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_labor/equations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_labor/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_labor/input.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_labor/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/sticky_labor/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/per_ton_fao_may22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/36_employment/exo_may22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/38_factor_costs/module.gms",
+    "/tmp/magpie_develop_ro/modules/70_livestock/"
+   ],
+   "notes": "Doc is high quality: default, 3 realizations, all 4 sticky_feb18 eqns, sticky_labor CES (6 eqns), per_ton (2 eqns), scalars/defaults, file:line cites, authors, line/file counts all verified correct. One error: line 121 attributes vm_cost_prod_crop consumption to M17/q17_prod_reg; real consumer is M11/q11_cost_reg (M17 is a producer). Internally contradicts doc's own S5/S6/S14."
+  },
+  {
+   "doc_id": "carbon_balance_conservation.md",
+   "verdict": "CLEAN",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_longdoc/carbon_balance/carbon_balance_conservation.md",
+    "/tmp/r51_longdoc/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/core/sets.gms",
+    "/tmp/magpie_develop_ro/core/macros.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/equations.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/start.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/input.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/equations.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/input.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/realization.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/29_cropland/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/29_cropland/detail_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/31_past/endo_jun13/equations.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/34_urban/exo_nov21/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/sets.gms",
+    "/tmp/magpie_develop_ro/modules/53_methane/ipcc2006_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/57_maccs/on_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/57_maccs/on_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/45_climate/static/input.gms"
+   ],
+   "notes": "All load-bearing claims verified against code. 9 realization defaults match default.cfg; q52_emis_co2_actual eq exact (equations.gms:16-19); vm_carbon_stock decl M56:34 (4D); populators M29/31/32/34/35/59 all confirmed (G2 anchor); SOM eqs, lossrate 1-0.85^y, SCM scalars (65,0), macros.gms:18, sets, 21 emis_oneoff, interface arrows all correct. Illustrative numbers labeled."
+  }
+ ]
+}
