@@ -1,0 +1,129 @@
+{
+ "results": [
+  {
+   "doc_id": "carbon_balance_conservation.md",
+   "verdict": "CLEAN",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/magpie_develop_ro/core/sets.gms",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/equations.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/start.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/input.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/declarations.gms",
+    "/tmp/magpie_develop_ro/core/macros.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/equations.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/realization.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/input.gms",
+    "/tmp/magpie_develop_ro/modules/59_som/cellpool_jan23/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/29_cropland/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/34_urban/exo_nov21/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/53_methane/ipcc2006_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/57_maccs/on_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/45_climate/static/input.gms"
+   ],
+   "notes": "All load-bearing claims verified: defaults (carbon=normal_dec17, som=cellpool_jan23, urban=exo_nov21, cropland=detail_apr24), q52/q59/q29 equations+line cites, macros.gms:18 growth macro, set cites (c_pools 324, emis_oneoff 314, emis_land 332), populator attributions, interface-var declaring modules, scalar defaults all match. Only a \u00a78.4-vs-\u00a75.2 internal inconsistency (44% vs 56% at yr5) in illustrative material, but code comment also says 44%, so no code contradiction."
+  },
+  {
+   "doc_id": "Data_Flow.md",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "pm_carbon_density_secdforest_ac is 'Populated by: Module 32 (owner; modules/32_forestry/dynamic_may24/declarations.gms:9, set in modules/52_carbon/normal_dec17/preloop.gms:71).'",
+     "doc_location": "Section 5.1 Multi-Module Parameters, line 295 (Carbon System bullet)",
+     "severity": "Critical",
+     "bug_class": "Latent doc error (wrong producer/owner attribution of a multi-module interface parameter) - rubric class 15 / R20-G2 anchor",
+     "code_evidence": "pm_carbon_density_secdforest_ac is DECLARED (owned) SOLELY in Module 52: modules/52_carbon/normal_dec17/declarations.gms:9 ' pm_carbon_density_secdforest_ac(t_all,j,ac,ag_pools) Vegetation secondary forest carbon density for age classes and carbon pools (tC per ha)'. Module 32's dynamic_may24/declarations.gms:9 is the scalar ' s32_establishment_dynamic' (a forestry plantation switch), NOT this parameter; Module 32 never declares or populates it. The parameter is assigned in Module 52 only (normal_dec17/preloop.gms:71 and start.gms:28,31). So 'owner = Module 32' is wrong and self-contradicts the doc's own (correct) 'set in modules/52_carbon/.../preloop.gms:71'.",
+     "verify_cmd": "grep -rn 'pm_carbon_density_secdforest_ac(' modules/*/*/declarations.gms | grep -v uncalib  ->  ONLY 'modules/52_carbon/normal_dec17/declarations.gms:9'. sed -n '9p' modules/32_forestry/dynamic_may24/declarations.gms (via grep -n line 9) -> ' s32_establishment_dynamic ...' (a scalar, not the param)."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_deep/Data_Flow/Data_Flow.md",
+    "/tmp/r51_deep/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/main.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms",
+    "/tmp/magpie_develop_ro/core/calculations.gms",
+    "/tmp/magpie_develop_ro/core/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/equations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/start.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/input.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced_bilateral22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/input.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/input/files",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/agr_sector_aug13/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/80_optimization/lp_nlp_apr17/solve.gms",
+    "/tmp/magpie_develop_ro/modules/15_food/anthro_iso_jun22/declarations.gms"
+   ],
+   "notes": "All other load-bearing claims verified correct: defaults (yields/trade/forestry), every vm_ var domain+declarer, v21_trade non-default, q14 eq+citation, model block (main.gms:279), iterlim/reslim, oq52 postsolve, regions, prefix table, sm_intersolve. Sole error: M32 owner attribution for pm_carbon_density_secdforest_ac (actually M52, decl line 9)."
+  },
+  {
+   "doc_id": "Module_Dependencies.md",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "Under 'Pure Sinks': '80_optimization <- vm_cost_glo (always; default nlp_apr17 minimizes only this); vm_landdiff is additionally consumed by the default nlp_apr17 realization for its cost-tied stabilization solve'. The doc attributes a vm_landdiff-minimizing stabilization solve to the DEFAULT realization nlp_apr17.",
+     "doc_location": "Section 3.2 'Hub-and-Spoke Patterns' > 'Pure Sinks', line 138",
+     "severity": "Major",
+     "bug_class": "Content-level citation mismatch / wrong realization attribution (Bug class 12)",
+     "code_evidence": "Default optimization realization is nlp_apr17 (config/default.cfg: 'cfg$gms$optimization <- \"nlp_apr17\"'). modules/80_optimization/nlp_apr17/solve.gms contains ONLY 'solve magpie USING nlp MINIMIZING vm_cost_glo' (lines 34, 36, 70, 71) and zero references to vm_landdiff. The vm_landdiff stabilization solve exists only in the NON-default lp_nlp_apr17 realization: modules/80_optimization/lp_nlp_apr17/solve.gms:76 'solve magpie USING nlp MINIMIZING vm_landdiff' and :196 (same). vm_landdiff is declared in 10_land.",
+     "verify_cmd": "rg -c 'vm_cost_glo' modules/80_optimization/nlp_apr17/solve.gms => 8 ; rg -c 'vm_landdiff' modules/80_optimization/nlp_apr17/solve.gms => 0 (not found) ; rg -n 'vm_landdiff' modules/80_optimization/lp_nlp_apr17/solve.gms => lines 76,77,196,197 ; grep 'cfg$gms$optimization' config/default.cfg => nlp_apr17"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_deep/Module_Dependencies/Module_Dependencies.md",
+    "/tmp/r51_deep/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/",
+    "/tmp/magpie_develop_ro/modules/80_optimization/nlp_apr17/solve.gms",
+    "/tmp/magpie_develop_ro/modules/80_optimization/lp_nlp_apr17/solve.gms",
+    "/tmp/magpie_develop_ro/modules/80_optimization/module.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/31_past/endo_jun13/equations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/73_timber/default/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/73_timber/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/22_land_conservation/area_based_apr22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/41_area_equipped_for_irrigation/endo_apr13/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/41_area_equipped_for_irrigation/endo_apr13/equations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/not_used.txt",
+    "/tmp/magpie_develop_ro/modules/45_climate/static/sets.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/71_disagg_lvst/foragebased_jul23/declarations.gms"
+   ],
+   "notes": "Doc is highly accurate: producer attributions (vm_land/10, vm_prod/17, vm_carbon_stock/56, vm_AEI/41, pm_demand_forestry/73), consumer counts (vm_land=10, vm_carbon_stock=7, pm_interest=9, yields=3), and \u00a77.3 file:line cites all verified correct via rg (grep -r is unreliable here). One contradiction: \u00a73.2 attributes a vm_landdiff stabilization solve to default nlp_apr17, but it lives only in non-default lp_nlp_apr17."
+  }
+ ]
+}

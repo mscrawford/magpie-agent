@@ -1,0 +1,20 @@
+{
+ "phase": "followup-1 deep-Layer-2 single-statement find-rate",
+ "docs": {
+  "carbon_balance": {
+   "doc_file": "carbon_balance_conservation.md",
+   "injected_bug": "soilc carbon stated as serial M52 -> M56 hand-off (class B causal-direction)",
+   "code_truth": "M52 & M56 are PARALLEL readers of vm_carbon_stock; M56 reads it directly (q56_emis_pricing_co2), not via M52."
+  },
+  "Data_Flow": {
+   "doc_file": "Data_Flow.md",
+   "injected_bug": "pm_carbon_density_secdforest_ac stated as owned/populated by Module 32 (class C producer)",
+   "code_truth": "pm_carbon_density_secdforest_ac is DECLARED in Module 52 (normal_dec17/declarations.gms:9); M32 does not declare it."
+  },
+  "Module_Dependencies": {
+   "doc_file": "Module_Dependencies.md",
+   "injected_bug": "vm_landdiff stated as consumed by the DEFAULT nlp_apr17 (class D default-state)",
+   "code_truth": "Default optimization is nlp_apr17 (config); vm_landdiff is consumed ONLY by the non-default lp_nlp_apr17 (solve.gms)."
+  }
+ }
+}

@@ -6,8 +6,8 @@ export const meta = {
 
 const A = (typeof args === 'string') ? JSON.parse(args) : (args || {})
 const DOCS = A.docs || []   // [{id, file}]
-const ROOT = '/tmp/r51_longdoc'
-const RUBRIC = '/tmp/r51_longdoc/rubric.md'
+const ROOT = A.root || '/tmp/r51_longdoc'
+const RUBRIC = ROOT + '/rubric.md'
 const DEV = '/tmp/magpie_develop_ro'
 
 const SCHEMA = {
