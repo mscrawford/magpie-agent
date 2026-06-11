@@ -9,6 +9,10 @@ const DOCS = A.docs || []   // [{id, file}]
 const ROOT = A.root || '/tmp/r51_longdoc'
 const RUBRIC = ROOT + '/rubric.md'
 const DEV = '/tmp/magpie_develop_ro'
+const MIT = A.mitigation === true   // if true, inject the MANDATE-21 both-endpoints instruction (validates the fix)
+const MIT_BLOCK = MIT ? `
+
+MANDATE 21 — CROSS-MODULE DATA-FLOW DIRECTION (apply this explicitly): for EVERY data-flow / "A → B → C" / "A flows to / hands off to / routes to B" / "M receives X from N" / serial-or-parallel claim in the doc, open BOTH endpoints in code and confirm the DIRECTION: does the downstream module read the upstream's OUTPUT (genuine serial/forward flow), or do both modules read the SAME shared variable independently (parallel)? For a serial CHAIN (A→B→C), verify each arrow: confirm B reads A's output and C reads B's output, NOT the reverse. Default to suspecting the stated direction is REVERSED until the code's producer/consumer roles confirm it. A single-file read cannot settle direction — you MUST read both endpoints.` : ''
 
 const SCHEMA = {
   type: 'object', additionalProperties: false,
@@ -47,7 +51,7 @@ GROUND TRUTH = CODE ONLY: the detached origin/develop worktree at ${DEV}. For EA
   - variable/equation EXISTENCE + which module DECLARES (declarations.gms) / POPULATES (equation LHS =e=) / READS (RHS) / CONSUMES it
   - scalar/switch defaults; consumer/producer sets; variable index domains; file:line citations; mechanism-vs-parameterization claims
 You will not be able to verify every sentence — prioritize the load-bearing, code-checkable claims (interface variables, equations, realizations/defaults, attributions, citations, data-flow arrows). Assign each finding a severity tier per ${RUBRIC}.
-
+${MIT_BLOCK}
 STRICT ISOLATION (integrity — a violation invalidates this audit):
 - Use ONLY ${ROOT}/ (the doc + rubric) and ${DEV}/ (code). Nothing else.
 - Do NOT read anything under any 'magpie-agent' directory; do NOT run git log/show/blame; do NOT open the ORIGINAL/canonical copy of this doc or any other AI doc. Those would be an answer key.

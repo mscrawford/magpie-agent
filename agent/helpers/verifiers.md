@@ -338,6 +338,8 @@ grep -rln "<name>" ../modules/*/*/equations.gms            # POPULATED (LHS) / R
 
 DEFAULT to "parallel readers, not a serial hand-off" until the code proves M_B reads M_A's output. Falsifying a direction claim requires NON-LOCAL inference (read BOTH modules' equations); a single-file read cannot settle it.
 
+**Abstract causal/economic chains** ("prices → costs → total", "scarcity → price → effects") have a direction too but NO variable to grep at the endpoints — the both-endpoints check does not apply. Instead identify which quantity is the EXOGENOUS INPUT (a scalar/parameter, e.g. a carbon price `c56_*` read from config) vs the DERIVED OUTPUT; the input is upstream. (R51: the reversed "Prices → Emission costs → Total costs" chain was the ONE direction bug the both-endpoints check still missed — abstract sequencing needs this input-vs-derived test, not an endpoint grep.)
+
 **Verification commands**:
 ```bash
 # does the claimed downstream module M_B read A's OUTPUT, or the shared variable directly?

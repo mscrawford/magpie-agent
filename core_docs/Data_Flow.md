@@ -33,7 +33,7 @@ MAgPIE processes approximately 72 MB of input data across ~172 files through a s
 **Agricultural Statistics (FAO):**
 - Historical yields: `modules/14_yields/managementcalib_aug19/input/f14_region_yields.cs3`
 - Water requirements: `modules/42_water_demand/input/f42_wat_req_fao.csv`
-- Food supply: `input/f15_supply2intake_ratio_FAO.cs3`
+- Food supply: `modules/15_food/input/f15_supply2intake_ratio_FAO_iso.cs3`
 - Livestock production: `modules/70_livestock/fbask_jan16/input/f70_hist_prod_livst.cs3`
 
 **Land Use:**
@@ -50,8 +50,8 @@ MAgPIE processes approximately 72 MB of input data across ~172 files through a s
 
 **Socioeconomic Projections:**
 - GDP/Population: `modules/09_drivers/input/f09_gdp_ppp_iso.csv`, `f09_pop_iso.csv`
-- Development indicators: `input/f09_governance_indicator.cs3`
-- Urban population: `input/f09_urbanpop_grid.cs3`
+- Development indicators: `modules/09_drivers/input/f09_development_state.cs3`
+- Urban population: `modules/09_drivers/input/f09_urban_iso.csv`
 
 ### 2. Data Loading and Processing Pipeline
 

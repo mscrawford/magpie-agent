@@ -1,0 +1,128 @@
+{
+ "results": [
+  {
+   "doc_id": "dataflow_chain/Data_Flow.md",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "Production System data-flow direction: \"Flow: Module 17 -> 30 -> 14\"",
+     "doc_location": "Section 5.1 (Production System), line 300",
+     "severity": "Major",
+     "bug_class": "Reversed cross-module data-flow direction (MANDATE 21)",
+     "code_evidence": "Real flow is 14 -> 30 -> 17. Module 14 produces vm_yld (modules/14_yields/managementcalib_aug19/equations.gms:14-16, q14_yield_crop). Module 30's q30_prod computes production FROM yields: modules/30_croparea/detail_apr24/equations.gms:15 `vm_prod(j2,kcr) =e= sum(w, vm_area(j2,kcr,w) * vm_yld(j2,kcr,w));` (consumes M14's vm_yld). vm_prod is OWNED by Module 17 (declared modules/17_production/flexreg_apr16/declarations.gms:9) and aggregated by M17: modules/17_production/flexreg_apr16/equations.gms:11 `vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k));`. Neither M30 nor M14 reads M17's output (vm_prod_reg) -> grep returned no matches in those modules. So 17 is the downstream sink, not the source; the doc arrow is reversed.",
+     "verify_cmd": "grep -rn 'vm_prod\\b' modules/30_croparea/detail_apr24/equations.gms -> line15 vm_prod =e= sum(w, vm_area*vm_yld); grep -rn 'vm_prod_reg' modules/17_production/flexreg_apr16/equations.gms -> line11 vm_prod_reg =e= sum(cell, vm_prod); grep -rln 'vm_prod(j' modules/*/*/declarations.gms -> modules/17_production/flexreg_apr16/declarations.gms (owner); grep -rln 'vm_prod_reg' modules/30_croparea/ modules/14_yields/ -> exit 1 (no matches, downstream confirmed)"
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_deep2/dataflow_chain/Data_Flow.md",
+    "/tmp/r51_deep2/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/main.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms",
+    "/tmp/magpie_develop_ro/core/calculations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/equations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/equations.gms",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/input.gms",
+    "/tmp/magpie_develop_ro/modules/35_natveg/pot_forest_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/29_cropland/detail_apr24/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced_bilateral22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/input.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/detail_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/42_water_demand/all_sectors_aug13/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms"
+   ],
+   "notes": "Doc is highly accurate: defaults (yields=managementcalib_aug19, trade=selfsuff_reduced, carbon=normal_dec17, natveg=pot_forest_may24), all var domains, q14/q52 eqs, model statement, loop, t_all 1965-2150, secdforest_ac populator/consumer chain (M52 decl L9/preloop L71; read M14 L44, M35 L248-251; uncalib by M29/32/35) all verified. Only error: reversed production flow arrow (17->30->14 should be 14->30->17). magpie4 R fns and .cs3 input file paths not code-checkable in worktree."
+  },
+  {
+   "doc_id": "modification_safety_guide.md",
+   "verdict": "MINOR_ISSUES",
+   "n_findings": 1,
+   "findings": [
+    {
+     "flagged_claim": "Section 3.3 'Dependency Chain Impact' diagram: 'Upstream -> Module 17 -> Downstream:  Module 21 (Trade) -> vm_prod_reg(i,kall) -> Module 17 -> vm_prod(j,k) -> Module 30 (Croparea) -> Module 16 (Demand) -> Module 18 (Residues) -> ...'  This presents Module 21 as upstream of Module 17 (feeding vm_prod_reg into it) and Module 30 as downstream of Module 17 (receiving vm_prod from it).",
+     "doc_location": "Section 3.3 'Dependency Chain Impact', lines 351-361 (the ASCII chain diagram, esp. line 353)",
+     "severity": "Major",
+     "bug_class": "Cross-module data-flow direction reversal (MANDATE 21)",
+     "code_evidence": "Both arrows are inverted. (1) vm_prod is PRODUCED by Module 30, not Module 17: modules/30_croparea/simple_apr24/equations.gms:14-15 'q30_prod(j2,kcr) .. vm_prod(j2,kcr) =e= sum(w, vm_area(j2,kcr,w) * vm_yld(j2,kcr,w));'. Module 17 only READS vm_prod to aggregate it. (2) vm_prod_reg is PRODUCED by Module 17, and Module 21 (Trade) CONSUMES it: modules/17_production/flexreg_apr16/equations.gms:10-11 'q17_prod_reg(i2,k) .. vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k));' and modules/21_trade/selfsuff_reduced/equations.gms:13 'sum(i2 ,vm_prod_reg(i2,k_trade)) =g= ...'. Genuine forward flow: 30 -> vm_prod -> 17 -> vm_prod_reg -> 21. The diagram states the exact reverse. It also contradicts the doc's own correct prose in 3.2 (line 347 'Provides supply for Module 21 (Trade) to balance against demand') and line 345 ('Regional production = sum of all cells in region').",
+     "verify_cmd": "grep -n 'vm_prod' /tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/equations.gms /tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/equations.gms /tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced/equations.gms -> 30 has 'vm_prod(j2,kcr) =e= sum(w, vm_area*vm_yld)' (producer); 17 has 'vm_prod_reg(i2,k) =e= sum(cell, vm_prod(j2,k))' (reads vm_prod, produces vm_prod_reg); 21 has 'sum(i2,vm_prod_reg(i2,k_trade)) =g= ...' (consumer of vm_prod_reg). Confirms flow is 30->17->21, opposite to the doc."
+    }
+   ],
+   "paths_consulted": [
+    "/tmp/r51_deep2/rubric.md",
+    "/tmp/r51_deep2/modsafety_chain/modification_safety_guide.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/core/sets.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/equations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced/equations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/input.gms",
+    "/tmp/magpie_develop_ro/modules/57_maccs/on_aug22/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/15_food/anthro_iso_jun22/intersolve.gms",
+    "/tmp/magpie_develop_ro/modules/58_peatland/v2/equations.gms",
+    "/tmp/magpie_develop_ro/modules/32_forestry/dynamic_may24/equations.gms"
+   ],
+   "notes": "Doc is mostly accurate: defaults (land/costs/production/ghg_policy), var/eq names+domains, cost attributions (38/31/70/50/56/39/21), consumer counts (10/3/4/2/12, 8/1, 18-union), c56 switch defaults, carbon-stock pricing lag all verified. One Major: 3.3 chain inverts producer/consumer direction on both arrows (real flow 30->17->21), contradicting doc's own 3.2 prose."
+  },
+  {
+   "doc_id": "circular_dependency_resolution.md",
+   "verdict": "CLEAN",
+   "n_findings": 0,
+   "findings": [],
+   "paths_consulted": [
+    "/tmp/r51_deep2/circular_costchain/circular_dependency_resolution.md",
+    "/tmp/r51_deep2/rubric.md",
+    "/tmp/magpie_develop_ro/config/default.cfg",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/equations.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/input.gms",
+    "/tmp/magpie_develop_ro/modules/56_ghg_policy/price_aug22/sets.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/equations.gms",
+    "/tmp/magpie_develop_ro/modules/10_land/landmatrix_dec18/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/13_tc/endo_jan22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/equations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/14_yields/managementcalib_aug19/preloop.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/equations.gms",
+    "/tmp/magpie_develop_ro/modules/17_production/flexreg_apr16/presolve.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced/equations.gms",
+    "/tmp/magpie_develop_ro/modules/21_trade/selfsuff_reduced_bilateral22/",
+    "/tmp/magpie_develop_ro/modules/52_carbon/normal_dec17/equations.gms",
+    "/tmp/magpie_develop_ro/modules/39_landconversion/calib/equations.gms",
+    "/tmp/magpie_develop_ro/modules/41_area_equipped_for_irrigation/endo_apr13/equations.gms",
+    "/tmp/magpie_develop_ro/modules/41_area_equipped_for_irrigation/endo_apr13/postsolve.gms",
+    "/tmp/magpie_develop_ro/modules/22_land_conservation/area_based_apr22/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/22_land_conservation/area_based_apr22/presolve_ini.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/equations.gms",
+    "/tmp/magpie_develop_ro/modules/11_costs/default/declarations.gms",
+    "/tmp/magpie_develop_ro/modules/30_croparea/simple_apr24/declarations.gms",
+    "/tmp/magpie_develop_ro/core/sets.gms"
+   ],
+   "notes": "All load-bearing code claims verified: defaults (trade=selfsuff_reduced, carbon=normal_dec17, ghg_policy=price_aug22, yields=managementcalib_aug19), Appendix A pcm citations (postsolve lines 9/8/16), M14 eq lines 14-16/35-39, q52/q39/q41 names, vm_import/export absent, v21_trade bilateral-only, s56 defaults (buffer=0.5, c_price_induced=1). Data-flow directions confirmed. Cycle3 eq written =g= w/ sides swapped vs code =l= (algebraically equivalent, not a contradiction)."
+  }
+ ]
+}

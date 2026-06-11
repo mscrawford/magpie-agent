@@ -1,0 +1,35 @@
+{
+ "phase": "item3 tighter class-B-vs-C find-rate",
+ "docs": {
+  "dataflow_chain": {
+   "doc_file": "Data_Flow.md",
+   "klass": "B",
+   "injected_bug": "production serial chain reversed to 17 -> 30 -> 14",
+   "code_truth": "M14 produces vm_yld -> M30 produces vm_prod (reads vm_yld) -> M17 aggregates vm_prod_reg. Flow is 14->30->17, not reversed."
+  },
+  "modsafety_chain": {
+   "doc_file": "modification_safety_guide.md",
+   "klass": "B",
+   "injected_bug": "production->trade chain reversed to trade->production",
+   "code_truth": "M30 produces vm_prod, M17 aggregates to vm_prod_reg, M21 consumes vm_prod_reg. Flow is 30->17->21, not reversed."
+  },
+  "circular_costchain": {
+   "doc_file": "circular_dependency_resolution.md",
+   "klass": "B",
+   "injected_bug": "cost causal chain reversed",
+   "code_truth": "q56 emission pricing produces v56_emis_pricing -> vm_emission_costs -> enters q11 total cost. Direction is prices->emission costs->total costs."
+  },
+  "dataflow_producer": {
+   "doc_file": "Data_Flow.md",
+   "klass": "C",
+   "injected_bug": "pm_carbon_density_secdforest_ac owner reversed to M32 (fully consistent this time)",
+   "code_truth": "pm_carbon_density_secdforest_ac is DECLARED+populated in Module 52 (normal_dec17/declarations.gms:9, preloop.gms:71); M32 does not own it."
+  },
+  "moddep_forestry": {
+   "doc_file": "Module_Dependencies.md",
+   "klass": "C",
+   "injected_bug": "pm_demand_forestry direction reversed to 32 -> 73",
+   "code_truth": "pm_demand_forestry is declared in M73 (timber), read by M32 (forestry). Direction is 73->32, not 32->73."
+  }
+ }
+}
