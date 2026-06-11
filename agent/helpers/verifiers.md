@@ -327,6 +327,30 @@ grep -rln "<name>" ../modules/*/*/equations.gms            # POPULATED (LHS) / R
 
 ---
 
+## MANDATE 21 — Cross-module data-flow DIRECTION (both endpoints; parallel not serial)
+
+<!-- check-gams-vars: allow vm_FOO_output, vm_FOO_shared -->
+**Trigger**: any claim about the DIRECTION of a cross-module data flow — "M_A passes / hands off / forwards / routes X to M_B", "M_B receives X from M_A", "X flows A → B → C", or any serial producer→consumer chain drawn between modules.
+
+**Rule**: NEVER assert a serial hand-off (M_A → M_B) from ONE endpoint. Open BOTH endpoints in code and confirm what M_B actually READS on its equation RHS. Two structures read identically in prose but differ in code:
+- **Serial**: M_B reads M_A's OUTPUT variable (M_A populates `vm_FOO_output`; M_B reads `vm_FOO_output`). A genuine hand-off.
+- **Parallel**: M_A and M_B both read the SAME shared interface variable `vm_FOO_shared` INDEPENDENTLY (neither feeds the other). NOT a hand-off — even though prose naturally says "`vm_FOO_shared` flows to A and B".
+
+DEFAULT to "parallel readers, not a serial hand-off" until the code proves M_B reads M_A's output. Falsifying a direction claim requires NON-LOCAL inference (read BOTH modules' equations); a single-file read cannot settle it.
+
+**Verification commands**:
+```bash
+# does the claimed downstream module M_B read A's OUTPUT, or the shared variable directly?
+grep -rn "vm_FOO_output" ../modules/B_*/*/equations.gms   # B reads A's output -> serial
+grep -rn "vm_FOO_shared" ../modules/B_*/*/equations.gms   # B reads the shared var itself -> parallel
+```
+
+**Worked example** (R51 — MISSED TWICE in find-in-long-doc audits): the soilc CO2 pricing path. A doc said "M59 populates the soilc slice of `vm_carbon_stock`, M52 takes over and routes the emission to M56 for pricing" (serial M52 → M56). Reality: M56 reads `vm_carbon_stock` DIRECTLY in `q56_emis_pricing_co2` (`modules/56_ghg_policy/price_aug22/equations.gms:22`), differing from M52's read only by the `stockType` slice; M56 does NOT consume M52's `vm_emissions_reg` `"co2_c"` output (it reads `vm_emissions_reg` only for the disjoint `emis_annual` subset). M52 and M56 are PARALLEL readers of the stock, not a producer→consumer pair. This is the auditor's hardest class: caught 100% when the claim was POINTED at, but MISSED twice when the same claim was buried in a long doc — because it needs this both-endpoints check.
+
+**Verified by**: human review + the both-endpoints check above; the same instruction belongs in `audit/tools/doc_audit_round.workflow.js` GREP_GUARD so live rounds enforce it. Trust a NULL on this class only via an independent-agent ensemble, each forced to run the both-endpoints check (R51 follow-up; method in global memory `feedback_calibrate_llm_judge_fnr`). Builds on MANDATE 17 (direct vs transitive) and 18 (DECLARED/POPULATED/READ).
+
+---
+
 ## Verification one-liner
 
 After writing any answer that references GAMS code, run (from the magpie-agent directory):
@@ -344,6 +368,7 @@ This invokes the variable, equation, realization, and citation checkers. Any fai
 - **2026-05-23 (origin)**: hoisted from AGENT.md Step 1d. 16 MANDATEs preserved verbatim from the prior in-place version (the count at hoist time; now 20 — see the 2026-05-30 entry), with binding language tightened and worked examples drawn from the rounds named in each rule's text. R1-R21 validation history is the empirical foundation.
 - **2026-05-25 (R6 Phase 1 1c)**: added MANDATE 17 (one-hop reads / direct vs transitive consumer). Motivating bug: R24 Q4-B3 (Major doc_error) — `module_30.md:360` claimed `vm_carbon_stock_croparea` is directly consumed by M52/M56; actual chain is M30 → M29 aggregate → M52/M56. Mechanization via `check_consumer_attribution.py` extension is Phase 1 1c follow-up.
 - **2026-05-30 (R33-R37 high-centrality sweep + consolidation)**: added MANDATE 18 (producer/declaration DECLARED-vs-POPULATED-vs-READ), 19 (realization-structure from the specific realization's files), 20 (solution-level `.l/.lo` grep); extended MANDATE 16 with the citation-CONTENT rule. Motivating bugs: the module_21 cross-realization regression (a fresh forensics agent reproduced the auditor's exact error — correlated confabulation, only mechanical checks catch it), the `vm_prod_reg`/`im_maccs_mitigation`/`pm_prod_init` producer mis-attributions, and the `vm_area.l` solution-level near-miss. Mechanized by the engine's adversarial verifier (`producer_declaration` + `realization_structure` classes + the Step-A citation check) and `scripts/check_scaling.py` (the 10eN-vs-1eN class). Total now 20 MANDATEs.
+- **2026-06-11 (R51 auditor-calibration follow-up)**: added MANDATE 21 (cross-module data-flow DIRECTION — both-endpoints, default parallel-not-serial). Motivating finding: R51 measured the flywheel auditor's own false-negative rate and located one residual blind spot — causal/data-flow-direction claims that need NON-LOCAL inference to falsify. The soilc serial-vs-parallel M52/M56 claim was caught 100% when pointed at it but MISSED TWICE in full-doc audits. Not yet mechanized (direction is not a single-token check); mitigated by the both-endpoints rule + an independent-agent ensemble each forced to run it. Method generalized in global memory `feedback_calibrate_llm_judge_fnr`; project record `magpie_agent_auditor_calibration_r51` + `audit/archive/rounds/round51_calibration/`. Total now 21 MANDATEs.
 
 
 ---
