@@ -103,8 +103,10 @@ check_error() {
 # Section labels auto-number from SECTION_NUM; SECTION_TOTAL is the SINGLE place
 # the denominator lives (R7: replaced the 28 hardcoded "/28" literals, which had
 # no self-check and drifted). The legacy first arg ("N/M") is now ignored.
+# R53 (2026-06-28): +2 advisory checks (29 set-member drift, 30 intra-doc default
+# contradiction) appended -> 30. Appended, never middle-renumbered (stable IDs).
 SECTION_NUM=0
-SECTION_TOTAL=28
+SECTION_TOTAL=30
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1042,6 +1044,66 @@ if [ -f "$SCALING_SCRIPT" ]; then
     fi
 else
     check_warning "Scaling checker not found: $SCALING_SCRIPT"
+fi
+
+# ===============================================
+# Check 29: Set-member enumeration drift (R53 Phase 1, advisory)
+# For each tracked CLOSED set (land family + carbon pools) parse the canonical
+# membership from GAMS source, then flag module docs that enumerate the set
+# `setname` (m1, m2, ...) with invented members. Positive control (in the
+# script's --self-test): the R52 module_52 plant_pri/plant_sec bug.
+# ===============================================
+print_section "" "Checking set-member enumerations against canonical GAMS sets (R53)..."
+
+SET_MEMBERS_SCRIPT="$AGENT_DIR/scripts/check_set_members.py"
+if [ -f "$SET_MEMBERS_SCRIPT" ]; then
+    if SETMEM_OUTPUT=$(python3 "$SET_MEMBERS_SCRIPT" 2>&1); then SETMEM_EXIT=0; else SETMEM_EXIT=$?; fi
+    SETMEM_SUMMARY=$(echo "$SETMEM_OUTPUT" | head -1 | sed 's/^[[:space:]]*//')
+    if echo "$SETMEM_OUTPUT" | head -1 | grep -q "0 mismatches"; then
+        check_pass "$SETMEM_SUMMARY"
+    elif [ $SETMEM_EXIT -eq 0 ]; then
+        check_warning "$SETMEM_SUMMARY"
+        echo "$SETMEM_OUTPUT" | grep "^    " | head -10 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Set-member checker failed (exit $SETMEM_EXIT)"
+        echo "$SETMEM_OUTPUT" | head -5 | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "Set-member checker not found: $SET_MEMBERS_SCRIPT"
+fi
+
+# ===============================================
+# Check 30: Intra-doc default contradiction (R53 Phase 1, advisory)
+# Flags a scalar whose default is stated with two DIFFERENT primary values in one
+# doc (doc-vs-doc, never doc-vs-unit-converted-source -> sidesteps the known
+# Pattern-13 s59 unit FP). Positive control (in the script's --self-test): the R52
+# module_59 s59_nitrogen_uptake 0.0002-vs-0.2 bug.
+# ===============================================
+print_section "" "Checking intra-doc default-value contradictions (R53)..."
+
+INTRA_DOC_SCRIPT="$AGENT_DIR/scripts/check_intra_doc_contradiction.py"
+if [ -f "$INTRA_DOC_SCRIPT" ]; then
+    if INTRA_OUTPUT=$(python3 "$INTRA_DOC_SCRIPT" 2>&1); then INTRA_EXIT=0; else INTRA_EXIT=$?; fi
+    INTRA_SUMMARY=$(echo "$INTRA_OUTPUT" | head -1 | sed 's/^[[:space:]]*//')
+    if echo "$INTRA_OUTPUT" | head -1 | grep -q "contradictions: 0"; then
+        check_pass "$INTRA_SUMMARY"
+    elif [ $INTRA_EXIT -eq 0 ]; then
+        check_warning "$INTRA_SUMMARY"
+        echo "$INTRA_OUTPUT" | grep "^    " | head -10 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Intra-doc contradiction checker failed (exit $INTRA_EXIT)"
+        echo "$INTRA_OUTPUT" | head -5 | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "Intra-doc contradiction checker not found: $INTRA_DOC_SCRIPT"
 fi
 
 # ============
