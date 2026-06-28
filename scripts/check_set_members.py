@@ -32,7 +32,8 @@ bulleted member runs (`- `member` ...`, matched to a set by membership overlap
 with a clean-match-skip so a valid superset list isn't flagged as a subset).
 Known advisory limits (precision-first recall gaps, not bugs): Oxford-"and" lists
 (the non-exhaustive guard skips "..., and X"), enumerations keeping fewer than
-half a set's real members, and lists where the set/member names are not backticked.
+half a set's real members, and lists where the set/member names are not backticked
+or the member is not at the start of its bullet (e.g. "- Type `crop`:").
 
 Advisory: always exits 0. Mismatches are surfaced as warnings by the validator.
 
@@ -144,22 +145,28 @@ def _eval_run(tokens, canonical_map, require_purity=True):
     wrong ones.
     """
     tokenset = set(tokens)
-    best = None
+    scored = []
     for set_name, canonical in canonical_map.items():
         real = tokenset & canonical
         coverage = max(2, (len(canonical) + 1) // 2)
-        if len(real) < coverage:
-            continue
         invented = tokenset - canonical
-        if not invented:
-            return None  # clean enumeration of this set -> not drift
-        if require_purity and len(real) < len(invented):
-            continue
-        if best is None or len(real) > best[0]:
-            best = (len(real), set_name, sorted(invented), sorted(canonical - tokenset))
-    if best is None:
+        # clean-match-skip: a run that cleanly enumerates ANY set (coverage met,
+        # nothing invented) is a valid enumeration -> never a drift.
+        if len(real) >= coverage and not invented:
+            return None
+        scored.append((len(real), len(canonical), set_name, canonical, real, invented, coverage))
+    # Attribute the run to the set that best EXPLAINS it (most real members, then
+    # the larger set on ties), and flag only if THAT set itself qualifies. Prevents
+    # a near-miss of a big set (e.g. land, below its coverage floor) being
+    # misattributed to a small overlapping set (land_ag) whose members are common
+    # words — which would brand a genuine member of the big set as "invented".
+    scored.sort(key=lambda c: (-c[0], -c[1], c[2]))
+    best_real, _, set_name, canonical, real, invented, coverage = scored[0]
+    if best_real < coverage or not invented:
         return None
-    return best[1], best[2], best[3]
+    if require_purity and len(real) < len(invented):
+        return None
+    return set_name, sorted(invented), sorted(canonical - tokenset)
 
 
 def _scan_bulleted(lines, canonical_map, allowlist, rel, findings):
@@ -170,27 +177,41 @@ def _scan_bulleted(lines, canonical_map, allowlist, rel, findings):
     _eval_run. Runs of unrelated backticked tokens (variables, products) fall below
     the coverage floor and are ignored.
     """
-    run = []  # (line_no, token)
-
-    def flush():
-        if len(run) >= 2:
-            res = _eval_run([t for _, t in run], canonical_map, require_purity=True)
-            if res:
-                set_name, invented, missing = res
-                if (rel, set_name) not in allowlist:
-                    inv = set(invented)
-                    line_no = next((ln for ln, t in run if t in inv), run[0][0])
-                    findings.append({"line": line_no, "set": set_name,
-                                     "invented": invented, "missing": missing})
-        run.clear()
-
+    # Split bullets into runs, breaking on a non-bullet line OR an indentation
+    # change — so an indented sub-bullet breakdown (e.g. crop -> tece/maiz) is NOT
+    # merged into its parent run and mistaken for one flat enumeration.
+    runs = []
+    cur = []
+    cur_indent = None
     for line_no, line in enumerate(lines, 1):
         m = BULLET_RE.match(line)
         if m:
-            run.append((line_no, m.group("tok").lower()))
-        else:
-            flush()
-    flush()
+            indent = len(line) - len(line.lstrip())
+            if cur and indent != cur_indent:
+                runs.append(cur)
+                cur = []
+            if not cur:
+                cur_indent = indent
+            cur.append((line_no, m.group("tok").lower()))
+        elif cur:
+            runs.append(cur)
+            cur = []
+    if cur:
+        runs.append(cur)
+
+    for run in runs:
+        if len(run) < 2:
+            continue
+        res = _eval_run([t for _, t in run], canonical_map, require_purity=True)
+        if not res:
+            continue
+        set_name, invented, missing = res
+        if (rel, set_name) in allowlist:
+            continue
+        inv = set(invented)
+        line_no = next((ln for ln, t in run if t in inv), run[0][0])
+        findings.append({"line": line_no, "set": set_name,
+                         "invented": invented, "missing": missing})
 
 
 def scan_doc(doc_path, canonical_map, allowlist=frozenset()):
@@ -256,6 +277,8 @@ def self_test():
         "land": frozenset({"crop", "past", "forestry", "primforest", "secdforest", "urban", "other"}),
         "c_pools": frozenset({"vegc", "litc", "soilc"}),
         "ag_pools": frozenset({"vegc", "litc"}),  # subset of c_pools -> overlap trap
+        "land_ag": frozenset({"crop", "past"}),  # small subset of land -> misattribution trap
+        "land_timber": frozenset({"forestry", "primforest", "secdforest", "other"}),
     }
     ok = True
     tmp = tempfile.mkdtemp(prefix="check29_selftest_")
@@ -336,6 +359,31 @@ def self_test():
             print("  SELF-TEST PASS [bulleted]: bulleted land bug flagged; {vegc,litc,soilc} not mis-flagged as ag_pools")
         else:
             print(f"  SELF-TEST FAIL [bulleted]: got {bf}")
+            ok = False
+
+        # SET-FP1 [re-lens]: an indented sub-bullet breakdown (crop -> tece/maiz
+        # children) must NOT merge into the parent run and look like a land_ag bug
+        with open(doc, "w") as f:
+            f.write("- `crop` cropland, split into:\n")
+            f.write("  - `tece` temperate cereals\n")
+            f.write("  - `maiz` maize\n")
+            f.write("- `past` pasture\n")
+        if not scan_doc(doc, canonical_map):
+            print("  SELF-TEST PASS [bulleted: nested sub-bullets]: indented children not merged into parent run")
+        else:
+            print(f"  SELF-TEST FAIL [bulleted: nested sub-bullets]: wrongly flagged: {scan_doc(doc, canonical_map)}")
+            ok = False
+
+        # SET-FP2 [re-lens]: a near-miss of `land` (3 of 7 members + 1 outsider)
+        # must NOT be misattributed to the small overlapping `land_ag`, which would
+        # brand the real `land` member `forestry` as invented
+        with open(doc, "w") as f:
+            for t in ["crop", "past", "forestry", "rangeland"]:
+                f.write(f"- `{t}` - description\n")
+        if not scan_doc(doc, canonical_map):
+            print("  SELF-TEST PASS [bulleted: small-set misattribution]: land near-miss not misattributed to land_ag")
+        else:
+            print(f"  SELF-TEST FAIL [bulleted: small-set misattribution]: wrongly flagged: {scan_doc(doc, canonical_map)}")
             ok = False
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

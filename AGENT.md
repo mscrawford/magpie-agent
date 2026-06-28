@@ -285,7 +285,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 
 | User intent detected | Load this helper | Trigger keywords |
 |---------------------|-----------------|-----------------|
-| **Naming a specific GAMS interface variable, equation, realization, or default (NOT broad module-XX questions)** | `agent/helpers/verifiers.md` (21 anti-confabulation MANDATEs) | "vm_", "pm_", "v<N>_", "p<N>_", "s<N>_", "c<N>_", "q<N>_", "realization", "default value", "default realization", "modify code", "variable name", "equation name", "M_X uses vm_", "M_X consumes" |
+| **Naming a specific GAMS interface variable, equation, realization, or default (NOT broad module-XX questions)** | `agent/helpers/verifiers.md` (22 anti-confabulation MANDATEs) | "vm_", "pm_", "v<N>_", "p<N>_", "s<N>_", "c<N>_", "q<N>_", "realization", "default value", "default realization", "modify code", "variable name", "equation name", "M_X uses vm_", "M_X consumes" |
 | Reading/writing/explaining GAMS code | `reference/GAMS_MAgPIE_Patterns.md` + other phases as needed | "GAMS", "gms file", ".gms", "equations.gms", "declarations.gms", "=e=", "=l=", "=g=", "q<N>_", "GAMS syntax", "variable declaration", "write code", "explain this code", "debug code" |
 | Model won't solve / errors | `agent/helpers/debugging_infeasibility.md` | "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort" |
 | Setting up carbon/climate policy | `agent/helpers/scenario_carbon_pricing.md` | "carbon price", "carbon tax", "GHG policy", "emission pricing", "climate policy", "REDD", "afforestation incentive", "carbon budget" |

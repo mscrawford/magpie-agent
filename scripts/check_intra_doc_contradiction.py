@@ -150,14 +150,19 @@ def collect_table_defaults(lines, add):
     while i < n:
         if lines[i].lstrip().startswith("|") and i + 1 < n and _is_separator(lines[i + 1]):
             headers = [h.lower() for h in _cells(lines[i])]
+            # Match the default column on an EXACT header, never a prefix: "Default"
+            # or "Default value" are the value; "Default values"/"Default range"
+            # (allowed-value lists) and "Values" (a switch's allowed set) are NOT.
             col = None
-            for want in ("default", "value"):
+            for idx, h in enumerate(headers):
+                if h in ("default", "default value"):
+                    col = idx
+                    break
+            if col is None:
                 for idx, h in enumerate(headers):
-                    if h == want or (want == "default" and h.startswith("default")):
+                    if h == "value":
                         col = idx
                         break
-                if col is not None:
-                    break
             j = i + 2
             while j < n and lines[j].lstrip().startswith("|"):
                 if col is not None and "cfg$gms$" not in lines[j]:
@@ -351,6 +356,18 @@ def self_test():
             print("  SELF-TEST PASS [Form C: units-column trap]: Default col (0.1) read, Units col (1) ignored")
         else:
             print(f"  SELF-TEST FAIL [Form C: units-column trap]: wrongly flagged: {scan_doc(doc)}")
+            ok = False
+
+        # Form C 'Default values' trap [re-lens]: a "Default values"/"Default range"
+        # header lists ALLOWED values, not the default -> must NOT be read
+        with open(doc, "w") as f:
+            f.write("Mode `s99_m` (default: 2) selects behavior.\n\n")
+            f.write("| Scalar | Default values | Unit |\n|---|---|---|\n")
+            f.write("| `s99_m` | 0, 1, 2 | - |\n")
+        if not scan_doc(doc):
+            print("  SELF-TEST PASS [Form C: 'Default values' header]: allowed-value column not read as the default")
+        else:
+            print(f"  SELF-TEST FAIL [Form C: 'Default values' header]: wrongly flagged: {scan_doc(doc)}")
             ok = False
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
