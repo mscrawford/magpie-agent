@@ -28,13 +28,14 @@ Explicitly NOT read: `cfg$gms$NAME <- VALUE` override examples in "Typical
 Modifications" sections (e.g. module_59.md:682 `cfg$gms$s59_nitrogen_uptake <- 0.3`),
 which are illustrative scenario values, not default claims.
 
-Known advisory limits (R53 adversarial lens, accepted): being doc-vs-doc, the
-check can FP when one scalar is stated in two units with different leading numbers
-("1000 kg" vs "1 t"), and can misattribute a default to an earlier backticked
-scalar sharing the same line. It MISSES table-cell defaults, the `**Default
-value**:` header variant, and a contradiction where both mentions lead with the
-same wrong value (a uniformly-wrong doc is invisible to an intra-doc check — that
-class is Check 20's job, vs source).
+Forms read: inline `(default ...)`, **Default**: headers, and Default-column
+table cells. Known advisory limits (R53 adversarial lens, accepted): being
+doc-vs-doc, the check can FP when one scalar is stated in two units with different
+leading numbers ("1000 kg" vs "1 t"), and can misattribute a default to an earlier
+backticked scalar sharing the same line. It MISSES the `**Default value**:` header
+variant and a contradiction where both mentions lead with the same wrong value (a
+uniformly-wrong doc is invisible to an intra-doc check — that class is Check 20's
+job, vs source).
 
 Advisory: always exits 0. Contradictions are surfaced as warnings by the validator.
 
@@ -126,6 +127,52 @@ def values_match(a, b):
     return False
 
 
+def _is_separator(line):
+    """True for a markdown table separator row like |---|:--:|---|."""
+    s = line.strip()
+    return s.startswith("|") and "-" in s and set(s) <= set("|:- ")
+
+
+def _cells(line):
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
+def collect_table_defaults(lines, add):
+    """Add (scalar, line, value) for each backticked-scalar table row, reading the
+    value from a column whose header is Default (or exactly Value).
+
+    The column is anchored on the HEADER, never on position — so a table laid out
+    as `| Scalar | Description | Units | Default |` (module_12) reads the Default
+    cell, not the Units cell holding a dimensionless `1` (the unit-column trap).
+    A header of `Values` (a switch's allowed-set) is deliberately NOT matched.
+    """
+    i, n = 0, len(lines)
+    while i < n:
+        if lines[i].lstrip().startswith("|") and i + 1 < n and _is_separator(lines[i + 1]):
+            headers = [h.lower() for h in _cells(lines[i])]
+            col = None
+            for want in ("default", "value"):
+                for idx, h in enumerate(headers):
+                    if h == want or (want == "default" and h.startswith("default")):
+                        col = idx
+                        break
+                if col is not None:
+                    break
+            j = i + 2
+            while j < n and lines[j].lstrip().startswith("|"):
+                if col is not None and "cfg$gms$" not in lines[j]:
+                    cells = _cells(lines[j])
+                    sm = re.search(r"`(" + SCALAR + r")`", lines[j])
+                    if sm and len(cells) > col:
+                        vm = re.search(r"`?\$?((?:" + VALUE + r")%?)", cells[col])
+                        if vm:
+                            add(sm.group(1), j + 1, vm.group(1))
+                j += 1
+            i = j
+        else:
+            i += 1
+
+
 def collect_mentions(lines):
     """Return {scalar_name: [(line_no, value), ...]} of primary default claims."""
     mentions = {}
@@ -155,6 +202,8 @@ def collect_mentions(lines):
             if dm:
                 add(name, j + 1, dm.group("value"))
                 break
+    # Form C: Default-column cells of markdown scalar tables (R53 extension)
+    collect_table_defaults(lines, add)
     return mentions
 
 
@@ -281,6 +330,27 @@ def self_test():
             print("  SELF-TEST PASS [FP-B: 'is' filler]: `(default is 0.5)` not read as 'is'")
         else:
             print(f"  SELF-TEST FAIL [FP-B: 'is' filler]: wrongly flagged: {scan_doc(doc)}")
+            ok = False
+
+        # Form C [extension]: a table Default cell contradicting a prose default
+        with open(doc, "w") as f:
+            f.write("Earlier `s99_z` (default: 9) is described.\n\n")
+            f.write("| Scalar | Default | Unit |\n|---|---|---|\n| `s99_z` | 5 | share |\n")
+        if any(f["name"] == "s99_z" for f in scan_doc(doc)):
+            print("  SELF-TEST PASS [Form C: table vs prose]: table Default 5 vs prose 9 flagged")
+        else:
+            print(f"  SELF-TEST FAIL [Form C: table vs prose]: missed; got {scan_doc(doc)}")
+            ok = False
+
+        # Form C units-trap [module_12]: read the Default column, NOT the Units col
+        with open(doc, "w") as f:
+            f.write("Rate `s99_r` (default: 0.1) applies.\n\n")
+            f.write("| Scalar | Description | Units | Default |\n|---|---|---|---|\n")
+            f.write("| `s99_r` | interest rate | 1 | 0.1 (10%) |\n")
+        if not scan_doc(doc):
+            print("  SELF-TEST PASS [Form C: units-column trap]: Default col (0.1) read, Units col (1) ignored")
+        else:
+            print(f"  SELF-TEST FAIL [Form C: units-column trap]: wrongly flagged: {scan_doc(doc)}")
             ok = False
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

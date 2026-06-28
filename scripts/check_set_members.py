@@ -27,11 +27,12 @@ deliberately trades away pure-omission recall for a near-zero false-positive rat
 Scope: closed sets only (land family + carbon pools). Open/dynamic/large sets
 (ac, regions, kall, mappings) are intentionally excluded — see CLOSED_SETS.
 
-Known advisory limits (R53 adversarial lens, accepted): only the inline
-`setname` (a, b, ...) form is covered. NOT flagged: bulleted member lists,
-Oxford-"and" lists (the non-exhaustive guard skips "..., and X"), enumerations
-that keep fewer than half the set's real members, and lists where the set name is
-not backticked. These are precision-first recall gaps, not bugs.
+Forms covered: inline `setname` (a, b, ...) parentheticals AND contiguous
+bulleted member runs (`- `member` ...`, matched to a set by membership overlap
+with a clean-match-skip so a valid superset list isn't flagged as a subset).
+Known advisory limits (precision-first recall gaps, not bugs): Oxford-"and" lists
+(the non-exhaustive guard skips "..., and X"), enumerations keeping fewer than
+half a set's real members, and lists where the set/member names are not backticked.
 
 Advisory: always exits 0. Mismatches are surfaced as warnings by the validator.
 
@@ -67,6 +68,9 @@ CLOSED_SETS = {
 MEMBER_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 # Tokens that signal a non-exhaustive / prose list — skip such parentheticals.
 NONEXHAUSTIVE_RE = re.compile(r"\.\.\.|\betc\b|e\.g\.|\bi\.e\.\b|\bsee\b|\band\b|\bor\b", re.IGNORECASE)
+# A bullet line whose content STARTS with a backticked member token:
+#   - `crop` - Cropland
+BULLET_RE = re.compile(r"^\s*[-*]\s+`(?P<tok>[a-z][a-z0-9_]*)`")
 
 
 def load_allowlist():
@@ -125,6 +129,70 @@ def build_canonical_map():
     return out
 
 
+def _eval_run(tokens, canonical_map, require_purity=True):
+    """Evaluate a set of enumerated member tokens against the tracked sets.
+
+    Returns (set_name, invented_sorted, missing_sorted) if the tokens look like a
+    botched enumeration of some set, else None.
+
+    Clean-match-skip: if the tokens cleanly enumerate ANY set (coverage met, zero
+    invented), the run is a VALID enumeration -> None. This is essential for the
+    set-name-agnostic bulleted form: {vegc,litc,soilc} is a clean `c_pools` list,
+    so it must NOT be flagged as `ag_pools` (={vegc,litc}) plus an invented soilc.
+    Otherwise flag the best-covered set whose listed tokens are mostly real members
+    (purity) — a real botched enumeration lists mostly-right members plus a few
+    wrong ones.
+    """
+    tokenset = set(tokens)
+    best = None
+    for set_name, canonical in canonical_map.items():
+        real = tokenset & canonical
+        coverage = max(2, (len(canonical) + 1) // 2)
+        if len(real) < coverage:
+            continue
+        invented = tokenset - canonical
+        if not invented:
+            return None  # clean enumeration of this set -> not drift
+        if require_purity and len(real) < len(invented):
+            continue
+        if best is None or len(real) > best[0]:
+            best = (len(real), set_name, sorted(invented), sorted(canonical - tokenset))
+    if best is None:
+        return None
+    return best[1], best[2], best[3]
+
+
+def _scan_bulleted(lines, canonical_map, allowlist, rel, findings):
+    """Detect contiguous runs of `- `member`` bullets and flag botched ones.
+
+    Unlike the inline form there is no set-name anchor, so the run is matched to a
+    set by membership overlap with the clean-match-skip + purity guards in
+    _eval_run. Runs of unrelated backticked tokens (variables, products) fall below
+    the coverage floor and are ignored.
+    """
+    run = []  # (line_no, token)
+
+    def flush():
+        if len(run) >= 2:
+            res = _eval_run([t for _, t in run], canonical_map, require_purity=True)
+            if res:
+                set_name, invented, missing = res
+                if (rel, set_name) not in allowlist:
+                    inv = set(invented)
+                    line_no = next((ln for ln, t in run if t in inv), run[0][0])
+                    findings.append({"line": line_no, "set": set_name,
+                                     "invented": invented, "missing": missing})
+        run.clear()
+
+    for line_no, line in enumerate(lines, 1):
+        m = BULLET_RE.match(line)
+        if m:
+            run.append((line_no, m.group("tok").lower()))
+        else:
+            flush()
+    flush()
+
+
 def scan_doc(doc_path, canonical_map, allowlist=frozenset()):
     """Return list of finding dicts for one doc."""
     findings = []
@@ -167,6 +235,7 @@ def scan_doc(doc_path, canonical_map, allowlist=frozenset()):
                         "missing": sorted(canonical - tokenset),
                     }
                 )
+    _scan_bulleted(lines, canonical_map, allowlist, rel, findings)
     return findings
 
 
@@ -186,6 +255,7 @@ def self_test():
     canonical_map = {
         "land": frozenset({"crop", "past", "forestry", "primforest", "secdforest", "urban", "other"}),
         "c_pools": frozenset({"vegc", "litc", "soilc"}),
+        "ag_pools": frozenset({"vegc", "litc"}),  # subset of c_pools -> overlap trap
     }
     ok = True
     tmp = tempfile.mkdtemp(prefix="check29_selftest_")
@@ -247,6 +317,25 @@ def self_test():
             print("  SELF-TEST PASS [parser: slash-in-desc]: 'tN/ha' description not parsed as members")
         else:
             print(f"  SELF-TEST FAIL [parser: slash-in-desc]: got {stress}")
+            ok = False
+
+        # bulleted [extension]: the module_52 bulleted-list form must flag, AND the
+        # {vegc,litc,soilc} carbon-pools run must NOT be mis-flagged as ag_pools
+        # (clean-match-skip: it cleanly enumerates c_pools)
+        with open(doc, "w") as f:
+            f.write("**Land types**:\n")
+            for t in ["crop", "past", "primforest", "secdforest", "urban", "other", "plant_pri", "plant_sec"]:
+                f.write(f"- `{t}` - description\n")
+            f.write("\n**Carbon pools**:\n")
+            for t in ["vegc", "litc", "soilc"]:
+                f.write(f"- `{t}` - description\n")
+        bf = scan_doc(doc, canonical_map)
+        land_hit = [f for f in bf if f["set"] == "land" and "plant_pri" in f["invented"]]
+        pool_fp = [f for f in bf if f["set"] in ("c_pools", "ag_pools")]
+        if land_hit and not pool_fp:
+            print("  SELF-TEST PASS [bulleted]: bulleted land bug flagged; {vegc,litc,soilc} not mis-flagged as ag_pools")
+        else:
+            print(f"  SELF-TEST FAIL [bulleted]: got {bf}")
             ok = False
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
