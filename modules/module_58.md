@@ -32,8 +32,8 @@ Module 58 calculates GHG emissions from peatlands and tracks peatland area chang
 ### 1.3 Architectural Position
 
 **Layer**: Environmental Accounting (Layer 4)
-**Dependencies**: 5 total (relatively isolated module)
-- **Inputs**: 10_land (vm_land, vm_landexpansion, vm_landreduction, vm_land_forestry, vm_landexpansion_forestry, vm_landreduction_forestry), 12_interest_rate (pm_interest), 45_climate (pm_climate_class)
+**Dependencies**: 6 total (relatively isolated module)
+- **Inputs**: 10_land (vm_land, vm_landexpansion, vm_landreduction), 32_forestry (vm_land_forestry, vm_landexpansion_forestry, vm_landreduction_forestry), 12_interest_rate (pm_interest), 45_climate (pm_climate_class)
 - **Outputs**: 56_ghg_policy (vm_emissions_reg), 11_costs (vm_peatland_cost)
 
 **Source**: Phase 2 Dependency Analysis, line 208
