@@ -87,7 +87,8 @@
     41,
     43,
     46,
-    50
+    50,
+    52
    ],
    "drift_observed": false,
    "r26_note": "Drifted at R26 (populator-list recurrence). Doc root-cause fixed in R26 (module_56.md + module_52.md -> 29/31/32/34/35/59); expect recovery next re-measure.",
@@ -7431,17 +7432,273 @@
     "followup2_real_direction_audit": "3 independent adversarial agents (one per doc: carbon_balance, Data_Flow, Module_Dependencies), each forced to do the both-endpoints non-local check. NO genuine direction errors in the real docs - the known-trap soilc M52/M56 arrow is correctly documented as PARALLEL (carbon_balance:615); 14->30->17 genuinely serial. 2 borderline minor imprecisions surfaced (Module_Dependencies:198 56->32 framing; :212 indirect-as-direct 70->14 dependency) - recorded, not auto-fixed. So the injection-test residual is a CAPABILITY gap, not a live bug. Method lesson: a single same-tier null is low-confidence on a blind-spot class; ensemble-with-forced-check is the trustworthy mitigation (runs on Opus).",
     "item3_tighter_findrate_and_mandate21_validation": "UNMITIGATED tighter run (5 internally-consistent single-statement injections): class-B (causal/data-flow direction) 0/3, class-C (producer) 2/2 -> combined class-B = 0/4 (0%), class-C = 3/3 across the session. The fully-internally-consistent class-C producer injection was STILL caught, resolving the prior internal-inconsistency confound (class C is caught by a declarations.gms grep, not self-contradiction). MITIGATED re-run (MANDATE 21 both-endpoints instruction added to the prompt): the 2 inter-module VARIABLE-arrow class-B bugs recovered from MISSED to CAUGHT (2/2) - the fix is VALIDATED for the dominant code-grounded form; the 1 ABSTRACT causal-chain bug (Prices->costs->total) was still missed (no variable endpoints to grep -> added an input-vs-derived note to MANDATE 21). Side-finding: the run surfaced + fixed 3 real input-filename bugs in Data_Flow.md s1.2. See ITEM3_findrate_and_mitigation.md."
    }
+  },
+  {
+   "round": 52,
+   "date": "2026-06-28",
+   "type": "full",
+   "scope": "Broader carbon/emissions cluster, post-sync. User-requested after the 2026-06-28 develop sync adopted commit 931db85c4 (59_som soil pcm_carbon_stock carry-forward). R50 validated the M56 emissions cluster but pre-dated this code change. 5 new probes (P1 soil-carry-forward timestep mechanics, P2 default emis-policy scope, P3 N-from-SOM M59->M50->M51, P4 Cprice->afforestation chain, P5 carbon-pool partition M52/M59) + G2 regression. Design: audit/archive/rounds/round52_design.md; answers: audit/archive/rounds/round52_answers/.",
+   "code_base": "6304d830b",
+   "mean_score": 8.5,
+   "doc_quality_mean": 8.4,
+   "n_questions_doc_quality": 5,
+   "doc_quality_mean_method": "raw mean over all 6 = 8.5; doc_quality excludes P2 (its only bug P2-B1 is pure answerer_confabulation vs a correct/more-precise doc). Excluding P2(=9) gives (8+8+8+8+10)/5=8.4. Reported lower than raw because the excluded answerer-noise question happened to score high.",
+   "questions": [
+    {
+     "id": "G2",
+     "topic": "vm_carbon_stock computation in M52 -> GHG cost in M56 (regression anchor)",
+     "modules_tested": [
+      "52",
+      "56"
+     ],
+     "score": 8,
+     "verdict": "MOSTLY ACCURATE",
+     "bugs": [
+      {
+       "id": "G2-B1",
+       "severity": "Major",
+       "class": 2,
+       "root_cause": "doc_error",
+       "desc": "Answer's M32 producer-table land types given as nonexistent plant_pri/plant_sec instead of forestry. Root cause = stale land-set doc.",
+       "status": "fixed"
+      },
+      {
+       "id": "G2-B2",
+       "severity": "Informational",
+       "class": 4,
+       "root_cause": "answerer_confabulation",
+       "desc": "'minus those excluded by emis_land mapping' hedge wrong; all 21 emis_oneoff are mapped.",
+       "status": "noted"
+      }
+     ],
+     "doc_errors_latent": [
+      {
+       "id": "DL-1",
+       "severity": "Critical",
+       "harm": "future-reader (R20 anchor)",
+       "location": "module_52.md:54 and 545-553",
+       "desc": "land set misdescribed: omits 'forestry', invents plant_pri/plant_sec (nonexistent in code). Confirmed: grep plant_pri/plant_sec in core/+modules/ = empty; core/sets.gms:250-251 land = /crop,past,forestry,primforest,secdforest,urban,other/.",
+       "status": "fixed"
+      }
+     ]
+    },
+    {
+     "id": "P1",
+     "topic": "soil pcm_carbon_stock carry-forward + per-timestep flux mechanics (NEW change 931db85c4)",
+     "modules_tested": [
+      "59",
+      "52",
+      "56"
+     ],
+     "score": 8,
+     "verdict": "MOSTLY ACCURATE",
+     "bugs": [
+      {
+       "id": "P1-B1",
+       "severity": "Major",
+       "class": 4,
+       "root_cause": "answerer_confabulation+doc_gap",
+       "desc": "Answer attributed soilc INIT of pcm_carbon_stock to M56 preloop; actually M59 owns soilc init (cellpool preloop:30-35, static:11-12), split by pool exactly like carry-forward. M56 preloop:10 inits ag_pools only.",
+       "status": "fixed (doc gap closed)"
+      }
+     ],
+     "doc_errors_latent": [
+      {
+       "id": "P1-DL",
+       "severity": "Major",
+       "harm": "future-reader",
+       "location": "module_59.md Section 6 (Initialization)",
+       "desc": "omitted the soilc pcm_carbon_stock init step (preloop:30-35), so a docs-only answerer found no pointer to M59 for soil init and fell back to M56's ag_pools init. NOT a false claim, an omission.",
+       "status": "fixed (added Step 3b documenting soilc init + pool-split)"
+      }
+     ],
+     "note": "Validated this session's soil carry-forward edits: cellpool postsolve:13 / static postsolve:9 / M56 postsolve:8 ag_pools all CONFIRMED correct against code; commit hash+date+~17x rationale confirmed. The freshly-edited carry-forward docs are accurate."
+    },
+    {
+     "id": "P2",
+     "topic": "default c56_emis_policy scope; soil pricing; peatland vs M52",
+     "modules_tested": [
+      "56",
+      "52",
+      "58"
+     ],
+     "score": 9,
+     "verdict": "ACCURATE",
+     "bugs": [
+      {
+       "id": "P2-B1",
+       "severity": "Minor",
+       "class": 4,
+       "root_cause": "answerer_confabulation",
+       "desc": "glossed actual vs %c56_carbon_stock_pricing% (=actualNoAcEst) stockType difference between q52 (reporting) and q56 (pricing); doc was more precise.",
+       "status": "noted"
+      }
+     ],
+     "doc_errors_latent": []
+    },
+    {
+     "id": "P3",
+     "topic": "N release from SOM M59 -> M50 budget -> M51 N2O",
+     "modules_tested": [
+      "59",
+      "50",
+      "51"
+     ],
+     "score": 8,
+     "verdict": "MOSTLY ACCURATE",
+     "bugs": [
+      {
+       "id": "P3-B1",
+       "severity": "Major",
+       "class": 13,
+       "root_cause": "doc_error",
+       "desc": "s59_nitrogen_uptake stated as 0.0002 Mt N/Mha (1000x off); code is /0.2/ tN/ha. Doc self-contradiction (module_59.md:245 vs :627).",
+       "status": "fixed"
+      },
+      {
+       "id": "P3-B2",
+       "severity": "Informational",
+       "class": 10,
+       "root_cause": "answerer_confabulation",
+       "desc": "divisor /m_timestep_length cited at equations.gms:70; actually :71 (block 69-75 correct).",
+       "status": "noted"
+      }
+     ],
+     "doc_errors_latent": [
+      {
+       "id": "P3-DL",
+       "severity": "Major",
+       "harm": "future-reader",
+       "location": "module_59.md:245",
+       "desc": "'0.0002 Mt N/Mha' contradicts correct :627 ('0.2 (200 kg N/ha)') and code (/0.2/).",
+       "status": "fixed"
+      }
+     ]
+    },
+    {
+     "id": "P4",
+     "topic": "Cprice -> afforestation reward -> M32 -> M52 carbon stock; default C-price-driven?",
+     "modules_tested": [
+      "56",
+      "32",
+      "52"
+     ],
+     "score": 8,
+     "verdict": "MOSTLY ACCURATE",
+     "bugs": [
+      {
+       "id": "P4-B1",
+       "severity": "Minor",
+       "class": 4,
+       "root_cause": "answerer_confabulation",
+       "desc": "said prices ~0 near-term; omitted the s56_minimum_cprice=3.67 USD17MER/tC floor (preloop:74). Conclusion (effectively inactive) still correct.",
+       "status": "noted (doc floor caveat added)"
+      },
+      {
+       "id": "P4-B2",
+       "severity": "Minor",
+       "class": 10,
+       "root_cause": "answerer_confabulation",
+       "desc": "q56_reward_cdr_aff_reg cited at equations.gms:60-66 (comment block); actual eq at 67-71. Doc (module_56.md:244) had it right.",
+       "status": "noted"
+      },
+      {
+       "id": "P4-B3",
+       "severity": "Informational",
+       "class": 4,
+       "root_cause": "answerer_confabulation",
+       "desc": "q32_aff_pol formula dropped + v32_ndc_area_missing slack term.",
+       "status": "noted"
+      },
+      {
+       "id": "P4-B4",
+       "severity": "Informational",
+       "class": 15,
+       "root_cause": "doc_error",
+       "desc": "NPi described as 'No Policy Improvement'/'No Policy'; correct = National Policies implemented.",
+       "status": "fixed"
+      }
+     ],
+     "doc_errors_latent": [
+      {
+       "id": "P4-DOC1",
+       "severity": "Minor",
+       "harm": "future-reader",
+       "location": "module_56.md:961,1088",
+       "desc": "NPi mislabeled 'No Policy Improvement'/'No Policy'.",
+       "status": "fixed"
+      },
+      {
+       "id": "P4-DOC2",
+       "severity": "Minor",
+       "harm": "future-reader",
+       "location": "module_56.md:961",
+       "desc": "'default runs have NO carbon pricing' ignores the $3.67/tC s56_minimum_cprice floor (preloop:74).",
+       "status": "fixed"
+      }
+     ],
+     "note": "Central judgment correct: default afforestation is NPI-policy-driven (ndc type via q32_aff_pol), not C-price-driven (aff type). f56_emis_policy(reddnatveg_nosoil,co2_c,secdforest_vegc)=1 and -vm_reward_cdr_aff M11 sign both nailed."
+    },
+    {
+     "id": "P5",
+     "topic": "carbon-pool partition M52 (veg/litter) vs M59 (soil), no double-counting",
+     "modules_tested": [
+      "52",
+      "59"
+     ],
+     "score": 10,
+     "verdict": "ACCURATE",
+     "bugs": [],
+     "doc_errors_latent": [],
+     "note": "10/10, zero bugs. Independently validated this session's 931db85c4 edits (hash+date+mechanism+reddnatveg_nosoil rationale all exact). Strong positive signal for the G2 carbon-stock anchor family."
+    }
+   ],
+   "regression_questions_scored": [
+    {
+     "id": "G2",
+     "score": 8,
+     "drift_observed": false,
+     "note": "Anchor HELD: vm_carbon_stock declared-in-M56, populator set, M52-reads-only, parallel-reader (MANDATE 21) architecture, and full M56 cost chain to M11 all verified exact. The 8 (vs 9-band) is from G2-B1 = answerer reaching past the correct producer-list doc into the stale land-set doc; ground-truth carbon-stock-propagation summary did NOT drift. Fixing DL-1 protects the anchor."
+    }
+   ],
+   "summary": {
+    "mean_score": 8.5,
+    "doc_quality_mean": 8.4,
+    "n_questions_doc_quality": 5,
+    "total_bugs": 10,
+    "by_severity": {
+     "critical": 0,
+     "major": 3,
+     "minor": 3,
+     "informational": 4
+    },
+    "latent_doc_bugs": 5,
+    "bug_sources": {
+     "doc_error": 4,
+     "doc_error_answerer_beat_it": 0,
+     "doc_gap": 1,
+     "answerer_confabulation": 6
+    },
+    "root_causes": "4 pre-existing doc errors (module_52.md land-set Critical, module_59.md:245 1000x unit, module_56.md NPi mislabel, module_56.md no-pricing-vs-floor) + 1 doc completeness gap (module_59.md soilc-init) + answerer slips. NONE of this session's 931db85c4 sync edits were wrong (P5=10, P1 carry-forward confirmed).",
+    "files_fixed": [
+     "modules/module_52.md",
+     "modules/module_59.md",
+     "modules/module_56.md"
+    ],
+    "validator": "validate_consistency.sh PASS: 39 checks, 0 errors, 2 pre-existing advisory warnings (unrelated).",
+    "verify": "Each doc fix re-verified against code this session: core/sets.gms:250-251 (land set), 59_som/cellpool_jan23/input.gms:9 (/0.2/), 56_ghg_policy/price_aug22/preloop.gms:74 (s56_minimum_cprice 3.67) + :10-11 (ag_pools init), 59_som/cellpool_jan23/preloop.gms:30-35 (soilc init)."
+   }
   }
  ],
  "cumulative_stats": {
-  "total_rounds": 51,
+  "total_rounds": 52,
   "total_docs_validated": 85,
   "module_docs_validated": 46,
   "non_module_docs_validated": 33,
-  "approx_total_bugs_found": 935,
-  "approx_total_bugs_fixed": 677,
-  "last_validation_date": "2026-06-11",
-  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly->R43 validate-teammate-edits + periphery: raw 9.57 (HIGHEST on record), doc_quality 10.0, ZERO doc bugs; teammate f4f44b0 module_80.md+module_37.md validated ACCURATE; M58 peatland bypasses M52 (parameterized), M73 no-HWP verified; G1=10 G2=10 drift FALSE->R44 DIAGNOSTIC weak-spot re-test (targeted): raw 9.28; M20 processing 4.0(R27)->9.5 RESOLVED (R27 was answerer_confab vs a correct doc); driver->demand->production chain P1=8.0/P4=9.5 recovered from R41's shared 6.0; ALL parameterization-vs-mechanism lens checks PASSED (P1/P2/P3/P4); ZERO doc bugs (doc_quality 10.0, incl 1 synthesis root-cause correction P5 doc_error->answerer_confab after verifying module_71.md/module_21.md directly); verifier_gaps sparse+idiosyncratic (MANDATE-12/16/18 once each, NO recurrence) -> NO lens-audit escalation per round44_design section 5; G4 drift FALSE (pin 2.70.0@a360d8c verified fresh).->R45 least-verified set A (M57/M53/M62/M45/M55 + G3): raw 10.0, doc_q 10.0, ZERO Minor+ bugs; weak spots M57/M53 (both @7 R41) RESOLVED to clean 10 on fresh parameterization probes; all 4 parameterization-vs-mechanism lens checks PASSED; 2 trivial doc-hygiene fixes (module_53.md:71 citation drift, module_56.md:675 t_all); 1 auditor false-positive (PR#869 BEF) withdrawn after git/sync_log verify->R46 least-verified set B (M13/M22/M28/M18/M12 + G2): raw 9.5, doc_q 10.0, ZERO doc bugs; weak sub-9 modules M13/M22 (both @8 R41) held at 9 (new sub-10s are answerer label/citation slips, not doc defects); R16 age-class TRUNCATION anchor PASSED (ac=62 elements, not ac140); G2 carbon-stock producer/consumer anchor HELD (drift FALSE, R26 regression stays healed); 3 Minor bugs all answerer-side vs correct docs, 0 doc fixes->R47 CAPSTONE cross_module/core_docs re-validation (user-flagged blind spot): raw 9.5, doc_q 10.0; ALL THREE R30 Critical fixes HELD (Core_Architecture loop-once, mod_safety centrality/vm_land-consumers, Module_Dependencies phantom-consumer exclusion); worst-ever doc nitrogen_food_balance 4.0@R7->10; found+fixed 1 Major latent doc bug in persistently-weak circular_dependency_resolution.md (yields-endogeneity); P4 score-7 = answerer citation drift not doc defect. Campaign -> reactive mode.->R48 cross_module conservation (carbon/land/water) + 2 core_docs, post-R47 stale set: raw 8.57, doc_q 9.0 (excl P2 answerer pseudo-formula); land + water balance docs CLEAN 10/10; 3 doc bugs FIXED - emis_land cite range (carbon_balance_conservation:325 332-335->332-354), LUH3 land-use-init mislabel+omission (Data_Flow:39-41/414), and R20-class producer-set bug in module_21.md (provides-to 8->1, M21 produces only vm_cost_trade_* to M11, depends-on 1->2) as doc_error_answerer_beat_it; G4 anchor drift FALSE (106 unique report*, no control/grepl gating). Lens-bridge win: auditor's blanket Data_Flow LUH2->LUH3 refined after direct read (the :39 files are genuine LUH2 side-layers). Commits pending review. ->R49 integrative corpus (cross_module + 2 core docs) raw 8.63, 7 doc bugs fixed + AGENT.md realization-count self-bug (40->22) + 3 cross-doc bugs surfaced; ->R50 module_56 emissions cluster + 2 core docs raw 8.14, 23 edits incl M57-not-a-vm_emissions_reg-producer fix, anchors G2/G4 stable, completed via resume after a session cap. Both rounds: verify 0 refuted. Commits pending review.->R51 CALIBRATION (Phase 0 auditor-FNR gate; Fable downgraded to Opus by nitrogen safeguard): per-claim auditor FNR=0% (24/24 planted incl 7/7 historically-survived replay bugs), genuine FP=0/13 (auditor also caught 2 fixture-designer errors), isolation verified. Verdict: H1 supported for per-claim regime; residual risk is COVERAGE not auditor-blindness; unknown-unknown class still open. 0 DOC bugs (calibration round, no doc changes).",
+  "approx_total_bugs_found": 950,
+  "approx_total_bugs_fixed": 686,
+  "last_validation_date": "2026-06-28",
+  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly->R43 validate-teammate-edits + periphery: raw 9.57 (HIGHEST on record), doc_quality 10.0, ZERO doc bugs; teammate f4f44b0 module_80.md+module_37.md validated ACCURATE; M58 peatland bypasses M52 (parameterized), M73 no-HWP verified; G1=10 G2=10 drift FALSE->R44 DIAGNOSTIC weak-spot re-test (targeted): raw 9.28; M20 processing 4.0(R27)->9.5 RESOLVED (R27 was answerer_confab vs a correct doc); driver->demand->production chain P1=8.0/P4=9.5 recovered from R41's shared 6.0; ALL parameterization-vs-mechanism lens checks PASSED (P1/P2/P3/P4); ZERO doc bugs (doc_quality 10.0, incl 1 synthesis root-cause correction P5 doc_error->answerer_confab after verifying module_71.md/module_21.md directly); verifier_gaps sparse+idiosyncratic (MANDATE-12/16/18 once each, NO recurrence) -> NO lens-audit escalation per round44_design section 5; G4 drift FALSE (pin 2.70.0@a360d8c verified fresh).->R45 least-verified set A (M57/M53/M62/M45/M55 + G3): raw 10.0, doc_q 10.0, ZERO Minor+ bugs; weak spots M57/M53 (both @7 R41) RESOLVED to clean 10 on fresh parameterization probes; all 4 parameterization-vs-mechanism lens checks PASSED; 2 trivial doc-hygiene fixes (module_53.md:71 citation drift, module_56.md:675 t_all); 1 auditor false-positive (PR#869 BEF) withdrawn after git/sync_log verify->R46 least-verified set B (M13/M22/M28/M18/M12 + G2): raw 9.5, doc_q 10.0, ZERO doc bugs; weak sub-9 modules M13/M22 (both @8 R41) held at 9 (new sub-10s are answerer label/citation slips, not doc defects); R16 age-class TRUNCATION anchor PASSED (ac=62 elements, not ac140); G2 carbon-stock producer/consumer anchor HELD (drift FALSE, R26 regression stays healed); 3 Minor bugs all answerer-side vs correct docs, 0 doc fixes->R47 CAPSTONE cross_module/core_docs re-validation (user-flagged blind spot): raw 9.5, doc_q 10.0; ALL THREE R30 Critical fixes HELD (Core_Architecture loop-once, mod_safety centrality/vm_land-consumers, Module_Dependencies phantom-consumer exclusion); worst-ever doc nitrogen_food_balance 4.0@R7->10; found+fixed 1 Major latent doc bug in persistently-weak circular_dependency_resolution.md (yields-endogeneity); P4 score-7 = answerer citation drift not doc defect. Campaign -> reactive mode.->R48 cross_module conservation (carbon/land/water) + 2 core_docs, post-R47 stale set: raw 8.57, doc_q 9.0 (excl P2 answerer pseudo-formula); land + water balance docs CLEAN 10/10; 3 doc bugs FIXED - emis_land cite range (carbon_balance_conservation:325 332-335->332-354), LUH3 land-use-init mislabel+omission (Data_Flow:39-41/414), and R20-class producer-set bug in module_21.md (provides-to 8->1, M21 produces only vm_cost_trade_* to M11, depends-on 1->2) as doc_error_answerer_beat_it; G4 anchor drift FALSE (106 unique report*, no control/grepl gating). Lens-bridge win: auditor's blanket Data_Flow LUH2->LUH3 refined after direct read (the :39 files are genuine LUH2 side-layers). Commits pending review. ->R49 integrative corpus (cross_module + 2 core docs) raw 8.63, 7 doc bugs fixed + AGENT.md realization-count self-bug (40->22) + 3 cross-doc bugs surfaced; ->R50 module_56 emissions cluster + 2 core docs raw 8.14, 23 edits incl M57-not-a-vm_emissions_reg-producer fix, anchors G2/G4 stable, completed via resume after a session cap. Both rounds: verify 0 refuted. Commits pending review.->R51 CALIBRATION (Phase 0 auditor-FNR gate; Fable downgraded to Opus by nitrogen safeguard): per-claim auditor FNR=0% (24/24 planted incl 7/7 historically-survived replay bugs), genuine FP=0/13 (auditor also caught 2 fixture-designer errors), isolation verified. Verdict: H1 supported for per-claim regime; residual risk is COVERAGE not auditor-blindness; unknown-unknown class still open. 0 DOC bugs (calibration round, no doc changes).->R52 broader carbon/emissions post-sync (adopts 931db85c4 soil carry-forward): raw 8.5 / doc_q 8.4 (n=5, excl P2 pure-answerer); P5=10 + P1 INDEPENDENTLY VALIDATED this session's soil carry-forward edits (none wrong); G2=8 drift FALSE (anchor held; dip=answerer pulled wrong land-type from a stale land-set doc, not ground-truth drift); 5 pre-existing doc bugs fixed across module_52/56/59 incl CRITICAL land-set (invented plant_pri/plant_sec, omitted forestry), 1000x s59_nitrogen_uptake unit error, soilc-init doc gap, NPi mislabel, $3.67/tC floor vs 'no carbon pricing'.",
   "doc_push_2026_05_30": {
    "rounds": "R30-R32",
    "docs": 30,

@@ -1,6 +1,6 @@
 {
   "ledger_version": "1.0",
-  "captured_at": "2026-06-05",
+  "captured_at": "2026-06-28",
   "_purpose": "Track GAMS modules / variables / equations / realizations named in agent-loaded text or prior round results, so future flywheel probes don't accidentally measure recognition rather than capability. See audit/flywheel_rubric.md \u00a75 (round composition) and \u00a78 (stability mechanisms).",
   "schema": {
     "name": "string \u2014 exact GAMS module / variable / equation / realization name as it appears in source",
@@ -1413,6 +1413,97 @@
       "first_named_at": "2026-06-03",
       "first_named_round": 42,
       "retirement_eligible_after": 45
+    },
+    {
+      "name": "32",
+      "type": "resource",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R52 (auto-appended)"
+      ],
+      "first_named_at": "2026-06-28",
+      "first_named_round": 52,
+      "retirement_eligible_after": 55
+    },
+    {
+      "name": "50",
+      "type": "resource",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R52 (auto-appended)"
+      ],
+      "first_named_at": "2026-06-28",
+      "first_named_round": 52,
+      "retirement_eligible_after": 55
+    },
+    {
+      "name": "51",
+      "type": "resource",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R52 (auto-appended)"
+      ],
+      "first_named_at": "2026-06-28",
+      "first_named_round": 52,
+      "retirement_eligible_after": 55
+    },
+    {
+      "name": "52",
+      "type": "resource",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R52 (auto-appended)"
+      ],
+      "first_named_at": "2026-06-28",
+      "first_named_round": 52,
+      "retirement_eligible_after": 55
+    },
+    {
+      "name": "56",
+      "type": "resource",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R52 (auto-appended)"
+      ],
+      "first_named_at": "2026-06-28",
+      "first_named_round": 52,
+      "retirement_eligible_after": 55
+    },
+    {
+      "name": "58",
+      "type": "resource",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R52 (auto-appended)"
+      ],
+      "first_named_at": "2026-06-28",
+      "first_named_round": 52,
+      "retirement_eligible_after": 55
+    },
+    {
+      "name": "59",
+      "type": "resource",
+      "named_in": [
+        "round_result"
+      ],
+      "source_files": [
+        "R52 (auto-appended)"
+      ],
+      "first_named_at": "2026-06-28",
+      "first_named_round": 52,
+      "retirement_eligible_after": 55
     }
   ],
   "_maintenance_notes": [

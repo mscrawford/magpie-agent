@@ -51,7 +51,7 @@ Module 52 serves as the **central data provider for carbon densities** across MA
 - Dimensions:
   - `t_all`: All time periods
   - `j`: Simulation cells
-  - `land`: Land types (crop, past, primforest, secdforest, urban, other, plant_pri, plant_sec)
+  - `land`: Land types (crop, past, forestry, primforest, secdforest, urban, other)
   - `c_pools`: Carbon pools (vegc, litc, soilc)
 
 **Climate scenario handling** (input.gms:22-23):
@@ -428,7 +428,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Description**: **Previous** timestep carbon stock (mio. tC)
 - **Dimensions**: Same as vm_carbon_stock
 - **Usage**: Equation q52_emis_co2_actual (equations.gms:16)
-- **Update**: Module 56 stores current vm_carbon_stock as next timestep's pcm_carbon_stock
+- **Update (carry-forward, split by pool)**: After each solve, the realized `vm_carbon_stock` is stored as next timestep's `pcm_carbon_stock`. The above-ground pools (`ag_pools`: vegc, litc) are carried forward in Module 56 (`modules/56_ghg_policy/price_aug22/postsolve.gms:8`); the soil pool (`soilc`) is carried forward in Module 59 / SOM (`modules/59_som/cellpool_jan23/postsolve.gms:13`, `modules/59_som/static_jan19/postsolve.gms:9`). The soil carry-forward was added in develop commit 931db85c4 (2026-06-25); before it, `soilc` stayed at its `preloop` initialization, so the soil term in q52_emis_co2_actual computed a cumulative-since-init change divided by the timestep length instead of a per-timestep flux. Default runs use `c56_emis_policy = reddnatveg_nosoil` (excludes soil), so they were unaffected.
 
 ### Variables Written by Module 52
 
@@ -545,12 +545,11 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 **Land types**:
 - `crop` - Cropland
 - `past` - Pasture
+- `forestry` - Managed forest (plantations + NPI/NDC/aff afforestation)
 - `primforest` - Primary forest
 - `secdforest` - Secondary forest
 - `urban` - Urban
 - `other` - Other natural land
-- `plant_pri` - Primary plantations (not used)
-- `plant_sec` - Secondary plantations (not used)
 
 **Carbon pools**:
 - `vegc` - Vegetation carbon (above-ground biomass)

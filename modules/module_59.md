@@ -171,6 +171,14 @@ i59_subsoilc_density(t_all,j) = fm_carbon_density(t_all,j,"other","soilc") - f59
 
 **CRITICAL**: Subsoil carbon is NOT modeled dynamically, only topsoil changes.
 
+**Carry-forward to next timestep (postsolve)**: After each solve, `postsolve.gms` stores the realized soil carbon stock as the previous-timestep reference used by the next period's CO2 emission calculation:
+```gams
+pcm_carbon_stock(j,land,"soilc",stockType) = vm_carbon_stock.l(j,land,"soilc",stockType);
+```
+(`modules/59_som/cellpool_jan23/postsolve.gms:13`; `modules/59_som/static_jan19/postsolve.gms:9`). `pcm_carbon_stock` is declared in Module 56 and consumed as the "previous stock" term by `q52_emis_co2_actual` (Module 52) and `q56_emis_pricing_co2` (Module 56, `modules/56_ghg_policy/price_aug22/equations.gms:19`). The above-ground pools (`ag_pools`: vegc, litc) are carried forward separately in `modules/56_ghg_policy/price_aug22/postsolve.gms:8`; Module 59 owns only the `soilc` carry-forward.
+
+> ⚠️ **Bug fix (develop commit 931db85c4, 2026-06-25)**: This soil carry-forward line was previously ABSENT in both SOM realizations - `pcm_carbon_stock(...,"soilc",...)` stayed at its `preloop` initialization and was never updated between timesteps, unlike the above-ground pools. The soil term in `q52_emis_co2_actual` / `q56_emis_pricing_co2` therefore computed a cumulative-since-initialization stock change divided by the current timestep length, instead of the per-timestep flux it claims to compute (soil pools off by about 17x in a default H12 run). Default runs are unaffected: the default `c56_emis_policy` = `reddnatveg_nosoil` (`config/default.cfg:1810`) excludes the soil pool, and dynamic-SOM soil reporting routes through `magpie4::emisSOC`. Only soil-inclusive emission policies, or post-processing that reads per-pool soil `vm_emissions_reg` directly, were affected.
+
 #### 3.5 Nitrogen Release from SOM Loss
 
 **Location**: `equations.gms:69-75`
@@ -234,7 +242,7 @@ q59_nr_som_fertilizer2(j2) ..
 **Key Variables**:
 - `vm_nr_som_fertilizer(j)`: Plant-available nitrogen from SOM loss (Mt N per yr)
 - `vm_landexpansion(j,"crop")`: Cropland expansion area (mio. ha)
-- `s59_nitrogen_uptake`: Maximum N uptake per hectare of expanded cropland (default: 200 kg N/ha = 0.0002 Mt N/Mha, `input.gms:9`)
+- `s59_nitrogen_uptake`: Maximum N uptake per hectare of expanded cropland (default: `0.2`, i.e. 0.2 tN/ha = 200 kg N/ha; in MAgPIE units this is 0.2 Mt N/Mha, since Mt N/Mha = tN/ha numerically, `input.gms:9`)
 
 **Mechanism**: Only newly expanded cropland receives SOM nitrogen credit. Existing cropland is assumed to already be at equilibrium. At 200 kg N/ha (`equations.gms:93`), this represents the maximum feasible crop uptake on freshly converted land where SOM mineralization is highest.
 
@@ -421,6 +429,13 @@ pc59_som_pool(j,"crop") = sum((climate59,kcr), climate_match × region_factor ×
 ```gams
 pc59_som_pool(j,noncropland59) = f59_topsoilc_density("y1995",j) * pm_land_start(j,noncropland59);
 ```
+
+**Step 3b**: Initialize the previous-timestep soil carbon stock `pcm_carbon_stock(...,"soilc",...)` (`preloop.gms:30-35`)
+```gams
+pcm_carbon_stock(j,"crop","soilc",stockType) = pc59_som_pool(j,"crop") + i59_subsoilc_density("y1995",j) * pm_land_start(j,"crop");
+pcm_carbon_stock(j,noncropland59,"soilc",stockType) = fm_carbon_density("y1995",j,noncropland59,"soilc") * pm_land_start(j,noncropland59);
+```
+**Initialization of `pcm_carbon_stock` is split by carbon pool, mirroring the carry-forward split (see Section 3.4):** Module 59 (SOM) owns the `soilc` slice (init here at `preloop.gms:30-35`, and `static_jan19/preloop.gms:11-12`; carried forward each timestep at `cellpool_jan23/postsolve.gms:13`), while Module 56 owns the above-ground pools (`ag_pools` = vegc, litc) — init at `modules/56_ghg_policy/price_aug22/preloop.gms:10-11`, carried forward at that realization's `postsolve.gms:8`. These lines also seed `vm_carbon_stock.l(...,"soilc",...)` for the first solve.
 
 **Step 4**: Calculate lossrate (`preloop.gms:45`)
 ```gams

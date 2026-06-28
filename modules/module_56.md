@@ -578,7 +578,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 **vm_carbon_stock(j,land,c_pools,stockType)** - Current carbon stocks (mio. tC)
 **Provided to:**
-- Self (Module 56): Used in next time step as `pcm_carbon_stock` for emission calculation
+- Carried forward as next time step's `pcm_carbon_stock` for the emission calculation, split by pool: Module 56 postsolve carries the above-ground pools (`ag_pools`) (`modules/56_ghg_policy/price_aug22/postsolve.gms:8`); Module 59 (SOM) postsolve carries the soil pool (`soilc`) (`modules/59_som/cellpool_jan23/postsolve.gms:13`). Soil carry-forward added in develop commit 931db85c4 (2026-06-25); previously *soilc* was frozen at its preloop initialization.
 - Reporting modules: Carbon accounting, validation
 
 **Calculated by:** Land modules 29 (cropland, crop pool), 31 (pasture), 32 (forestry), 34 (urban, fixed to 0), 35 (natveg: primforest/secdforest/other), and 59 (SOM, soilc pool for all land types) populate this interface variable. Module 30 populates the separate `vm_carbon_stock_croparea`, which M29 folds in; Module 58 (peatland) does NOT populate it.
@@ -958,7 +958,7 @@ display im_pollutant_prices, f56_emis_policy, vm_emissions_reg.l, v56_emis_prici
 
 ### 11.1 GHG Pricing is Optional, Not Default
 
-With `c56_pollutant_prices = "R34M410-SSP2-NPi2025"` (No Policy Improvement) and historical zeroing, **default runs have NO carbon pricing**. Users must explicitly select mitigation scenarios (e.g., "R34M410-SSP2-PkBudg650") to activate pricing.
+With `c56_pollutant_prices = "R34M410-SSP2-NPi2025"` (NPi = **N**ational **P**olicies **i**mplemented — a current-policies baseline, NOT a no-policy scenario) and historical zeroing, **default runs have effectively no carbon price**: the CO2 price is floored at `s56_minimum_cprice` = 3.67 USD17MER/tC (~$1/tCO2, applied unconditionally at `price_aug22/preloop.gms:74`), which is economically negligible, and prices are zeroed for years <= `sm_fix_SSP2`. Users must explicitly select mitigation scenarios (e.g., "R34M410-SSP2-PkBudg650") to activate meaningful pricing.
 
 **Implication:** Reference scenarios without climate policy require no special configuration.
 
@@ -1085,7 +1085,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 5. Test afforestation doesn't dominate unrealistically
 
 **Common Use:**
-- Reference scenarios: `c56_pollutant_prices = "NPi"` (No Policy)
+- Reference scenarios: `c56_pollutant_prices = "R34M410-SSP2-NPi2025"` (NPi = National Policies implemented; current-policies baseline)
 - 2°C scenarios: `c56_pollutant_prices = "PkBudg1000"`
 - 1.5°C scenarios: `c56_pollutant_prices = "PkBudg650"`
 - Policy variants: Change `c56_emis_policy` (e.g., "all_nosoil", "redd+natveg_nosoil")

@@ -2,10 +2,10 @@
   "_comment": "Tracks synchronization between MAgPIE codebase and agent documentation",
   "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
   "sync_status": {
-    "last_sync_date": "2026-05-31",
-    "last_sync_commit": "ee98739fd",
-    "last_sync_commit_date": "2026-05-29",
-    "last_sync_commit_message": "Merge pull request #887 from mishkos/f_affexp_policy",
+    "last_sync_date": "2026-06-28",
+    "last_sync_commit": "6304d830b",
+    "last_sync_commit_date": "2026-06-26",
+    "last_sync_commit_message": "Merge pull request #905 from pascal-sauer/develop",
     "synced_by": "AI agent (Claude, Opus 4.8)",
     "magpie_branch": "develop"
   },
@@ -14,6 +14,27 @@
     "commits": []
   },
   "recent_syncs": [
+    {
+      "date": "2026-06-28",
+      "commit_range": "ee98739fd..6304d830b",
+      "summary": "Develop sync (ee98739fd..6304d830b). Exactly 1 GAMS-affecting commit: 931db85c4 (59_som: carry soil pcm_carbon_stock forward each timestep). All other commits in range are infra (Docker, slurm submit scripts, CI test-code.yaml, renv/activate.R, .Rprofile) or whitespace-only (config/default.cfg comment lines). Updated module_59.md (new postsolve carry-forward subsection + bug-fix callout in section 3.4), module_59_notes.md (warning 4), module_52.md (pcm_carbon_stock 'Update' line now splits ag_pools=M56 / soilc=M59), module_56.md (vm_carbon_stock 'Provided to self' now split by pool). Validator: 39 checks, 0 errors, 2 pre-existing advisory warnings (unrelated to this sync).",
+      "changes_reviewed": [
+        {
+          "commit": "931db85c4",
+          "date": "2026-06-25",
+          "description": "59_som: carry soil pcm_carbon_stock forward each timestep",
+          "modules_affected": ["59_som", "52_carbon", "56_ghg_policy"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "Both SOM realizations (cellpool_jan23, static_jan19) postsolve.gms gain: pcm_carbon_stock(j,land,\"soilc\",stockType) = vm_carbon_stock.l(j,land,\"soilc\",stockType). Mirrors the ag_pools carry-forward in modules/56_ghg_policy/price_aug22/postsolve.gms:8. Citations: cellpool_jan23/postsolve.gms:13, static_jan19/postsolve.gms:9. pcm_carbon_stock is declared in M56, consumed by q52_emis_co2_actual (M52) and q56_emis_pricing_co2 (M56, price_aug22/equations.gms:19). BUG fixed: pre-fix the soilc pcm stayed at its preloop initialization and was never updated, so the soil emission term computed a cumulative-since-init stock change over a single timestep length instead of a per-timestep flux (~17x off in a default H12 run). Default runs unaffected: default c56_emis_policy=reddnatveg_nosoil (config/default.cfg:1810) excludes soil; dynamic-SOM soil reporting routes through magpie4::emisSOC. Affected: soil-inclusive emission/cap policies or post-processing reading per-pool soil vm_emissions_reg directly."
+        }
+      ],
+      "validation_results": {
+        "validator": "validate_consistency.sh: completed=1, 39 checks, 37 passed, 0 errors, 2 pre-existing advisory warnings (6 docs referencing CLAUDE.md; example identifiers vm_production/vm_trade in reference/GAMS_Advanced_Features.md) — both unrelated to this sync.",
+        "semantic_validation_recommended": true,
+        "semantic_validation_done": false
+      }
+    },
     {
       "date": "2026-05-31",
       "commit_range": "3836bbaa9..ee98739fd",
@@ -387,6 +408,24 @@
     "_comment": "Track which modules may need updates based on code changes",
     "potentially_stale": [],
     "recently_updated": [
+      {
+        "module": "59_som",
+        "update_date": "2026-06-28",
+        "reason": "Commit 931db85c4: both SOM realizations (cellpool_jan23, static_jan19) now carry soil pcm_carbon_stock forward each timestep in postsolve.gms (mirroring ag_pools in M56). Added postsolve carry-forward subsection + bug-fix callout in section 3.4 and warning 4 in module_59_notes.md. Pre-fix the soilc pcm was frozen at preloop init, so the soil emission term was ~17x off for soil-inclusive policies.",
+        "commit": "931db85c4"
+      },
+      {
+        "module": "52_carbon",
+        "update_date": "2026-06-28",
+        "reason": "Commit 931db85c4: pcm_carbon_stock 'Update' line corrected to the per-pool carry-forward split (ag_pools in M56 postsolve, soilc in M59 postsolve). Consumed by q52_emis_co2_actual.",
+        "commit": "931db85c4"
+      },
+      {
+        "module": "56_ghg_policy",
+        "update_date": "2026-06-28",
+        "reason": "Commit 931db85c4: vm_carbon_stock 'Provided to self' (carry-forward to next-timestep pcm_carbon_stock) now documented as split by pool - M56 postsolve carries ag_pools, M59 SOM postsolve carries soilc. Consumed by q56_emis_pricing_co2.",
+        "commit": "931db85c4"
+      },
       {
         "module": "21_trade",
         "update_date": "2026-05-16",
