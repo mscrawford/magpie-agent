@@ -447,6 +447,8 @@ The where-errors-occur table, high-vs-low-risk content stratification, the macOS
 
 - **"MAgPIE accounts for..." / "The model considers..." / "MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA? Is this MECHANISTIC or PARAMETERIZED? See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix; apply the three-check verification (equation structure, parameter source, dynamic feedback).
 
+- **🔒 PUBLIC repo — secret & PII hygiene**: `mscrawford/magpie-agent` and `mscrawford/magpie-preproc-agent` are **public**, and the parent magpie repo's `origin`/`upstream` is the **public** `magpiemodel/magpie`. So everything committed here — including git *history* — is world-readable. **NEVER** commit secrets (API keys, tokens, private keys, passwords), credential files (`.env`, `*.pem`, `id_rsa`), or pasted private data; do not echo a secret into a doc/log/transcript even transiently. **Avoid hard-coding local absolute paths** (`/Users/<you>`, `/p/projects/...`) into docs, audit logs, or example commands — use `<magpie-root>`, `~`, or a relative path (these accumulate: a prior audit found `/Users/<user>` baked into thousands of history blobs). Before any push, run the **pre-push secret/PII gate** in `agent/helpers/session_cleanup.md` §2a. A stray `git add -A` from the **parent** repo would publish agent files to public MAgPIE — the agent surface is kept out of the parent index via `.git/info/exclude`; do not remove those entries.
+
 **After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (the run's summary prints the live check count). See `core_docs/Response_Guidelines.md` for the full response checklist.
 
 ---

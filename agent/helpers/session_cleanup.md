@@ -53,6 +53,20 @@ git push origin main
 
 **If `git pull --rebase` creates a merge conflict**: show the user the conflicting file(s) and ask how to resolve. For append-only files (notes, lessons), the resolution is almost always "keep both entries."
 
+## 2a. Pre-push secret / PII gate (REQUIRED before every push)
+
+This repo is **PUBLIC** (so is the preproc-agent repo, and the parent's `magpiemodel/magpie` upstream) — committed content, including history, is world-readable. **Before `git push`**, scan the staged diff for secrets and local paths:
+
+```bash
+git diff --cached -U0 | grep -nE '\-\-\-\-\-BEGIN[A-Z ]*PRIVATE KEY|sk-ant-[A-Za-z0-9_-]{16,}|gh[posru]_[A-Za-z0-9]{30,}|github_pat_|AKIA[0-9A-Z]{16}|xox[baprs]-|AIza[0-9A-Za-z_-]{30,}|/Users/[A-Za-z0-9._-]+|/home/[A-Za-z0-9._-]+|(password|api[_-]?key|secret|access[_-]?token)\s*[:=]' \
+  && echo "⚠️  REVIEW the matches above — do NOT push secrets or local absolute paths" \
+  || echo "✅ pre-push scan clean"
+```
+
+- Any **secret/credential** match → stop, remove it, and if it was ever committed treat it as compromised (rotate the credential; a force-push/history-rewrite does not un-leak a pushed secret).
+- Any **`/Users/...` or `/home/...`** match → replace with `<magpie-root>`, `~`, or a relative path before committing (keeps the public history free of local layout). For frozen archive logs, this is advisory.
+- This gate is a safety net, not a substitute for not writing secrets in the first place.
+
 ## 3. Flag Documentation Gaps
 
 If during the session you noticed:
