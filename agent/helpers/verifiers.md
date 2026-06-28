@@ -1,6 +1,6 @@
 # Verifiers — MANDATEs for anti-confabulation
 
-**Purpose**: 20 binding rules that prevent the recurring confabulation patterns identified across the semantic-validation rounds (see `audit/validation_rounds.json.cumulative_stats` for current bug and round totals). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
+**Purpose**: 22 binding rules that prevent the recurring confabulation patterns identified across the semantic-validation rounds (see `audit/validation_rounds.json.cumulative_stats` for current bug and round totals). Each MANDATE has a trigger (when it applies), a binding rule (what is FORBIDDEN or REQUIRED), and a worked example (a real failure that motivated it).
 
 **Auto-load**: this file is loaded automatically when the user asks about specific GAMS modules, variables, equations, realizations, or default values. See `AGENT.md` Auto-Loading Context Helpers table.
 
@@ -10,7 +10,7 @@
 
 **Cross-references**: each MANDATE references `audit/validation_rounds.json` round R-numbers and `core_docs/Bug_Taxonomy.md` patterns. See `audit/flywheel_rubric.md` for severity scoring.
 
-**Lessons count**: 3 entries
+**Lessons count**: 4 entries
 
 ---
 
@@ -58,7 +58,7 @@ These are NOT preferences. They are evidence-derived rules. Violating them silen
 
 **Worked example**: `s42_pumping` was widely assumed to default to 1; default is 0 (water cost disabled). Several Critical-severity bugs where the agent described a feature as active when it's OFF by default.
 
-**Verified by**: `scripts/check_default_realizations.py` (default realizations only); for scalar/scenario defaults — human review (candidate for future Pattern 13 mechanization; see R1 audit Cluster 4).
+**Verified by**: `scripts/check_default_realizations.py` (default realizations); `scripts/check_param_defaults.py` (Check 20 / Pattern 13 — doc-stated `s<N>_`/`c<N>_`/`sm_` defaults vs source); and `scripts/check_intra_doc_contradiction.py` (Check 30 — the SAME scalar's default stated with two different values in ONE doc, the R52 module_59 `s59_nitrogen_uptake` 0.0002-vs-0.2 class). The former "candidate for future Pattern 13 mechanization" note is now CLOSED.
 
 ---
 
@@ -299,6 +299,8 @@ grep -rln "<name>" ../modules/*/*/equations.gms            # POPULATED (LHS) / R
 
 **Worked examples** (R33-R37): `vm_prod_reg` documented "from Module 70" but DECLARED in M17 (M70 only reads it); `im_maccs_mitigation` attributed to M56 but DECLARED in M57; `pm_prod_init` attributed to M30 but declared+populated in M17; `vm_p_fert_costs` routed M54→M38→M11 but wired DIRECTLY into M11. The `vm_carbon_stock` G2 pattern is the canonical case: DECLARED in M56, POPULATED by M29/31/32/34/35/59, READ by M52. Generalizes MANDATE 9 (cost variables) to ALL interface variables.
 
+**Per-slice corollary** (R52, P1-B1, Major): when an interface variable is dimensioned over a set, DIFFERENT modules can own DIFFERENT slices — NEVER generalize one slice's owner across the whole set. `pcm_carbon_stock(...,c_pools,...)` is split by pool: the soil slice (`soilc`) is initialized AND carried forward by Module 59 (`modules/59_som/cellpool_jan23/preloop.gms:30-35`, `modules/59_som/cellpool_jan23/postsolve.gms:13`), while the above-ground slices (`ag_pools` = vegc, litc) are owned by Module 56 (`modules/56_ghg_policy/price_aug22/preloop.gms:10-11`, `modules/56_ghg_policy/price_aug22/postsolve.gms:8`). The answerer assumed soilc was initialized by M56 like the ag_pools (pattern-completing one slice's mechanism onto the others). Verify each slice's owner separately. (This was also a doc gap — the soilc init step was undocumented, so the docs-only answerer had no pointer to M59 and fell back to the M56 assumption; the gap is now closed by module_59.md Step 3b.)
+
 **Verified by**: the engine's adversarial verifier (`producer_declaration` class) re-derives DECLARED/POPULATED/READ mechanically against develop; human review otherwise. See also MANDATE 20 (grep both `name(` and `name.` forms).
 
 ---
@@ -353,6 +355,25 @@ grep -rn "vm_FOO_shared" ../modules/B_*/*/equations.gms   # B reads the shared v
 
 ---
 
+## MANDATE 22 — Closed-set member enumeration from sets.gms
+
+**Trigger**: any answer or doc that ENUMERATES the members of a closed GAMS set — listing what is IN a set (`land`, `c_pools`, `ag_pools`, `kcr`, `kli`, `emis_source`, etc.) in prose, a bulleted list, or a table.
+
+**Rule**: NEVER recite a set's membership from memory or naming pattern. Read the members from the declaration in `../core/sets.gms` (or the module's `sets.gms` for module-local sets) BEFORE listing them. Inventing a member that does not exist, or omitting a real one, is FORBIDDEN. This is distinct from MANDATE 10 (do not EXPAND a `sum(set,...)`), 11 (do not TRUNCATE a range), and 12 (use EXACT member labels): MANDATE 22 governs the COMPLETENESS and EXISTENCE of an enumerated membership.
+
+**Verification commands**:
+```bash
+grep -n -A3 "^[ \t]*<set_name>\b" ../core/sets.gms          # core sets (land, c_pools, ...)
+grep -rn "^[ \t]*<set_name>\b" ../modules/*/*/sets.gms       # module-local (e.g. ag_pools in 56_ghg_policy/price_aug22)
+```
+List EVERY member the declaration shows, and ONLY those members.
+
+**Worked example** (R52, module_52 land-set, Critical): the doc enumerated the `land` set as `(crop, past, primforest, secdforest, urban, other, plant_pri, plant_sec)` — inventing `plant_pri`/`plant_sec` (which do not exist) and omitting `forestry`. Canonical `land` (`core/sets.gms:251`) = `crop, past, forestry, primforest, secdforest, urban, other`. The error appeared in BOTH the inline parenthetical and a bulleted member list and survived ~51 rounds because no probe touched those lines.
+
+**Verified by**: `scripts/check_set_members.py` (Check 29 — the first mechanical guard for this class): parses the canonical membership of the tracked closed sets (land family + carbon pools) from `sets.gms` and flags any doc enumeration — inline `set` (a, b, ...) or bulleted `- `member`` run — that invents a member, with a clean-match-skip so a valid superset list is not mis-flagged as a subset. **Coverage gap**: only the 8 tracked closed sets and these two forms; untracked sets (`kcr`, `kli`, `emis_source`, ...), Oxford-"and" lists, and unbacktiked members are human-review only.
+
+---
+
 ## Verification one-liner
 
 After writing any answer that references GAMS code, run (from the magpie-agent directory):
@@ -371,6 +392,7 @@ This invokes the variable, equation, realization, and citation checkers. Any fai
 - **2026-05-25 (R6 Phase 1 1c)**: added MANDATE 17 (one-hop reads / direct vs transitive consumer). Motivating bug: R24 Q4-B3 (Major doc_error) — `module_30.md:360` claimed `vm_carbon_stock_croparea` is directly consumed by M52/M56; actual chain is M30 → M29 aggregate → M52/M56. Mechanization via `check_consumer_attribution.py` extension is Phase 1 1c follow-up.
 - **2026-05-30 (R33-R37 high-centrality sweep + consolidation)**: added MANDATE 18 (producer/declaration DECLARED-vs-POPULATED-vs-READ), 19 (realization-structure from the specific realization's files), 20 (solution-level `.l/.lo` grep); extended MANDATE 16 with the citation-CONTENT rule. Motivating bugs: the module_21 cross-realization regression (a fresh forensics agent reproduced the auditor's exact error — correlated confabulation, only mechanical checks catch it), the `vm_prod_reg`/`im_maccs_mitigation`/`pm_prod_init` producer mis-attributions, and the `vm_area.l` solution-level near-miss. Mechanized by the engine's adversarial verifier (`producer_declaration` + `realization_structure` classes + the Step-A citation check) and `scripts/check_scaling.py` (the 10eN-vs-1eN class). Total now 20 MANDATEs.
 - **2026-06-11 (R51 auditor-calibration follow-up)**: added MANDATE 21 (cross-module data-flow DIRECTION — both-endpoints, default parallel-not-serial). Motivating finding: R51 measured the flywheel auditor's own false-negative rate and located one residual blind spot — causal/data-flow-direction claims that need NON-LOCAL inference to falsify. The soilc serial-vs-parallel M52/M56 claim was caught 100% when pointed at it but MISSED TWICE in full-doc audits. Not yet mechanized (direction is not a single-token check); mitigated by the both-endpoints rule + an independent-agent ensemble each forced to run it. Method generalized in global memory `feedback_calibrate_llm_judge_fnr`; project record `magpie_agent_auditor_calibration_r51` + `audit/archive/rounds/round51_calibration/`. Total now 21 MANDATEs.
+- **2026-06-28 (R53 Phase 2 BIND)**: added MANDATE 22 (closed-set member enumeration from `sets.gms`) — the first MANDATE shipped WITH a fresh mechanical guard (`scripts/check_set_members.py` / Check 29), so the answer-time rule and the validate-time check land together. Motivating bug: R52 module_52 land-set (Critical) invented `plant_pri`/`plant_sec` + omitted `forestry`, in BOTH inline and bulleted form. Also extended MANDATE 18 with the per-slice populator corollary (R52 P1-B1: soilc init mis-attributed to M56; M59 owns the soilc slice) — folded into 18, NOT a standalone MANDATE, because it was one doc-gap-driven Major bug and a per-slice instance of an existing rule (evidence-calibrated; avoid MANDATE proliferation). And CLOSED MANDATE 3's "future Pattern 13 mechanization" note by citing the now-landed Check 20 (param defaults vs source) + Check 30 (intra-doc default contradiction). Total now 22 MANDATEs. Record: `audit/BACKLOG.md` R53 + `validation_rounds.json` round 52.
 
 
 ---
