@@ -209,7 +209,7 @@ If in first time step (`ord(t) = 1`) AND initialization switch is ON, set level 
 These are calculated in Module 30 and 31 equations as:
 ```
 vm_prod(j,crop) = vm_area(j,crop,water) × vm_yld(j,crop,water)
-vm_prod(j,pasture) = vm_area(j,pasture,water) × vm_yld(j,pasture,water)
+vm_prod(j,"pasture") =l= vm_land(j,"past") × vm_yld(j,"pasture","rainfed")
 ```
 
 **Citation:** Used in `equations.gms:11`

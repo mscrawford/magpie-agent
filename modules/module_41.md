@@ -616,7 +616,7 @@ vm_cost_AEI.fx(i) = 0;
 ### 8.2 Downstream Dependencies
 
 **Module 30 (Croparea)**:
-- Uses vm_AEI(j) as upper bound on sum(kcr, vm_area(j,kcr,"irrigated"))
+- The irrigation cap `sum(kcr, vm_area(j,kcr,"irrigated")) =l= vm_AEI(j)` is equation q41_area_irrig in Module 41 itself (endo_apr13/equations.gms:10-11), which reads vm_area from Module 30; the default croparea realization (simple_apr24) lists vm_AEI in its not_used.txt and does not consume it. Only the non-default detail_apr24 reads vm_AEI, in the rotation constraint q30_rotation_max_irrig.
 - Irrigation expansion in Module 41 enables crop production increase in Module 30
 
 **Module 11 (Costs)**:

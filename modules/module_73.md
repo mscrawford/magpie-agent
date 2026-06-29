@@ -139,7 +139,7 @@ Demand(t) = Demand(t-1) × [Pop(t)/Pop(t-1)] × [GDP_pc(t)/GDP_pc(t-1)]^elastici
 **Components**:
 - **Population growth** (linear effect from Module 09)
 - **Income growth** (exponential effect with elasticity from Module 09)
-- **Income elasticity** (from Morland et al. 2018, `input.gms:39-44`)
+- **Income elasticity** (from Morland et al. 2018, `input.gms:33`)
 
 #### 3.2 Income Elasticity Threshold
 
@@ -207,7 +207,7 @@ pm_demand_forestry(t_all,i,kforestry) = round(p73_timber_demand_gdp_pop(t_all,i,
 
 #### 4.1 Churkina et al. 2020 Scenarios (Default: s73_expansion = 0)
 
-**Location**: `input.gms:11-12`, `preloop.gms:66-69`
+**Location**: `input.gms:11-12`, `preloop.gms:72-75`
 
 ```gams
 if(s73_expansion = 0,
@@ -262,7 +262,7 @@ $endif
 - **nopaper**: Reduced paper demand (digital transition)
 - **construction**: Modified demand for construction scenarios
 
-**Modifier** (`input.gms:55-57`): Time-varying factor to adjust demand
+**Modifier** (`input.gms:41`): Time-varying factor to adjust demand
 
 ---
 
@@ -498,7 +498,7 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 | **`s73_woodfuel_stacking_factor`** | **0.65** | solid m3 / stere | NEW 2026-04-20: FAO woodfuel statistics are reported in stacked m3 (stere); 1 stere ≈ 0.65 solid m3 (FAO 2004 UWET §5.1.3; FAO/ITTO/UNECE 2020 Table 2.2) | input.gms:24 |
 
 **Scenario Switches**:
-- `c73_wood_scen`: default / nopaper / construction (`input.gms:8-9`)
+- `c73_wood_scen`: default / construction (`input.gms:9-10`)
 - `c73_build_demand`: BAU / 10pc / 50pc / 90pc (`input.gms:11-12`)
 
 ---
@@ -652,7 +652,7 @@ Natural Forests
    - Simple expansion scenarios: `preloop.gms:72-73`, `input.gms:26`
 
 5. ✅ **Income-elastic demand**:
-   - Elasticity from Morland et al. 2018: `input.gms:39-44`
+   - Elasticity from Morland et al. 2018: `input.gms:33`
    - Zero elasticity above 10k USD17PPP/cap: `preloop.gms:15`
    - Woodfuel always elastic (inferior good): `preloop.gms:16`
 
@@ -778,7 +778,7 @@ s73_expansion = 0          * Use Churkina demand, not simple expansion
 - Starts after sm_fix_SSP2 (typically 2020-2025)
 - Drives plantation expansion
 
-**File**: `input.gms:11-12`, `preloop.gms:66-69`
+**File**: `input.gms:11-12`, `preloop.gms:72-75`
 
 ---
 
@@ -811,7 +811,7 @@ s73_timber_prod_cost_woodfuel = 100 * Higher woodfuel cost
 - Affects Module 32 establishment decisions
 - Changes trade patterns (Module 21)
 
-**File**: `input.gms:19-20`, `preloop.gms:83-84`
+**File**: `input.gms:15-16`, `preloop.gms:90-91`
 
 ---
 
@@ -827,7 +827,7 @@ s73_timber_prod_cost_woodfuel = 100 * Higher woodfuel cost
 
 **Effect**: Changes future demand projections and required timber supply
 
-**File**: `input.gms:39-44`, `preloop.gms:14-16`
+**File**: `input.gms:33`, `preloop.gms:14-16`
 
 ---
 

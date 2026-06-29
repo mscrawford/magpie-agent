@@ -257,9 +257,9 @@ Count: 3
 **clcl_mapping** - Köppen-Geiger → simple (sets.gms:48-81)
 ```gams
 clcl_mapping(clcl,clcl58)
-  / Af.tropical, Am.tropical, ... (30 mappings) /
+  / Af.tropical, Am.tropical, ... (31 mappings) /
 ```
-Maps 30 detailed Köppen-Geiger classes to 3 simple classes
+Maps 31 detailed Köppen-Geiger classes to 3 simple classes
 
 ---
 

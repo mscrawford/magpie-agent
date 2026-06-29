@@ -287,7 +287,7 @@ vm_bv(j2,"rangeland",potnatveg) =e=
 #### `vm_yld(j,"pasture","rainfed")` - Rainfed Pasture Yield
 **Source**: Module 14 (Yields)
 **Usage**: `equations.gms:18` (production constraint)
-**Dimensions**: `(j,kcr,w)` - cells × crops × water source, here specifically ("pasture","rainfed")
+**Dimensions**: `(j,kve,w)` - cells × crops × water source, here specifically ("pasture","rainfed")
 **Units**: tDM per ha per yr
 **Purpose**: Cellular rainfed pasture yield potential
 
@@ -344,7 +344,7 @@ vm_bv(j2,"rangeland",potnatveg) =e=
 
 #### `fm_luh2_side_layers(j,...)` - LUH2 Side Layers
 **Source**: External data (Land Use Harmonization 2 dataset)
-**Usage**: `equations.gms:40,40,43,43` (managed pasture and rangeland shares)
+**Usage**: `equations.gms:40,40,44,44` (managed pasture and rangeland shares)
 **Purpose**: Sub-grid information about pasture management type and potential vegetation shares
 
 **Components**:
@@ -356,7 +356,7 @@ vm_bv(j2,"rangeland",potnatveg) =e=
 
 #### `fm_bii_coeff(landcover,potnatveg)` - BII Coefficients
 **Source**: Module 44 (Biodiversity)
-**Usage**: `equations.gms:40,43` (biodiversity impact factors)
+**Usage**: `equations.gms:40,44` (biodiversity impact factors)
 **Purpose**: Biodiversity Intactness Index coefficients by land cover and potential vegetation type
 
 **Values**: Range 0-1, where 1 = pristine, 0 = complete biodiversity loss.

@@ -983,8 +983,7 @@ Module 42 is a **core participant** in the water balance conservation law:
 - Module 09 (drivers): SSP scenarios for non-agricultural water demands
 - Module 10 (land): Land allocation affects agricultural water indirectly
 - Module 30 (croparea): `vm_area(j,kcr,"irrigated")` - irrigated cropland area
-- Module 70 (livestock): `vm_prod(j,kli)` - livestock production (water for animals)
-- Module 41 (irrigation): Irrigation infrastructure affects efficiency
+- Module 17 (production): `vm_prod(j,kli)` - livestock production (water for animals)
 
 ### Circular Dependencies
 

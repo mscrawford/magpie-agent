@@ -455,7 +455,7 @@ q32_bv_ndc(j2,potnatveg) .. vm_bv(j2,"aff_ndc",potnatveg)
           p32_bii_coeff("ndc",bii_class_secd,potnatveg)) * fm_luh2_side_layers(j2,potnatveg);
 ```
 
-**Translation**: Biodiversity value of NPI/NDC afforestation. Same structure as `q32_bv_aff` but uses `ndc` land pools and `ndc`-specific BII coefficients. Module 32 here **populates** the `aff_ndc` slice of `vm_bv(j,"aff_ndc",potnatveg)`. **`vm_bv` is DECLARED in Module 44 (biodiversity, `modules/44_biodiversity/bii_target/declarations.gms`) and POPULATED slice-by-slice by many land modules — each writes only its OWN land-cover slice and does NOT consume the variable** (MANDATE 18 per-slice ownership): Module 29 fixes the `crop_fallow` slice (`modules/29_cropland/simple_apr24/preloop.gms:11`), Module 30 the crop slices (`modules/30_croparea/simple_apr24/equations.gms:57`), Module 31 pasture (`modules/31_past/static/presolve.gms:20`), Module 34 urban (`modules/34_urban/static/presolve.gms:12`), Module 35 natural vegetation (`modules/35_natveg/pot_forest_may24/presolve.gms:285`). The sole **consumer** (RHS reader) is Module 44, which sums all slices in its BII equation (`modules/44_biodiversity/bv_btc_mar21/equations.gms:23`).
+**Translation**: Biodiversity value of NPI/NDC afforestation. Same structure as `q32_bv_aff` but uses `ndc` land pools and `ndc`-specific BII coefficients. Module 32 here **populates** the `aff_ndc` slice of `vm_bv(j,"aff_ndc",potnatveg)`. **`vm_bv` is DECLARED in Module 44 (biodiversity, `modules/44_biodiversity/bii_target/declarations.gms`) and POPULATED slice-by-slice by many land modules — each writes only its OWN land-cover slice and does NOT consume the variable** (MANDATE 18 per-slice ownership): Module 29 fixes the `crop_fallow` slice (`modules/29_cropland/detail_apr24/equations.gms:77`), Module 30 the crop slices (`modules/30_croparea/simple_apr24/equations.gms:57`), Module 31 pasture (`modules/31_past/endo_jun13/equations.gms:38`), Module 34 urban (`modules/34_urban/exo_nov21/equations.gms:35`), Module 35 natural vegetation (`modules/35_natveg/pot_forest_may24/presolve.gms:285`). The sole **consumer** (RHS reader) is Module 44, which sums all slices in its BII equation (`modules/44_biodiversity/bii_target/equations.gms:16`).
 
 **q32_bv_plant** (`equations.gms:138-141`):
 ```gams
@@ -715,7 +715,7 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 **Module 10 ↔ Module 32**:
 - 32 provides `vm_land(j,"forestry")` to 10
-- 10 provides `pm_max_forest_est` to 32
+- 35 provides `pm_max_forest_est` to 32
 - **Resolved**: `pm_max_forest_est` calculated in Module 35 presolve, available before Module 32 presolve
 
 **Module 32 ↔ Module 73**:

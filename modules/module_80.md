@@ -326,7 +326,7 @@ Failure (modelstat > 2 and ≠ 7):
 
 **Configuration switches** — `nlp_apr17` is solver-agnostic in the sense that it uses CONOPT4 with the `s80_resolve_option`-driven retry cycle; no separate `c80_nlp_solver` switch (that's lp_nlp_apr17-specific).
 
-**Compared with lp_nlp_apr17**: nlp_apr17 has 2 declarations + 4 inputs vs. lp_nlp_apr17's 4 declarations + 4 inputs. The missing 2 parameters (`s80_obj_linear`, plus the LP-warmstart-specific bookkeeping) reflect nlp_apr17's no-LP-warmstart simplification.
+**Compared with lp_nlp_apr17**: both realizations declare 4 objects (2 parameters + 2 scalars) and take 4 input scalars. They share `p80_modelstat`, `p80_num_nonopt`, and `s80_counter`; they differ only in the fourth declaration: nlp_apr17 declares `s80_resolve_option` (drives the CONOPT4 retry cycle), whereas lp_nlp_apr17 declares `s80_obj_linear` (records the LP-warmstart objective value).
 
 ---
 

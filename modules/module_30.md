@@ -795,7 +795,7 @@ q30_rotation_min(j2,crpmin30,w) ..
 #### policy_countries30(iso)
 **Declaration**: `input.gms:38-63`
 **Type**: Set
-**Default**: All 196 countries
+**Default**: All 249 countries
 
 **Description**: Countries affected by bioenergy tree targets. Default includes all countries; can be modified to target specific regions.
 

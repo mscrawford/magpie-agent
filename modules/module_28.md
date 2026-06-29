@@ -785,7 +785,7 @@ m_yeardiff_forestry(t) = 5$(ord(t)=1) + (m_year(t)-m_year(t-1))$(ord(t)>1)
 
 ### Dependencies
 - **Upstream**: None (Module 28 reads external data only)
-- **Downstream**: Module 35 (Natural Vegetation), Module 32 (Forestry)
+- **Downstream**: Module 35 (Natural Vegetation), Module 32 (Forestry), Module 52 (Carbon), Module 29 (Cropland)
 
 ### Key Limitations
 1. **Historical snapshot** (circa 2000, no updates)

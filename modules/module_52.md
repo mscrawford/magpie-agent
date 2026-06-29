@@ -260,7 +260,7 @@ Bisection: if `GS_trial < f52_fra_nrf_gs(i)`, raise lower bound; else raise uppe
 After convergence, **overwrite** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` with calibrated growth curve (`preloop.gms:71-73`).
 
 **Step 4 — Plantation `k` calibration** (`preloop.gms:84-116`):
-Analogous to Step 3, with these differences. The age distribution comes from Module 32 (forestry) plantation pools; the target value is the FRA plantation growing stock; the LPJmL asymptote is the secondary-forest C_max (reused, not a separate input); and only the shape parameter `m` differs (it uses the plantation-specific average). Plantation vegc is overwritten at `preloop.gms:114-116`.
+Analogous to Step 3, with these differences. The age distribution comes from Module 32 (forestry) plantation pools; the target value is the FRA plantation growing stock; the LPJmL asymptote is the secondary-forest C_max (reused, not a separate input); the shape parameter `m` uses the plantation-specific average; and the aboveground-fraction argument also differs (plantation uses `fm_aboveground_fraction("forestry")` at `preloop.gms:96`, secdforest uses `fm_aboveground_fraction("secdforest")` at `:61`). Plantation vegc is overwritten at `preloop.gms:114-116`.
 
 **Consumers of `fm_carbon_density`** (broadly used outside M52):
 - Module 14 (Yields) — `modules/14_yields/managementcalib_aug19/presolve.gms:35`

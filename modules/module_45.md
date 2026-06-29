@@ -519,7 +519,7 @@ parameter_value(j) = sum(clcl, pm_climate_class(j,clcl) * f_climate_parameter(cl
 
 ## Interface Variables
 
-Module 45 is a **data/sets provider module** with no interface variables (`vm_`, `pm_`, `im_`). It provides climate classification sets (`clcl`) and mapping data used by Modules 58 (Peatland) and 59 (SOM) for climate-dependent calculations.
+Module 45 is a **data/parameter provider module**. Its main interface parameter is `pm_climate_class(j,clcl)` (Koeppen-Geiger climate classification, declared in `modules/45_climate/static/input.gms:10`); it also defines the climate-classification set `clcl` (`modules/45_climate/static/sets.gms:12`). `pm_climate_class` is consumed by Module 14 (yields, `modules/14_yields/managementcalib_aug19/presolve.gms:29`), Module 52 (carbon, `modules/52_carbon/normal_dec17/start.gms:17`), Module 58 (peatland, `v2`), and Module 59 (SOM, `cellpool_jan23`) for climate-dependent calculations.
 
 ## Participates In
 
