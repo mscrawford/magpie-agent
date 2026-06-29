@@ -164,7 +164,7 @@ p73_income_elasticity(t_all,iso,"wood_fuel") = f73_income_elasticity("wood_fuel"
 p73_forestry_demand_prod_specific(t_past_forestry,iso,total_wood_products) = f73_prod_specific_timber(t_past_forestry,iso,total_wood_products);
 ```
 
-**VERIFIED**: Historical demand (before ~2020) set to FAO values (`input.gms:33-36`).
+**VERIFIED**: Historical demand (before ~2020) set to FAO values (`f73_prod_specific_timber`, `input.gms:27-29`).
 
 #### 3.4 Regional Aggregation
 

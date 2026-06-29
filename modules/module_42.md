@@ -993,7 +993,7 @@ Module 42 participates in **indirect circular dependencies** through the Cropare
 - Module 30 (Croparea) → allocates irrigated vs rainfed area
 - Module 42 (Water Demand) → calculates agricultural water needs based on irrigated area
 - Module 43 (Water Availability) → constrains water withdrawals (may limit irrigation)
-- Module 41 (Irrigation Infrastructure) → affects irrigation efficiency and costs
+- Module 41 (Irrigation Infrastructure) → provides the equipped-irrigation area cap (`vm_AEI`; binds croparea only in the non-default `detail_apr24`)
 - **Feedback**: Water scarcity (high shadow prices) → reduces irrigated area allocation → lower water demand
 
 **Resolution Mechanism**: Simultaneous optimization

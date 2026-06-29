@@ -768,8 +768,8 @@ m_yeardiff_forestry(t) = 5$(ord(t)=1) + (m_year(t)-m_year(t-1))$(ord(t)>1)
 - **Complexity**: Simple (data loading + set manipulation)
 
 ### Key Interfaces
-- **im_forest_ageclass(j,ac)** - Forest area by 5-year age-class (Mha), used by Module 35
-- **ac_est(ac)** - Establishment age-classes (dynamic set), used by Module 32
+- **im_forest_ageclass(j,ac)** - Forest area by 5-year age-class (Mha), used by Modules 35 and 52
+- **ac_est(ac)** - Establishment age-classes (dynamic set), used by Modules 32 and 29
 - **ac_sub(ac)** - Sub-rotation age-classes (dynamic set), used by Module 32
 
 ### Age-Class Structure
