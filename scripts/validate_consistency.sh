@@ -105,8 +105,10 @@ check_error() {
 # no self-check and drifted). The legacy first arg ("N/M") is now ignored.
 # R53 (2026-06-28): +2 advisory checks (29 set-member drift, 30 intra-doc default
 # contradiction) appended -> 30. Appended, never middle-renumbered (stable IDs).
+# 2026-06-29: +1 advisory check (31 role-attribution: declared-in/provider claims vs
+# declarations.gms) appended -> 31.
 SECTION_NUM=0
-SECTION_TOTAL=30
+SECTION_TOTAL=31
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1104,6 +1106,37 @@ if [ -f "$INTRA_DOC_SCRIPT" ]; then
     fi
 else
     check_warning "Intra-doc contradiction checker not found: $INTRA_DOC_SCRIPT"
+fi
+
+# ===============================================
+# Check 31: Role attribution / declarer verification (2026-06-29, advisory)
+# Verifies explicit "declared in / provided by Module X" claims (and "Module X provides
+# `var`") against declarations.gms (build_producer_map). Mechanizes the FP-safe DECLARED
+# half of MANDATE 18. Positive control (in the script's --self-test): a planted
+# "vm_carbon_stock declared in Module 52" (actual M56) + an "M10 provides pm_max_forest_est"
+# phantom; FP-traps incl. legit slice-populator and the module_17.md:772 prose mis-bind.
+# ===============================================
+print_section "" "Checking doc role-attribution (declared-in / provider claims vs declarations.gms)..."
+
+ROLE_ATTR_SCRIPT="$AGENT_DIR/scripts/check_role_attribution.py"
+if [ -f "$ROLE_ATTR_SCRIPT" ]; then
+    if ROLEATTR_OUTPUT=$(python3 "$ROLE_ATTR_SCRIPT" 2>&1); then ROLEATTR_EXIT=0; else ROLEATTR_EXIT=$?; fi
+    ROLEATTR_SUMMARY=$(echo "$ROLEATTR_OUTPUT" | head -1 | sed 's/^[[:space:]]*//')
+    if echo "$ROLEATTR_OUTPUT" | head -1 | grep -q "0 mismatches"; then
+        check_pass "$ROLEATTR_SUMMARY"
+    elif [ $ROLEATTR_EXIT -eq 0 ]; then
+        check_warning "$ROLEATTR_SUMMARY"
+        echo "$ROLEATTR_OUTPUT" | grep "^    " | head -10 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Role-attribution checker failed (exit $ROLEATTR_EXIT)"
+        echo "$ROLEATTR_OUTPUT" | head -5 | while read -r line; do
+            log "    $line"
+        done
+    fi
+else
+    check_warning "Role-attribution checker not found: $ROLE_ATTR_SCRIPT"
 fi
 
 # ============
