@@ -18,6 +18,10 @@ When describing how land changes, distinguish which one you mean. The default `l
 
 `module_10.md` historically said "200 cells" in 2 locations. This is wrong as a hardcoded claim. MAgPIE's spatial resolution is configurable via `cfg$magpie_folder` and the input data; common runs use 200 cells but other resolutions exist. Don't cite a specific cell count as if it's a hard property of the module.
 
+### Input source/vintage labels are preproc-owned claims (verify, don't trust the filename)
+
+Source/vintage labels in `module_10.md`'s Data Sources section are input-provenance CLAIMS, owned by the preprocessing side. Verify them from the file's own madrat comment (`getComment(read.magpie("modules/10_land/input/avl_land_t.cs3"))` -> the `origin:` line), not the filename. As of 2026-07-09 the main land-init `avl_land_t.cs3` -> `f10_land` is **LUH3** (origin `calcOutput("LanduseInitialisation", ... mrlandcore 1.6.5)`; cf. `core_docs/Data_Flow.md:40`, audit P5-B1), not the "LUH2" older text asserted. The **side layers** (`luh2_side_layers.cs3`, `module_10.md:239`) are genuinely LUH2 (BendingTheCurve / Leclère) - so not every "LUH" here is wrong. A `luh2_*` filename is a legacy identifier, not a source (MAgPIE is mid LUH2->LUH3 migration). Only assert a vintage you have verified; route vintage questions to `PREPROC_AGENT.md`. (Source: 2026-07-09 session.)
+
 ---
 
 ## 💡 Lessons Learned

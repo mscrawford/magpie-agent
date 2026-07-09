@@ -220,13 +220,13 @@ table f10_land(t_ini10,j,land) Different land type areas (mio. ha)
 $include "./modules/10_land/input/avl_land_t.cs3"
 ```
 
-**Source**: Land-Use Harmonization 2 (LUH2) dataset
+**Source**: Land-Use Harmonization 3 (LUH3) dataset (CMIP7 input4MIPs), via `mrlandcore::calcLanduseInitialisation` -> `calcLanduseInitialisationBase` -> `calcLUH3`. *(Corrected from "LUH2" on 2026-07-09: vintage verified from the file's madrat `getComment` origin `calcOutput("LanduseInitialisation", ... mrlandcore 1.6.5)`, not the filename; cf. `core_docs/Data_Flow.md:40`, audit P5-B1, and `module_10_notes.md`. Data-source vintage is preproc-owned - route vintage questions to `PREPROC_AGENT.md`.)*
 **Resolution**: 0.5° gridded, aggregated to ~200 MAgPIE cells (default c200 spatial resolution)
 **Years**: 1995, 2000, 2005, 2010, 2015
 **Correction**: Negative values (from rounding) set to zero (`input.gms:16`)
 
 **Data Processing**:
-- LUH2 categories mapped to MAgPIE land types:
+- LUH3 categories mapped to MAgPIE land types (schematic; authoritative mapping is `mrlandcore::calcLanduseInitialisationBase`):
   - `c3ann + c4ann` → crop
   - `pastr + range` → past
   - `primf` → primforest
