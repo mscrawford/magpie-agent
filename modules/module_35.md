@@ -510,6 +510,9 @@ v35_hvarea_other(j2,othertype35,ac_sub) =l= v35_other_reduction(j2,othertype35,a
 
 #### 6.6 Timber Production
 
+> **🔄 Updated 2026-07-14 (MAgPIE commit `6b00f9dea`, "Fix youngsecdf wood production: use uncalibrated growing stock"):** The `youngsecdf` term of `q35_prod_other` no longer reads `im_growing_stock(...,"secdforest")`. It now reads a **new Module-14 parameter, `im_growing_stock_ysf(t,j,ac)`**, derived from the *uncalibrated* secdforest carbon curve.
+> **The old behaviour was a bug, not a design choice.** youngsecdf *carbon* is booked from the uncalibrated curve (`presolve.gms:242`), while its *wood yield* was priced off the FRA-2025-**calibrated** curve. Harvesting youngsecdf therefore yielded secondary-forest-scale wood volumes while booking almost no carbon — so the optimiser could **relocate wood harvest onto youngsecdf to evade land-CO2 caps and carbon prices**. Yield and carbon now come from the same curve. Ungated; result-changing for scenarios with land-CO2 pricing or AFOLU caps.
+
 > **🔄 Updated 2026-04-20 (PR #869):** Formerly *pm_timber_yield* (tDM/ha/yr, flux) → `im_growing_stock` (tDM/ha, stock). Same formula structure; consumers still divide by `m_timestep_length_forestry` to recover an annual flux. `im_growing_stock` is now provided by **Module 14** (was already Module 14's responsibility; just renamed). Under the new default `s52_growingstock_calib = 1`, the underlying `pm_carbon_density_secdforest_ac(vegc)` is calibrated to FRA 2025 NRF growing stock before M14 computes `im_growing_stock`.
 
 **q35_prod_secdforest** (`equations.gms:144-147`):
@@ -536,12 +539,15 @@ v35_hvarea_primforest(j2) * sum(ct, im_growing_stock(ct,j2,"acx","primforest")) 
 sum(kforestry, vm_prod_natveg(j2,"other",kforestry))
 =e=
 (sum(ac_sub, v35_hvarea_other(j2,"othernat",ac_sub) * sum(ct, im_growing_stock(ct,j2,ac_sub,"other")))
-+ sum(ac_sub, v35_hvarea_other(j2,"youngsecdf",ac_sub) * sum(ct, im_growing_stock(ct,j2,ac_sub,"secdforest"))))
++ sum(ac_sub, v35_hvarea_other(j2,"youngsecdf",ac_sub) * sum(ct, im_growing_stock_ysf(ct,j2,ac_sub))))
 / m_timestep_length_forestry;
 ```
 
-**Purpose**: Woody biomass production from other land. `othernat` uses "other" growing stock while `youngsecdf` uses "secdforest" growing stock (since young secondary forest has timber characteristics closer to secondary forest). Both are summed and divided by timestep length.
-**Key variables**: `v35_hvarea_other` (harvest area by subtype and age), `im_growing_stock` (values differ by subtype: "other" vs "secdforest")
+**Purpose**: Woody biomass production from other land, summed over the two `othertype35` subtypes and divided by timestep length. The two subtypes read **two different Module-14 parameters**:
+- `othernat` → `im_growing_stock(ct,j2,ac_sub,"other")` — the `"other"` slice of the `land_timber`-keyed parameter.
+- `youngsecdf` → `im_growing_stock_ysf(ct,j2,ac_sub)` — a **separate parameter**, not a slice (`youngsecdf` is not a member of `land_timber`). It is built from the *uncalibrated* secdforest carbon curve, so that youngsecdf's wood yield and its carbon (`presolve.gms:242`, same curve) stay consistent. Before `6b00f9dea` this term read `im_growing_stock(...,"secdforest")` — the calibrated curve — which is what let harvest on youngsecdf book wood without carbon.
+
+**Key variables**: `v35_hvarea_other` (harvest area by subtype and age); `im_growing_stock(t,j,ac,"other")` and `im_growing_stock_ysf(t,j,ac)` (two distinct M14 parameters — see `modules/14_yields/managementcalib_aug19/presolve.gms:51-58` and `:64-71`); `m_timestep_length_forestry` (timestep divisor)
 
 #### 6.7 Regeneration
 
@@ -902,7 +908,8 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 - `fm_carbon_density(t,j,land,ag_pools)` - Primary forest carbon density
 
 **From Module 14 (Yields)** (was previously attributed to Module 73; corrected 2026-04-20):
-- `im_growing_stock(t,j,ac,land_timber)` — Harvestable stem biomass by age class (tDM/ha). Renamed 2026-04-20 from *pm_timber_yield* (tDM/ha/yr); semantic changed from flux to stock.
+- `im_growing_stock(t,j,ac,land_timber)` — Harvestable stem biomass by age class (tDM/ha). Renamed 2026-04-20 from *pm_timber_yield* (tDM/ha/yr); semantic changed from flux to stock. Read by `q35_prod_secdforest`, `q35_prod_primforest`, and the `othernat` term of `q35_prod_other`.
+- `im_growing_stock_ysf(t,j,ac)` — Harvestable stem biomass by age class for young secondary forest on other land (tDM/ha), from the **uncalibrated** secdforest curve. Added 2026-07-14 (`6b00f9dea`). Read **only** by the `youngsecdf` term of `q35_prod_other` (`equations.gms:166`). M35 is its sole consumer in the model.
 
 **From Module 44 (Biodiversity)**:
 - `fm_bii_coeff(bii_class,potnatveg)` - Biodiversity intactness coefficients

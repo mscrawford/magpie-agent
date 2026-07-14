@@ -821,7 +821,7 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 #### 9.2 Afforestation Policy
 
-**c32_aff_policy** = none, npi, ndc, affexp (`input.gms:9-10`)
+**c32_aff_policy** = none, npi, ndc, affexp, ndcdelay (`input.gms:9-10`)
 
 **Default**: `npi` (NPI policy afforestation is on by default)
 
@@ -830,8 +830,11 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 - `npi`: National Policy Instruments (implemented policies)
 - `ndc`: Nationally Determined Contributions (Paris pledges)
 - `affexp`: NPI-2025 baseline plus country-specific forest-expansion targets after 2030, set as a share of available potential forest at a given annual rate, differentiated between developing and developed countries (added on develop 2026-05 for the ELEVATE project "Good Performance" scenario)
+- `ndcdelay`: NDC afforestation with milestone target-years (≥2030) delayed by country cluster — PRISMA "Asymmetric Roll-back": transition leaders +10y, diversifying economies +20y, fossil-dependent economies +30y (added on develop 2026-07, commit `58bde5788`)
 
-**Data source**: `f32_aff_pol(t,j,pol32)` from `npi_ndc_aff_pol.cs3` (`input.gms:70-74`), where `pol32 = none, npi, ndc, affexp` (`sets.gms:19-20`)
+**Data source**: `f32_aff_pol(t,j,pol32)` from `npi_ndc_aff_pol.cs3` (`input.gms:71-75`), where `pol32 = none, npi, ndc, affexp, ndcdelay` (`sets.gms:19-20`)
+
+> **⚠️ This switch is 100% data-driven — there is NO code branch for any policy.** The whole selection is one lookup: `p32_aff_pol(t,j) = round(f32_aff_pol(t,j,"%c32_aff_policy%"),6);` (`preloop.gms:182`). The substance of each policy lives entirely in a **column of the input file** `npi_ndc_aff_pol.cs3`, which is downloaded (not in git). A policy named in `pol32` but absent from that file's header therefore yields **`f32_aff_pol = 0` everywhere, silently, with no GAMS error** — see `module_32_notes.md` § "Silent zero: affexp / ndcdelay vs the pinned input revision" before using `affexp` or `ndcdelay`.
 
 #### 9.3 Rotation Calculation
 
@@ -901,14 +904,15 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 
 #### 10.1 NPI/NDC Policy Data
 
-**f32_aff_pol(t,j,pol32)** - `input.gms:70-74`:
+**f32_aff_pol(t,j,pol32)** - `input.gms:71-75`:
 - **Dimensions**: time × cell × policy type
 - **Units**: Mha new forest relative to 2010
-- **Source**: Country reports (NPI/NDC submissions to UNFCCC)
+- **Source**: Country reports (NPI/NDC submissions to UNFCCC), preprocessed by `calcOutput("NpiNdcAffPol")` into `npi_ndc_aff_pol.cs3`
 - **Interpolation**: Linear between reported years
+- **⚠️ Column coverage is NOT guaranteed to match `pol32`** — the `.cs3` header lists only the policies the input revision actually ships. A `pol32` member with no column reads as 0. See `module_32_notes.md`.
 
 **p32_aff_pol(t,j)** - `declarations.gms:14`:
-- **Derived**: Selected policy (npi, ndc, or affexp) based on `c32_aff_policy`
+- **Derived**: Selected policy (`npi`, `ndc`, `affexp`, or `ndcdelay`) based on `c32_aff_policy` — a bare table lookup, no code branch (`preloop.gms:182`)
 - **Cumulative**: Total afforestation target by time t
 
 **p32_aff_pol_timestep(t,j)** - `declarations.gms:15`:

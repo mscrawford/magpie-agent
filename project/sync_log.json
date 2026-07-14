@@ -2,10 +2,10 @@
   "_comment": "Tracks synchronization between MAgPIE codebase and agent documentation",
   "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
   "sync_status": {
-    "last_sync_date": "2026-06-28",
-    "last_sync_commit": "6304d830b",
-    "last_sync_commit_date": "2026-06-26",
-    "last_sync_commit_message": "Merge pull request #905 from pascal-sauer/develop",
+    "last_sync_date": "2026-07-14",
+    "last_sync_commit": "0d7ebeb90",
+    "last_sync_commit_date": "2026-07-02",
+    "last_sync_commit_message": "Merge pull request #913 from mishkos/f_prisma",
     "synced_by": "AI agent (Claude, Opus 4.8)",
     "magpie_branch": "develop"
   },
@@ -14,6 +14,58 @@
     "commits": []
   },
   "recent_syncs": [
+    {
+      "date": "2026-07-14",
+      "commit_range": "6304d830b..0d7ebeb90",
+      "summary": "Develop sync (6304d830b..0d7ebeb90, 53 commits, 9 touching modules/). Three GAMS-affecting changes. (1) 6b00f9dea (flohump) 'Fix youngsecdf wood production: use uncalibrated growing stock' — adds NEW cross-module interface im_growing_stock_ysf(t,j,ac) in M14 (declarations.gms:18, presolve.gms:64-71, clamps :80-81) and repoints the youngsecdf term of q35_prod_other to it (35_natveg/pot_forest_may24/equations.gms:166). Ungated, result-changing bugfix: youngsecdf carbon came from the UNCALIBRATED secdforest curve while its wood yield came from the FRA-2025-CALIBRATED one, so harvest on youngsecdf booked secondary-forest wood volumes against almost no carbon — an escape hatch from land-CO2 caps/prices. M35 is the sole consumer. (2) e45f538d1 (pvjeetze) 'LandMark' conservation option in M22 — consv22_all AND consv_prio22 each gained LandMark_IPLC_delineated / _indicative / _all (area_based_apr22/sets.gms:16-20, :22-26). (3) 58bde5788 + 3c81c56e1 (mishkos, PRISMA) — pol32 gained ndcdelay (dynamic_may24/sets.gms:19-20); f32_aff_pol description now 're-afforestation'. Docs updated: module_14.md (5th growing-stock block + interface/glossary/consumer/invariant entries + stale presolve citations 10-65 -> 10-81, 62-65 -> 75-81, 24-58 -> 24-71), module_35.md (q35_prod_other equation was VERBATIM WRONG at :538-539 and stated the bug as the design rationale; fixed + interface list), cross_module/carbon_balance_conservation.md (the one-curve invariant: a pool's harvest term and carbon term must be driven by the same growth curve, else harvest becomes carbon arbitrage), module_22.md (3 enumerations + the ICCA limitation, which LandMark partly retires), module_32.md (ndcdelay option + data-driven caveat), module_32_notes.md (NEW). config/default.cfg changed 62 lines but is COMMENT-ONLY (no cfg$gms$ realization or switch value changed; verified) — no default-realization drift.",
+      "changes_reviewed": [
+        {
+          "commit": "6b00f9dea",
+          "date": "2026-07-01",
+          "description": "Fix youngsecdf wood production: use uncalibrated growing stock (new interface im_growing_stock_ysf)",
+          "modules_affected": ["14_yields", "35_natveg"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "NEW cross-module interface parameter im_growing_stock_ysf(t,j,ac), declared 14_yields/managementcalib_aug19/declarations.gms:18, computed presolve.gms:64-71 from pm_carbon_density_secdforest_ac_uncalib (52_carbon/normal_dec17/declarations.gms:10; snapshotted pre-calibration at start.gms:43), clamped presolve.gms:80-81 with the same positivity + s14_minimum_growing_stock rules as im_growing_stock. Sync Rule 1 (grep ALL consumers) applied: the SOLE consumer model-wide is 35_natveg/pot_forest_may24/equations.gms:166 (the youngsecdf term of q35_prod_other). NOT a land_timber slice — land_timber is /forestry, primforest, secdforest, other/ (core/sets.gms:256-257) and youngsecdf is not a member; youngsecdf belongs to the M35-local set othertype35 (/othernat, youngsecdf/, pot_forest_may24/sets.gms:23-24), which is why a standalone parameter was needed. Doc-side: module_35.md:538-539 reproduced the PRE-FIX equation verbatim and :543 stated the BUG as the design intent ('youngsecdf uses secdforest growing stock since it has timber characteristics closer to secondary forest') — both corrected. Coherence: youngsecdf now reads the uncalibrated curve for all three of carbon (pot_forest_may24/presolve.gms:242), its 20 tC/ha maturation test (presolve.gms:117, changed 2026-04-20), and wood yield (this commit) — the wood yield was the last holdout."
+        },
+        {
+          "commit": "e45f538d1",
+          "date": "2026-06-17",
+          "description": "added 'LandMark' conservation option in Module 22",
+          "modules_affected": ["22_land_conservation"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "consv22_all (area_based_apr22/sets.gms:16-20) and consv_prio22 (:22-26) each gained LandMark_IPLC_delineated, LandMark_IPLC_indicative, LandMark_IPLC_all. Default c22_protect_scenario stays 'none' (input.gms:10), so default runs are unaffected. VALIDATOR-INVISIBLE drift class: Check 29 (check_set_members.py) tracks only the land family + c_pools/ag_pools, and by design never flags pure OMISSIONS (a strict-subset enumeration is not an error) — so a doc under-enumerating a set after an upstream addition cannot be caught mechanically. Hand-checked. Also updated the module_22.md 'Does NOT Model Indigenous & Community Lands' limitation, which LandMark IPLC partly retires (areas can now be protected; rights/tenure still not modelled)."
+        },
+        {
+          "commit": "58bde5788",
+          "date": "2026-07-02",
+          "description": "added ndcdelay afforestation policy (PRISMA Asymmetric Roll-back)",
+          "modules_affected": ["32_forestry"],
+          "doc_update_needed": true,
+          "doc_update_status": "complete",
+          "notes": "pol32 gained ndcdelay (dynamic_may24/sets.gms:19-20). SILENT-ZERO FINDING (documented in the new module_32_notes.md): c32_aff_policy has NO code branch — the entire selection is one lookup, p32_aff_pol(t,j) = round(f32_aff_pol(t,j,'%c32_aff_policy%'),6) (preloop.gms:182) — so a policy's substance is purely a COLUMN of the downloaded input npi_ndc_aff_pol.cs3 (input.gms:73). The input revision develop pins (rev4.131, per config/default.cfg cfg$input, matching this checkout's input/info.txt) ships that .cs3 with header 'dummy,dummy,none,npi,ndc' — 3 policy columns; affexp and ndcdelay appear 0 times in all 6405 lines. Neither the affexp commit (a54cd02c6, 2026-05-27) nor this one bumped cfg$input. GAMS leaves an absent table column at its 0 default with no error, so selecting ndcdelay (or affexp) yields an all-zero afforestation policy SILENTLY. Verified by code + input-file trace, NOT by running the model. Same switch-into-downloaded-table pattern as c22_protect_scenario -> f22_consv_prio (22_land_conservation/area_based_apr22/preloop.gms:42)."
+        },
+        {
+          "commit": "6a500f5a5",
+          "date": "2026-06-30",
+          "description": "Minor fixes to GAMS code found by newest codeCheck",
+          "modules_affected": ["09_drivers", "14_yields", "15_food"],
+          "doc_update_needed": false,
+          "doc_update_status": "no-op (deliberate, verified — not skipped)",
+          "notes": "COSMETIC ONLY, confirmed file-by-file. 09_drivers/aug17/sets.gms: 'sex Sex groups' -> 'sex \"Sex groups\"' (quoting; module_09.md does not reproduce the description -> zero doc impact). 15_food/anthro_iso_jun22: 'nutrition' set + fm_nutrition_attributes table descriptions quoted (same: quoting is GAMS syntax, the description text is unchanged -> zero doc impact). 14_yields/managementcalib_aug19/preloop.gms:99: i14_FAO_yields_hist -> i14_fao_yields_hist — GAMS identifiers are CASE-INSENSITIVE, so this is the same symbol, not a rename; no renames.json entry needed. It did require ONE doc edit: module_14.md:233 reproduces that exact preloop line verbatim, so the casing was updated to match the code."
+        }
+      ],
+      "modules_updated": ["14", "22", "32", "35"],
+      "modules_no_op": ["09", "15"],
+      "change_impact": "high",
+      "validation_results": {
+        "validator": "validate_consistency.sh: completed=1, 42 checks, 40 passed, 0 errors, 2 pre-existing advisory warnings (6 docs referencing CLAUDE.md; example identifiers vm_production/vm_trade in reference/GAMS_Advanced_Features.md) — both pre-date this sync, confirmed by re-running the checker against a stashed working tree.",
+        "semantic_validation_recommended": true,
+        "semantic_validation_done": false,
+        "note": "A green validator does NOT mean this sync is complete: validate_consistency.sh greps the working tree and is structurally blind to doc-vs-develop drift, and Check 29 cannot see the M22/M32 set-omission class at all. The completion criterion was the hand-checked per-module review above."
+      }
+    },
     {
       "date": "2026-06-28",
       "commit_range": "ee98739fd..6304d830b",

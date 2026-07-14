@@ -241,6 +241,11 @@ vegc(ac) = 0 + (A - 0) * (1 - exp(-k * ac*5))^m
 - When vegc exceeds 20 tC/ha → graduates to secondary forest
 - Tracked by Module 35 age-class dynamics
 
+**⚠️ youngsecdf must stay on ONE growth curve — wood yield AND carbon.**
+`youngsecdf` reads the **uncalibrated** secdforest curve (`pm_carbon_density_secdforest_ac_uncalib`) for all three of: its carbon density (`modules/35_natveg/pot_forest_may24/presolve.gms:242`), its 20 tC/ha maturation test (`modules/35_natveg/pot_forest_may24/presolve.gms:117`), and — since MAgPIE commit `6b00f9dea` (2026-07-14) — its **wood yield**, via the new `im_growing_stock_ysf` (`modules/14_yields/managementcalib_aug19/presolve.gms:64-71`).
+
+Until that commit, the wood yield alone came from the **FRA-2025-calibrated** curve (`im_growing_stock(...,"secdforest")`), while the carbon came from the uncalibrated one. **That mismatch is a carbon-balance leak, not just an inconsistency**: harvesting youngsecdf produced secondary-forest-scale wood volumes while releasing almost no priced carbon, so the optimiser could relocate wood harvest onto youngsecdf to **evade land-CO2 caps and carbon prices**. The general invariant to check whenever a land pool's yield and carbon are derived from growth curves: **the harvest term and the carbon term must be driven by the same curve**, or harvest becomes a carbon-accounting arbitrage.
+
 ---
 
 ### 3.7 Urban

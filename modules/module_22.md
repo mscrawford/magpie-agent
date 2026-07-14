@@ -128,6 +128,7 @@ p22_conservation_area(t,j,land_consv) =
 - **IrrC_xxx**: Irreplaceability thresholds (50%, 75%, 95%, 99%, 100%)
 - **CCA**: Conservation Concern Areas
 - **PBL_HalfEarth**: PBL Half-Earth scenario
+- **LandMark_IPLC_xxx**: Indigenous Peoples' and Local Community lands from LandMark (`delineated`, `indicative`, `all`) — added 2026-06 (`e45f538d1`)
 
 **Special Case: IFL Primary Forest** (`presolve_ini.gms:16-17`):
 ```gams
@@ -346,8 +347,10 @@ if (m_year(t) >= s22_base_protect_reversal,
 |--------|-------------|--------|---------|
 | `c22_base_protect` | Baseline protection scenario | WDPA, WDPA_I-II-III, WDPA_IV-V-VI, none | WDPA |
 | `c22_base_protect_noselect` | Baseline for non-selected countries | (same options) | WDPA |
-| `c22_protect_scenario` | Additional protection scenario | none, BH, IFL, BH_IFL, KBA, 30by30, GSN_xxx, IrrC_xxx, CCA, PBL_HalfEarth, GSN_HalfEarth | none |
+| `c22_protect_scenario` | Additional protection scenario | none, BH, IFL, BH_IFL, KBA, 30by30, GSN_xxx, IrrC_xxx, CCA, PBL_HalfEarth, GSN_HalfEarth, LandMark_IPLC_delineated, LandMark_IPLC_indicative, LandMark_IPLC_all | none |
 | `c22_protect_scenario_noselect` | Scenario for non-selected countries | (same options) | none |
+
+> **🔄 Updated 2026-07-14 (MAgPIE commit `e45f538d1`, "added 'LandMark' conservation option in Module 22"):** three **LandMark IPLC** options were added to *both* `consv22_all` and `consv_prio22` (`area_based_apr22/sets.gms:16-20` and `:22-26`): `LandMark_IPLC_delineated`, `LandMark_IPLC_indicative`, `LandMark_IPLC_all`. These protect Indigenous Peoples' and Local Community lands as mapped by the LandMark initiative. The default remains `none`.
 | `s22_restore_land` | Enable restoration | 0 (no), 1 (yes) | 1 |
 | `s22_conservation_start` | Start year for phase-in | year | 2025 |
 | `s22_conservation_target` | Target year for full implementation | year | 2050 |
@@ -367,7 +370,7 @@ if (m_year(t) >= s22_base_protect_reversal,
 - `WDPA_I-II-III`: Strict protection (IUCN Ia, Ib, III)
 - `WDPA_IV-V-VI`: Less strict protection (IUCN IV, V, VI)
 
-**Conservation Priority Areas** (`consv_prio22`):
+**Conservation Priority Areas** (`consv_prio22`, `sets.gms:22-26`) — `consv_prio22` is `consv22_all` minus `none`:
 - `BH`: Biodiversity Hotspots
 - `IFL`: Intact Forest Landscapes
 - `BH_IFL`: Both BH and IFL
@@ -378,6 +381,9 @@ if (m_year(t) >= s22_base_protect_reversal,
 - `CCA`: Conservation Concern Areas
 - `GSN_HalfEarth`: Half-Earth scenario (Global Safety Net)
 - `PBL_HalfEarth`: Half-Earth scenario (PBL Netherlands)
+- `LandMark_IPLC_delineated`: Delineated Indigenous Peoples' and Local Community lands (LandMark) — **added 2026-06 (`e45f538d1`)**
+- `LandMark_IPLC_indicative`: Indicative Indigenous Peoples' and Local Community lands (LandMark) — **added 2026-06**
+- `LandMark_IPLC_all`: Delineated + indicative IPLC lands (LandMark) — **added 2026-06**
 
 **Land Types Covered**:
 
@@ -801,10 +807,11 @@ Module 22 (Conservation) ──→ pm_land_conservation(t,j,land) ──→ Modu
 - No protected area migration or relocation
 - No adaptation of protection strategies to changing conditions
 
-❌ **8. Does NOT Model Indigenous & Community Lands**:
-- WDPA focuses on formal protected areas (government/NGO managed)
-- Limited coverage of Indigenous and Community Conserved Areas (ICCAs)
-- No explicit recognition of indigenous land rights
+⚠️ **8. Indigenous & Community Lands — PARTLY ADDRESSED since 2026-06 (`e45f538d1`)**:
+- The **baseline** protection (`c22_base_protect`, WDPA) still covers only formal protected areas (government/NGO managed), with limited coverage of Indigenous and Community Conserved Areas (ICCAs).
+- **But** three `LandMark_IPLC_*` options are now available as *additional conservation* scenarios via `c22_protect_scenario` (delineated / indicative / all). Selecting one protects mapped Indigenous Peoples' and Local Community lands.
+- Still absent: any explicit representation of indigenous **land rights or tenure** — the LandMark options impose an area-based protection constraint on IPLC lands, they do not model rights, governance, or use.
+- **Off by default** (`c22_protect_scenario = none`), so a default run still has no IPLC protection.
 
 ❌ **9. Does NOT Include Connectivity or Fragmentation**:
 - Treats each grid cell independently
@@ -1367,7 +1374,7 @@ if(reversal_year < 9999) {  # Reversal enabled
 - No marine protected areas (terrestrial only)
 - No restoration dynamics (instantaneous)
 - No climate change adaptation
-- No indigenous & community lands explicitly
+- No indigenous land *rights/tenure* modelled — though IPLC **areas** can now be protected via the `LandMark_IPLC_*` options (off by default)
 - No connectivity or fragmentation
 - No ecosystem service valuation
 

@@ -24,7 +24,7 @@ Module 14 calculates crop yields and pasture productivity for all agricultural p
 4. **Irrigated/Rainfed Differentiation** (`preloop.gms:123-150`): Calibrates irrigated-to-rainfed yield ratios to match AQUASTAT country-level observations
 5. **Pasture Spillover** (`equations.gms:35-39`): Allows crop sector technological improvements to partially benefit pasture yields
 6. **Degradation Effects** (`preloop.gms:190-195`): Reduces yields based on soil loss and pollination deficiency
-7. **Timber Yield Calculation** (`presolve.gms:24-60`): Converts carbon density to harvestable wood biomass for forestry and natural vegetation
+7. **Timber Yield Calculation** (`presolve.gms:24-81`): Converts carbon density to harvestable wood biomass for forestry and natural vegetation
 
 ### 1.3 Limitations Stated in Code
 
@@ -230,7 +230,7 @@ loop(t,
           i14_fao_yields_hist(t,i,knbe14) = f14_fao_yields_hist(t,i,knbe14);
      Else
           i14_modeled_yields_hist(t,i,knbe14) = i14_modeled_yields_hist(t-1,i,knbe14);
-          i14_FAO_yields_hist(t,i,knbe14)  = i14_fao_yields_hist(t-1,i,knbe14);
+          i14_fao_yields_hist(t,i,knbe14)  = i14_fao_yields_hist(t-1,i,knbe14);
           i14_lambda_yields(t,i,knbe14)   = i14_lambda_yields(t-1,i,knbe14);
      );
 );
@@ -397,7 +397,11 @@ Where:
 
 ## 4. Harvestable Growing Stock Calculation (Presolve Phase)
 
-**File:** `presolve.gms:10-65`
+**File:** `presolve.gms:10-81`
+
+> **🔄 Updated 2026-07-14 (sync from MAgPIE commit `6b00f9dea` "Fix youngsecdf wood production: use uncalibrated growing stock"):**
+> A **second growing-stock parameter** was added: **`im_growing_stock_ysf(t,j,ac)`** (`declarations.gms:18`), for young secondary forest (`youngsecdf`) regrowing on other land. It is the only consumer-facing growing stock that is NOT keyed by `land_timber` — see Section 4.2.
+> **Why it exists (ungated bugfix, result-changing under land-CO2 pricing / AFOLU caps):** youngsecdf *carbon* has always been read from the **uncalibrated** secondary-forest curve (`modules/35_natveg/pot_forest_may24/presolve.gms:242`), but its *wood yield* was read from the **FRA-2025-calibrated** `im_growing_stock(...,"secdforest")`. The two disagreed, so harvesting youngsecdf booked secondary-forest-scale wood volumes against almost no carbon — letting the optimiser relocate wood harvest onto youngsecdf to evade land-CO2 caps and prices. `im_growing_stock_ysf` derives the wood yield from the **same uncalibrated curve the carbon uses**, so yield and carbon are now consistent.
 
 > **🔄 Updated 2026-04-20 (sync from MAgPIE PR #869 "ipopt_part1", commit `75d7ee167`):**
 > The former *pm_timber_yield* (flux, tDM/ha/yr) was renamed to **`im_growing_stock`** (stock, tDM/ha) — a per-age-class stem biomass state variable. Consumers (M32, M35) accordingly divide by `m_timestep_length_forestry` in their production equations to derive a per-year flux.
@@ -492,21 +496,44 @@ im_growing_stock(t,j,ac,"other") =
 
 **Source:** `pm_carbon_density_other_ac` from Module 52 (uncalibrated; no FRA target for "other" land)
 
+#### Young Secondary Forest on Other Land (`youngsecdf`)
+
+**File:** `presolve.gms:64-71`
+
+```gams
+im_growing_stock_ysf(t,j,ac) =
+    (
+     pm_carbon_density_secdforest_ac_uncalib(t,j,ac,"vegc")
+     / sm_carbon_fraction
+     * fm_aboveground_fraction("secdforest")
+     / sum(clcl, pm_climate_class(j,clcl) * fm_ipcc_bef(clcl))
+    );
+```
+
+**Source:** `pm_carbon_density_secdforest_ac_uncalib` from Module 52 (`modules/52_carbon/normal_dec17/declarations.gms:10`; snapshotted from the secdforest curve *before* calibration at `modules/52_carbon/normal_dec17/start.gms:43`).
+
+**Not a `land_timber` slice.** This is a separate parameter with its own dimensions `(t,j,ac)` — NOT `im_growing_stock(t,j,ac,"youngsecdf")`, which would not compile: `land_timber` is `/ forestry, primforest, secdforest, other /` (`core/sets.gms:256-257`) and does not contain `youngsecdf`. `youngsecdf` is a member of the Module-35-local set `othertype35` (`/ othernat, youngsecdf /`, `modules/35_natveg/pot_forest_may24/sets.gms:23-24`), which is why the new growing stock had to be a standalone parameter rather than a fifth slice.
+
+**Why uncalibrated, when `secdforest` above is calibrated:** the two differ precisely because youngsecdf's *carbon* is booked from the uncalibrated curve (`modules/35_natveg/pot_forest_may24/presolve.gms:242`). Pricing its wood off the calibrated curve while booking its carbon off the uncalibrated one made harvest on youngsecdf carbon-cheap relative to its wood volume — the mismatch that commit `6b00f9dea` fixed. The rule to carry forward: **youngsecdf wood yield and youngsecdf carbon must come from the same curve.**
+
 ### 4.3 Constraints on Growing Stock
 
-**File:** `presolve.gms:62-65`
+**File:** `presolve.gms:75-81`
 
 ```gams
 im_growing_stock(t,j,ac,land_timber) = im_growing_stock(t,j,ac,land_timber)$(im_growing_stock(t,j,ac,land_timber) > 0) + 0.0001$(im_growing_stock(t,j,ac,land_timber) = 0);
 im_growing_stock(t,j,ac,land_natveg)$(im_growing_stock(t,j,ac,land_natveg) < s14_minimum_growing_stock) = 0;
+im_growing_stock_ysf(t,j,ac) = im_growing_stock_ysf(t,j,ac)$(im_growing_stock_ysf(t,j,ac) > 0) + 0.0001$(im_growing_stock_ysf(t,j,ac) = 0);
+im_growing_stock_ysf(t,j,ac)$(im_growing_stock_ysf(t,j,ac) < s14_minimum_growing_stock) = 0;
 ```
 
 **What These Do:**
 
 1. **Positive constraint:** Ensure all growing stock values ≥ 0.0001 tDM/ha (prevents division by zero in harvest calculations)
 2. **Minimum harvest threshold:** Natural vegetation growing stock < 5 tDM/ha (~10 m³/ha, very sparse woodland) is set to 0 — too sparse for commercial timber harvest (`s14_minimum_growing_stock = 5`, `input.gms:19`). Renamed from *s14_minimum_wood_yield* (was 10 tDM/ha/yr).
+3. **Both clamps are restated for `im_growing_stock_ysf`** (`presolve.gms:80-81`) — same positivity floor, same minimum-harvest threshold. They have to be restated because `im_growing_stock_ysf` is a *separate symbol*: the clamps above operate on `im_growing_stock` (over `land_timber` / `land_natveg`) and do not reach it.
 
-**Citation:** `presolve.gms:62-65`
+**Citation:** `presolve.gms:75-81`
 
 ---
 
@@ -695,6 +722,16 @@ Module 14 reads 9 input data files:
 **Units caveat:** This is a **stock** (tDM/ha), NOT a flux. Consumers divide by `m_timestep_length_forestry` to derive per-year production.
 
 **Dimensions:** t (time), j (cells), ac (age classes), land_timber (forestry, primforest, secdforest, other)
+
+---
+
+**im_growing_stock_ysf(t,j,ac)** - Harvestable stem biomass per ha by age class for young secondary forest on other land (tDM/ha) — added 2026-07-14 (`6b00f9dea`)
+**Provided to:**
+- Module 35 (Natural Vegetation): the `youngsecdf` term of `q35_prod_other` **only** (`modules/35_natveg/pot_forest_may24/equations.gms:166`) — this is its **sole consumer** in the model
+
+**Dimensions:** t (time), j (cells), ac (age classes). **No `land_timber` dimension** — see Section 4.2.
+**Declared:** `declarations.gms:18`. **Computed:** `presolve.gms:64-71`. **Clamped:** `presolve.gms:80-81`.
+**Units caveat:** stock (tDM/ha), same as `im_growing_stock`; `q35_prod_other` divides the whole right-hand side by `m_timestep_length_forestry`.
 **Citation:** `declarations.gms:17`
 
 **Renamed 2026-04-20** (PR #869, commit `75d7ee167`): formerly *pm_timber_yield(t,j,ac,land_timber)* with units "tDM per ha per yr". The rename aligns the variable name with its actual semantic (stem biomass stock, not annual flux).
@@ -729,11 +766,12 @@ Module 14 reads 9 input data files:
 
 **From Module 52 (Carbon):**
 
-- **pm_carbon_density_plantation_ac(t,j,ac,"vegc")**: Plantation carbon density (tC/ha)
-- **pm_carbon_density_secdforest_ac(t,j,ac,"vegc")**: Secondary forest carbon density (tC/ha)
+- **pm_carbon_density_plantation_ac(t,j,ac,"vegc")**: Plantation carbon density (tC/ha) — calibrated when `s52_growingstock_calib = 1`
+- **pm_carbon_density_secdforest_ac(t,j,ac,"vegc")**: Secondary forest carbon density (tC/ha) — calibrated when `s52_growingstock_calib = 1`
 - **pm_carbon_density_other_ac(t,j,ac,"vegc")**: Other natural land carbon density (tC/ha)
+- **pm_carbon_density_secdforest_ac_uncalib(t,j,ac,"vegc")**: Secondary forest carbon density, **uncalibrated** (tC/ha) — added 2026-07-14 (`6b00f9dea`); the pre-calibration snapshot of the secdforest curve (`modules/52_carbon/normal_dec17/start.gms:43`), used *only* for `im_growing_stock_ysf`
 
-**Citation:** Used in `presolve.gms:26,44,53`
+**Citation:** Used in `presolve.gms:26,44,53,66` (`:66` is the youngsecdf block). Note `primforest` reads `fm_carbon_density` (`presolve.gms:35`), a file parameter — not an M52 `pm_` parameter — which is why it is absent from this list.
 
 ---
 
@@ -859,6 +897,13 @@ Module 14 reads 9 input data files:
 
 _Renamed from `pm_timber_yield` (tDM/ha/yr, flux) in PR #869; see sync note in Section 4._
 
+**`im_growing_stock_ysf(t,j,ac)`** - Harvestable stem biomass by age class for young secondary forest on other land (tDM/ha, stock)
+**Computed in:** `presolve.gms:64-71`
+**Formula:** same structure, but from the **uncalibrated** secdforest curve: `pm_carbon_density_secdforest_ac_uncalib` / `sm_carbon_fraction` × `fm_aboveground_fraction("secdforest")` / `fm_ipcc_bef`
+**Citation:** `declarations.gms:18`
+
+_Added 2026-07-14 (`6b00f9dea`) so that youngsecdf wood yield and youngsecdf carbon come from the same curve; see sync note in Section 4._
+
 ---
 
 ## 10. Nonlinear Fix/Release
@@ -961,7 +1006,7 @@ Following the "Code Truth" principle, it's important to state what Module 14 doe
 
 ### 12.4 Timber Yield = Carbon / Conversion Factors
 
-**Pattern:** All timber yields calculated as `CarbonDensity / 0.5 × AbovegroundFrac / BCE` (`presolve.gms:24-58`).
+**Pattern:** All timber yields calculated as `CarbonDensity / 0.5 × AbovegroundFrac / BCE` (`presolve.gms:24-71`, including the youngsecdf block at `:64-71`).
 
 **Why:** Carbon densities from Module 52 are in tC/ha. Need to convert to harvestable stem wood in tDM/ha using standard forestry conversion factors (carbon fraction, root-to-shoot ratio, biomass expansion).
 
@@ -1026,6 +1071,7 @@ grep "^[ ]*q14_" modules/14_yields/managementcalib_aug19/declarations.gms | wc -
 2. **Check natural forest growing stock respects minimum:**
    ```gams
    * All im_growing_stock(t,j,ac,"primforest") should be either 0 or >= s14_minimum_growing_stock (5 tDM/ha)
+   * The same invariant holds for im_growing_stock_ysf(t,j,ac) (presolve.gms:80-81)
    ```
 
 3. **Check age-class progression:**
@@ -1173,7 +1219,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 - **Module 30 (Croparea):** `vm_yld(j,kcr,w)` → crop production calculation
 - **Module 31 (Pasture):** `vm_yld(j,"pasture",w)` → pasture production calculation
 - **Module 32 (Forestry):** `im_growing_stock(t,j,ac,"forestry")` → plantation harvest
-- **Module 35 (Natural Vegetation):** `im_growing_stock(t,j,ac,land_natveg)` → natural forest harvest
+- **Module 35 (Natural Vegetation):** `im_growing_stock(t,j,ac,land_natveg)` → natural forest harvest; **plus `im_growing_stock_ysf(t,j,ac)`** → the `youngsecdf` term of `q35_prod_other`
 
 ### 16.2 Receives Intensification From
 
@@ -1370,6 +1416,7 @@ Module 14 does **not directly participate** in any conservation laws:
 - `vm_yld(j,kcr,w)`: Crop yields by irrigation type — **MOST CRITICAL OUTPUT**
 - `vm_yld(j,"pasture",w)`: Pasture yields
 - `im_growing_stock(t,j,ac,land_timber)`: Stem biomass stock by age class and land_timber type (renamed 2026-04-20 from `pm_timber_yield`)
+- `im_growing_stock_ysf(t,j,ac)`: Stem biomass stock by age class for young secondary forest on other land, from the **uncalibrated** secdforest curve (added 2026-07-14; sole consumer is `q35_prod_other` in M35)
 
 ### 21.3 Circular Dependencies
 
