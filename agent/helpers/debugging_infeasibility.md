@@ -1,7 +1,12 @@
 # Helper: Debugging Model Infeasibility
 
-**Auto-load triggers**: "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "GAMS error", "solver error", "abort"
-**Lessons count**: 2 entries
+**Auto-load triggers**: "infeasible", "won't solve", "no feasible solution", "modelstat", "error 4", "model failed", "solver error", "abort"
+**Lessons count**: 3 entries
+
+> **Before anything else, read Step 0.** A run that aborts with "... became infeasible
+> during initialisation" is often a *skipped solve* caused by GAMS execution errors, not
+> a real optimizer infeasibility. For pure GAMS compile/execution errors (the model does
+> not reach a solve), use `agent/helpers/debugging_gams_errors.md`.
 
 ---
 
@@ -39,6 +44,24 @@ readGDX(gdx, "ov_land", select = list(type = "level"))
 ---
 
 ## Step-by-Step Debugging Workflow
+
+### Step 0: Is this a real infeasibility, or a skipped solve?
+
+**Do this first.** A MAgPIE run that aborts with a message like
+`"<Model> became infeasible already during initialisation run. Stop run."` is often
+NOT an optimizer infeasibility. Search `full.lst`/`full.log` for:
+
+```
+**** SOLVE from line <N> SKIPPED, EXECERROR = <k>
+```
+
+If you find it, the solve was **never executed**: `k` GAMS execution errors (e.g.
+`log: FUNC SINGULAR: x = 0`, `division by zero`) fired in preloop/presolve *before* the
+solve, so GAMS skipped it and left `modelstat = NA`, which the abort check reports as
+"infeasible". In that case STOP here and go to `agent/helpers/debugging_gams_errors.md`;
+relaxing constraints, checking marginals, or inspecting the land balance will not help.
+Only continue with Steps 1-5 if the model actually solved and returned an infeasible
+`modelstat`.
 
 ### Step 1: Identify the failing timestep
 Check `p80_modelstat(t)` — the first timestep with value > 2 (and ≠ 7) is where it failed. Earlier timesteps solved fine.
@@ -160,6 +183,7 @@ MAgPIE has several slack variables with high penalty costs. When they activate, 
 
 ## Related Helpers & Docs
 
+- **GAMS compile/execution errors** → `agent/helpers/debugging_gams_errors.md` (errors *before/instead of* a solve; the "skipped solve" false infeasibility of Step 0)
 - **Modification safety** → `agent/helpers/modification_impact_analysis.md` (code changes that cause infeasibility)
 - **Carbon policy pitfalls** → `agent/helpers/scenario_carbon_pricing.md` (aggressive pricing → infeasibility)
 - **Conservation constraints** → `cross_module/land_balance_conservation.md` (land conflicts)
@@ -172,3 +196,4 @@ MAgPIE has several slack variables with high penalty costs. When they activate, 
 <!-- Format: - YYYY-MM-DD: [lesson] (source: [user feedback | session experience]) -->
 - 2026-03-06: Module 57 — `s57_implicit_emis_factor=0` causes guaranteed division-by-zero in modules/57_maccs/on_aug22/equations.gms:40,50. Very small values (e.g. 0.0001) destabilize solver by inflating the MACC cost correction term 100×. Also: `s57_maxmac_*` at step 201 causes `1/(1-mitigation)` blowup when mitigation→1.0 (modules/57_maccs/on_aug22/equations.gms:38,48). (source: deep validation agent analysis)
 - 2026-03-06: Module 58 — `s58_rewetting_switch=0` + `s58_rewetting_exo=1` = guaranteed infeasibility (upper bound=0 vs mandate for positive rewetted area). Also: `s58_annual_rewetting_limit=0` + any exo=1 = guaranteed infeasibility. And: `s58_rewet_exo_target_value≥1.0` with default rate limit (0.02/yr) is likely infeasible — max achievable ~50% by 2050 from 2025. Silent bug: `s58_fix_peatland` set to non-timestep year (e.g. 2019) → p58_peatland_ref never populated → targets silently zeroed. (source: deep validation agent analysis)
+- 2026-07-14: "Model became infeasible already during initialisation" is frequently a SKIPPED solve, not a real infeasibility. Search `full.lst`/`full.log` for `SOLVE ... SKIPPED, EXECERROR = k`: k GAMS execution errors (log(0), division by zero) in preloop/presolve made GAMS skip the solve, leaving `modelstat = NA`, which the abort check misreports as infeasible. Fix the execution errors (see `debugging_gams_errors.md`); do NOT relax constraints or chase marginals. Added "Step 0" to the workflow to check this first. (source: session experience — fallow branch; a "Food Demand Model became infeasible" abort was actually a `log(0)` on `f36_hist_hourly_costs` in module 36)
