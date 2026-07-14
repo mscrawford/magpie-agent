@@ -463,7 +463,7 @@ loop(t,
 
 ### 4.2 Current Timestep Marker (ct)
 
-**`ct` is a singleton set** - contains exactly one element at a time.
+**`ct` is a plain set (`set ct(t)`) assigned exactly one element per solve** (via `ct(t) = yes`). It behaves like a singleton at solve time, but it is **not** declared as a GAMS `singleton set`, so GAMS does not always treat a bare `ct` index as a constant scalar (see the pitfall below).
 
 **Purpose**: Reference current timestep in equations without explicit `t` dependency.
 
@@ -480,6 +480,23 @@ ct(t) = no;   * Clear marker
 ```
 
 **Why?**: Equations can't directly reference loop index `t`. Using `ct` allows time-awareness in equations.
+
+**⚠️ Pitfall - wrap `ct` in `sum(ct, ...)` when indexing a file/interface parameter:**
+Because `ct` is a plain (non-singleton) set, using it as a **bare** index on a parameter
+inside an expression that is summed over *other* sets raises compile
+**Error 149 "Uncontrolled set entered as constant"**. The robust idiom - used throughout
+MAgPIE - is to sum over `ct` to pull the current-timestep value:
+```gams
+* WRONG (bare ct inside a sum over cell/w -> Error 149):
+sum((cell(i2,j2),w), vm_area(j2,kcr,w) * fm_multicropping(ct,j2,w,kcr))
+
+* RIGHT (sum(ct, ...) controls ct):
+sum((cell(i2,j2),w), vm_area(j2,kcr,w) * sum(ct, fm_multicropping(ct,j2,w,kcr)))
+```
+Compare `sum(ct, f53_ef_ch4_rice(ct,i2))` in
+`modules/53_methane/ipcc2006_aug22/equations.gms`, which applies this idiom for the same
+reason. A refactor that replaced a summed term with a bare `ct` reference in
+`modules/18_residues` and `modules/53_methane` produced exactly this Error 149.
 
 ### 4.3 Rolling Parameters (pcm_)
 
