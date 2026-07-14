@@ -40,6 +40,18 @@ Where each policy's substance actually lives:
 head -5 modules/32_forestry/input/npi_ndc_aff_pol.cs3 | grep -v '^\*'
 ```
 
+### Don't confuse `ndcdelay` with `s32_npi_ndc_reversal` — both say "roll-back"
+
+`ndcdelay` is the PRISMA **"Asymmetric Roll-back"** scenario, and there is a *separate*, unrelated switch whose name also reads like roll-back. They do different things and they stack:
+
+| | `c32_aff_policy = ndcdelay` | `s32_npi_ndc_reversal` |
+|---|---|---|
+| What | Shifts NDC afforestation **milestone target-years** (≥2030) later, by country cluster (+10 / +20 / +30 y) | The **year in which NPI/NDC afforestation is reversed** — established forest is released back to free bounds |
+| Type | A `pol32` policy name, selected via `c32_aff_policy` | A scalar, `dynamic_may24/input.gms:48`, default **`Inf`** (i.e. never) |
+| Effect | Delays the ramp-up | Undoes it |
+
+`ndcdelay` **delays** afforestation; it does not reverse anything once land is established. If you want the PRISMA scenario, leave `s32_npi_ndc_reversal` at its `Inf` default — otherwise you are stacking a reversal on top of a delay and the run will not mean what you think.
+
 ### 🚩 How this note got written — a cautionary tale worth keeping
 
 The first version of this file asserted the opposite: that `ndcdelay` was **broken** — "selectable but unfed", silently producing a zero policy — and recommended reporting it to the PRISMA authors. Every *premise* was true and verified (no GAMS branch; the on-disk `.cs3` really does have only 3 policy columns; `affexp`/`ndcdelay` really do appear 0 times in its 6405 lines; neither feature commit bumped `cfg$input`). The **conclusion was false**, because the reasoning never left the GAMS layer: it inferred the provenance of a *gitignored, regenerated* artifact from git history alone.

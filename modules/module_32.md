@@ -1394,7 +1394,7 @@ abline(v=rot_age, col="red", lty=2)  # Rotation age
 
 ---
 
-**Last Verified**: 2026-03-06 (11 equations added (31/31 fully documented))
+**Last Verified**: 2026-07-14 (sync `0d7ebeb90` — `ndcdelay` afforestation policy; `npi_ndc_aff_pol.cs3` is a run-time product, see `module_32_notes.md`)
 **Verified Against**: `../modules/32_*/dynamic_may24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

@@ -1173,7 +1173,7 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 
 ---
 
-**Last Verified**: 2026-05-16 (sync — natural-origin tracking for secdforest carbon density)
+**Last Verified**: 2026-07-14 (sync `0d7ebeb90` — youngsecdf wood production repointed to the new `im_growing_stock_ysf`; see §6.6)
 **Verified Against**: `../modules/35_natveg/pot_forest_may24/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: 2026-05-16 sync to commit `c7731e234` (+ refactor `2fa7b8bea`): added Section 5.1 (natural-origin tracking for secondary forest carbon density); new parameters `p35_secdforest_natural`, `pc35_secdforest_natural`, `p35_carbon_density_secdforest`; `q35_carbon_secdforest` now uses blended density `p35_carbon_density_secdforest`; 20 tC/ha maturation test now uses `pm_carbon_density_secdforest_ac_uncalib`; updated file sizes.

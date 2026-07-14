@@ -1605,7 +1605,7 @@ Data sources:
 
 ---
 
-**Last Verified**: 2026-03-06 (synced China PA data from PR #857, WDPA numbers updated)
+**Last Verified**: 2026-07-14 (sync `0d7ebeb90` — LandMark IPLC conservation options added to `consv22_all` / `consv_prio22`)
 **Verified Against**: `../modules/22_*/area_based_apr22/*.gms`
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: None (stable)

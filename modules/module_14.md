@@ -1611,7 +1611,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 
 ---
 
-**Last Verified**: 2026-05-16 (sync — pasture yield correction extrapolation)
+**Last Verified**: 2026-07-14 (sync `0d7ebeb90` — new interface parameter `im_growing_stock_ysf`; see §4.2)
 **Verified Against**: `../modules/14_yields/managementcalib_aug19/*.gms` (develop branch)
 **Verification Method**: Equations cross-referenced with source code
 **Changes Since Last Verification**: 2026-05-16 sync to commit `c7731e234`: `p14_pyield_corr` computation rewritten (Section 3.2) — now applies the historical/LPJmL ratio for every year `f14_pyld_hist` is available (y1965–y2020) and freezes at the last available value, replacing the old `t_past`-conditional that froze at y2015. No new/renamed parameters. Prior: f_btc2 update — `vm_tau`/`pcm_tau` at cluster level (j) in `q14_yield_crop`/`q14_yield_past`.
