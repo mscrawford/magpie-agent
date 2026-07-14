@@ -37,18 +37,9 @@ near the top. Do not start from the last error or the error count.
    grep -oE '^\*\*\*\* +[0-9]{3}  ' full.lst | sort | uniq -c | sort -rn
    ```
 
-3. **Read the context of the first marker only.** Fix that; re-run. The cascade
+3. **Read the context of the first marker only.** Fix that and check which following
+   errors may be disconnected. Eventually re-run to see which errors persist. The cascade
    usually disappears wholesale.
-
-### Codes that are almost always DOWNSTREAM noise (do not start here)
-
-| Code | Meaning | Why it is usually a symptom |
-|---|---|---|
-| `141` | Symbol declared but no values assigned | The assignment/solve that would have populated it was aborted by an earlier error |
-| `257` | Solve statement not checked because of previous errors | A prior compile/exec error blocked the solve |
-
-Seeing 300-700 of these with a handful of `170`/`171`/`149`/`455` at the top means:
-fix the handful, ignore the hundreds.
 
 ### Common root codes and their typical cause in MAgPIE
 
