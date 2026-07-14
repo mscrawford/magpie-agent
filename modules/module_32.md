@@ -834,7 +834,8 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 **Data source**: `f32_aff_pol(t,j,pol32)` from `npi_ndc_aff_pol.cs3` (`input.gms:71-75`), where `pol32 = none, npi, ndc, affexp, ndcdelay` (`sets.gms:19-20`)
 
-> **⚠️ This switch is 100% data-driven — there is NO code branch for any policy.** The whole selection is one lookup: `p32_aff_pol(t,j) = round(f32_aff_pol(t,j,"%c32_aff_policy%"),6);` (`preloop.gms:182`). The substance of each policy lives entirely in a **column of the input file** `npi_ndc_aff_pol.cs3`, which is downloaded (not in git). A policy named in `pol32` but absent from that file's header therefore yields **`f32_aff_pol = 0` everywhere, silently, with no GAMS error** — see `module_32_notes.md` § "Silent zero: affexp / ndcdelay vs the pinned input revision" before using `affexp` or `ndcdelay`.
+> **⚠️ This switch is 100% data-driven — there is NO GAMS code branch for any policy.** The whole selection is one lookup: `p32_aff_pol(t,j) = round(f32_aff_pol(t,j,"%c32_aff_policy%"),6);` (`preloop.gms:182`). The substance of each policy lives in a **column of `npi_ndc_aff_pol.cs3`** (`input.gms:73`).
+> **That `.cs3` is REGENERATED at run start by the R layer** — it is gitignored, not a fixed download. `scripts/start_functions.R:380-391` detects a missing column for the selected policy (`affexp_missing` / `ndcdelay_missing`) and forces `calc_NPI_NDC()` to rewrite the file, under the default `cfg$recalc_npi_ndc <- "ifneeded"` (`config/default.cfg:123`). So a stale header on disk does **not** mean a policy is unusable. See `module_32_notes.md` — including the one real footgun (overriding `cfg$recalc_npi_ndc <- FALSE` skips regeneration, and GAMS zero-fills an absent column silently).
 
 #### 9.3 Rotation Calculation
 
@@ -907,9 +908,9 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 **f32_aff_pol(t,j,pol32)** - `input.gms:71-75`:
 - **Dimensions**: time × cell × policy type
 - **Units**: Mha new forest relative to 2010
-- **Source**: Country reports (NPI/NDC submissions to UNFCCC), preprocessed by `calcOutput("NpiNdcAffPol")` into `npi_ndc_aff_pol.cs3`
+- **Source**: Country reports (NPI/NDC submissions to UNFCCC). The `.cs3` is **built at run start** by `calc_NPI_NDC()` (`scripts/npi_ndc/start_npi_ndc.R`), from `scripts/npi_ndc/policies/policy_definitions.csv` — not shipped ready-made in the input archive.
 - **Interpolation**: Linear between reported years
-- **⚠️ Column coverage is NOT guaranteed to match `pol32`** — the `.cs3` header lists only the policies the input revision actually ships. A `pol32` member with no column reads as 0. See `module_32_notes.md`.
+- **⚠️ Column coverage** — the `.cs3` header lists only the policies present when it was last generated. Under the default `cfg$recalc_npi_ndc <- "ifneeded"` a missing column triggers regeneration, so this self-heals. It does **not** self-heal if you set `cfg$recalc_npi_ndc <- FALSE`: then a `pol32` member with no column reads as 0, silently. See `module_32_notes.md`.
 
 **p32_aff_pol(t,j)** - `declarations.gms:14`:
 - **Derived**: Selected policy (`npi`, `ndc`, `affexp`, or `ndcdelay`) based on `c32_aff_policy` — a bare table lookup, no code branch (`preloop.gms:182`)

@@ -6,53 +6,59 @@
 
 ## ⚠️ Warnings & Common Mistakes
 
-### Silent zero: `affexp` / `ndcdelay` vs the pinned input revision
+### `npi_ndc_aff_pol.cs3` is REGENERATED at run start — it is not a fixed download
 
-**If you select `c32_aff_policy = ndcdelay` or `affexp` on develop today, you very likely get NO afforestation policy at all — silently, with no GAMS error.** Check the input file before trusting a run.
+This is the single most misleading thing about `c32_aff_policy`, and it is easy to get exactly backwards. Read this before reasoning about any afforestation-policy input.
 
-**Why this can happen.** The afforestation-policy switch has **no code branch whatsoever**. The entire policy selection is one table lookup:
+**The GAMS side has no code branch at all.** The entire policy selection is one table lookup:
 
 ```gams
 p32_aff_pol(t,j) = round(f32_aff_pol(t,j,"%c32_aff_policy%"),6);
 ```
 (`modules/32_forestry/dynamic_may24/preloop.gms:182`)
 
-So a policy's whole substance is a **column** of the downloaded input file `npi_ndc_aff_pol.cs3` (`input.gms:73`; produced by `calcOutput("NpiNdcAffPol")`, so it is **not in git**). Declaring a new member of `pol32` in `sets.gms` does *not* create any data. If the `.cs3` header has no column for the selected policy, GAMS leaves `f32_aff_pol` at its default of 0 for that member — no domain violation, no warning — and `p32_aff_pol` is zero everywhere.
+`c32_aff_policy` appears in GAMS *only* at `input.gms:9` (`$setglobal`) and that line. There are **zero** `$if` / `$ifthen` branches on the policy name anywhere. So a policy's whole substance is a **column** of `npi_ndc_aff_pol.cs3` (`input.gms:73`).
 
-**What was actually verified (2026-07-14, develop `0d7ebeb90`):**
+**But that `.cs3` is a generated artifact, not an input you download.** It is gitignored (`.gitignore:7`, `*.cs*`) and **rewritten at run start by the R layer**:
 
-| Fact | Where |
+| Step | Where |
 |---|---|
-| `pol32` = `/ none, npi, ndc, affexp, ndcdelay /` | `dynamic_may24/sets.gms:19-20` |
-| Zero code branches on `ndcdelay` anywhere in `*.gms` | only the set member, the `input.gms:10` options comment, and the `f32_aff_pol` table description mention it |
-| The pinned input's `.cs3` header is `dummy,dummy,none,npi,ndc` | `modules/32_forestry/input/npi_ndc_aff_pol.cs3` — **3 policy columns**; `affexp` and `ndcdelay` appear **0 times** in all 6405 lines |
-| That `.cs3` is `rev4.131` — the revision develop pins | `input/info.txt` vs `cfg$input` cellular in `config/default.cfg` |
-| Neither the `affexp` commit (`a54cd02c6`, 2026-05-27) nor the `ndcdelay` commit (`58bde5788`, 2026-07-02) bumped `cfg$input` | `git log -- config/default.cfg` |
+| Default config enables the check | `config/default.cfg:123` — `cfg$recalc_npi_ndc <- "ifneeded"` (**this is the default**) |
+| Missing-column guard | `scripts/start_functions.R:380-383` — `affexp_missing`, `ndcdelay_missing` test whether the selected policy has a column in the current file |
+| Guard forces regeneration | `scripts/start_functions.R:385-391` — sets `cfg$recalc_npi_ndc <- TRUE` |
+| Regenerator overwrites the file GAMS includes | `scripts/npi_ndc/start_npi_ndc.R:22` — `outfolder_aff` includes `../../modules/32_forestry/input/` |
 
-So both `affexp` and `ndcdelay` are **selectable but unfed** under the input revision develop currently pins. The features are presumably fine; the *input pin has not caught up* — the preprocessing (`mrmagpie` `NpiNdcAffPol`) has to be re-run and a new revision published and pinned before either policy does anything.
+Where each policy's substance actually lives:
+- **`affexp`** — rows in `scripts/npi_ndc/policies/policy_definitions.csv` (delivered by the input download).
+- **`ndcdelay`** — needs no input rows at all; it is **derived in R** from the existing `ndc` rows by shifting target years ≥2030 by a country-specific PRISMA delay (`start_npi_ndc.R`).
 
-**Not verified:** this is a code + input-file trace, **not** an empirical run. If you need certainty, run with `c32_aff_policy = ndcdelay` and check `p32_aff_pol` in the GDX — it should be identically zero.
+**So a stale header proves nothing.** If you `head` the on-disk `.cs3` and see only `dummy,dummy,none,npi,ndc`, that is a *stale artifact from a previous run* — not evidence that `affexp` / `ndcdelay` are unusable. Under the default config the file is regenerated with the needed column before GAMS ever reads it. Both policies are wired into named scenario presets (`config/scenario_config.csv:51`).
 
-**How to check before any run using a non-default `c32_aff_policy`:**
+**The one real footgun (narrow, non-default):** the whole guard lives inside `if(cfg$recalc_npi_ndc=="ifneeded")` (`scripts/start_functions.R:375`). If you override **`cfg$recalc_npi_ndc <- FALSE`**, no regeneration happens, the stale `.cs3` is `$include`d as-is, and GAMS **zero-fills an absent table column with no error and no warning** — so `f32_aff_pol(t,j,"ndcdelay") = 0`, `p32_aff_pol = 0` everywhere, and your "policy" run is silently identical to `none`. GAMS only errors on the converse (an *unknown* column label → domain violation). If you have disabled recalculation, check the header yourself:
+
 ```bash
-head -5 modules/32_forestry/input/npi_ndc_aff_pol.cs3 | grep -v '^\*'   # the header row lists the columns you actually have
+head -5 modules/32_forestry/input/npi_ndc_aff_pol.cs3 | grep -v '^\*'
 ```
-If your policy isn't in that header, the run will do nothing and tell you nothing.
 
-**Generalize this.** The same shape appears wherever a switch indexes straight into a file parameter with no code branch — `c22_protect_scenario` into `f22_consv_prio` is the same pattern (`modules/22_land_conservation/area_based_apr22/preloop.gms:42`), and the 2026-06 LandMark options landed the same way. **A new set member is a promise; the input column is the delivery.** When a sync adds a set member, check whether the data exists.
+### 🚩 How this note got written — a cautionary tale worth keeping
+
+The first version of this file asserted the opposite: that `ndcdelay` was **broken** — "selectable but unfed", silently producing a zero policy — and recommended reporting it to the PRISMA authors. Every *premise* was true and verified (no GAMS branch; the on-disk `.cs3` really does have only 3 policy columns; `affexp`/`ndcdelay` really do appear 0 times in its 6405 lines; neither feature commit bumped `cfg$input`). The **conclusion was false**, because the reasoning never left the GAMS layer: it inferred the provenance of a *gitignored, regenerated* artifact from git history alone.
+
+The guards that refute it (`affexp_missing`, `ndcdelay_missing`) were added **by the very commits being accused** — `a54cd02c6` and `58bde5788` each modified `scripts/start_functions.R`. The author had already handled the exact failure mode.
+
+**The transferable lesson:** a file under `modules/*/input/` is **not** necessarily an input you were given. It may be produced by `scripts/` at run start. **Before claiming an input is missing or stale, grep `scripts/` for the switch name and for the file name — not just `modules/` and `git log`.** One `grep -rn "c32_aff_policy" .` would have surfaced `scripts/start_functions.R:380` immediately.
 
 ---
 
 ## 💡 Lessons Learned
 
-- 2026-07-14: `c32_aff_policy` is a pure data lookup (`preloop.gms:182`) with no code branch — so a policy is only as real as its column in `npi_ndc_aff_pol.cs3`. Adding a `pol32` member without a matching input revision produces a silent all-zero policy. Found during the sync of `58bde5788` (ndcdelay / PRISMA). (Source: session experience.)
-- 2026-07-14: When a develop sync adds a member to a set that indexes a **downloaded** input table, always check the shipped file's header before documenting the option as usable. The GAMS "missing column reads as 0" behaviour makes this class of gap invisible to both the compiler and the validator. (Source: session experience.)
+- 2026-07-14: `c32_aff_policy` is a pure data lookup with no GAMS code branch (`preloop.gms:182`) — but the file it looks into (`npi_ndc_aff_pol.cs3`) is **regenerated by the R start layer** whenever the selected policy's column is missing (`scripts/start_functions.R:380-391`, default `cfg$recalc_npi_ndc <- "ifneeded"`). Do not reason about MAgPIE input files from `modules/*/input/` contents plus git history alone: `*.cs*` is gitignored and several inputs are run-time products. (Source: session experience — an agent-generated "silent zero" bug report that was refuted by an adversarial audit.)
+- 2026-07-14: GAMS zero-fills a `table` column that is declared in the set but absent from the `$ondelim` `.cs3` header — no error, no warning. That IS a genuine silent-failure mode; it is simply not reachable here under the default config, only if you set `cfg$recalc_npi_ndc <- FALSE`. (Source: session experience.)
 
 ---
 
 ## See also
 
 - `module_32.md` — primary documentation (§9.2 Afforestation Policy)
-- `module_22.md` — same switch-into-downloaded-table pattern (`c22_protect_scenario` → `f22_consv_prio`)
 - `module_56_notes.md` — C-price-induced afforestation is a *different*, reward-driven channel (`vm_reward_cdr_aff`), independent of `c32_aff_policy`
-- `agent/helpers/debugging_infeasibility.md` — for runs that fail loudly; this note is about a run that fails **quietly**
+- `agent/helpers/debugging_infeasibility.md` — for runs that fail loudly; a zero-filled policy column fails **quietly**
