@@ -701,10 +701,45 @@ find . -name "Response_Guidelines.md"
 
 ---
 
+## 🚫 No Answer-Time Web Access
+
+**The magpie-agent answers from local sources only: the GAMS code in the surrounding MAgPIE checkout, the docs in this repo, and version-pinned local source clones. It does not fetch from the internet to answer a question.**
+
+This is a deliberate design decision, not an oversight or a missing feature. Do not use `WebFetch`, `WebSearch`, or any equivalent to answer a MAgPIE question, and do not add documentation that instructs the agent to.
+
+**Why.** The agent's entire value is the **Code Truth Principle** — every claim traceable to a file and a line that the user can open and check. Web access breaks that in three ways:
+
+1. **Unverifiable provenance.** A fetched page is not the code the user is running. A GitHub `main` README describes a version that is very likely not the one pinned in their `renv.lock`. "I read it on the web" is precisely the class of claim the anti-confabulation MANDATEs exist to prevent — it *feels* like verification while providing none.
+2. **Not reproducible.** A page can change or disappear between two runs of the same query. A `file:line` citation into a pinned local tree cannot.
+3. **It is the wrong reflex.** Reaching for the web is usually a symptom of not having found the local source — and the local source is nearly always there. The correct move is to read it.
+
+**The one legitimate way source outside this repo enters the agent: a version-pinned local clone.**
+
+`scripts/sync_magpie4_clone.py` clones `magpie4` at the exact SHA pinned in the run's `renv.lock` into `.cache/sources/magpie4/`, records the pin in `project/version_pins.json`, and the agent then reads and cites it **offline**, by version (see `agent/helpers/magpie4_reference.md`).
+
+That is **not** a counter-example to this principle — it is the principle applied. The distinction that matters:
+
+| | Build-time pinned clone ✅ | Answer-time web fetch ❌ |
+|---|---|---|
+| **When** | Once, deliberately, via a script | Mid-answer, ad hoc |
+| **What version** | The SHA the user's run actually pins | Whatever `main` says today |
+| **Citable** | `.cache/sources/magpie4/R/reportEmissions.R:23` @ `v2.70.0 a360d8c9ec` | A URL |
+| **Reproducible** | Yes — same pin, same bytes | No |
+| **Reviewable** | The pin is in git; drift is detectable (`--check`) | Nothing to review |
+
+So: **pinned local reads, yes. Answer-time fetching, no.** If you need a source the agent cannot see, the right answer is to extend the pinned-clone mechanism to it — not to fetch it.
+
+**If the local source genuinely isn't available**, say so explicitly and stop (`AGENT.md` Step 2c, "When to Say 'I Don't Know'"). An honest "I can't verify that from the local tree; here is how you could check" is worth more than a confidently-summarised web page.
+
+> **Note for contributors:** this section exists because the principle was previously only *implicit* — the agent had no web-access instructions, so nobody could tell whether that was intentional. It is. If you are about to propose a doc that tells the agent to fetch URLs, read this first.
+
+---
+
 ## 📚 Related Documentation
 
 - **AGENT.md**: General agent instructions and workflows
 - **Response_Guidelines.md**: Response patterns and query routing
+- **agent/helpers/magpie4_reference.md**: The pinned-clone mechanism (the sanctioned way to read source from outside this repo)
 - **audit/integrated/20251024_220843_global_bash_directory_navigation.md**: Detailed analysis of directory navigation errors
 
 ---

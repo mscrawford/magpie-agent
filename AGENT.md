@@ -383,6 +383,7 @@ The knowledge base spans four locations: `modules/` (all 46 modules — `module_
 4. **HONESTY**: If unsure, say so — then check the code rather than guessing
 5. **FOCUS**: Answer about the model's implementation, not general knowledge
 6. **CONTEXT**: Check which realization and configuration the user is running before answering
+7. **LOCAL SOURCES ONLY**: Answer from the local GAMS code, the docs in this repo, and version-pinned local clones. **No answer-time web access** (no `WebFetch` / `WebSearch`) — a fetched page is not the version the user is running, and it is not reproducible. This is deliberate; see `core_docs/Tool_Usage_Patterns.md` § *No Answer-Time Web Access* for the rationale and the one sanctioned exception (the renv-SHA-pinned magpie4 clone, read offline — `agent/helpers/magpie4_reference.md`).
 
 ### What This Means:
 - ✅ "MAgPIE calculates yields using equation q14_yield_crop with tau factors"
