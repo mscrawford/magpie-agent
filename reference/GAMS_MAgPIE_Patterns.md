@@ -1,6 +1,10 @@
 # GAMS Programming Reference - Phase 5: MAgPIE-Specific Patterns
 
-<!-- check-gams-vars: allow f10_land_init,fm_gdp_pop,fm_nutrition,i10_urban_area,im_gdp_pc,p10_balance_midnight,pm_carbon_density,pm_gdp,s10_timestep,s70_feed_factor,sm_years -->
+<!-- Naming-convention tables below use ONLY real MAgPIE symbols, verified against develop.
+     No check-gams-vars allowlist is needed here: the 11 previously-allowlisted names
+     (pm_gdp, im_gdp_pc, sm_years, s10_timestep, ...) were ALL fabricated, and were
+     replaced with real ones on 2026-07-14 rather than suppressed. Keep it that way —
+     if you add an example to these tables, use a symbol that exists. -->
 
 **Version**: 1.0 | **Status**: Complete | **Target Audience**: AI agents working with MAgPIE
 
@@ -214,61 +218,57 @@ positive variables v32_land(j,type32,ac);
 
 #### Parameters
 
-| Prefix | Scope | Example |
+| Prefix | Scope | Example (all real — verified in develop) |
 |--------|-------|---------|
-| `pm_` | **Interface** (data shared between modules) | `pm_carbon_density`, `pm_gdp` |
-| `p{NN}_` | **Module-internal** (calculated within module) | `p70_cattle_stock_proxy`, `p10_balance_midnight` |
+| `pm_` | **Interface** (data shared between modules) | `pm_carbon_density_secdforest_ac`, `pm_interest` |
+| `p{NN}_` | **Module-internal** (calculated within module) | `p70_cattle_stock_proxy`, `p32_aff_pol` |
 | `pcm_` | **Previous Current Module** (rolling parameter from last timestep) | `pcm_land`, `pcm_carbon_stock` |
-| `f{NN}_` | **Input file** (loaded from external file) | `f10_land_init`, `f14_yields` |
-| `i{NN}_` | **Input intermediate** (processed from file data) | `i10_urban_area` |
-| `fm_` | **File interface** (input shared across modules) | `fm_nutrition`, `fm_gdp_pop` |
-| `im_` | **Interface input** (shared input) | `im_pop`, `im_gdp_pc` |
+| `f{NN}_` | **Input file** (loaded from external file) | `f18_multicropping`, `f32_aff_pol` |
+| `i{NN}_` | **Input intermediate** (processed from file data) | `i70_livestock_productivity`, `i14_fao_yields_hist` |
+| `fm_` | **File interface** (input shared across modules) | `fm_croparea`, `fm_aboveground_fraction` |
+| `im_` | **Interface input** (shared input) | `im_growing_stock`, `im_pollutant_prices` |
 
-**Example**:
+**Example** (real declarations):
 ```gams
-* Interface parameter (from Module 52, used in Module 56)
-parameters pm_carbon_price(t,i);
+* Interface parameter, declared in Module 52, read by Module 14
+pm_carbon_density_secdforest_ac(t_all,j,ac,ag_pools)
 
-* Module-internal parameter (only in Module 70)
-parameters p70_cattle_stock_proxy(t,i);
+* Module-internal parameter (Module 32)
+p32_aff_pol(t,j)
 
 * Rolling parameter (carries last timestep's solution)
-parameters pcm_land(j,land);
+pcm_land(j,land)
 
-* Input from file (Module 14)
-parameters f14_yields(t,i,kcr);
+* Input from file (Module 18)
+f18_multicropping(t_all,i)
 
-* Input interface (population data)
-parameters im_pop(t,i);
+* Input interface, declared in Module 14, read by Modules 32 and 35
+im_growing_stock(t,j,ac,land_timber)
 ```
 
 #### Equations
 
-| Prefix | Scope | Example |
+| Prefix | Scope | Example (all real — verified in develop) |
 |--------|-------|---------|
-| `q{NN}_` | **Module equations** | `q10_land_area`, `q70_feed_demand` |
+| `q{NN}_` | **Module equations** | `q35_prod_other`, `q18_prod_res_ag_reg` |
 
-**Example**:
+**Example** (`modules/35_natveg/pot_forest_may24/equations.gms:162`):
 ```gams
-equations
- q10_land_area(j)                Land conservation
- q10_transition_to(j,land_to)    Transition balance
-;
+q35_prod_other(j2)..
 ```
 
 #### Scalars
 
-| Prefix | Scope | Example |
+| Prefix | Scope | Example (all real — verified in develop) |
 |--------|-------|---------|
-| `s{NN}_` | **Module scalar** | `s10_timestep`, `s70_feed_factor` |
-| `sm_` | **Shared scalar** | `sm_years` |
+| `s{NN}_` | **Module scalar** | `s14_minimum_growing_stock`, `s70_scavenging_ratio` |
+| `sm_` | **Shared scalar** | `sm_carbon_fraction` |
 
-**Example**:
+**Example** (real declarations — `modules/14_yields/managementcalib_aug19/input.gms:19` and
+`modules/70_livestock/fbask_jan16/input.gms:27`):
 ```gams
-scalars
- s10_fix_transition   Fix land transitions (0=no 1=yes) / 0 /
- s70_feed_waste       Feed waste factor                 / 0.1 /
-;
+s14_minimum_growing_stock   Minimum growing stock for timber harvest in natural vegetation (tDM per ha) / 5 /
+s70_scavenging_ratio        Ratio to adjust estimated pasture feed demand using scavenged feed sources (1) / 0.385 /
 ```
 
 #### Sets
@@ -904,22 +904,25 @@ If `vm_land.up(j,land) - vm_land.lo(j,land) < 1e-6`, fix to upper bound.
 
 **Purpose**: Configure model based on scenario settings.
 
-**Scalar switch**:
+**Scalar switch** — a real on/off switch, `s52_growingstock_calib`
+(`modules/52_carbon/normal_dec17/input.gms:46`), consumed at
+`modules/52_carbon/normal_dec17/preloop.gms:23`:
 
 ```gams
-scalar s10_scenario  Scenario selection / 1 /;
+* declaration (input.gms)
+s52_growingstock_calib  Switch for growing stock calibration of secdforest growth curves 1=on 0=off (1) / 1 /
 
-* In presolve.gms or input.gms
-if (s10_scenario = 1,
-    * SSP2 baseline
-    parameter_set = baseline_values;
-elseif s10_scenario = 2,
-    * SSP1 sustainability
-    parameter_set = sustainability_values;
-else
-    abort "Unknown scenario";
+* consumption (preloop.gms)
+if(s52_growingstock_calib = 1,
+    * calibrate the secdforest growth curve to the FRA growing-stock target
+    ...
 );
 ```
+
+The `if(<scalar> = 1, ...)` form is the common MAgPIE idiom for a binary switch. GAMS also
+supports `elseif` for multi-way scalar switches, but MAgPIE more often expresses a multi-way
+choice with a **`$setglobal` string switch** selected against a set (see below) rather than a
+numeric scalar.
 
 **Set-based switch**:
 
