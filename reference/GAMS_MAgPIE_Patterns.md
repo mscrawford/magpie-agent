@@ -482,21 +482,37 @@ ct(t) = no;   * Clear marker
 **Why?**: Equations can't directly reference loop index `t`. Using `ct` allows time-awareness in equations.
 
 **⚠️ Pitfall - wrap `ct` in `sum(ct, ...)` when indexing a file/interface parameter:**
-Because `ct` is a plain (non-singleton) set, using it as a **bare** index on a parameter
-inside an expression that is summed over *other* sets raises compile
-**Error 149 "Uncontrolled set entered as constant"**. The robust idiom - used throughout
-MAgPIE - is to sum over `ct` to pull the current-timestep value:
-```gams
-* WRONG (bare ct inside a sum over cell/w -> Error 149):
-sum((cell(i2,j2),w), vm_area(j2,kcr,w) * fm_multicropping(ct,j2,w,kcr))
+Because `ct` is a plain (non-singleton) set, using it as a **bare** index inside an
+equation raises compile **Error 149 "Uncontrolled set entered as constant"** — `ct` is not
+in the equation's domain, so nothing controls it. The robust idiom, used throughout MAgPIE,
+is to sum over `ct` to pull the current-timestep value.
 
-* RIGHT (sum(ct, ...) controls ct):
-sum((cell(i2,j2),w), vm_area(j2,kcr,w) * sum(ct, fm_multicropping(ct,j2,w,kcr)))
+Real example — the residue-biomass equation `q18_prod_res_ag_reg`
+(`modules/18_residues/flexreg_apr16/equations.gms:14-19`):
+```gams
+* RIGHT (as in develop): sum(ct, ...) controls ct
+(sum((cell(i2,j2),w), vm_area(j2,kcr,w)) * sum(ct,f18_multicropping(ct,i2)) * f18_cgf("intercept",kcr)
+ + vm_prod_reg(i2,kcr) * f18_cgf("slope",kcr))
+* f18_attributes_residue_ag(attributes,kcr);
+
+* WRONG: bare ct -> Error 149 "Uncontrolled set entered as constant"
+(sum((cell(i2,j2),w), vm_area(j2,kcr,w)) * f18_multicropping(ct,i2) * f18_cgf("intercept",kcr)
+ + vm_prod_reg(i2,kcr) * f18_cgf("slope",kcr))
+* f18_attributes_residue_ag(attributes,kcr);
 ```
-Compare `sum(ct, f53_ef_ch4_rice(ct,i2))` in
-`modules/53_methane/ipcc2006_aug22/equations.gms`, which applies this idiom for the same
-reason. A refactor that replaced a summed term with a bare `ct` reference in
+Note `f18_multicropping(t_all,i)` is **regional** (2-D) and sits *outside* the `cell/w` sum —
+it is not indexed by cell, water type, or crop. `modules/53_methane/ipcc2006_aug22/equations.gms:62`
+applies the same idiom for the same reason: `sum(ct,f53_ef_ch4_rice(ct,i2))`.
+
+A real refactor that replaced these summed terms with bare `ct` references in
 `modules/18_residues` and `modules/53_methane` produced exactly this Error 149.
+
+> **Naming caveat:** this parameter used to be the cross-module interface *fm_multicropping*,
+> consumed by `42_water_demand` until commit `2f3f0fb88` dropped that use (`CHANGELOG.md:671`:
+> "removed ... factor because of fallow inconsistency"). With no cross-module consumer left it
+> was demoted to module-local **`f18_multicropping`**. The `fm_` name is stale — reach for it
+> from memory and you will write a symbol that no longer exists.
+> (Guarded by `audit/renames.json` → Check 24.)
 
 ### 4.3 Rolling Parameters (pcm_)
 
@@ -532,14 +548,23 @@ q10_land_area(j)..
 
 **Pattern**: Initialize values only in first timestep (`ord(t) = 1`).
 
-**Example** (Module 17):
+**Example** (Module 17, `modules/17_production/flexreg_apr16/presolve.gms:10-18`):
 
 ```gams
-* In presolve.gms
+* pm_prod_init is computed UNCONDITIONALLY (note the hardcoded "y1995", not ct):
+pm_prod_init(j,kcr) = sum(w, fm_croparea("y1995",j,w,kcr) * pm_yields_semi_calib(j,kcr,w));
+
+* the ord(t)=1 guard wraps only the warm-start of the SOLUTION LEVEL:
 if (ord(t) = 1,
-    pm_prod_init(j,kcr) = sum(ct, f17_prod_ini(ct,j,kcr));
+$ifthen "%c17_prod_init%" == "on"
+vm_prod.l(j,kcr) = pm_prod_init(j,kcr);
+$endif
 );
 ```
+
+Note what the guard does and does not cover: the initial-production *parameter* is built
+every timestep from a fixed 1995 base year, and only the `.l` (level) warm-start is gated on
+the first timestep — and that further behind the `c17_prod_init` switch.
 
 **Common first-timestep tasks**:
 - Load historical data
@@ -549,17 +574,29 @@ if (ord(t) = 1,
 
 ### 4.5 Historical Period (t_past)
 
-**Pattern**: Fix variables to observed values during historical period.
+**Pattern**: Bind variables to observed values during the historical period.
 
-**Example** (Module 70):
+The historical-timestep test is `if (sum(sameas(t_past,t), 1) = 1, ...)`.
+
+**Example** (Module 13, `modules/13_tc/endo_jan22/presolve.gms:12-17`):
 
 ```gams
-* In presolve.gms
-if (sum(sameas(t_past,t), 1) = 1,
-    * This is a historical timestep
-    vm_prod.fx(j,kli) = f70_hist_prod(t,j,kli);  * Fix to data
+if (sum(sameas(t_past,t),1) = 1 AND s13_ignore_tau_historical = 0,
+v13_tau_core.lo(h,"pastr") =   f13_pastr_tau_hist(t,h);
+v13_tau_core.lo(h,"crop") =    f13_tau_historical(t,h);
+else
+v13_tau_core.lo(h, tautype) =    pc13_tau(h, tautype);
 );
 ```
+
+In the historical period, τ is bounded **below** by the observed historical value; outside it,
+by the previous timestep's τ (`pc13_tau`). Note this is a **lower bound (`.lo`), not a fix
+(`.fx`)** — the optimiser may still raise τ above history, it just may not fall below it. Don't
+assume `.fx` when you mean "constrained to history"; check which bound the code actually sets.
+
+Other real instances of the same test: `modules/35_natveg/pot_forest_may24/presolve.gms:156`
+(bounds `vm_land.lo(j,"primforest")`) and `modules/62_material/exo_flexreg_apr16/presolve.gms:15`
+(sets a historical flag).
 
 **Set relationships**:
 ```

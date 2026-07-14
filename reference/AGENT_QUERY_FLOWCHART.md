@@ -285,11 +285,13 @@ User: "How does carbon pricing affect forests?"
 Agent Path:
 1. Check Query_Patterns_Reference.md Pattern 2
 2. Read circular_dependency_resolution.md → Forest-Carbon cycle
-3. Read module_56.md (GHG policy) → vm_carbon_price
+3. Read module_56.md (GHG policy) → im_pollutant_prices, p56_c_price_aff
 4. Read module_32.md (forestry) → afforestation costs
 5. Read module_52.md (carbon) → Chapman-Richards growth
-6. Trace: vm_carbon_price → afforestation cost → carbon stock growth
-7. Cite: 🟡 "Based on circular_dependency_resolution.md, module_32/52/56.md"
+6. Trace: p56_c_price_aff → vm_reward_cdr_aff → vm_cdr_aff (M32) → carbon stock growth
+7. Read module_56_notes.md → the A/R reward is keyed on c56_cprice_aff (default
+   secdforest_vegc), NOT on whether forestry_vegc is priced
+8. Cite: 🟡 "Based on circular_dependency_resolution.md, module_32/52/56.md"
 
 Tokens: ~24K (16K + 8K module docs)
 Time: 2 minutes

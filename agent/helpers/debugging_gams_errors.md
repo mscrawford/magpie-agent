@@ -1,6 +1,6 @@
 # Helper: Debugging GAMS Compile & Execution Errors
 
-**Auto-load triggers**: "compilation error", "won't compile", "compile error", "Error 141", "Error 149", "Error 170", "Error 171", "Error 257", "Error 455", "domain violation", "uncontrolled set", "FUNC SINGULAR", "division by zero", "bad delimiter", "execution error", "Exec Error", "hundreds of errors", "$170", "$171"
+**Auto-load triggers**: "GAMS error", "compilation error", "won't compile", "compile error", "Error 141", "Error 149", "Error 170", "Error 171", "Error 257", "Error 455", "domain violation", "uncontrolled set", "FUNC SINGULAR", "division by zero", "bad delimiter", "execution error", "Exec Error", "EXECERROR", "hundreds of errors", "$170", "$171"
 **Lessons count**: 2 entries
 
 > This helper is for **GAMS errors** (the model does not compile, or aborts during

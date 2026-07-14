@@ -30,6 +30,13 @@
       "since": "2026-05-23",
       "reason": "R3 audit found this was fabricated — no such scalar ever existed; M56 mechanism is price-driven CDR, not target-driven",
       "exempt_paths": ["audit/"]
+    },
+    {
+      "old": "fm_multicropping",
+      "new": "f18_multicropping",
+      "since": "2026-07-14",
+      "reason": "DEMOTED, not deleted: fm_multicropping was a real cross-module (fm_) interface parameter consumed by 42_water_demand until commit 2f3f0fb88 removed that use ('removed fm_multicropping factor because of fallow inconsistency', CHANGELOG.md:671). With no cross-module consumer left it became module-local f18_multicropping(t_all,i), declared in 18_residues (e.g. flexreg_apr16/input.gms:11) and used as sum(ct, f18_multicropping(ct,i2)) at flexreg_apr16/equations.gms:17. The fm_ name is therefore STALE, not fabricated — an easy one to recall wrongly, and it reached reference/GAMS_MAgPIE_Patterns.md inside a fenced GAMS example, where the backtick-anchored Check 14/15 identifier regex could not see it. Check 24 greps raw lines, so it can.",
+      "exempt_paths": ["audit/"]
     }
   ]
 }

@@ -1,4 +1,5 @@
 # GAMS Programming Reference - Phase 3: Advanced Features
+<!-- check-gams-vars: allow vm_production,vm_trade -->
 
 **Version**: 1.0 | **Status**: Complete | **Target Audience**: AI agents working with MAgPIE
 
