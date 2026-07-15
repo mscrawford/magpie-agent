@@ -14,7 +14,7 @@
 
 | Source | What it says | File:line |
 |---|---|---|
-| `../input/renv.lock` Packages.magpie4 | `Version = 2.70.0`, `RemoteSha = a360d8c9ec1ee7af6c9287791e8b182bf391d355` (verified via `python3 json` read of `Packages.magpie4`) | `/Users/turnip/Documents/Work/Workspace/magpie/input/renv.lock` |
+| `../input/renv.lock` Packages.magpie4 | `Version = 2.70.0`, `RemoteSha = a360d8c9ec1ee7af6c9287791e8b182bf391d355` (verified via `python3 json` read of `Packages.magpie4`) | `<magpie-root>/input/renv.lock` |
 | `project/version_pins.json` | `version=2.70.0`, `sha=a360d8c9ec1ee7af6c9287791e8b182bf391d355`, `resolution="sha"`, `captured_at=2026-05-25`, `lock_file_sha256=de41e0ce...31ba` | version_pins.json:7-12, :3, :5 |
 | `shasum -a 256 ../input/renv.lock` | `de41e0ce9239aabab001102277e85fa576fb3e8e5c84b9d27c2a461e123731ba` — matches the canary in version_pins.json EXACTLY → pin is current | (live command) |
 | Cached clone HEAD | `git -C .cache/sources/magpie4 rev-parse HEAD` → `a360d8c9ec1ee7af6c9287791e8b182bf391d355` — matches pin exactly | (live command) |

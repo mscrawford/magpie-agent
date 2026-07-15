@@ -2,7 +2,7 @@
 
 **Auditor**: Opus 4.8 (adversarial doc auditor)
 **Date**: 2026-05-30
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/core_docs/Tool_Usage_Patterns.md` (715 lines)
+**Target**: `<magpie-agent>/core_docs/Tool_Usage_Patterns.md` (715 lines)
 **Ground truth**: MAgPIE develop worktree `/tmp/magpie_develop_ro` + magpie-agent repo (for agent-internal path claims)
 
 ---
@@ -48,7 +48,7 @@ There are **no** cross-module consumer/populator/dependency claims, **no** `file
   - Root cause: the 2025-11-29 "model-agnostic refactor" (doc footer) globally substituted `AGENT.md` for the old guide filename inside the example, producing a path that (a) never existed and (b) contradicts the diagram. Ironic failure mode: an agent literally running `ls core_docs/AGENT.md` from the examples gets "No such file or directory" — reproducing the exact "file doesn't exist" confusion the doc exists to prevent.
 - **File evidence**:
   - Diagram (correct) `core_docs/Tool_Usage_Patterns.md:460` → `AGENT.md  ← SOURCE (edit this)` under `magpie-agent/`.
-  - Actual location: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/AGENT.md` (root); `core_docs/AGENT.md` absent.
+  - Actual location: `<magpie-agent>/AGENT.md` (root); `core_docs/AGENT.md` absent.
   - Source incident: `audit/integrated/20251024_220843_global_bash_directory_navigation.md:20` → "needed to check if `core_docs/AI_Agent_Behavior_Guide.md` existed".
 - **verify_cmd + result**:
   - `ls /Users/.../magpie-agent/core_docs/AGENT.md` → `No such file or directory`.

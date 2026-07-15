@@ -9,7 +9,7 @@ them. Copies in /tmp/r51_deep/; repo docs untouched. Truth verified @ea383032d.
 """
 import os, shutil, json
 
-REPO = "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent"
+REPO = "<magpie-agent>"
 OUT = "/tmp/r51_deep"
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT)

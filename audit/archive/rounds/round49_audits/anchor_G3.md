@@ -16,7 +16,7 @@
 ## Files read (audit verification)
 
 - `project/version_pins.json` (authoritative pin snapshot) — read directly to compute expected version/SHA at audit time (per rubric §6 G3: "do not hardcode it here").
-- `../input/renv.lock` (upstream authoritative source; absolute: `/Users/turnip/Documents/Work/Workspace/magpie/input/renv.lock`) — magpie4 entry at lines 4437-4470.
+- `../input/renv.lock` (upstream authoritative source; absolute: `<magpie-root>/input/renv.lock`) — magpie4 entry at lines 4437-4470.
 - `agent/helpers/magpie4_reference.md` (the helper the agent must auto-load).
 - `scripts/sync_magpie4_clone.py` (the resolution mechanism the answer describes).
 - `.cache/sources/magpie4/` (the SHA-pinned clone) — git HEAD + DESCRIPTION.

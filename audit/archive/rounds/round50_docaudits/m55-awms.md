@@ -1,7 +1,7 @@
 # Doc Audit — module_55.md (AWMS, ipcc2006_aug16)
 
 **Auditor**: Opus adversarial doc auditor (round50 doc-audit sweep)
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_55.md`
+**Target**: `<magpie-agent>/modules/module_55.md`
 **Ground truth**: `/tmp/magpie_develop_ro` (develop worktree), `config/default.cfg`
 **Date**: 2026-06-06
 

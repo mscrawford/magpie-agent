@@ -1,7 +1,7 @@
 # Round 32 Doc Audit — module_28.md (Ageclass)
 
 **Auditor**: Opus adversarial doc auditor
-**Doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_28.md`
+**Doc**: `<magpie-agent>/modules/module_28.md`
 **Ground truth**: develop worktree `/tmp/magpie_develop_ro` @ HEAD `ee98739fd` (detached, clean)
 **Date**: 2026-05-30
 **Realization audited**: `oct24` (only realization; default per `config/default.cfg:786`)

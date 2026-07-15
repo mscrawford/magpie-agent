@@ -11,7 +11,7 @@ substrings of the current repo docs (asserted present before injection).
 """
 import os, shutil, json
 
-REPO = "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent"
+REPO = "<magpie-agent>"
 OUT = "/tmp/r51_longdoc"
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT)

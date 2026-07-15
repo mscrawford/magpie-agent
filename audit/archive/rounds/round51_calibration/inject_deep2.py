@@ -10,7 +10,7 @@ docs untouched. Truths verified @ea383032d this session (Phase 0 + the 3-agent
 direction audit)."""
 import os, shutil, json
 
-REPO = "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent"
+REPO = "<magpie-agent>"
 OUT = "/tmp/r51_deep2"
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT)

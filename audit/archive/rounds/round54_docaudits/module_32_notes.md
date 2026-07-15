@@ -2,7 +2,7 @@
 
 **Auditor**: Opus adversarial doc-audit agent
 **Date**: 2026-07-14
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_32_notes.md` (77 lines)
+**Target doc**: `<magpie-agent>/modules/module_32_notes.md` (77 lines)
 **Ground truth**: `/tmp/magpie_develop_ro` @ `0d7ebeb90` (MAgPIE develop) + parent working tree for gitignored run-time artifacts
 **Realization checked**: `dynamic_may24` (the ONLY realization of module 32; `config/default.cfg:992` → `cfg$gms$forestry <- "dynamic_may24"`)
 

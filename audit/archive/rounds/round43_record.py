@@ -2,7 +2,7 @@
 """Append R43 entry to validation_rounds.json (indent=1, ensure_ascii=True) + update stats + G1/G2 anchors."""
 import json, sys
 
-PATH = "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/validation_rounds.json"
+PATH = "<magpie-agent>/audit/validation_rounds.json"
 d = json.load(open(PATH))
 if any(r.get("round") == 43 for r in d["rounds"]):
     print("R43 already present — aborting."); sys.exit(1)

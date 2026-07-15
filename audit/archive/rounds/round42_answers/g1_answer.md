@@ -8,7 +8,7 @@
 
 The default (and only active) realization of module 14 is **`managementcalib_aug19`**.
 
-Config citation: `/Users/turnip/Documents/Work/Workspace/magpie/config/default.cfg:354`
+Config citation: `<magpie-root>/config/default.cfg:354`
 
 ```r
 cfg$gms$yields <- "managementcalib_aug19"          # def = managementcalib_aug19
@@ -68,8 +68,8 @@ grep "^[ ]*q14_" modules/14_yields/managementcalib_aug19/declarations.gms | wc -
 
 All claims are 🟡 **documented** — sourced from:
 
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md` (Sections 1, 2, 13.1)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14_notes.md:13` (only-realization warning)
-- `/Users/turnip/Documents/Work/Workspace/magpie/config/default.cfg:354` (cfg line, read directly this session — 🟢)
+- `<magpie-agent>/modules/module_14.md` (Sections 1, 2, 13.1)
+- `<magpie-agent>/modules/module_14_notes.md:13` (only-realization warning)
+- `<magpie-root>/config/default.cfg:354` (cfg line, read directly this session — 🟢)
 
 Raw GAMS source (`.gms` files) was NOT opened per task constraints. Line number ranges cited from docs were verified at their last doc-update date; line numbers may have drifted since then.

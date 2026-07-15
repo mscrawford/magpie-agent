@@ -18,6 +18,8 @@ export const meta = {
 //                    klass in: module | cross_module | core | reference | helper | magpie4
 //                    probe_question required when mode='hybrid'
 // args.anchors     : [{ id, question, ground_truth, expected }]
+// args.paths       : { agentDir, parent, dev } -- machine-local checkout roots (absolute).
+//                    REQUIRED on any clone but this one; defaults are placeholders.
 // args arrives as a JSON-encoded STRING from the harness -> parse it
 const A = (typeof args === 'string') ? JSON.parse(args) : (args || {})
 const R = A.round
@@ -26,9 +28,12 @@ const VERIFY = A.verify === true   // adversarial consumer/populator-set refute 
 const DOCS = A.docs || []
 const ANCHORS = A.anchors || []
 
-const AGENT_DIR = '/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent'
-const DEV = '/tmp/magpie_develop_ro'        // detached origin/develop worktree (verification truth)
-const PARENT = '/Users/turnip/Documents/Work/Workspace/magpie'
+// Machine-local checkout roots. Pass via args.paths = {agentDir, parent, dev} to run on
+// your own clone; the agentDir/parent defaults below are placeholders and MUST be overridden.
+const P = A.paths || {}
+const AGENT_DIR = P.agentDir || '/path/to/magpie/magpie-agent'
+const DEV = P.dev || '/tmp/magpie_develop_ro'   // detached origin/develop worktree (verification truth)
+const PARENT = P.parent || '/path/to/magpie'
 const ARC = AGENT_DIR + '/audit/archive/rounds'
 const RUBRIC = AGENT_DIR + '/audit/flywheel_rubric.md'
 const VERIFIERS = AGENT_DIR + '/agent/helpers/verifiers.md'

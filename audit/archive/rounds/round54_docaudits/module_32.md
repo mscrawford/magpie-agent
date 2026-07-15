@@ -2,7 +2,7 @@
 
 **Auditor**: Opus (adversarial doc-vs-code)
 **Date**: 2026-07-14
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_32.md` (1,421 lines)
+**Target doc**: `<magpie-agent>/modules/module_32.md` (1,421 lines)
 **Ground truth**: `/tmp/magpie_develop_ro` @ `0d7ebeb90` (develop, read-only worktree) + `config/default.cfg` + the R layer (`scripts/start_functions.R`, `scripts/npi_ndc/start_npi_ndc.R`)
 **Claims checked**: 112 load-bearing, code-checkable claims
 **Verdict**: **SIGNIFICANT ERRORS** in the dependency/interface sections; the equation-level and default-parameter content is excellent.

@@ -2,7 +2,7 @@
 
 **Auditor**: Opus 4.8 (1M) adversarial documentation auditor
 **Date**: 2026-05-30
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_62.md`
+**Target doc**: `<magpie-agent>/modules/module_62.md`
 **Ground truth**: `/tmp/magpie_develop_ro` (develop worktree) + `config/default.cfg`
 **Realization audited**: `exo_flexreg_apr16` (verified: only realization — `ls modules/62_material/` shows just `exo_flexreg_apr16/`, `input/`, `module.gms`)
 

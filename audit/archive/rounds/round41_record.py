@@ -2,7 +2,7 @@
 """Append R41 entry to validation_rounds.json and update cumulative_stats + regression anchors."""
 import json, sys
 
-PATH = "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/validation_rounds.json"
+PATH = "<magpie-agent>/audit/validation_rounds.json"
 d = json.load(open(PATH))
 
 # guard: don't double-append

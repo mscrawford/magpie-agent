@@ -69,7 +69,7 @@ Each agent is spawned with the Agent tool, `subagent_type` **general-purpose**, 
 
 ```
 You are auditing the magpie-agent's own pipeline. Working directory:
-/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+<magpie-agent>
 This is a READ-ONLY audit — do NOT edit, write, or commit anything.
 
 Your lens: <lens name>

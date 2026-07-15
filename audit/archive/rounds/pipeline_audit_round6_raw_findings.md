@@ -353,16 +353,16 @@ Pattern: bottom-up state-tracking artifacts (audit/validation_rounds.json, sync_
 [
   {
     "lens": "L5",
-    "location": "/Users/turnip/Documents/Work/Workspace/magpie/validation_report_20260517_102617.txt and /validation_report_20260524_095554.txt",
-    "failure_mode": "Validator OUTPUT from magpie-agent's validate_consistency.sh landed in PARENT magpie/ repo root, not in magpie-agent/.cache/validation_reports/. Both files contain 'Location: /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent' as the first line of body. Parent .gitignore does NOT ignore them; parent's `origin` points to git@github.com:magpiemodel/magpie.git, so a stray `git add -A` in parent would commit agent output to upstream MAgPIE. Root cause: older validate_consistency.sh (preserved at scripts/validate_consistency.sh.bak:23) set `REPORT_FILE=\"validation_report_${TIMESTAMP}.txt\"` with no directory prefix AND wrote the file (lines 69-72) BEFORE `cd \"$AGENT_DIR\"` (line 78), so invocation from parent dir created the report there.",
+    "location": "<magpie-root>/validation_report_20260517_102617.txt and /validation_report_20260524_095554.txt",
+    "failure_mode": "Validator OUTPUT from magpie-agent's validate_consistency.sh landed in PARENT magpie/ repo root, not in magpie-agent/.cache/validation_reports/. Both files contain 'Location: <magpie-agent>' as the first line of body. Parent .gitignore does NOT ignore them; parent's `origin` points to git@github.com:magpiemodel/magpie.git, so a stray `git add -A` in parent would commit agent output to upstream MAgPIE. Root cause: older validate_consistency.sh (preserved at scripts/validate_consistency.sh.bak:23) set `REPORT_FILE=\"validation_report_${TIMESTAMP}.txt\"` with no directory prefix AND wrote the file (lines 69-72) BEFORE `cd \"$AGENT_DIR\"` (line 78), so invocation from parent dir created the report there.",
     "severity": "HIGH",
-    "evidence": "ls /Users/turnip/Documents/Work/Workspace/magpie/validation_report_*.txt → 2 files. head -1 of each shows 'MAgPIE Documentation Consistency Validation'. `cd /Users/turnip/Documents/Work/Workspace/magpie && git check-ignore -v validation_report_20260517_102617.txt` exits non-zero (not ignored). `git status --short` shows them as `??`.",
-    "suggested_fix": "(a) Move the two existing orphans into magpie-agent/.cache/validation_reports/ or delete them. (b) Delete scripts/validate_consistency.sh.bak — it's the stale, buggy version. (c) Add `validation_report_*.txt` to PARENT /Users/turnip/Documents/Work/Workspace/magpie/.gitignore. The agent's own .gitignore has the pattern, but a pattern in magpie-agent/.gitignore CANNOT protect the parent repo.",
+    "evidence": "ls <magpie-root>/validation_report_*.txt → 2 files. head -1 of each shows 'MAgPIE Documentation Consistency Validation'. `cd <magpie-root> && git check-ignore -v validation_report_20260517_102617.txt` exits non-zero (not ignored). `git status --short` shows them as `??`.",
+    "suggested_fix": "(a) Move the two existing orphans into magpie-agent/.cache/validation_reports/ or delete them. (b) Delete scripts/validate_consistency.sh.bak — it's the stale, buggy version. (c) Add `validation_report_*.txt` to PARENT <magpie-root>/.gitignore. The agent's own .gitignore has the pattern, but a pattern in magpie-agent/.gitignore CANNOT protect the parent repo.",
     "confidence": "HIGH"
   },
   {
     "lens": "L5",
-    "location": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/scripts/validate_consistency.sh:22-25 and :80",
+    "location": "<magpie-agent>/scripts/validate_consistency.sh:22-25 and :80",
     "failure_mode": "Same defect class as the anchor, in a different shape. The current (non-.bak) script still creates its output directory before chdir-ing. Lines 23-25 set `REPORT_DIR=\".cache/validation_reports\"`, call `mkdir -p \"$REPORT_DIR\"`, and define `REPORT_FILE` — ALL relative to the caller's CWD. The `cd \"$AGENT_DIR\"` doesn't happen until line 80. Result: when a user invokes the script from parent magpie/, a stray `.cache/validation_reports/` directory is created in that CWD.",
     "severity": "HIGH",
     "evidence": "scripts/validate_consistency.sh:23-25 (mkdir before cd); :80 (cd happens later). The first `echo ... > \"$REPORT_FILE\"` on line 71 also writes before the cd.",
@@ -371,7 +371,7 @@ Pattern: bottom-up state-tracking artifacts (audit/validation_rounds.json, sync_
   },
   {
     "lens": "L5",
-    "location": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/scripts/validate_consistency.sh.bak",
+    "location": "<magpie-agent>/scripts/validate_consistency.sh.bak",
     "failure_mode": "Stale 37 KB backup of the validator with the original buggy CWD-dependent REPORT_FILE behavior, sitting next to the active script. Properly gitignored (matches `*.bak`), but its mere presence in scripts/ is a footgun: someone running it would re-create the orphan-report bug.",
     "severity": "MEDIUM",
     "evidence": "ls -la scripts/ shows validate_consistency.sh (41987 bytes) AND validate_consistency.sh.bak (37530 bytes). `git check-ignore -v scripts/validate_consistency.sh.bak` → `.gitignore:3:*.bak`.",
@@ -380,7 +380,7 @@ Pattern: bottom-up state-tracking artifacts (audit/validation_rounds.json, sync_
   },
   {
     "lens": "L5",
-    "location": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/add_timestamps.py",
+    "location": "<magpie-agent>/add_timestamps.py",
     "failure_mode": "Tooling script located at magpie-agent ROOT instead of in magpie-agent/scripts/ where all 28 other agent scripts live. The script's docstring says 'Add standardized Last Verified timestamps to all module_XX.md files' — exactly the kind of thing in scripts/check_*, scripts/refresh_*.",
     "severity": "MEDIUM",
     "evidence": "find magpie-agent -maxdepth 1 -type f → AGENT.md, README.md, .gitignore, .DS_Store, add_timestamps.py (only non-canonical entry). git ls-files | grep add_timestamps → tracked at root.",
@@ -389,7 +389,7 @@ Pattern: bottom-up state-tracking artifacts (audit/validation_rounds.json, sync_
   },
   {
     "lens": "L5",
-    "location": "/Users/turnip/Documents/Work/Workspace/magpie/.gitignore (parent repo)",
+    "location": "<magpie-root>/.gitignore (parent repo)",
     "failure_mode": "Parent .gitignore is missing entries for everything the user has installed at parent root that isn't part of MAgPIE proper: AGENT.md, CLAUDE.md, PREPROC_AGENT.md, magpie-agent/, magpie-preproc-agent/, .claude/, .copilot/. All show as `??` in `git status` from parent. Parent's `origin` is magpiemodel/magpie (the real upstream), so a careless `git add -A && git commit && git push` would push agent infrastructure + Claude session data to the public MAgPIE repo.",
     "severity": "HIGH",
     "evidence": "`cd magpie && git status --short` shows `?? .claude/`, `?? .copilot/`, `?? AGENT.md`, `?? CLAUDE.md`, `?? PREPROC_AGENT.md`, `?? magpie-agent/`, `?? magpie-preproc-agent/`. `git remote -v`: `origin git@github.com:magpiemodel/magpie.git`.",
@@ -398,7 +398,7 @@ Pattern: bottom-up state-tracking artifacts (audit/validation_rounds.json, sync_
   },
   {
     "lens": "L5",
-    "location": "/Users/turnip/Documents/Work/Workspace/magpie/tc_scenarios_compare_2026051*.csv (5 files)",
+    "location": "<magpie-root>/tc_scenarios_compare_2026051*.csv (5 files)",
     "failure_mode": "Five user-experiment output CSVs at parent magpie root, accidentally ignored by `.gitignore` line 7 `*.cs*` (matches `.csv` because the wildcard after `cs` matches `v`). NOT from magpie-agent — content is tc_scenarios from MAgPIE 'tc_vs_landuse' experiment. The accidental ignore is fragile: anyone fixing the `*.cs*` pattern would unmask 5 untracked CSVs.",
     "severity": "LOW",
     "evidence": "ls .../tc_scenarios_compare_*.csv → 5 files. `git check-ignore -v` → `.gitignore:7:*.cs*`. grep -rn 'tc_scenarios_compare' magpie-agent/ → no matches.",
@@ -407,7 +407,7 @@ Pattern: bottom-up state-tracking artifacts (audit/validation_rounds.json, sync_
   },
   {
     "lens": "L5",
-    "location": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/pipeline_audit_round6_design.md",
+    "location": "<magpie-agent>/audit/pipeline_audit_round6_design.md",
     "failure_mode": "Untracked artifact at magpie-agent/audit/ from the round 6 design pass. Sibling round1, round3, round4, round5 markdown files in the same dir are tracked.",
     "severity": "LOW",
     "evidence": "git status (in magpie-agent) → `?? audit/pipeline_audit_round6_design.md`. ls audit/ shows pipeline_audit_round1-5.md all tracked.",

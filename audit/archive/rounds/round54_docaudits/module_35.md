@@ -2,7 +2,7 @@
 
 **Auditor**: Opus adversarial doc-auditor
 **Date**: 2026-07-14
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_35.md` (1,199 lines)
+**Target doc**: `<magpie-agent>/modules/module_35.md` (1,199 lines)
 **Ground truth**: `/tmp/magpie_develop_ro` @ `0d7ebeb90` (develop HEAD; matches the doc's "Last Verified" sync tag)
 **Realization checked**: `pot_forest_may24` — the ONLY realization (`ls /tmp/magpie_develop_ro/modules/35_natveg/` → `input/`, `module.gms`, `pot_forest_may24/`) and the default (`config/default.cfg:1153` → `cfg$gms$natveg <- "pot_forest_may24"`).
 

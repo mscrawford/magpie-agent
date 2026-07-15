@@ -1,6 +1,6 @@
 # Round 36 Doc Audit: module_18.md (Residues)
 
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_18.md`
+**Target**: `<magpie-agent>/modules/module_18.md`
 **Ground truth**: `/tmp/magpie_develop_ro` (develop worktree) + `config/default.cfg`
 **Auditor**: Opus (highest capability), adversarial doc-vs-code
 **Date**: 2026-05-30

@@ -81,7 +81,7 @@
     "Footer 'Last Verified 2025-10-13': metadata, not a content claim."
    ],
    "summary": "module_09.md spine correct (8 vars, all citations, 216 lines, 9-scenario set, switching logic, verified 14-module consumer set in sec 5.2). 3 mechanism bugs: B1(Major) M13 'GDP drives tech adoption' = actually Inf-default-OFF spending CAP (R30 advisory CONFIRMED); B2(Major) sec12.2:870 M50 wrong var+phantom 'atmospheric N deposition'; B3(Minor) sec12.2 M18/36/62/70 drivers contradict verified sec5.2.",
-   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_09.md"
+   "report_file": "<magpie-agent>/audit/archive/rounds/round31_docaudits/module_09.md"
   },
   {
    "label": "module_12",
@@ -101,7 +101,7 @@
     "Units label/value duality: code canonical string is '% per yr' (declarations.gms:9) but stored values are fractions (0.1=10%). Doc line 809 '% per yr' matches code exactly (correct, do NOT change); lines 14/170 'fraction per year (1)' describe value semantics. Standard MAgPIE label-vs-value mismatch, defensible documentation, not a code-checkable error."
    ],
    "summary": "Critical: 4 sections (lines 15,173-176,321,396-399) list only 3 pm_interest consumers (13/39/41); code has 9 (13,29,32,38,39,41,56,58,70) and doc's own line 765 has the right list -- stale-after-partial-update (R20 anchor). Major: line 835 says '10' vs real 9. Minor: M70 caveat (sticky-only). Units advisory on line 825 REFUTED -- 'TC'=Technical Change abbrev, not a unit.",
-   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_12.md"
+   "report_file": "<magpie-agent>/audit/archive/rounds/round31_docaudits/module_12.md"
   },
   {
    "label": "module_13",
@@ -121,7 +121,7 @@
     "realization.gms:8-33 cited for the '15-year shift' claim (:18): that range is the @description block (general Dietrich-2014 implementation) and does not literally contain '15 years' (that is equations.gms:23/26-32, also cited elsewhere). General-reference citation, acceptable; not flagged."
    ],
    "summary": "module_13.md is mostly accurate (all 5 eqns verbatim, all input.gms defaults line-exact, input-side interfaces correct). 1 Critical: Module 38 phantom vm_tau consumer in 4 places (real consumers = M14, M11 only; M38 link is transitive via vm_yld -> MANDATE 17). 1 Minor citation overshoot (q13_tau 52-58 -> 52-53). 1 Info count mismatch (6/6 lists 7). GDP-cap advisory REFUTED: doc already correct.",
-   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_13.md"
+   "report_file": "<magpie-agent>/audit/archive/rounds/round31_docaudits/module_13.md"
   },
   {
    "label": "module_55",
@@ -141,7 +141,7 @@
     "Doc L277 options list omits 'sdp' while the scen_conf55 set (L350) includes it; this matches the code comment input.gms:11-13 which also omits sdp, so left as-is (not a clear error)."
    ],
    "summary": "module_55.md is accurate on equations/formulas/citations/sets/defaults/phases but its downstream consumer mapping (Outputs prose + Dependencies table) has 3 Critical wrong-consumer-set errors (R20 class) sharing one root cause: vm_manure_confinement conflated with vm_manure(...,confinement,...). 55-B1 M53 phantom-consumes vm_manure_confinement (really reads vm_manure); 55-B2 M50 omitted from vm_manure; 55-B3 M51 omitted from vm_manure_recycling. Plus 1 Minor (vm_manure enteric-fermentation purpose wrong). All confirmed.",
-   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_55.md"
+   "report_file": "<magpie-agent>/audit/archive/rounds/round31_docaudits/module_55.md"
   },
   {
    "label": "module_62",
@@ -163,7 +163,7 @@
     "'Centrality: Medium' / 'MEDIUM RISK' (doc 897/907) \u2014 cross-doc judgment pointing to Module_Dependencies.md, not a module-62 code claim."
    ],
    "summary": "module_62.md is accurate (9/10). All equations, formulas, defaults (s62_include_bioplastic=1 ON, NOT inverted), citations, the 39-commodity set, and full dependency set (consumer=M16 only; upstream M09/M15/M73) verify against develop. 2 issues: B1 (Minor) footer wrongly lists GDP as an M09 dependency (module reads only im_pop); B2 (Informational) File Structure Summary omits scaling.gms.",
-   "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round31_docaudits/module_62.md"
+   "report_file": "<magpie-agent>/audit/archive/rounds/round31_docaudits/module_62.md"
   }
  ],
  "fixes": [

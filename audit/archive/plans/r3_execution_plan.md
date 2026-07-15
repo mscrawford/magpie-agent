@@ -27,7 +27,7 @@ This is the STRUCTURAL flywheel (audits machinery), not the BEHAVIORAL one (whic
 ## Pre-flight checks (do these first)
 
 ```bash
-cd /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+cd <magpie-agent>
 git log --oneline -6                              # should show 66f2833 at HEAD (or later if more landed)
 git status -s                                     # should be clean
 bash scripts/validate_consistency.sh 2>&1 | tail -5  # 34 passed, 1 advisory warning

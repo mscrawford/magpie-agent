@@ -116,4 +116,4 @@ The module's own realization description explicitly states: "Temporal variations
 - The 2026-04-20 note on the BEF dimensionality change (PR #869) is recorded in the docs and flagged as post-dating the original verification date (2025-10-13); if the docs were not re-verified after that PR, the BEF usage detail should be confirmed against current code before citing it in high-stakes work.
 - The M35 (natveg) claim is explicitly negative-evidence: absence from the consumer list in docs. This is not a verified absence from code.
 
-Source cited: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_45.md`
+Source cited: `<magpie-agent>/modules/module_45.md`

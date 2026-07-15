@@ -12,11 +12,11 @@ What is the default realization of module 14 (yields)? List the equations define
 
 Confirmed from two independent sources:
 
-- `/Users/turnip/Documents/Work/Workspace/magpie/config/default.cfg`:
+- `<magpie-root>/config/default.cfg`:
   ```
   cfg$gms$yields <- "managementcalib_aug19"          # def = managementcalib_aug19
   ```
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md` line 3:
+- `<magpie-agent>/modules/module_14.md` line 3:
   ```
   **Realization:** `managementcalib_aug19`
   ```
@@ -89,8 +89,8 @@ q14_yield_past(j2,w) ..
 
 ## Sources
 
-- 🟢 Config verified: `/Users/turnip/Documents/Work/Workspace/magpie/config/default.cfg` (grep for `cfg$gms$yields`)
-- 🟡 Documented: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md` sections 1, 2.1, 2.2, 13.1
+- 🟢 Config verified: `<magpie-root>/config/default.cfg` (grep for `cfg$gms$yields`)
+- 🟡 Documented: `<magpie-agent>/modules/module_14.md` sections 1, 2.1, 2.2, 13.1
 
 **Note on line numbers:** Line numbers are as documented in `module_14.md` at its last verified date (2025-10-12). Code changes since then may have shifted them. For critical work, verify against current `../modules/14_yields/managementcalib_aug19/equations.gms`.
 

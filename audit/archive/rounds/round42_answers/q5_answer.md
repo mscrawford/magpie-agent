@@ -1,7 +1,7 @@
 # Q5 Answer: Bioenergy Demand IAMC Variable — Full Trace
 
 **Version pin**: magpie4 v2.70.0 @ SHA a360d8c9ec (resolution: sha, exact match)  
-**Pin file**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/project/version_pins.json`  
+**Pin file**: `<magpie-agent>/project/version_pins.json`  
 **Cached source root**: `.cache/sources/magpie4/` (all source paths below are relative to this root)
 
 ---

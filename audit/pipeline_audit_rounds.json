@@ -82,7 +82,7 @@
             "instruction-surface-integrity",
             "efficiency"
           ],
-          "candidate_intervention": "Doc-editing session: (a) drop 'module' and 'equation' from verifiers.md triggers; (b) delete CRITICAL WARNINGS duplicates; (c) fix MANDATE 8 fabrication (fbask_jul23 -> fbask_jan16); (d) replace hardcoded /Users/turnip path; (e) reconcile MANDATE 16 name; (f) update validate-semantic.md schema 1.1 note; (g) update audit/README.md directory listing; (h) mark each MANDATE Verified by: <script> | human."
+          "candidate_intervention": "Doc-editing session: (a) drop 'module' and 'equation' from verifiers.md triggers; (b) delete CRITICAL WARNINGS duplicates; (c) fix MANDATE 8 fabrication (fbask_jul23 -> fbask_jan16); (d) replace hardcoded ~ path; (e) reconcile MANDATE 16 name; (f) update validate-semantic.md schema 1.1 note; (g) update audit/README.md directory listing; (h) mark each MANDATE Verified by: <script> | human."
         },
         {
           "cluster": "4. Validator coverage gaps",
@@ -166,7 +166,7 @@
           "fixes": [
             "verifiers.md auto-load triggers narrowed (dropped over-broad 'module' and 'equation'; kept specific prefixes vm_/pm_/v<N>_/p<N>_/s<N>_/c<N>_/q<N>_/realization/'default value'/'modify code'/'variable name'/'equation name')",
             "AGENT.md CRITICAL WARNINGS section (lines 606-635) collapsed \u2014 the MAgPIE-specific 'MAgPIE accounts for / models X' epistemological reminder kept; MANDATEs duplicates deleted (now solely in verifiers.md)",
-            "verifiers.md hardcoded /Users/turnip path removed",
+            "verifiers.md hardcoded ~ path removed",
             "MANDATE 16 name reconciled (AGENT.md table and verifiers.md heading both 'Citation full-path + post-merge line numbers')",
             "validate-semantic.md updated to mention schema v1.1 + regression_questions requirement",
             "audit/README.md directory listing expanded with the 5 new files (validation_rounds.json, pipeline_audit_rounds.json, pipeline_audit_round1.md, flywheel_rubric.md, probe_dedup_ledger.json)",

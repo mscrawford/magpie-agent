@@ -1,6 +1,6 @@
 # Round 49 — Adversarial Verification: modification_safety_guide.md
 
-Target: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/cross_module/modification_safety_guide.md`
+Target: `<magpie-agent>/cross_module/modification_safety_guide.md`
 Ground truth: `/tmp/magpie_develop_ro` (develop worktree, read-only)
 Verifier posture: default skepticism; both negative/consumer claims confirmed twice + positive control.
 

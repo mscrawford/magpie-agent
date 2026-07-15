@@ -50,6 +50,6 @@ Output variable: `vm_yld(j,"pasture",w)` — pasture yield in tDM/ha/yr. Uses `p
 
 ## Source citation
 
-- Primary source: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md` sections 2.1 and 2.2
-- Supplementary: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14_notes.md` warning 3
+- Primary source: `<magpie-agent>/modules/module_14.md` sections 2.1 and 2.2
+- Supplementary: `<magpie-agent>/modules/module_14_notes.md` warning 3
 - Documentation status: Fully Verified 2025-10-12; last audited 2026-05-17

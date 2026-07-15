@@ -1,7 +1,7 @@
 # Audit Report: Q2 (Climate M45 → Yields M14 / SOM M59; parameterization vs mechanism)
 
 **Round**: 42
-**Ground truth**: live GAMS at `/Users/turnip/Documents/Work/Workspace/magpie/modules/` + `config/default.cfg`, develop @ HEAD `ee98739fd` (clean working tree confirmed).
+**Ground truth**: live GAMS at `<magpie-root>/modules/` + `config/default.cfg`, develop @ HEAD `ee98739fd` (clean working tree confirmed).
 **Answer audited**: `audit/archive/rounds/round42_answers/q2_answer.md`
 
 ---

@@ -63,7 +63,7 @@ You are auditing the magpie-agent's own pipeline. This is /pipeline-audit Round 
 focused on doc-surface drift (NOT doc↔code fidelity). You are one of 7 parallel
 Opus sub-agents with decorrelated lenses — do your lens, don't drift into others'.
 
-Working directory: /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+Working directory: <magpie-agent>
 This is a READ-ONLY audit. Do NOT edit, write, commit, or push anything.
 
 Your lens: <name>
@@ -357,19 +357,19 @@ Do NOT (sibling-lens fences):
 Your lens: L5 — Misplaced outputs
 
 Anchor (R24 ground truth):
-  /Users/turnip/Documents/Work/Workspace/magpie/validation_report_20260517_102617.txt
-  /Users/turnip/Documents/Work/Workspace/magpie/validation_report_20260524_095554.txt
+  <magpie-root>/validation_report_20260517_102617.txt
+  <magpie-root>/validation_report_20260524_095554.txt
   Both files are validator OUTPUT from magpie-agent's scripts but landed in the
   PARENT magpie/ repo root. Neither is in either repo's .gitignore.
-  Reproduce: ls /Users/turnip/Documents/Work/Workspace/magpie/validation_report_*.txt
+  Reproduce: ls <magpie-root>/validation_report_*.txt
              grep -E "validation_report" \
-               /Users/turnip/Documents/Work/Workspace/magpie/.gitignore \
-               /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/.gitignore
+               <magpie-root>/.gitignore \
+               <magpie-agent>/.gitignore
 
 Scope:
-  - Parent /Users/turnip/Documents/Work/Workspace/magpie/ (top-level only,
+  - Parent <magpie-root>/ (top-level only,
     NOT magpie-agent/ subtree — that's our home)
-  - /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/ root (top-level)
+  - <magpie-agent>/ root (top-level)
   - .gitignore at both levels
   - scripts/*.py and scripts/*.sh — check where they DEFAULT to writing output
 
@@ -384,10 +384,10 @@ Hunt for:
 
 Method (operational):
   1. List files in parent magpie/ root (not magpie-agent/):
-       ls -la /Users/turnip/Documents/Work/Workspace/magpie/ | grep -v "^d"
+       ls -la <magpie-root>/ | grep -v "^d"
      Then classify each: belongs (MAgPIE), doesn't belong (agent output), unclear.
   2. List files in magpie-agent/ root:
-       ls -la /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/ | grep -v "^d"
+       ls -la <magpie-agent>/ | grep -v "^d"
      Same classification.
   3. Read both .gitignore files. Cross-reference against the output patterns
      in scripts:

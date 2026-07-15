@@ -2,7 +2,7 @@
 
 **Auditor**: Opus 4.8 (1M), adversarial doc auditor
 **Date**: 2026-05-30
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/core_docs/Query_Patterns_Reference.md`
+**Target**: `<magpie-agent>/core_docs/Query_Patterns_Reference.md`
 **Ground truth**: `/tmp/magpie_develop_ro` @ HEAD `ee98739fd` (Merge PR #887)
 **Rubric**: `audit/flywheel_rubric.md` v1.2
 

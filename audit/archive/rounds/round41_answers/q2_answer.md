@@ -169,11 +169,11 @@ M70 fbask_jan16: vm_prod_reg × im_feed_baskets → vm_dem_feed(i,kap,kall)  [q7
 
 Claims sourced from:
 
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_70.md` (🟡 documented; last verified 2026-03-06)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_16.md` (🟡 documented)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_30.md` (🟡 documented; status 100% verified)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_31.md` (🟡 documented; last verified 2025-10-13)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md` (🟡 documented; status fully verified 2025-10-12)
-- `/Users/turnip/Documents/Work/Workspace/magpie/config/default.cfg` (default realization confirmations — lines 354, 896, 969, 2146)
+- `<magpie-agent>/modules/module_70.md` (🟡 documented; last verified 2026-03-06)
+- `<magpie-agent>/modules/module_16.md` (🟡 documented)
+- `<magpie-agent>/modules/module_30.md` (🟡 documented; status 100% verified)
+- `<magpie-agent>/modules/module_31.md` (🟡 documented; last verified 2025-10-13)
+- `<magpie-agent>/modules/module_14.md` (🟡 documented; status fully verified 2025-10-12)
+- `<magpie-root>/config/default.cfg` (default realization confirmations — lines 354, 896, 969, 2146)
 
 No raw GAMS `.gms` files were read this session. Line-number citations within module docs were verified at each module's "Last Verified" date and may have shifted since then. For critical work, verify against current code.

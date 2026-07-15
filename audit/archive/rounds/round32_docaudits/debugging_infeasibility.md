@@ -3,7 +3,7 @@
 **Auditor**: Opus adversarial doc-auditor
 **Date**: 2026-05-30
 **Ground truth**: /tmp/magpie_develop_ro (GAMS develop) + config/default.cfg
-**Doc**: /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/agent/helpers/debugging_infeasibility.md
+**Doc**: <magpie-agent>/agent/helpers/debugging_infeasibility.md
 
 ## Verdict: MOSTLY ACCURATE (lower band)
 

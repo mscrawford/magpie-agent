@@ -2,7 +2,7 @@
 
 **Round**: 41
 **Auditor**: Opus (semantic-validation flywheel)
-**Ground truth**: live GAMS at `/Users/turnip/Documents/Work/Workspace/magpie/modules/` + `config/default.cfg`, develop HEAD ee98739fd (clean)
+**Ground truth**: live GAMS at `<magpie-root>/modules/` + `config/default.cfg`, develop HEAD ee98739fd (clean)
 **Answer audited**: `audit/archive/rounds/round41_answers/q5_answer.md`
 
 ---

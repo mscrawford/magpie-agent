@@ -101,7 +101,7 @@ Estimated effort: ~150 LOC Python; closes the largest coverage gap.
 - `CRITICAL WARNINGS` section (AGENT.md:606-635) still carries content from MANDATEs 7, 8, 16.
 - `verifiers.md` auto-load trigger keyword `"module"` is so broad it fires constantly; combined with the 1,888-word helper, net token cost per session is HIGHER than pre-hoist.
 - MANDATE 8 worked example fabricates `fbask_jul23` (cross-cluster with Cluster 1).
-- `verifiers.md:224` hardcodes `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent` — not portable.
+- `verifiers.md:224` hardcodes `<magpie-agent>` — not portable.
 - MANDATE 16 name mismatch: AGENT.md says "post-merge lines"; verifiers.md says "post-merge line numbers".
 - `validate-semantic.md` doesn't mention the schema_version 1.1 bump or the new `regression_questions` array.
 - `audit/README.md` doesn't list 4 new top-level files (flywheel_rubric.md, validation_rounds.json, pipeline_audit_rounds.json, probe_dedup_ledger.json).
@@ -113,7 +113,7 @@ Estimated effort: ~150 LOC Python; closes the largest coverage gap.
 1. Drop `"module"` and `"equation"` from verifiers.md triggers; keep narrow triggers only.
 2. Delete the `CRITICAL WARNINGS` section in AGENT.md (now redundant with verifiers.md).
 3. Fix MANDATE 8 worked example (use `fbask_jan16` as the actual default).
-4. Replace `/Users/turnip/...` path in verifiers.md with portable form.
+4. Replace `~/...` path in verifiers.md with portable form.
 5. Reconcile MANDATE 16 name.
 6. Add schema 1.1 note to validate-semantic.md.
 7. Update audit/README.md directory structure.

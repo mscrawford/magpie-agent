@@ -4,7 +4,7 @@
 
 **Mode**: offline (magpie-agent AI documentation only — no raw GAMS/R source read, no shell commands executed; all counts below are quoted verbatim from doc text, none recomputed)
 
-**Docs consulted this session** (all under `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/`):
+**Docs consulted this session** (all under `<magpie-agent>/`):
 - `AGENT.md`
 - `agent/helpers/magpie4_reference.md`
 - `agent/helpers/interpreting_outputs.md`

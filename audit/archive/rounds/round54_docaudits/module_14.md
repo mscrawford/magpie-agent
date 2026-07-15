@@ -2,7 +2,7 @@
 
 **Auditor:** Opus 4.8 (adversarial doc audit)
 **Date:** 2026-07-14
-**Target doc:** `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md` (1618 lines)
+**Target doc:** `<magpie-agent>/modules/module_14.md` (1618 lines)
 **Ground truth:** `/tmp/magpie_develop_ro` @ `0d7ebeb90` (develop; read-only worktree) + `config/default.cfg`
 **Realization checked:** `managementcalib_aug19` — **CONFIRMED default** (`config/default.cfg:354`: `cfg$gms$yields <- "managementcalib_aug19"`), and the **only** realization (`ls modules/14_yields/` → `input/`, `managementcalib_aug19/`, `module.gms`; `module.gms:30` has a single `$Ifi` branch).
 

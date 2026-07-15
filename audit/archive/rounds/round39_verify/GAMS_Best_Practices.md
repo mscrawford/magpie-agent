@@ -1,6 +1,6 @@
 # Round 39 Adversarial Verification — GAMS_Best_Practices.md
 
-Target doc: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/reference/GAMS_Best_Practices.md`
+Target doc: `<magpie-agent>/reference/GAMS_Best_Practices.md`
 Verifier: adversarial (Opus). Ground truth: official GAMS language docs (gams.com/latest).
 Bugs verified: 1 (GBP-B1).
 

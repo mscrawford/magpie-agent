@@ -80,7 +80,7 @@ cat ../CLAUDE.md
 
 ```bash
 # Always works regardless of working directory
-wc -l /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/core_docs/AI_Agent_Behavior_Guide.md
+wc -l <magpie-agent>/core_docs/AI_Agent_Behavior_Guide.md
 
 # Can build from <env> working directory
 wc -l ${WORKSPACE}/magpie-agent/core_docs/AI_Agent_Behavior_Guide.md
@@ -93,7 +93,7 @@ wc -l ${WORKSPACE}/magpie-agent/core_docs/AI_Agent_Behavior_Guide.md
 ```bash
 # Check where you are before using relative paths
 pwd
-# Output: /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+# Output: <magpie-agent>
 
 # THEN use relative path
 wc -l core_docs/AI_Agent_Behavior_Guide.md
@@ -108,10 +108,10 @@ wc -l core_docs/AI_Agent_Behavior_Guide.md
 # DO verify with multiple approaches:
 
 # Approach 1: Absolute path
-ls /Users/turnip/.../magpie-agent/core_docs/AI_Agent_Behavior_Guide.md
+ls ~/.../magpie-agent/core_docs/AI_Agent_Behavior_Guide.md
 
 # Approach 2: Find from known location
-find /Users/turnip/.../magpie-agent -name "AI_Agent_Behavior_Guide.md" -type f
+find ~/.../magpie-agent -name "AI_Agent_Behavior_Guide.md" -type f
 
 # Approach 3: Check git tracking
 git ls-tree -r HEAD --name-only | grep "AI_Agent_Behavior_Guide"
@@ -190,7 +190,7 @@ ls core_docs/  # Fails
 1. **Use absolute paths** (recommended):
    ```bash
    # From <env> working directory
-   /Users/turnip/.../magpie-agent/core_docs/file.md
+   ~/.../magpie-agent/core_docs/file.md
    ```
 
 2. **OR verify working directory first**:

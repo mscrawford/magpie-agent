@@ -959,6 +959,6 @@
   "file_locations": {
     "verified_modules": "magpie-agent/modules/",
     "source_code": "modules/",
-    "recovered_backup": "/Users/turnip/Desktop/phase4_module_docs/"
+    "recovered_backup": "~/Desktop/phase4_module_docs/"
   }
 }

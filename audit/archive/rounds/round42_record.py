@@ -2,7 +2,7 @@
 """Append R42 entry to validation_rounds.json and update cumulative_stats + G1/G3 anchors."""
 import json, sys
 
-PATH = "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/validation_rounds.json"
+PATH = "<magpie-agent>/audit/validation_rounds.json"
 d = json.load(open(PATH))
 
 if any(r.get("round") == 42 for r in d["rounds"]):

@@ -22,7 +22,7 @@
    - Verified against `scripts/sync_magpie4_clone.py:174-177` (script reads `rec["Version"]` and `rec.get("RemoteSha", "")` from the renv.lock magpie4 entry).
 
 5. **Clone location `.cache/sources/magpie4/`**:
-   - Verified: clone exists at `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/.cache/sources/magpie4/` with a `.git` directory and the expected R package layout (DESCRIPTION, NAMESPACE, R/, man/).
+   - Verified: clone exists at `<magpie-agent>/.cache/sources/magpie4/` with a `.git` directory and the expected R package layout (DESCRIPTION, NAMESPACE, R/, man/).
    - Verified against `scripts/sync_magpie4_clone.py:169-170` (`cache_dir = agent_dir / ".cache" / "sources"; dest = cache_dir / PACKAGE`).
 
 6. **Three resolution strategies (sha → tag → head)**:
@@ -50,7 +50,7 @@
 
 11. **Pin snapshot field-by-field table**:
     - `captured_at: 2026-05-24` → matches `project/version_pins.json:3`.
-    - `lock_file: /Users/turnip/Documents/Work/Workspace/magpie/input/renv.lock` → matches line 4.
+    - `lock_file: <magpie-root>/input/renv.lock` → matches line 4.
     - `lock_file_sha256` → matches line 5.
     - `packages.magpie4.version: 2.70.0` → matches line 8.
     - `packages.magpie4.sha: a360d8c9ec...` → matches line 9.

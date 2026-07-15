@@ -2,7 +2,7 @@
 
 **Auditor**: Opus adversarial doc auditor
 **Date**: 2026-05-30
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/reference/GAMS_Fundamentals.md`
+**Target**: `<magpie-agent>/reference/GAMS_Fundamentals.md`
 **Ground truth**: official GAMS language docs (gams.com/latest) for GAMS-language claims; `/tmp/magpie_develop_ro` for MAgPIE-convention claims.
 **Rubric**: `audit/flywheel_rubric.md` v1.2.
 

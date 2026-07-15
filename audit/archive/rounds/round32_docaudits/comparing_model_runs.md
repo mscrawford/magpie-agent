@@ -1,6 +1,6 @@
 # Doc Audit (Round 32): agent/helpers/comparing_model_runs.md
 
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/agent/helpers/comparing_model_runs.md`
+**Target**: `<magpie-agent>/agent/helpers/comparing_model_runs.md`
 **Ground truth**: `/tmp/magpie_develop_ro` (develop @ `ee98739fd`, "Merge PR #887 from mishkos/f_affexp_policy") + `config/default.cfg`.
 **Auditor**: adversarial doc auditor, model Opus 4.8.
 **Date**: 2026-05-30.

@@ -1,7 +1,7 @@
 # Round 31 Doc Audit — module_13.md (Technological Change / tc)
 
 **Auditor**: Opus 4.8 (1M) adversarial doc-vs-code audit
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_13.md`
+**Target**: `<magpie-agent>/modules/module_13.md`
 **Ground truth**: `/tmp/magpie_develop_ro` (develop worktree) + `config/default.cfg`
 **Date**: 2026-05-30
 

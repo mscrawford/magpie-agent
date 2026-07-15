@@ -1,6 +1,6 @@
 # Audit Report: module_16.md (Demand, sector_may15)
 
-**Doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_16.md`
+**Doc**: `<magpie-agent>/modules/module_16.md`
 **Ground truth**: `/tmp/magpie_develop_ro` (develop worktree), `config/default.cfg`
 **Auditor**: round33 doc-audit (Opus, adversarial)
 **Date**: 2026-05-30

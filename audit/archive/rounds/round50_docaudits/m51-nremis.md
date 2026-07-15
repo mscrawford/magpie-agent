@@ -1,7 +1,7 @@
 # Audit Report: module_51.md (Nitrogen — rescaled_jan21)
 
 **Auditor**: Opus adversarial doc-auditor (round50_docaudits)
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_51.md`
+**Target doc**: `<magpie-agent>/modules/module_51.md`
 **Ground truth**: `/tmp/magpie_develop_ro/modules/51_nitrogen/rescaled_jan21/` (develop worktree)
 **Default verified**: `cfg$gms$nitrogen <- "rescaled_jan21"` at `config/default.cfg:1550`
 

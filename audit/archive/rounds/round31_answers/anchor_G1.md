@@ -39,7 +39,7 @@ q14_yield_past(j2,w) ..
 
 ## Source
 
-- Doc file: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md`
+- Doc file: `<magpie-agent>/modules/module_14.md`
 - Sections 2.1 and 2.2, verified count at Section 13.1
 - Status: Fully Verified (2025-10-12)
 - Note: Line numbers cited from module_14.md were verified at that doc's last update. For critical work, verify against current GAMS code.

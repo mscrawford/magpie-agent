@@ -2,7 +2,7 @@
 
 **Auditor**: adversarial doc auditor (Opus 4.8, 1M ctx)
 **Date**: 2026-05-30
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/agent/helpers/maintenance_protocol.md`
+**Target**: `<magpie-agent>/agent/helpers/maintenance_protocol.md`
 **Ground truth**: `/tmp/magpie_develop_ro` (GAMS code + config/default.cfg) + the live magpie-agent repo (this doc is largely about the agent's OWN machinery, so the repo itself is the relevant ground truth for script names, file paths, allowlist contents).
 
 ---
@@ -64,7 +64,7 @@ Doc: "`audit/advisory_allowlist.json` suppresses known false-positives from advi
 
 ### Recovery-procedure shell commands — VERIFIED CORRECT
 - §6 AGENT.md recovery: `cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md` then `diff AGENT.md ../AGENT.md` / `diff AGENT.md ../CLAUDE.md`. Both deploy targets EXIST (`../AGENT.md`, `../CLAUDE.md`, both 44932 bytes, identical mtime → currently in sync). Commands are well-formed.
-- §6 "Sync Way Behind" uses `git -C ..`: `git -C <magpie-agent>/.. rev-parse --show-toplevel` → `/Users/turnip/Documents/Work/Workspace/magpie` (the parent MAgPIE repo). The `git -C ..` pattern correctly targets the MAgPIE repo when run from magpie-agent/. Verified the parent is a valid git repo with MAgPIE history.
+- §6 "Sync Way Behind" uses `git -C ..`: `git -C <magpie-agent>/.. rev-parse --show-toplevel` → `<magpie-root>` (the parent MAgPIE repo). The `git -C ..` pattern correctly targets the MAgPIE repo when run from magpie-agent/. Verified the parent is a valid git repo with MAgPIE history.
 
 ### "46 modules" example (line 25) — VERIFIED CORRECT
 Doc cites "46 modules" as the example stale-count target. `ls -d /tmp/magpie_develop_ro/modules/[0-9]*/ | wc -l` → **46**. Current develop has exactly 46 numbered module directories. The example count is accurate (and it is an *illustrative* example of a stale-count check, not a hard assertion, but it happens to be current).

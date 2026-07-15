@@ -20,5 +20,5 @@ Before answering any magpie4 question, the agent is instructed to compare `proje
 
 ## Files cited
 
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/project/version_pins.json` — authoritative pin snapshot (schema_version 1, captured 2026-05-25)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/agent/helpers/magpie4_reference.md` — documents the pinning protocol and three-rule freshness check (lines 1-29)
+- `<magpie-agent>/project/version_pins.json` — authoritative pin snapshot (schema_version 1, captured 2026-05-25)
+- `<magpie-agent>/agent/helpers/magpie4_reference.md` — documents the pinning protocol and three-rule freshness check (lines 1-29)

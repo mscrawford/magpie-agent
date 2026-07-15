@@ -39,7 +39,7 @@ So the fix (remove the literal, defer to the live count) was applied to one of t
 
 **verify_cmd:**
 ```
-grep -n "40 checks" /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/README.md && cat /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/.cache/validation_reports/latest_result.json | grep checks
+grep -n "40 checks" <magpie-agent>/modules/README.md && cat <magpie-agent>/.cache/validation_reports/latest_result.json | grep checks
 ```
 → `modules/README.md:34:...(40 checks across...` AND `"checks": 43,`
 
@@ -73,7 +73,7 @@ This is a "Latest" status line (not a frozen snapshot), so it is meant to be cur
 
 **verify_cmd:**
 ```
-grep -n "matured to" /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/README.md && python3 -c "import json;print('rounds=',len(json.load(open('/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/validation_rounds.json'))['rounds']))"
+grep -n "matured to" <magpie-agent>/README.md && python3 -c "import json;print('rounds=',len(json.load(open('<magpie-agent>/audit/validation_rounds.json'))['rounds']))"
 ```
 → `README.md:7:...matured to 47 rounds...` AND `rounds= 48`
 
@@ -100,7 +100,7 @@ blast_radius / what_it_protects / who_else_needs_it: n/a.
 
 **verify_cmd:**
 ```
-grep -n "Cumulative doc bugs" /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/CHANGELOG.md && python3 -c "import json;cs=json.load(open('/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/validation_rounds.json'))['cumulative_stats'];print(cs['approx_total_bugs_found'],cs['approx_total_bugs_fixed'])"
+grep -n "Cumulative doc bugs" <magpie-agent>/CHANGELOG.md && python3 -c "import json;cs=json.load(open('<magpie-agent>/audit/validation_rounds.json'))['cumulative_stats'];print(cs['approx_total_bugs_found'],cs['approx_total_bugs_fixed'])"
 ```
 → `~892 found / ~653 fixed` AND `907 656`
 
@@ -133,7 +133,7 @@ Recomputed from source at the pinned SHA: **105 unique** report* functions (not 
 
 **verify_cmd:**
 ```
-cd /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent && sed -n '62,182p' .cache/sources/magpie4/R/getReport.R | grep -oE 'report[A-Z][A-Za-z0-9]*' | sort -u | wc -l ; grep -n "106 unique" agent/helpers/magpie4_reference.md
+cd <magpie-agent> && sed -n '62,182p' .cache/sources/magpie4/R/getReport.R | grep -oE 'report[A-Z][A-Za-z0-9]*' | sort -u | wc -l ; grep -n "106 unique" agent/helpers/magpie4_reference.md
 ```
 → `105` (actual unique count) vs doc claim `...117 ... calls to 106 unique report* functions`
 

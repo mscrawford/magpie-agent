@@ -1,6 +1,6 @@
 # G1 — Module 14 default realization and equations
 
-**Source:** `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md`
+**Source:** `<magpie-agent>/modules/module_14.md`
 
 ---
 

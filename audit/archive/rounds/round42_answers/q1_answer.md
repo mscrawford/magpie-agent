@@ -208,11 +208,11 @@ The following non-default scenarios price agricultural CH4 and/or N2O alongside 
 All claims are 🟡 **Documented** — drawn from AI documentation read in this session. No raw GAMS source was opened.
 
 Primary sources:
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_56.md` — M56 full documentation (Sections 2, 3.7, 5.2; lines 51-116, 478-514, 654-667)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_52.md` — M52 documentation (Section 3, equations.gms:16-19)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_11.md` — M11 documentation (Section 2.2, equations.gms:15-47, 26-27)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_56_notes.md` — notes on default behavior and unit conventions
-- `/Users/turnip/Documents/Work/Workspace/magpie/config/default.cfg` — confirmed `c56_emis_policy = "reddnatveg_nosoil"` default
+- `<magpie-agent>/modules/module_56.md` — M56 full documentation (Sections 2, 3.7, 5.2; lines 51-116, 478-514, 654-667)
+- `<magpie-agent>/modules/module_52.md` — M52 documentation (Section 3, equations.gms:16-19)
+- `<magpie-agent>/modules/module_11.md` — M11 documentation (Section 2.2, equations.gms:15-47, 26-27)
+- `<magpie-agent>/modules/module_56_notes.md` — notes on default behavior and unit conventions
+- `<magpie-root>/config/default.cfg` — confirmed `c56_emis_policy = "reddnatveg_nosoil"` default
 
 **Default realization confirmed**: Module 56 has a single realization `price_aug22` (no multi-realization ambiguity). All claims describe this realization.
 

@@ -36,7 +36,7 @@ Note on a known discrepancy: an earlier planning document cited 108 unique funct
 
 Version pin: **magpie4 v2.70.0 @ a360d8c9ec** (resolved via exact SHA from `renv.lock`).
 
-Full pinned path: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/.cache/sources/magpie4/R/getReport.R:62-181`
+Full pinned path: `<magpie-agent>/.cache/sources/magpie4/R/getReport.R:62-181`
 
 Pin metadata source: `project/version_pins.json` (captured 2026-05-25; `lock_file_sha256: de41e0ce9239aabab001102277e85fa576fb3e8e5c84b9d27c2a461e123731ba`).
 

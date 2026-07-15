@@ -69,7 +69,7 @@ STEP B/C — other (content-level citation mismatch + nonexistent name; f22_bii 
 Doc line 190: "See: `archive/MODULE_59_ERRORS_FOUND.md` for example".
 
 STEP A — mechanical citation check:
-- `find /Users/turnip/.../magpie-agent -iname '*MODULE_59*'` -> returns `modules/module_59.md`, `modules/module_59_notes.md`, `audit/archive/rounds/round34_answers/module_59.md`, `audit/archive/rounds/round34_docaudits/module_59.md`. NONE is `MODULE_59_ERRORS_FOUND.md`.
+- `find ~/.../magpie-agent -iname '*MODULE_59*'` -> returns `modules/module_59.md`, `modules/module_59_notes.md`, `audit/archive/rounds/round34_answers/module_59.md`, `audit/archive/rounds/round34_docaudits/module_59.md`. NONE is `MODULE_59_ERRORS_FOUND.md`.
 - Positive control: the same `find` DID return other module_59 files, proving the search works; the specific ERRORS_FOUND file is genuinely absent. Cross-checked: no `archive/MODULE_59_ERRORS_FOUND.md` path anywhere.
 
 STEP B/C — other (doc-internal cross-reference to a magpie-agent repo file, not GAMS structure). The referenced file does not exist. UPHELD. Recoverable replacement `modules/module_59_notes.md` exists (verified above); or remove the line. (Minor severity stands — it is a dangling pointer, not a code-fact error.)

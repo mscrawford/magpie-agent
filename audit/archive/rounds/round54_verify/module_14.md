@@ -1,6 +1,6 @@
 # R54 Adversarial Verification - module_14.md
 
-**Target doc:** `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_14.md` (1617 lines)
+**Target doc:** `<magpie-agent>/modules/module_14.md` (1617 lines)
 **Ground truth:** `/tmp/magpie_develop_ro` @ `0d7ebeb90` (develop worktree, read-only)
 **Verifier:** adversarial, mechanical-first. Default = skepticism.
 **Date:** 2026-07-14

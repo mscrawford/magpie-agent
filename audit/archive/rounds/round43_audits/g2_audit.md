@@ -1,7 +1,7 @@
 ## Audit Report: G2 (vm_carbon_stock computation in Module 52 → GHG-policy cost in Module 56)
 
 **Round**: 43 | **Question type**: REGRESSION ANCHOR G2 (§1.5 immutable latent-doc anchor) | **Auditor**: Opus, adversarial-but-fair
-**Ground truth**: live GAMS at `/Users/turnip/Documents/Work/Workspace/magpie/modules/` (develop ee98739fd, clean)
+**Ground truth**: live GAMS at `<magpie-root>/modules/` (develop ee98739fd, clean)
 **Answer audited**: `audit/archive/rounds/round43_answers/g2_answer.md`
 
 ### Overall Verdict: ACCURATE

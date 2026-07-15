@@ -1,6 +1,6 @@
 # Audit Report: module_12.md (Interest Rate)
 
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_12.md`
+**Target doc**: `<magpie-agent>/modules/module_12.md`
 **Ground truth**: `/tmp/magpie_develop_ro/modules/12_interest_rate/select_apr20/*.gms`, `/tmp/magpie_develop_ro/config/default.cfg`
 **Realization checked**: `select_apr20` (confirmed default — `module.gms:20`, `config/default.cfg:` `cfg$gms$interest_rate <- "select_apr20"`)
 **Date**: 2026-05-30 (round 31 doc audit)

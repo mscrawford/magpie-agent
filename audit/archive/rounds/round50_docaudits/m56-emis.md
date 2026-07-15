@@ -1,7 +1,7 @@
 # Doc Audit — module_56.md (GHG Policy, price_aug22)
 
 **Auditor**: Opus adversarial doc-auditor (Round 50 doc-audit sweep)
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_56.md`
+**Target**: `<magpie-agent>/modules/module_56.md`
 **Ground truth**: `/tmp/magpie_develop_ro/modules/56_ghg_policy/` (develop worktree) + `/tmp/magpie_develop_ro/config/default.cfg`
 **Date**: 2026-06-06
 

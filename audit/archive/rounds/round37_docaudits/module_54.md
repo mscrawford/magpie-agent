@@ -1,6 +1,6 @@
 # Audit Report: module_54.md (Phosphorus — off)
 
-**Doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_54.md`
+**Doc**: `<magpie-agent>/modules/module_54.md`
 **Ground truth**: `/tmp/magpie_develop_ro/modules/54_phosphorus/` (develop worktree)
 **Audit date**: 2026-05-30
 **Auditor**: Opus 4.8 (round37 doc audit)

@@ -25,9 +25,12 @@ const SEEDS = A.seeds || {}
 const VSEV = A.verifySeverities || ['CRITICAL', 'HIGH', 'MEDIUM']
 const VERIFY_CAP = 60   // hard ceiling on dedicated verifiers; overflow logged, not silently dropped
 
-const AGENT_DIR = '/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent'
-const DEV = '/tmp/magpie_develop_ro'        // detached origin/develop worktree (code ground truth)
-const PARENT = '/Users/turnip/Documents/Work/Workspace/magpie'
+// Machine-local checkout roots. Pass via args.paths = {agentDir, parent, dev} to run on
+// your own clone; the agentDir/parent defaults below are placeholders and MUST be overridden.
+const P = A.paths || {}
+const AGENT_DIR = P.agentDir || '/path/to/magpie/magpie-agent'
+const DEV = P.dev || '/tmp/magpie_develop_ro'   // detached origin/develop worktree (code ground truth)
+const PARENT = P.parent || '/path/to/magpie'
 const ARC = AGENT_DIR + '/audit/archive/rounds'
 const RUBRIC = AGENT_DIR + '/audit/flywheel_rubric.md'
 const VERIFIERS = AGENT_DIR + '/agent/helpers/verifiers.md'

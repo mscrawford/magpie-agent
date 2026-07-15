@@ -13,7 +13,7 @@ I committed AI documentation files (.claude/commands/) to the **main MAgPIE repo
 
 **What I did:**
 ```bash
-cd /Users/turnip/Documents/Work/Workspace/magpie  # WRONG REPO
+cd <magpie-root>  # WRONG REPO
 git add .claude/commands/
 git commit -m "Add slash commands..."
 git push  # Failed, but I was about to push to main MAgPIE!
@@ -21,7 +21,7 @@ git push  # Failed, but I was about to push to main MAgPIE!
 
 **What I should have done:**
 ```bash
-cd /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent  # CORRECT REPO
+cd <magpie-agent>  # CORRECT REPO
 git add .claude/commands/
 git commit -m "Add slash commands..."
 git push
@@ -48,7 +48,7 @@ git push
 ## Root Cause
 
 **I followed a pattern without thinking:**
-- I created files in `/Users/turnip/Documents/Work/Workspace/magpie/.claude/commands/`
+- I created files in `<magpie-root>/.claude/commands/`
 - My muscle memory said "commit what you just created"
 - I didn't stop to think: "Wait, where should this actually live?"
 
@@ -96,7 +96,7 @@ About to run git add/commit/push...
 ### Red Flags
 
 🚩 **STOP if you see:**
-- `git add CLAUDE.md` from `/Users/turnip/Documents/Work/Workspace/magpie` (should be from magpie-agent)
+- `git add CLAUDE.md` from `<magpie-root>` (should be from magpie-agent)
 - `git add .claude/` from main MAgPIE directory (should be from magpie-agent)
 - Any attempt to commit AI docs from main MAgPIE repo
 
@@ -105,10 +105,10 @@ About to run git add/commit/push...
 ```bash
 # 1. Check where you are
 pwd
-# Should see: /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+# Should see: <magpie-agent>
 
 # 2. If not in magpie-agent, navigate there
-cd /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent
+cd <magpie-agent>
 
 # 3. Now commit AI documentation
 git add [files]

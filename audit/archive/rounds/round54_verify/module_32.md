@@ -1,7 +1,7 @@
 # R54 Adversarial Verification — module_32.md (Forestry)
 
 **Verifier**: adversarial (Opus, max capability)
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_32.md` (1,420 lines)
+**Target doc**: `<magpie-agent>/modules/module_32.md` (1,420 lines)
 **Ground truth**: `/tmp/magpie_develop_ro` @ `0d7ebeb90` (develop worktree; working tree NEVER consulted)
 **Date**: 2026-07-14
 

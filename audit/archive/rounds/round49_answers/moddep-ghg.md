@@ -147,10 +147,10 @@ Module_Dependencies.md's description of this cluster is **directionally correct 
 ---
 
 **Source files consulted (all this session)**:
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/core_docs/Module_Dependencies.md`
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_52.md`
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_56.md`
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_57.md`
+- `<magpie-agent>/core_docs/Module_Dependencies.md`
+- `<magpie-agent>/modules/module_52.md`
+- `<magpie-agent>/modules/module_56.md`
+- `<magpie-agent>/modules/module_57.md`
 
 **Epistemic status**:
 - All claims about M52, M56, M57 interface variables: 🟡 Documented — read from AI documentation this session (`module_52.md`, `module_56.md`, `module_57.md`; all three marked as fully verified against GAMS source at their last-verified dates). Line numbers in the AI docs were verified at their last sync dates and may have drifted.

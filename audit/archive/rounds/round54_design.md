@@ -18,7 +18,7 @@ R53's Critical was a **false bug report** written into the shared docs, accusing
 The engine verifies against a detached read-only develop worktree that does **not currently exist**:
 
 ```bash
-git -C /Users/turnip/Documents/Work/Workspace/magpie worktree add --detach /tmp/magpie_develop_ro refs/magpie-canonical-develop
+git -C <magpie-root> worktree add --detach /tmp/magpie_develop_ro refs/magpie-canonical-develop
 git -C /tmp/magpie_develop_ro rev-parse --short HEAD    # must print 0d7ebeb9
 ```
 

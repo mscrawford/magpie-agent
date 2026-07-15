@@ -2,7 +2,7 @@
 
 **Auditor**: Opus 4.8 (adversarial doc auditor)
 **Date**: 2026-05-30
-**Target**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_21.md`
+**Target**: `<magpie-agent>/modules/module_21.md`
 **Ground truth**: `/tmp/magpie_develop_ro` (worktree HEAD `5ea394f`, "Merge PR #877 rc2-4.14.0"; branch label `master` but this is the develop-equivalent read-only tree)
 **Default realization**: `selfsuff_reduced` (confirmed `config/default.cfg:650`)
 

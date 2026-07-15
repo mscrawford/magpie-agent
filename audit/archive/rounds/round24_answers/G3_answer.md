@@ -9,7 +9,7 @@ The agent's source-of-truth clone is **magpie4 v2.70.0**, checked out at commit 
 The clone lives at:
 
 ```
-/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/.cache/sources/magpie4/
+<magpie-agent>/.cache/sources/magpie4/
 ```
 
 ### How was that version determined?
@@ -40,7 +40,7 @@ The `resolution` field in `project/version_pins.json` records which strategy was
 | Field | Value |
 |---|---|
 | `captured_at` | 2026-05-24 |
-| `lock_file` | `/Users/turnip/Documents/Work/Workspace/magpie/input/renv.lock` |
+| `lock_file` | `<magpie-root>/input/renv.lock` |
 | `lock_file_sha256` | `de41e0ce9239aabab001102277e85fa576fb3e8e5c84b9d27c2a461e123731ba` |
 | `packages.magpie4.version` | `2.70.0` |
 | `packages.magpie4.sha` | `a360d8c9ec1ee7af6c9287791e8b182bf391d355` |
@@ -49,18 +49,18 @@ The `resolution` field in `project/version_pins.json` records which strategy was
 The `lock_file_sha256` is the canary: before any session that reads from the clone, the agent hashes the live `renv.lock` and compares it to the stored SHA256. If they differ, the parent lockfile has been updated (e.g., by a recent `git pull`) and the clone must be re-synced before it can be trusted. The verification command is:
 
 ```bash
-python3 /Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/scripts/sync_magpie4_clone.py --check
+python3 <magpie-agent>/scripts/sync_magpie4_clone.py --check
 # exit 0 = pin is aligned; exit 1 = stale, re-sync needed
 ```
 
 ### Why not read from the workspace clone?
 
-The workspace clone at `/Users/turnip/Documents/Work/Workspace/magpie4/` tracks HEAD. Per `agent/helpers/magpie4_reference.md`, as of 2026-05-24 it is at v2.75.1 — five minor versions ahead of the renv-pinned v2.70.0. Function signatures, `getReport.R` dispatch order, and IAMC variable name constructions can all change across minor versions. Reading from that clone would produce citations that do not match what the model actually used.
+The workspace clone at `<magpie4-workspace>/` tracks HEAD. Per `agent/helpers/magpie4_reference.md`, as of 2026-05-24 it is at v2.75.1 — five minor versions ahead of the renv-pinned v2.70.0. Function signatures, `getReport.R` dispatch order, and IAMC variable name constructions can all change across minor versions. Reading from that clone would produce citations that do not match what the model actually used.
 
 ---
 
 **Sources**:
 
 - 🟢 `project/version_pins.json` — read this session; pin snapshot confirming v2.70.0 @ `a360d8c9ec`
-- 🟢 `/Users/turnip/Documents/Work/Workspace/magpie/input/renv.lock` → `Packages.magpie4` — read this session; authoritative source of `Version` and `RemoteSha`
+- 🟢 `<magpie-root>/input/renv.lock` → `Packages.magpie4` — read this session; authoritative source of `Version` and `RemoteSha`
 - 🟡 `agent/helpers/magpie4_reference.md` — read this session; version-pinning methodology and three-resolution-strategy description

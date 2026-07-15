@@ -1,7 +1,7 @@
 # Round 36 Adversarial Consumer-Set Verification — module_73.md
 
 **Verifier role:** adversarial CONSUMER / POPULATOR / DEPENDENCY-SET verifier (highest-capability model).
-**Target doc:** `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_73.md`
+**Target doc:** `<magpie-agent>/modules/module_73.md`
 **Ground truth:** `/tmp/magpie_develop_ro/modules/73_timber/default/*.gms`, `/tmp/magpie_develop_ro/config/default.cfg`
 **Date:** 2026-05-30
 

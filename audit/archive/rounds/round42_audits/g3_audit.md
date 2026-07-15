@@ -17,7 +17,7 @@
 Two-part drift check (both clean):
 
 1. **Answer vs version_pins.json** — the answer reports v2.70.0 @ `a360d8c9ec1ee7af6c9287791e8b182bf391d355`, captured 2026-05-25, resolution `sha`. `project/version_pins.json` records exactly this (`packages.magpie4.version` = `2.70.0`, `.sha` = `a360d8c9ec1ee7af6c9287791e8b182bf391d355`, `.resolution` = `sha`, `captured_at` = `2026-05-25`). **No answer drift.**
-2. **version_pins.json vs renv.lock (upstream authority)** — `version_pins.json.lock_file_sha256` = `de41e0ce9239aabab001102277e85fa576fb3e8e5c84b9d27c2a461e123731ba`; the live SHA256 of `/Users/turnip/Documents/Work/Workspace/magpie/input/renv.lock` computes to the **identical** hash. `renv.lock` `Packages.magpie4.Version` = `2.70.0`, `.RemoteSha` = `a360d8c9ec1ee7af6c9287791e8b182bf391d355`. **The pin is NOT stale** — it still matches upstream as of audit time.
+2. **version_pins.json vs renv.lock (upstream authority)** — `version_pins.json.lock_file_sha256` = `de41e0ce9239aabab001102277e85fa576fb3e8e5c84b9d27c2a461e123731ba`; the live SHA256 of `<magpie-root>/input/renv.lock` computes to the **identical** hash. `renv.lock` `Packages.magpie4.Version` = `2.70.0`, `.RemoteSha` = `a360d8c9ec1ee7af6c9287791e8b182bf391d355`. **The pin is NOT stale** — it still matches upstream as of audit time.
 
 Both halves of the regression invariant hold. The bonus tertiary check: the cached clone at `.cache/sources/magpie4` has `git rev-parse HEAD` = `a360d8c9ec1ee7af6c9287791e8b182bf391d355` (= the pin SHA; `git describe` = `v2.53.1-313-ga360d8c`), so the on-disk clone is also aligned. `scripts/sync_magpie4_clone.py` exists (9407 bytes).
 

@@ -1,6 +1,6 @@
 # R54 Adversarial Verification - module_35.md
 
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_35.md` (1198 lines)
+**Target doc**: `<magpie-agent>/modules/module_35.md` (1198 lines)
 **Ground truth**: `/tmp/magpie_develop_ro` @ `0d7ebeb90` (read-only develop worktree; working tree NEVER consulted)
 **Verifier**: adversarial, mechanical-only (test -f / wc -l / read the exact line / isolated rg + positive control)
 **Date**: 2026-07-14

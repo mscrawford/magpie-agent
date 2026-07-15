@@ -15,13 +15,13 @@ The version is pinned via a two-step authority chain:
    ```json
    {
      "captured_at": "2026-05-25",
-     "lock_file": "/Users/turnip/Documents/Work/Workspace/magpie/input/renv.lock",
+     "lock_file": "<magpie-root>/input/renv.lock",
      "lock_file_sha256": "de41e0ce9239aabab001102277e85fa576fb3e8e5c84b9d27c2a461e123731ba",
      "packages": {
        "magpie4": {
          "version": "2.70.0",
          "sha": "a360d8c9ec1ee7af6c9287791e8b182bf391d355",
-         "source_dir": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/.cache/sources/magpie4",
+         "source_dir": "<magpie-agent>/.cache/sources/magpie4",
          "resolution": "sha"
        }
      }

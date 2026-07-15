@@ -1,6 +1,6 @@
 # Round 50 Adversarial Verification — Query_Patterns_Reference.md
 
-Target doc: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/core_docs/Query_Patterns_Reference.md`
+Target doc: `<magpie-agent>/core_docs/Query_Patterns_Reference.md`
 Ground truth: `/tmp/magpie_develop_ro` (develop worktree, read-only)
 Verifier: adversarial, mechanical-first.
 

@@ -15,7 +15,7 @@ Per the rubric G3 mandate, the auditor MUST read `project/version_pins.json` dir
 - `packages.magpie4.sha` = **a360d8c9ec1ee7af6c9287791e8b182bf391d355**
 - `packages.magpie4.resolution` = **sha**
 - `packages.magpie4.source_dir` = `.../magpie-agent/.cache/sources/magpie4`
-- `lock_file` = `/Users/turnip/Documents/Work/Workspace/magpie/input/renv.lock`
+- `lock_file` = `<magpie-root>/input/renv.lock`
 - `lock_file_sha256` = `de41e0ce9239aabab001102277e85fa576fb3e8e5c84b9d27c2a461e123731ba`
 - `captured_at` = `2026-05-25`
 

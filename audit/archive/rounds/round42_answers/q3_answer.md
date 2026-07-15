@@ -222,13 +222,13 @@ Module 51 disaggregates the surplus-linked losses into ammonia volatilization, N
 
 ## Closing Source Statement
 
-**Primary source**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_50.md` — comprehensive, verified documentation of Module 50 `macceff_aug22` realization.
+**Primary source**: `<magpie-agent>/modules/module_50.md` — comprehensive, verified documentation of Module 50 `macceff_aug22` realization.
 
 **Supporting sources**:
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_18.md` — Module 18 `flexreg_apr16` residue N recycling (equation `q18_res_recycling_nr`)
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_59.md` — Module 59 `cellpool_jan23` SOM N release equations
-- `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/cross_module/nitrogen_food_balance.md` — system-level nitrogen tracking overview
-- `/Users/turnip/Documents/Work/Workspace/magpie/config/default.cfg` — confirmed `macceff_aug22` as active realization
+- `<magpie-agent>/modules/module_18.md` — Module 18 `flexreg_apr16` residue N recycling (equation `q18_res_recycling_nr`)
+- `<magpie-agent>/modules/module_59.md` — Module 59 `cellpool_jan23` SOM N release equations
+- `<magpie-agent>/cross_module/nitrogen_food_balance.md` — system-level nitrogen tracking overview
+- `<magpie-root>/config/default.cfg` — confirmed `macceff_aug22` as active realization
 
 **All claims are tagged 🟡** (read from AI documentation this session, not verified against raw `.gms` source per task constraint). Line numbers reflect the AI docs' last verification date (2025-10-13 per `module_50.md`); code changes since then may have shifted them.
 

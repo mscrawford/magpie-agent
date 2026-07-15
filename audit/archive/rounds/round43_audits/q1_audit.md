@@ -2,7 +2,7 @@
 
 **Round**: 43
 **Auditor model**: Opus 4.8 (1M)
-**Ground truth**: live GAMS at `/Users/turnip/Documents/Work/Workspace/magpie/modules/` + `config/default.cfg`, model-code repo HEAD `ee98739fd` (verified: `git -C .../magpie log -1` → `ee98739fd Merge pull request #887`). Clean.
+**Ground truth**: live GAMS at `<magpie-root>/modules/` + `config/default.cfg`, model-code repo HEAD `ee98739fd` (verified: `git -C .../magpie log -1` → `ee98739fd Merge pull request #887`). Clean.
 **Answer audited**: `audit/archive/rounds/round43_answers/q1_answer.md`
 
 ---

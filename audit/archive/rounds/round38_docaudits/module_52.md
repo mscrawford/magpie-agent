@@ -3,7 +3,7 @@
 **Auditor**: Opus adversarial doc auditor
 **Date**: 2026-05-30
 **Ground truth**: `/tmp/magpie_develop_ro` (develop worktree), HEAD `5ea394f` (Merge PR #877 rc2-4.14.0)
-**Doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_52.md` (1224 lines)
+**Doc**: `<magpie-agent>/modules/module_52.md` (1224 lines)
 
 ## Overall verdict: ACCURATE (9.5/10)
 

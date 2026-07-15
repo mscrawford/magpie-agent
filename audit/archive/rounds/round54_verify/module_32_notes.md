@@ -3,7 +3,7 @@
 **Verifier**: Opus 4.8 (adversarial, mechanical-first)
 **Date**: 2026-07-14
 **Ground truth**: `/tmp/magpie_develop_ro` @ `0d7ebeb90` (git-tracked code, config, R layer)
-**Secondary ground truth (unavoidable)**: the working tree `/Users/turnip/Documents/Work/Workspace/magpie` for the **gitignored** `*.cs*` artifacts. `.gitignore:7` = `*.cs*`, so `npi_ndc_aff_pol.cs3` and `policy_definitions.csv` **cannot** exist in the RO worktree (verified: `MISSING` there, present in the working tree). Any claim about the *content* of a downloaded input is only checkable on disk. This is stated explicitly because the whole bug cluster turns on it.
+**Secondary ground truth (unavoidable)**: the working tree `<magpie-root>` for the **gitignored** `*.cs*` artifacts. `.gitignore:7` = `*.cs*`, so `npi_ndc_aff_pol.cs3` and `policy_definitions.csv` **cannot** exist in the RO worktree (verified: `MISSING` there, present in the working tree). Any claim about the *content* of a downloaded input is only checkable on disk. This is stated explicitly because the whole bug cluster turns on it.
 
 **Bottom line**: 3 UPHELD, 1 CORRECTED (prose miscount only; its fix text is safe). All 4 pass the mechanical citation check. The auditor's central empirical claim — **the shipped `.cs3` is an all-zero dummy** — reproduced under two independent methods with a passing positive control.
 

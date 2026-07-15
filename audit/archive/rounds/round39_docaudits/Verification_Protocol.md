@@ -79,7 +79,7 @@ The pre-run advisory ("verify file:line citations, variable names, realization c
 - **Doc line**: Verification_Protocol.md:190
 - **Claim in doc**: ``**See**: `archive/MODULE_59_ERRORS_FOUND.md` for example``
 - **Reality in code/repo**: No file named `*MODULE_59_ERRORS*` exists anywhere in the magpie-agent repo. The recoverable equivalents are `modules/module_59_notes.md` and `audit/archive/rounds/round34_docaudits/module_59.md`.
-- **File evidence**: `find /Users/turnip/.../magpie-agent -iname '*MODULE_59*'` → returns only `modules/module_59.md`, `modules/module_59_notes.md`, `audit/archive/rounds/round34_answers/module_59.md`, `audit/archive/rounds/round34_docaudits/module_59.md` — none is `MODULE_59_ERRORS_FOUND.md`.
+- **File evidence**: `find ~/.../magpie-agent -iname '*MODULE_59*'` → returns only `modules/module_59.md`, `modules/module_59_notes.md`, `audit/archive/rounds/round34_answers/module_59.md`, `audit/archive/rounds/round34_docaudits/module_59.md` — none is `MODULE_59_ERRORS_FOUND.md`.
 - **verify_cmd / result**: `ls .../archive/MODULE_59_ERRORS_FOUND.md` → "No such file or directory"; `find ... -iname '*MODULE_59_ERRORS*'` → none.
 - **Confirmed**: true.
 - **Proposed fix**: Replace with a pointer that exists, e.g. ``**See**: `modules/module_59_notes.md` (lessons/errors recorded for module 59)`` or drop the line.
