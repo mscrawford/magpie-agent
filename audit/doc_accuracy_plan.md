@@ -67,3 +67,23 @@ Step 1: one session (checker + fixture + self-test). Step 2: ~free (mechanical).
 
 - Batch 2 of R54 (module_22, 3 reference docs, debugging_gams_errors helper) — the LLM doc-audit half, still worthwhile for NON-attribution classes on those specific just-touched docs.
 - Lead A materiality (needs a model run) — unrelated to this plan.
+
+---
+
+## Update 2026-07-15 (build started — checker DONE + validated; corpus is HETEROGENEOUS)
+
+**Built `scripts/check_attribution_tables.py`** — the deterministic phantom-attribution checker. It parses the "Provides To (Outputs)" / "Receives From (Inputs)" markdown tables and flags any row whose col-1 module references NONE of the row's interface vars in code (ground truth = `build_consumer_map`, a `\b`-anchored "referenced anywhere" set, so `.l` reads are not missed). Precision-first: phantom is the flagged direction; omissions are not flagged (the map over-lists).
+
+**Validated three ways (fixture-first, per convention):**
+1. Hermetic `--self-test` (injected ref-map): planted phantom flagged, correct rows clean. PASS.
+2. **Real historical bug**: run against the PRE-R54 `module_32.md` (`git show 9d47e13:`), it flags M10 for `vm_landexpansion_forestry`/`vm_landreduction_forestry` and M35 for `pcm_land_forestry` (true refs = {32,58}) — i.e. it catches the exact R54 Critical class deterministically, in milliseconds.
+3. Current corpus: 0 findings.
+
+**The critical finding — the corpus "0 findings" is mostly BLIND, not clean.** A coverage control (instrumenting the real `scan_doc`) shows only **3/46 module docs** actually parse (module_32: 24 rows, module_10: 15, module_50: 15 = 54 rows total). **43/46 docs have a "Provides To/Receives From" header but 0 rows parsed** — because they express attribution as **prose**, not tables: bulleted "Module NN (name): `var`" lists (module_14), numbered "provides to these modules: N. Module 14: `var`" blocks (module_52), and bare inline "**Provides to**: Modules 52, 53, 51" (module_56, often with NO specific var). The table format that carried R54's Criticals is the MINORITY form.
+
+**So the plan's "one mechanical pass covers the corpus" premise was too optimistic.** Deterministic coverage of the attribution class requires handling the prose forms too, which is bigger and FP-prone (negations like "NOT the yield calibration", var-less "provides to 13 modules"). `scripts/check_consumer_attribution.py` already has a partial prose handler (Pattern D: `PROSE_MODULE_NUM_RE` / `PROSE_MODULE_BARE_RE`) — the prose extension should build on and harden THAT, not start fresh.
+
+**Status / next step:**
+- `check_attribution_tables.py` is DONE, self-tested, and is real regression armor for the 3 table-format hub docs (32/10/50) + would have caught R54's Criticals. It is a standalone advisory (not yet wired into `validate_consistency.sh`'s gate, and its self-test not yet registered in `selftest_validator.sh` — both are the clean next increment; deferred to avoid gate churn at session end).
+- **The corpus-measurement goal (turn "probably similar" into a number) is NOT yet met** — it needs the prose-form checker. That is the next build, and it is the larger, precision-sensitive half.
+- Honest recalibration of the plan's cost line: this is not one cheap pass; it's (a) the table checker [done, cheap] + (b) a prose-attribution checker [the real work], each fixture-first with a positive control.
