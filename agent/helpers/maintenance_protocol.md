@@ -200,7 +200,7 @@ When multiple docs need updating from a single sync:
 2. **New/removed realizations** — high priority (users ask "what options does module X have?")
 3. **Variable/parameter changes** — medium priority (affects debugging guidance)
 4. **Configuration changes** — medium priority (affects scenario setup advice)
-5. **R-script and data-only changes** — low priority (rarely affects AI documentation)
+5. **R-script and data-only changes** — low priority for the SYNC (rarely affects AI documentation structure). ⚠️ This does NOT exempt the doc-EDIT precondition: a doc claim that cites a data-DERIVED value or provenance still requires input-data currency (verify via the R preproc layer, not stale local `input/`) — see `agent/helpers/link_dont_duplicate.md` "Enforcement During Updates" item 5.
 
 ---
 
