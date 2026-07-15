@@ -260,8 +260,11 @@ def self_test() -> int:
     if len(findings) != 1:
         print(f"SELF-TEST FAIL: expected exactly 1 finding, got {len(findings)}: {findings}")
         ok = False
-    print("SELF-TEST PASS: planted phantom flagged, all correct rows clean." if ok
-          else "SELF-TEST FAILED.")
+    if ok:
+        print("SELF-TEST PASS: planted phantom flagged, all correct rows clean.")
+        print(f"SELFTEST_OK {CHECK_NAME}")  # sentinel required by selftest_validator.sh [4/5]
+    else:
+        print("SELF-TEST FAILED.")
     return 0 if ok else 1
 
 

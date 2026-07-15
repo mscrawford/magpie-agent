@@ -107,8 +107,10 @@ check_error() {
 # contradiction) appended -> 30. Appended, never middle-renumbered (stable IDs).
 # 2026-06-29: +1 advisory check (31 role-attribution: declared-in/provider claims vs
 # declarations.gms) appended -> 31.
+# 2026-07-15: +2 advisory checks (32 attribution-TABLES phantom, 33 attribution-PROSE
+# phantom: the CONSUMER/provides-to half of MANDATE 18, deterministic ~0-FNR) -> 33.
 SECTION_NUM=0
-SECTION_TOTAL=31
+SECTION_TOTAL=33
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1137,6 +1139,69 @@ if [ -f "$ROLE_ATTR_SCRIPT" ]; then
     fi
 else
     check_warning "Role-attribution checker not found: $ROLE_ATTR_SCRIPT"
+fi
+
+# Check 32: Attribution TABLES — phantom module<->var in Provides-To/Receives-From
+# markdown tables (2026-07-15, advisory). The CONSUMER/provides-to half of MANDATE 18
+# that Check 31 (DECLARED half) does not cover. Deterministic ~0-FNR; caught the R54
+# module_32 Critical class (M10/M35 for forestry vars whose sole consumer is M58).
+# Positive control in --self-test (planted phantom + correct rows). Coverage line is
+# ALWAYS printed (a "0 findings" is meaningless without the denominator).
+# ===============================================
+print_section "" "Checking interface-attribution TABLES vs code (advisory)..."
+
+ATTR_TABLES_SCRIPT="$AGENT_DIR/scripts/check_attribution_tables.py"
+if [ -f "$ATTR_TABLES_SCRIPT" ]; then
+    if ATTRTAB_OUTPUT=$(python3 "$ATTR_TABLES_SCRIPT" 2>&1); then ATTRTAB_EXIT=0; else ATTRTAB_EXIT=$?; fi
+    ATTRTAB_COVERAGE=$(echo "$ATTRTAB_OUTPUT" | grep -m1 "coverage =" | sed 's/^[[:space:]]*//')
+    if echo "$ATTRTAB_OUTPUT" | grep -q "could not build consumer map"; then
+        check_warning "Attribution tables: skipped (parent modules/ not found)"
+    elif echo "$ATTRTAB_OUTPUT" | grep -q "0 findings within covered"; then
+        check_pass "${ATTRTAB_COVERAGE:-Attribution tables: 0 phantom findings}"
+    elif [ $ATTRTAB_EXIT -eq 0 ]; then
+        ATTRTAB_N=$(echo "$ATTRTAB_OUTPUT" | grep -oE "[0-9]+ advisory phantom" | grep -oE "^[0-9]+")
+        check_warning "Attribution tables: ${ATTRTAB_N:-some} phantom finding(s) (advisory; run scripts/check_attribution_tables.py)"
+        echo "$ATTRTAB_OUTPUT" | grep "attribution-table" | head -10 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Attribution-tables checker failed (exit $ATTRTAB_EXIT)"
+        echo "$ATTRTAB_OUTPUT" | head -5 | while read -r line; do log "    $line"; done
+    fi
+else
+    check_warning "Attribution-tables checker not found: $ATTR_TABLES_SCRIPT"
+fi
+
+# Check 33: Attribution PROSE — phantom module<->var in single-module prose attributions
+# (2026-07-15, advisory). The prose complement to Check 32; closes the gap Check 31 left
+# (its regex needs the module number adjacent to the verb, so labeled bullets
+# "- **Module 10 (Land):** Provides `fm_croparea`" — a real R54 Critical — slip through).
+# Direction-agnostic phantom test; precision-first (one module + one var per ;-clause).
+# Positive control in --self-test (17 cases incl. the corpus FP classes). Coverage always
+# printed.
+# ===============================================
+print_section "" "Checking interface-attribution PROSE vs code (advisory)..."
+
+ATTR_PROSE_SCRIPT="$AGENT_DIR/scripts/check_attribution_prose.py"
+if [ -f "$ATTR_PROSE_SCRIPT" ]; then
+    if ATTRPROSE_OUTPUT=$(python3 "$ATTR_PROSE_SCRIPT" 2>&1); then ATTRPROSE_EXIT=0; else ATTRPROSE_EXIT=$?; fi
+    ATTRPROSE_COVERAGE=$(echo "$ATTRPROSE_OUTPUT" | grep -m1 "coverage =" | sed 's/^[[:space:]]*//')
+    if echo "$ATTRPROSE_OUTPUT" | grep -q "could not build consumer map"; then
+        check_warning "Attribution prose: skipped (parent modules/ not found)"
+    elif echo "$ATTRPROSE_OUTPUT" | grep -q "0 findings within covered"; then
+        check_pass "${ATTRPROSE_COVERAGE:-Attribution prose: 0 phantom findings}"
+    elif [ $ATTRPROSE_EXIT -eq 0 ]; then
+        ATTRPROSE_N=$(echo "$ATTRPROSE_OUTPUT" | grep -oE "[0-9]+ advisory phantom" | grep -oE "^[0-9]+")
+        check_warning "Attribution prose: ${ATTRPROSE_N:-some} phantom finding(s) (advisory; run scripts/check_attribution_prose.py)"
+        echo "$ATTRPROSE_OUTPUT" | grep "attribution-prose" | head -10 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Attribution-prose checker failed (exit $ATTRPROSE_EXIT)"
+        echo "$ATTRPROSE_OUTPUT" | head -5 | while read -r line; do log "    $line"; done
+    fi
+else
+    check_warning "Attribution-prose checker not found: $ATTR_PROSE_SCRIPT"
 fi
 
 # ============
