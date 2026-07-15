@@ -695,7 +695,7 @@ Natural Forests
    - Demand calculated at regional level
    - NO bilateral trade flows
    - NO trade costs or barriers
-   - (Trade handled by Module 21 for aggregate `vm_prod`)
+   - (Trade handled by Module 21 for aggregate `vm_prod_reg`)
 
 3. ❌ **NO species differentiation**:
    - Only two products: wood and woodfuel

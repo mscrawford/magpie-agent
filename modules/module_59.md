@@ -218,7 +218,7 @@ q59_nr_som_fertilizer(j2) ..
 **Purpose**: Ensures that the nitrogen credited to crops from soil organic matter loss (`vm_nr_som_fertilizer`) does not exceed the actual nitrogen released by SOM decomposition (`vm_nr_som`). This prevents the model from claiming more nitrogen benefit than physically exists.
 
 **Key Variables**:
-- `vm_nr_som_fertilizer(j)`: Plant-available nitrogen from SOM loss (Mt N per yr) — provided to Module 51
+- `vm_nr_som_fertilizer(j)`: Plant-available nitrogen from SOM loss (Mt N per yr) — provided to Module 50 (soil nitrogen budget, `modules/50_nr_soil_budget/macceff_aug22/equations.gms:30`)
 - `vm_nr_som(j)`: Total nitrogen release from SOM loss (Mt N per yr) — calculated in q59_nr_som
 
 **CRITICAL**: Only a fraction of SOM nitrogen release is plant-available. The remainder is lost to leaching or emissions (tracked by Module 51).

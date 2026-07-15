@@ -87,3 +87,29 @@ Step 1: one session (checker + fixture + self-test). Step 2: ~free (mechanical).
 - `check_attribution_tables.py` is DONE, self-tested, and is real regression armor for the 3 table-format hub docs (32/10/50) + would have caught R54's Criticals. It is a standalone advisory (not yet wired into `validate_consistency.sh`'s gate, and its self-test not yet registered in `selftest_validator.sh` — both are the clean next increment; deferred to avoid gate churn at session end).
 - **The corpus-measurement goal (turn "probably similar" into a number) is NOT yet met** — it needs the prose-form checker. That is the next build, and it is the larger, precision-sensitive half.
 - Honest recalibration of the plan's cost line: this is not one cheap pass; it's (a) the table checker [done, cheap] + (b) a prose-attribution checker [the real work], each fixture-first with a positive control.
+
+---
+
+## Update 2026-07-15 (prose checker DONE + THE NUMBER — deterministic attribution measured)
+
+**Built `scripts/check_attribution_prose.py`** — the prose complement to the table checker, closing the gap Check 31 left open (its `PROVIDES_RE` needs the module number *adjacent* to the verb, so the corpus's dominant labeled-bullet form `- **Module 10 (Land):** Provides \`fm_croparea\`` slipped through — that exact line was a real R54 Critical). Same direction-agnostic PHANTOM reduction the table checker uses (a module that references a var NOWHERE cannot provide/receive/read it, regardless of direction).
+
+**Fixture-first, two positive controls both PASS:** (1) hermetic self-test, 17 cases incl. the 6 corpus FP classes locked in as regression controls; (2) the REAL pre-R54 `module_14.md` (`git show 9d47e13`) — flags exactly M10/`fm_croparea`, zero FPs on the other pairs.
+
+**THE MEASURED NUMBER (deterministic, develop `0d7ebeb90`):**
+
+| Checker | Coverage | Confirmed phantoms |
+|---|---|---|
+| `check_attribution_tables.py` (markdown tables) | 54 rows / 3 of 46 docs | 0 |
+| `check_attribution_prose.py` (single-module prose) | **205 (module,var) pairs / 37 of 46 docs** | **2** |
+| **Combined checkable attribution instances** | **259** | **2** |
+
+→ **≈99.2 % of the deterministically-checkable single-module attribution instances are correct** (257/259). Raw prose flags were 8; manual + code triage → 6 false positives (negation, backticked-realization names, multi-var and multi-clause mis-binding), all eliminated by precision hardening and locked in as self-test negatives; 2 confirmed real.
+
+**The 2 real bugs (both R54-class, both survived ~50 LLM rounds), fixed this session:**
+1. `module_59.md:221` — `vm_nr_som_fertilizer` documented "provided to Module 51"; code shows it is consumed by **Module 50** (`50_nr_soil_budget/macceff_aug22/equations.gms:30`), never referenced in M51. Fixed → Module 50.
+2. `module_73.md:698` — "Trade handled by Module 21 for aggregate `vm_prod`"; M21 references **`vm_prod_reg`** (3 realizations), never cellular `vm_prod`. Fixed → `vm_prod_reg`.
+
+**HONEST SCOPE CAVEAT (what 99.2 % does NOT claim).** 205 is the UNAMBIGUOUSLY-PARSEABLE subset: exactly one "Module NN", exactly one backticked cross-module interface var (vm_/pm_/im_/pcm_/fm_), one `;`-clause. The checker deliberately SKIPS (precision-first): multi-module prose, multi-var clauses, var-less "provides to Modules 52, 53" forms, non-backticked mentions, and OMISSIONS (a real consumer missing from a list — the M58 class that actually hid in R54). Those remain LLM-audit / manual territory. So "99.2 % on the checkable subset" is a strong quality signal on the CLEANLY-STATED attributions and a proof the deterministic lever works (it found 2 reals the LLM missed) — it is NOT a bound on the whole attribution-error population. The omission direction, in particular, is the known blind spot and the natural next build.
+
+**Harness wiring** (both checkers' `--self-test` in `selftest_validator.sh`; advisory non-gating hook in `validate_consistency.sh`, mirroring Check 31) is the cheap next increment — still deferred to avoid gate churn; proposed, not done.
