@@ -2,7 +2,7 @@
 
 **Realization:** `managementcalib_aug19`
 **Date:** August 2019
-**Total Lines of Code:** 569
+**Total Lines of Code:** 586
 **Equation Count:** 2
 **Status:** ✅ Fully Verified (2025-10-12)
 
@@ -28,7 +28,7 @@ Module 14 calculates crop yields and pasture productivity for all agricultural p
 
 ### 1.3 Limitations Stated in Code
 
-The realization explicitly acknowledges (`realization.gms:23-26`):
+The realization explicitly acknowledges (`realization.gms:24-27`):
 - **No land scarcity feedback:** Pasture intensification is exogenous, cannot respond to land constraints
 - **Uncertain spillover magnitude:** Effect of crop technological change on pasture management is empirical
 
@@ -174,7 +174,7 @@ i14_yields_calib(t,j,"pasture",w) = i14_yields_calib(t,j,"pasture",w) * sum(cell
 
 **Rationale:** Historical model runs incorporate pasture management patterns; this correction propagates that knowledge into LPJmL yields.
 
-> **🔄 Changed 2026-04-20 (commit `c7731e234`)**: The computation of `p14_pyield_corr` was rewritten. The old formula used a `t_past`-conditional: it applied the historical/LPJmL ratio for `t_past` years and, for years beyond `t_past`, froze at the *last `t_past` year* (y2015). The new version applies the historical ratio for **every** year where `f14_pyld_hist` is non-zero — and `f14_pyld_hist` covers y1965–y2020 — then carries the last available value forward via `loop(t, ...)`. This pushes the freeze point from y2015 to y2020, using observed data through y2020 and avoiding the discontinuity that previously appeared at the `t_past` boundary. **No new or renamed parameters** — only the computation logic changed. `f14_pyld_hist(t_all,i)` is declared in `input.gms:45` as "Modelled regional pasture yields in the past (tDM per ha per yr)".
+> **🔄 Changed 2026-04-28 (commit `2fa7b8bea9`)**: The computation of `p14_pyield_corr` was rewritten. The old formula used a `t_past`-conditional: it applied the historical/LPJmL ratio for `t_past` years and, for years beyond `t_past`, froze at the *last `t_past` year* (y2015). The new version applies the historical ratio for **every** year where `f14_pyld_hist` is non-zero — and `f14_pyld_hist` covers y1965–y2020 — then carries the last available value forward via `loop(t, ...)`. This pushes the freeze point from y2015 to y2020, using observed data through y2020 and avoiding the discontinuity that previously appeared at the `t_past` boundary. **No new or renamed parameters** — only the computation logic changed. `f14_pyld_hist(t_all,i)` is declared in `input.gms:45` as "Modelled regional pasture yields in the past (tDM per ha per yr)". (An earlier attempt in `c7731e234`, 2026-04-20, extrapolated the last `t_past` trend through `sm_fix_SSP2` using three helper parameters *p14_corr_last* / *p14_corr_prev* / *p14_corr_trend*; that version was **superseded** by `2fa7b8bea9`, which removed them. Current develop has **no** `p14_corr_*` parameters.)
 
 **Citation:** `preloop.gms:14-27`
 
@@ -248,7 +248,7 @@ loop(t,
 - **Additive calibration:** Add (FAO - LPJmL). Maintains future yield increases, avoids over-scaling.
 - **Lambda blends the two:** As baseline quality worsens (FAO >> LPJmL), shift from relative toward additive.
 
-**Citation:** `preloop.gms:82-102`, mathematical foundation cited as `@Heinke.2013` in `preloop.gms:47`
+**Citation:** `preloop.gms:82-102`, mathematical foundation cited as `@Heinke.2013` in `preloop.gms:54`
 
 #### Step 3c: Apply Calibration Factor
 
@@ -271,11 +271,11 @@ pm_yields_semi_calib(j,knbe14,w)  = i14_yields_calib("y1995",j,knbe14,w);
 CalibFactor = 1 + [(FAO - LPJmL_regional) / LPJmL_cellular] × [(LPJmL_cellular / LPJmL_regional)^λ]
 ```
 
-**Behavior:**
+**Behavior** (write R = LPJmL_cell / LPJmL_reg; the ratio term is R^λ):
 
-- **λ = 1:** Factor = 1 + [(FAO - LPJmL_reg) / LPJmL_cell] × 1 = FAO/LPJmL_cell × (ratio), pure relative
-- **λ = 0:** Factor = 1 + [(FAO - LPJmL_reg) / LPJmL_cell] × 1 = additive difference
-- **λ intermediate:** Smooth blend between the two
+- **λ = 1** → R^1 = R: Factor = 1 + (FAO - LPJmL_reg)/LPJmL_cell × R = 1 + (FAO - LPJmL_reg)/LPJmL_reg = **FAO / LPJmL_reg** → calibrated yield = LPJmL_cell × FAO/LPJmL_reg → **pure relative**
+- **λ = 0** → R^0 = 1: Factor = 1 + (FAO - LPJmL_reg)/LPJmL_cell → calibrated yield = LPJmL_cell + (FAO - LPJmL_reg) → **pure additive**
+- **0 < λ < 1:** smooth blend (the additive offset is scaled by R^λ)
 
 **Citation:** `preloop.gms:108-116`
 
@@ -389,7 +389,7 @@ Where:
 
 **Default:** OFF (`s14_degradation = 0`, `input.gms:17`)
 
-**NCP Tracking:** Module 14 expects another module to provide `f14_yld_ncp_report(t,j,ncp_type14)` with "soil_intact" and "poll_suff" shares (likely Module 29 or Module 35).
+**NCP data provenance:** `f14_yld_ncp_report(t_all,j,ncp_type14)` is **not produced by any MAgPIE module**. It is an **optional Module-14 input file** (`modules/14_yields/input/f14_yld_ncp_report.cs3`, declared `input.gms:83`, `$include`d only `$if exist` at `input.gms:85`) supplied by the R preprocessing layer. If the file is missing, `preloop.gms:186-188` sets it to **1** everywhere, so degradation has no effect even when `s14_degradation = 1`.
 
 **Citation:** `preloop.gms:190-195`, `input.gms:17,21`
 
@@ -602,7 +602,7 @@ scalar s14_degradation   Switch to include yield impacts of land degradation(0=n
 **File:** `input.gms:20`
 
 ```gams
-s14_yld_past_switch  Spillover parameter for translating technological change in the crop sector into pasture yield increases  (1)     / 0.25 /
+s14_yld_past_switch  Spillover parameter for translating technological change in the crop sector into pasture yieldincreases  (1)     / 0.25 /
 ```
 
 **Default:** 0.25 (25% of crop τ increase benefits pasture)
@@ -709,7 +709,7 @@ Module 14 reads 9 input data files:
 - Module 31 (Pasture): Pasture production = area × yield
 
 **Dimensions:** j (cells), kve (crops + pasture), w (rainfed/irrigated)
-**Citation:** `declarations.gms:26`
+**Citation:** `declarations.gms:27`
 
 ---
 
@@ -723,6 +723,7 @@ Module 14 reads 9 input data files:
 **Units caveat:** This is a **stock** (tDM/ha), NOT a flux. Consumers divide by `m_timestep_length_forestry` to derive per-year production.
 
 **Dimensions:** t (time), j (cells), ac (age classes), land_timber (forestry, primforest, secdforest, other)
+**Citation:** `declarations.gms:17`
 
 ---
 
@@ -733,7 +734,6 @@ Module 14 reads 9 input data files:
 **Dimensions:** t (time), j (cells), ac (age classes). **No `land_timber` dimension** — see Section 4.2.
 **Declared:** `declarations.gms:18`. **Computed:** `presolve.gms:64-71`. **Clamped:** `presolve.gms:80-81`.
 **Units caveat:** stock (tDM/ha), same as `im_growing_stock`; `q35_prod_other` divides the whole right-hand side by `m_timestep_length_forestry`.
-**Citation:** `declarations.gms:17`
 
 **Renamed 2026-04-20** (PR #869, commit `75d7ee167`): formerly *pm_timber_yield(t,j,ac,land_timber)* with units "tDM per ha per yr". The rename aligns the variable name with its actual semantic (stem biomass stock, not annual flux).
 
@@ -747,9 +747,9 @@ Module 14 reads 9 input data files:
 **Tertiary Output:**
 
 **pm_yields_semi_calib(j,kve,w)** - 1995 calibrated yields (tDM/ha/yr)
-**Purpose:** Baseline reference for other modules
+**Purpose / sole consumer:** Module 17 (Production) — `pm_prod_init(j,kcr) = sum(w, fm_croparea("y1995",j,w,kcr) * pm_yields_semi_calib(j,kcr,w))` at `modules/17_production/flexreg_apr16/presolve.gms:10`. No other module reads it.
 **Set at:** `preloop.gms:116,149`
-**Citation:** `declarations.gms:18`
+**Citation:** `declarations.gms:19`
 
 ---
 
@@ -758,7 +758,7 @@ Module 14 reads 9 input data files:
 **From Module 13 (Technological Change):**
 
 - **vm_tau(j,"crop")**: Current technological change factor (optimization variable)
-- **pcm_tau(j,"crop")**: Previous time step τ factor (for pasture spillover; cluster-level since the f_btc2 rename — verify at `../modules/13_tc/exo/declarations.gms`)
+- **pcm_tau(j,"crop")**: Previous time step τ factor (for pasture spillover; cluster-level since the f_btc2 rename — `modules/13_tc/endo_jan22/declarations.gms:13,27`, the **default** realization per `config/default.cfg:293`; the `exo` realization agrees)
 - **fm_tau1995(h)**: Baseline τ in 1995 (fixed parameter)
 
 **Citation:** Used in `equations.gms:16,39`
@@ -770,9 +770,9 @@ Module 14 reads 9 input data files:
 - **pm_carbon_density_plantation_ac(t,j,ac,"vegc")**: Plantation carbon density (tC/ha) — calibrated when `s52_growingstock_calib = 1`
 - **pm_carbon_density_secdforest_ac(t,j,ac,"vegc")**: Secondary forest carbon density (tC/ha) — calibrated when `s52_growingstock_calib = 1`
 - **pm_carbon_density_other_ac(t,j,ac,"vegc")**: Other natural land carbon density (tC/ha)
-- **pm_carbon_density_secdforest_ac_uncalib(t,j,ac,"vegc")**: Secondary forest carbon density, **uncalibrated** (tC/ha) — added 2026-07-14 (`6b00f9dea`); the pre-calibration snapshot of the secdforest curve (`modules/52_carbon/normal_dec17/start.gms:43`), used *only* for `im_growing_stock_ysf`
+- **pm_carbon_density_secdforest_ac_uncalib(t,j,ac,"vegc")**: Secondary-forest carbon density, **uncalibrated** (tC/ha) — the pre-calibration snapshot of the secdforest curve (declared `modules/52_carbon/normal_dec17/declarations.gms:10`, populated `modules/52_carbon/normal_dec17/start.gms:43`). **Added 2026-03-21 (`896a9b728`), NOT by `6b00f9dea`** — `6b00f9dea` only added Module 14's read of it (`git show --stat 6b00f9dea` touches no file under `modules/52_carbon/`). Model-wide it has four consumers: M14 (`presolve.gms:66`, `im_growing_stock_ysf`), M29 (`modules/29_cropland/detail_apr24/preloop.gms:46`), M32 (`modules/32_forestry/dynamic_may24/presolve.gms:59,68`, afforestation/NDC carbon), M35 (`modules/35_natveg/pot_forest_may24/presolve.gms:117,242,251`, youngsecdf carbon). **Within Module 14** it is used only for `im_growing_stock_ysf`
 
-**Citation:** Used in `presolve.gms:26,44,53,66` (`:66` is the youngsecdf block). Note `primforest` reads `fm_carbon_density` (`presolve.gms:35`), a file parameter — not an M52 `pm_` parameter — which is why it is absent from this list.
+**Citation:** Used in `presolve.gms:26,44,53,66` (`:66` is the youngsecdf block). `primforest` additionally reads **`fm_carbon_density(t,j,"primforest","vegc")`** (`presolve.gms:35`) — a *file* parameter, but one **declared and loaded by Module 52** (`modules/52_carbon/normal_dec17/input.gms:16`) and transformed there by the `c52_carbon_scenario` switch (`modules/52_carbon/normal_dec17/input.gms:22-23`) and the forest zero-fill (`modules/52_carbon/normal_dec17/input.gms:31`). So M14 primforest growing stock is **also** downstream of Module 52 carbon scenario, not only of `c14_yields_scenario`.
 
 ---
 
@@ -784,12 +784,21 @@ Module 14 reads 9 input data files:
 
 ---
 
-**From Input Data:**
+**From Module 30 (Croparea):**
 
-- **fm_croparea(t_all,j,w,kcr)**: Historical cropland area patterns (for calibration weighting)
-- **pm_land_start(j,"past")**: Initial pasture area (for pasture correction weighting)
-- **fm_carbon_density(t,j,"primforest","vegc")**: Primary forest carbon (fixed input)
-- **pm_climate_class(j,clcl)**: Climate classification for BCE factors
+- **fm_croparea(t_all,j,w,kcr)**: historical crop-area patterns (calibration weights) — declared `modules/30_croparea/simple_apr24/input.gms:71` (default realization). Used in `preloop.gms:60,68-73,127,138-143`.
+
+---
+
+**From Module 10 (Land):**
+
+- **pm_land_start(j,"past")**: initial (1995) pasture area — declared `modules/10_land/landmatrix_dec18/declarations.gms:9`, populated `start.gms:8`. Weight for the regional LPJmL pasture-yield average (`preloop.gms:15-16`).
+
+---
+
+**From Module 45 (Climate):**
+
+- **pm_climate_class(j,clcl)**: Köppen-Geiger climate classification — declared `modules/45_climate/static/input.gms:10` (default realization `static`). Weights `fm_ipcc_bef(clcl)` in the growing-stock conversion (`presolve.gms:29,38,47,56,69`). NOTE: used in presolve (growing stock), NOT in the yield calibration.
 
 **Citation:** Various uses in `preloop.gms` and `presolve.gms`
 
@@ -824,12 +833,23 @@ Module 14 reads 9 input data files:
 - Plantation harvest quantity = area × `im_growing_stock` / timestep length (2026-04-20 rename)
 - Without growing stock, forestry module cannot calculate wood supply
 
-**Module 17 (Production) and Module 11 (Costs):**
-- Yields affect production levels, which cascade to regional supply, trade, and economic costs
+**Module 35 (Natural Vegetation):**
+- Natural-forest and other-land wood supply = harvested area × `im_growing_stock` / timestep (`q35_prod_secdforest`, `q35_prod_primforest`, `q35_prod_other`; `modules/35_natveg/pot_forest_may24/equations.gms:147,156,165`), **plus** the `youngsecdf` term via `im_growing_stock_ysf` (`modules/35_natveg/pot_forest_may24/equations.gms:166`)
+- This is a **direct** dependency, not merely "implicit through land competition"
+
+**Module 52 (Carbon):**
+- Reads three **M14-declared** interface parameters — `sm_carbon_fraction`, `fm_aboveground_fraction`, `fm_ipcc_bef` — in its growing-stock calibration (`52_carbon/normal_dec17/preloop.gms:26,60-61,95-96`)
+- Renaming any of them in M14 breaks M52
+
+**Module 17 (Production):**
+- Reads `pm_yields_semi_calib` **directly** (`17_production/flexreg_apr16/presolve.gms:10`) to build `pm_prod_init`
+- Also affected transitively: production levels cascade from `vm_yld` via modules 30/31/32
+
+**Module 11 (Costs):** **Transitive only** — no direct read of any M14 interface parameter. Cost impacts flow through production levels (Module 17), not directly from Module 14.
 
 ### 8.3 Circular Dependencies
 
-**None directly in equations.**
+**None directly in equations, and none in the calibration data flow either** — see §21.3 for the full verification (Module 14 reads no `vm_prod`, and no soil-organic-matter/manure/nitrogen path reaches Module 14).
 
 **Indirect calibration dependencies:**
 - Preloop calibration uses `fm_croparea` (historical cropland patterns)
@@ -883,7 +903,7 @@ Module 14 reads 9 input data files:
 ---
 
 **i14_fao_yields_hist(t,i,kcr)** - FAO target yields (tDM/ha/yr)
-**Computed in:** `preloop.gms:88` (copied from input file)
+**Computed in:** `preloop.gms:95` (copied from the input file, unconditionally, inside the `y1995` branch; carried forward to later time steps at `preloop.gms:99`)
 **Purpose:** Calibration target
 **Citation:** `declarations.gms:14`
 
@@ -973,7 +993,7 @@ Following the "Code Truth" principle, it's important to state what Module 14 doe
 
 - **Does NOT optimize** pasture management in response to land scarcity
 - **DOES apply** exogenous management factor from Module 70 (livestock demand-driven)
-- Limitation explicitly stated in `realization.gms:23-24`
+- Limitation explicitly stated in `realization.gms:24-26`
 
 ### 11.6 No Nitrogen or Water Constraints in Yield Equations
 
@@ -1007,7 +1027,7 @@ Following the "Code Truth" principle, it's important to state what Module 14 doe
 
 ### 12.4 Timber Yield = Carbon / Conversion Factors
 
-**Pattern:** All timber yields calculated as `CarbonDensity / 0.5 × AbovegroundFrac / BCE` (`presolve.gms:24-71`, including the youngsecdf block at `:64-71`).
+**Pattern:** All growing stock calculated as `CarbonDensity / sm_carbon_fraction × fm_aboveground_fraction / fm_ipcc_bef` (`presolve.gms:24-71`, including the youngsecdf block at `:64-71`).
 
 **Why:** Carbon densities from Module 52 are in tC/ha. Need to convert to harvestable stem wood in tDM/ha using standard forestry conversion factors (carbon fraction, root-to-shoot ratio, biomass expansion).
 
@@ -1125,7 +1145,7 @@ grep "^[ ]*q14_" modules/14_yields/managementcalib_aug19/declarations.gms | wc -
 3. Limited calibration lambda is too low (too much additive calibration)
 
 **Solutions:**
-1. Check cropland input data from Module 10
+1. Check cropland input data from **Module 30 (croparea)** — `fm_croparea` is loaded in `modules/30_croparea/simple_apr24/input.gms:71`, not in Module 10
 2. Enable yield calibration factors (`s14_use_yield_calib = 1`) and provide `f14_yld_calib.csv`
 3. Inspect `i14_lambda_yields` for regions with production mismatch
 
@@ -1159,11 +1179,9 @@ grep "^[ ]*q14_" modules/14_yields/managementcalib_aug19/declarations.gms | wc -
 
 **Symptom:** Pasture yields remain constant despite increasing livestock production.
 
-**Likely Cause:** `pm_past_mngmnt_factor` is constant (Module 70 not providing dynamic management signal).
+**Likely Cause:** `pm_past_mngmnt_factor` is pinned to 1. In **both** Module-70 realizations (`fbask_jan16`, `fbask_jan16_sticky` — the code is identical here), `modules/70_livestock/fbask_jan16/presolve.gms:63-68` sets `pm_past_mngmnt_factor(t,i) = 1` for every year `m_year(t) <= s70_past_mngmnt_factor_fix` (**default 2005**, `70_livestock/fbask_jan16/input.gms:26`; `config/default.cfg:2173`) and only then applies the cattle-driven formula.
 
-**Solution:** Check Module 70 realization. Some realizations provide dynamic `pm_past_mngmnt_factor` based on livestock demand, others use fixed values.
-
-**Not a Module 14 issue:** Module 14 correctly implements the equation; the management factor comes from Module 70.
+**Solution:** Check `s70_past_mngmnt_factor_fix`, **not** the Module-70 realization — switching realization changes nothing here. Also check `s14_yld_past_switch` (default 0.25) for the crop-tau spillover term.
 
 ---
 
@@ -1195,7 +1213,7 @@ Without limited calibration (λ), regions with underestimated baselines (FAO >> 
 - FAO 1995: 6 tDM/ha → calibration factor = 3x
 - LPJmL 2050: 4 tDM/ha (doubled)
 - Without λ: Calibrated yield = 4 × 3 = 12 tDM/ha (unrealistic 2x FAO)
-- With λ=0.58: Calibrated yield ≈ 8 tDM/ha (reasonable 1.3x FAO)
+- With λ=0.58: Calibrated yield ≈ **10** tDM/ha (**1.7×** FAO — still high, but the additive blend removes about a third of the pure-relative overshoot)
 
 **Implication:** Always use `s14_limit_calib = 1` unless you have high confidence in LPJmL baseline accuracy.
 
@@ -1237,7 +1255,8 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 
 ### 16.5 Coordination with Calibration Modules
 
-- **Module 10 (Land):** Provides `fm_croparea` (historical cropland patterns) for calibration weighting
+- **Module 30 (Croparea):** Provides `fm_croparea(t_all,j,w,kcr)` (historical crop-area patterns; declared `modules/30_croparea/simple_apr24/input.gms:71`, default realization) for calibration weighting (`preloop.gms:60,68-73,127,138-143`)
+- **Module 10 (Land):** Provides `pm_land_start(j,"past")` (`modules/10_land/landmatrix_dec18/declarations.gms:9`, populated `start.gms:8`) — the weight for the regional LPJmL pasture-yield average (`preloop.gms:15-16`)
 - **External FAO/AQUASTAT Data:** Provide calibration targets for yield levels and irrigated/rainfed ratios
 
 ---
@@ -1245,13 +1264,13 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 ## 17. Literature and Methodology References
 
 **Limited Calibration Methodology:**
-- **@Heinke.2013:** Heinke et al. (2013), equation 9 — foundation for lambda-based calibration (`preloop.gms:47`)
+- **@Heinke.2013:** Heinke et al. (2013), equation 9 — foundation for lambda-based calibration (`preloop.gms:54`; the "eq. (9)" reference is at `preloop.gms:106`)
 
 **LPJmL Crop Model:**
 - **@bondeau_lpjml_2007:** Bondeau et al. (2007) — LPJmL managed land model (`module.gms:14`)
 
 **Calibration Data Sources:**
-- **@FAOSTAT:** FAO Statistical Database — regional yield targets (`module.gms:16,21`)
+- **@FAOSTAT:** FAO Statistical Database — regional yield targets (`module.gms:17`; also `realization.gms:11,17`)
 - **@fao_aquastat_2016:** AQUASTAT — irrigated/rainfed yield ratios (`module.gms:21`)
 
 **Biomass Conversion Factors:**
@@ -1399,19 +1418,24 @@ Module 14 does **not directly participate** in any conservation laws:
 - **Hub Type**: **Processing Hub** (receives biophysical data, provides to production modules)
 - **Role**: **Yield calibration and delivery** - connects LPJmL to crop/pasture/forestry modules
 
-**Modules that Module 14 depends on**:
+**Modules that Module 14 depends on** (true upstream set: 10, 13, 30, 45, 52, 70):
 - Module 13 (tc): τ (tau) technological change factor — **CRITICAL DEPENDENCY**
 - Module 52 (carbon): Carbon densities for timber yield calculation
-- Module 45 (climate): Climate class data for calibration
+- Module 45 (climate): `pm_climate_class` for the growing-stock BEF weighting (presolve) — NOT the yield calibration
+- Module 10 (land): `pm_land_start(j,"past")` for pasture correction weighting
+- Module 30 (croparea): `fm_croparea` for calibration weighting
+- Module 70 (livestock): `pm_past_mngmnt_factor` for pasture management
 - **External data**: LPJmL biophysical yields, FAO production/yield data, AQUASTAT irrigation data
 
-**Modules that depend on Module 14**:
+**Modules that depend on Module 14** (true downstream set: 17, 30, 31, 32, 35, 52):
 - Module 30 (croparea): `vm_yld(j,kcr,w)` for crop yields → determines crop area needed
 - Module 31 (pasture): `vm_yld(j,"pasture",w)` for pasture yields → determines pasture area needed
 - Module 32 (forestry): Growing stock (`im_growing_stock`) → determines plantation productivity
-- Module 35 (natveg): Natural vegetation yields (implicitly through land competition)
-- Module 17 (production): Production = Area × Yield (via modules 30/31/32)
-- Module 70 (livestock): Feed availability from crop residues (via Module 18)
+- Module 35 (natveg): reads `im_growing_stock`/`im_growing_stock_ysf` **directly** (`q35_prod_secdforest`, `q35_prod_primforest`, `q35_prod_other`; `modules/35_natveg/pot_forest_may24/equations.gms:147,156,165,166`) — not merely "implicitly through land competition"
+- Module 17 (production): reads `pm_yields_semi_calib` **directly** (`17_production/flexreg_apr16/presolve.gms:10`) to build `pm_prod_init`; also transitively via modules 30/31/32
+- Module 52 (carbon): reads M14-declared `sm_carbon_fraction`, `fm_aboveground_fraction`, `fm_ipcc_bef` in its growing-stock calibration (`52_carbon/normal_dec17/preloop.gms:26,60-61,95-96`) — Module 52 is thus **both** upstream and downstream of Module 14
+
+**Note:** Module 70 (livestock) is **upstream** of Module 14 (provides `pm_past_mngmnt_factor`), not downstream — it reads no Module 14 interface.
 
 **Key Interface Variables**:
 - `vm_yld(j,kcr,w)`: Crop yields by irrigation type — **MOST CRITICAL OUTPUT**
@@ -1421,75 +1445,11 @@ Module 14 does **not directly participate** in any conservation laws:
 
 ### 21.3 Circular Dependencies
 
-**Module 14 participates in 1 major circular dependency**:
+**Module 14 participates in NO circular dependency.** Verified against code (2026-07-14): Module 14 calibration (`preloop.gms`) reads only exogenous file parameters (`f14_yields`, `f14_fao_yields_hist`, `f14_pyld_hist`, `f14_ir2rf_ratio`, `f14_yld_calib`, `f14_yld_ncp_report`, `f14_kcr_pollinator_dependence`) plus `fm_croparea` (Module 30 input file), `pm_land_start` (Module 10) and `fm_tau1995` (Module 13). **No optimization variable enters the calibration.** Module 14 reads **no** `vm_prod`, **no** soil organic matter (Module 59), **no** manure (Module 55) and **no** nitrogen variable — see §11.6.
 
-#### **Cycle 1: Production-Yield-Livestock Triangle ⭐⭐⭐ (HIGHEST COMPLEXITY)**
+The only simultaneity is the within-timestep co-solve of `vm_tau` (Module 13, endogenous under the default `endo_jan22`) and `vm_yld` (`q14_yield_crop`, `equations.gms:14-16`); the optimizer resolves it, not a temporal lag. Pasture spillover uses the previous timestep `pcm_tau` (`equations.gms:39`), a lag by construction, not a cycle resolution.
 
-**Modules involved**: 17 (production) ↔ 14 (yields) ↔ 70 (livestock)
-
-**Dependency chain**:
-```
-vm_prod(j,kcr) [17] → Used for calibration of yields
-    ↓
-pm_yields_semi_calib(j,kcr,w) [14] → Calibrated yields
-    ↓
-vm_yld(j,kcr,w) [14] → Scaled by tau factor → Affects crop production
-    ↓
-vm_prod(j,kcr) [30/17] → Crop production = Area × Yield
-    ↓
-Feed availability [18] → Crop residues for livestock
-    ↓
-vm_prod(j,kli) [70] → Livestock production
-    ↓
-Manure production [70/55] → Affects soil fertility
-    ↓
-pm_yields_semi_calib(j,kcr,w) [14] → **BACK TO START** (via soil organic matter effects)
-```
-
-**Resolution Type**: **Temporal Feedback + Iterative Convergence**
-
-**How it resolves**:
-1. **Within timestep**: Yields are **fixed parameters** from calibration (not optimized)
-2. **Across timesteps**:
-   - τ factor (Module 13) adjusts yields based on past production patterns
-   - Soil organic matter (Module 59) from manure affects future yields
-   - **Temporal lag** breaks the circular dependency within optimization
-3. **Calibration phase**: Requires **multiple model runs** to match observed FAO yields
-   - Run 1: Use LPJmL base yields
-   - Calibration: Adjust λ blend factors to match FAO regional averages
-   - Run 2: Re-run with calibrated yields → production changes
-   - Iterate until yields stabilize
-
-**Risks from this cycle**:
-- **Oscillating yields**: τ factor too sensitive → yields swing between timesteps
-- **Unrealistic intensification**: Manure contribution overestimated → yields too high
-- **Calibration non-convergence**: FAO target impossible to match with LPJmL base
-- **Feed demand infeasibility**: Low yields → insufficient crop residues → livestock fails
-
-**Resolution mechanism in code** (from circular_dependency_resolution.md Section 3.1):
-- **Preloop calibration**: `pm_yields_semi_calib` calculated BEFORE optimization
-- **τ factor from previous timestep**: `pcm_tau(j,tautype)` uses **lagged** production values
-- **SOM effects gradual**: 15% annual convergence (Module 59) → smooth feedback
-- **No iteration within timestep**: Yields fixed → production optimized → manure calculated → affects NEXT timestep
-
-**Testing for cycle stability** (Section 5.3 from circular_dependency_resolution.md):
-```r
-# Check yields don't oscillate between timesteps
-yields_t1 <- yields(gdx, level="cell", products="kcr")[,"y2025",]
-yields_t2 <- yields(gdx, level="cell", products="kcr")[,"y2030",]
-yields_t3 <- yields(gdx, level="cell", products="kcr")[,"y2035",]
-
-yield_change_12 <- (yields_t2 - yields_t1) / (yields_t1 + 1e-6)
-yield_change_23 <- (yields_t3 - yields_t2) / (yields_t2 + 1e-6)
-
-# Changes should be gradual (driven by TC, not oscillation)
-stopifnot(all(abs(yield_change_12) < 0.2))  # <20% per 5-year timestep
-stopifnot(all(abs(yield_change_23) < 0.2))
-
-# Direction should be consistent (not alternating)
-signs_match <- sign(yield_change_12) == sign(yield_change_23)
-stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same direction
-```
+**There is no SOM → yield feedback in MAgPIE.** Any claim that manure or soil carbon affects Module 14 yields is false; soil-fertility effects are implicit in the LPJmL input yields, not modelled.
 
 ### 21.4 Modification Safety
 
@@ -1497,8 +1457,8 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 
 **Why High Risk**:
 1. **Production system bottleneck**: Yields determine if model can meet food demand
-2. **Circular dependency**: Part of Production-Yield-Livestock cycle (requires calibration)
-3. **Spatial complexity**: Cell-level yields with 200+ cells × 18 crops × 2 irrigation types
+2. **Not circular (correction)**: earlier text in this section claimed a *Production-Yield-Livestock circular dependency*; that claim is verified **false** — Module 14 has no circular dependency (see §21.3)
+3. **Spatial complexity**: cell-level yields over `kcr` (**19** cropping activities, `sets.gms:23-26`) plus pasture, × 2 water supply types; `vm_yld` is dimensioned `(j,kve,w)` with `kve` = 20 members
 4. **Calibration fragility**: Limited calibration tuned to FAO data → easy to break
 5. **Climate sensitivity**: LPJmL yields respond to climate → modifications may alter climate response
 
@@ -1507,13 +1467,11 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 - ✅ Adjust pasture spillover (`s14_yld_past_switch`) within 0-1 range
 - ✅ Toggle degradation effects (`s14_degradation` 0/1)
 - ✅ Switch climate scenario (`c14_yields_scenario`: cc/nocc/nocc_hist)
-- ✅ Modify timber conversion factors (small adjustments to IPCC factors)
-- ✅ Change bioenergy yield conversion factors (`sm_carbon_fraction`, superset — was `s14_carbon_fraction` before 2026-04-20) if using bioenergy scenarios
+- ✅ Modify timber conversion factors — but note the blast radius: `sm_carbon_fraction` (0.5 tC/tDM, `input.gms:22`), `fm_aboveground_fraction` and `fm_ipcc_bef` are **shared interface parameters also read by Module 52 growing-stock calibration** (`52_carbon/normal_dec17/preloop.gms:26,60-61,95-96`) as well as by M14 `presolve.gms:24-71`. Changing any of them shifts **both** M14 growing stock and M52 FRA calibration.
+- ⚠️ **`sm_carbon_fraction` has nothing to do with bioenergy.** Bioenergy (`begr`/`betr`) yields are corrected in `preloop.gms:11-12` using `fm_tau1995` / `smax(h,fm_tau1995(h))` only.
 
 **Moderate-Risk Modifications** (require calibration testing):
-- ⚠️ Change limited calibration bounds (`s14_limit_calib`):
-  - Lower bound → more LPJmL influence → may mismatch FAO
-  - Higher bound → more statistical adjustment → may mask climate signal
+- ⚠️ Toggle limited calibration (`s14_limit_calib`, **binary 0/1**, default **1**, `input.gms:15`): setting it to **0** switches from lambda-blended limited calibration to **pure relative** calibration (lambda == 1, `preloop.gms:86`), which over-amplifies future yields where the LPJmL baseline is underestimated. It is **not** a continuous bound.
 - ⚠️ Disable irrigated-rainfed calibration (`s14_calib_ir2rf = 0`):
   - Loses AQUASTAT yield ratio data → irrigation overestimated or underestimated
 - ⚠️ Add new crops to calibration system:
@@ -1529,9 +1487,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 - 🔴 Modify yield equation structure:
   - Other modules expect `vm_yld(j,kcr,w)` dimensions
   - Changing sets or indices breaks downstream modules
-- 🔴 Remove calibration entirely (`s14_use_yield_calib = 0` AND `s14_limit_calib = 0`):
-  - Pure LPJmL yields often unrealistic (too low in some regions, too high in others)
-  - Model likely infeasible (can't meet food demand)
+- 🔴 **There is no switch that removes calibration.** `s14_use_yield_calib = 0` is the **default** (`input.gms:18`) and merely skips the optional post-hoc `f14_yld_calib` factors (`preloop.gms:165-173`); `s14_limit_calib = 0` switches lambda to a constant 1, i.e. **pure relative FAO calibration** (`preloop.gms:86`), not "no calibration". The FAO calibration (`preloop.gms:108-116`) **always** runs, and the AQUASTAT ir2rf calibration (`preloop.gms:123-150`) runs whenever `s14_calib_ir2rf = 1` (the default, `input.gms:16`; `config/default.cfg:380`) — neither is affected by `s14_use_yield_calib` or `s14_limit_calib`. To obtain uncalibrated LPJmL yields you would have to edit `preloop.gms` itself — a code change, not a config change.
 
 **Testing Requirements After Modification**:
 
@@ -1554,7 +1510,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
    stopifnot(mean(ratio, na.rm=TRUE) > 1.0 && mean(ratio, na.rm=TRUE) < 5.0)
    ```
 
-3. **Yield stability check** (Cycle 1 test above)
+3. **Yield stability check**: verify yields change gradually across timesteps, driven by τ (Module 13) — not by any cycle, since Module 14 has no circular dependency (see §21.3)
 
 4. **Production feasibility** (downstream check):
    ```r
@@ -1590,14 +1546,14 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 - ❌ Assuming yield changes are linear (degradation effects are multiplicative)
 
 **Emergency Fixes**:
-- If food demand infeasibility: Increase `s14_limit_calib` upper bound (allow more statistical adjustment)
+- If food demand infeasibility: **do not touch `s14_limit_calib`** (binary; the default 1 is already the conservative setting). Investigate `f14_yld_calib` (`s14_use_yield_calib = 1`) or the Module 13 tau trajectory instead.
 - If unrealistic yield patterns: Check LPJmL input data quality
 - If oscillation: Reduce τ factor sensitivity in Module 13 (check `s13_max_gdp_shr` and cropland conservation params)
 - If irrigation fails: Verify irrigated-rainfed calibration (`s14_calib_ir2rf = 1`)
 - If calibration non-convergence: Relax convergence tolerance or fix problematic crops
 
 **Links**:
-- Circular dependency details → cross_module/circular_dependency_resolution.md (Section 3.1)
+- Circular dependency details for other modules (Module 14 itself has none — see §21.3) → cross_module/circular_dependency_resolution.md (Section 3.1)
 - Full calibration methodology → This document Sections 4-8
 - Technological change → modules/module_13.md
 - Production system → modules/module_17.md, module_30.md, module_31.md
@@ -1605,7 +1561,7 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 ---
 
 **Documentation Status:** ✅ Fully Verified (2025-10-12)
-**Verification Method:** All source files read, 2 equations verified against declarations.gms, 557 lines of code analyzed, calibration methodology traced through preloop phase
+**Verification Method:** All source files read, 2 equations verified against declarations.gms, 586 lines of code analyzed, calibration methodology traced through preloop phase
 **Citation Density:** 100+ file:line references throughout this document
 **Next Module:** Module 11 (Costs) or Module 17 (Production) — core hub modules
 
@@ -1614,4 +1570,4 @@ stopifnot(sum(signs_match, na.rm=TRUE) / length(signs_match) > 0.7)  # 70% same 
 **Last Verified**: 2026-07-14 (sync `0d7ebeb90` — new interface parameter `im_growing_stock_ysf`; see §4.2)
 **Verified Against**: `../modules/14_yields/managementcalib_aug19/*.gms` (develop branch)
 **Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: 2026-05-16 sync to commit `c7731e234`: `p14_pyield_corr` computation rewritten (Section 3.2) — now applies the historical/LPJmL ratio for every year `f14_pyld_hist` is available (y1965–y2020) and freezes at the last available value, replacing the old `t_past`-conditional that froze at y2015. No new/renamed parameters. Prior: f_btc2 update — `vm_tau`/`pcm_tau` at cluster level (j) in `q14_yield_crop`/`q14_yield_past`.
+**Changes Since Last Verification**: 2026-05-16 sync to commit `2fa7b8bea9` (2026-04-28): `p14_pyield_corr` computation rewritten (Section 3.2) — now applies the historical/LPJmL ratio for every year `f14_pyld_hist` is available (y1965–y2020) and freezes at the last available value, replacing the old `t_past`-conditional that froze at y2015. No new/renamed parameters. (An earlier attempt in `c7731e234`, 2026-04-20, used three helper parameters *p14_corr_last*/*p14_corr_prev*/*p14_corr_trend*; superseded by `2fa7b8bea9`, which removed them.) Prior: f_btc2 update — `vm_tau`/`pcm_tau` at cluster level (j) in `q14_yield_crop`/`q14_yield_past`.

@@ -15,7 +15,7 @@
 **Core Features**:
 - **3 land types**: Primary forest, secondary forest (age-classes), other land (natural + young secondary)
 - **Age-class system**: 5-year intervals (ac0, ac5, ..., acx) with dynamic aging
-- **4 disturbance modes**: No disturbance, shifting agriculture, combined shocks, generic scenarios
+- **5 disturbance modes** (`s35_forest_damage` = 0-4): 0 none, 1 shifting agriculture, 2 shifting agriculture faded out (**DEFAULT**), 3 combined (shifting agriculture + wildfire), 4 generic shock scenarios
 - **Critical threshold**: 20 tC/ha separates forest from other land
 - **Harvest system**: Differentiated costs (primforest $3,690/ha > other $3,075/ha > secdforest $2,460/ha)
 - **Conservation**: NPI/NDC policies, protected area constraints, restoration targets
@@ -123,7 +123,7 @@ p35_maturesecdf(t,j,ac)$(not sameas(ac,"acx")) =
 - Threshold applies to vegetation carbon only (not soil carbon)
 
 > **🔄 Changed 2026-04-20 (commit `c7731e234`)**: The maturation test now applies `pm_carbon_density_secdforest_ac_uncalib` (the *uncalibrated* natveg curve), not the FRA-calibrated `pm_carbon_density_secdforest_ac`. Rationale (per `presolve.gms:113-115` comment): natural succession from abandoned cropland should mature at realistic rates, independent of the FRA 2025 calibration applied in Module 52. Freshly matured youngsecdf is recorded as natural-origin area (`p35_secdforest_natural`).
-> - `pm_carbon_density_secdforest_ac` is consumed by Module 14 (`modules/14_yields/managementcalib_aug19/presolve.gms:44`)
+> - `pm_carbon_density_secdforest_ac` is consumed by Module 14 (`modules/14_yields/managementcalib_aug19/presolve.gms:44`), and by Module 35 itself (`presolve.gms:248-251` -- the FRA-calibrated leg of the blended `p35_carbon_density_secdforest`)
 > - `pm_carbon_density_secdforest_ac_uncalib` is consumed by Module 14 (`modules/14_yields/managementcalib_aug19/presolve.gms:66` — the `im_growing_stock_ysf` source, added 2026-07-14), Module 29 (`modules/29_cropland/detail_apr24/preloop.gms:46`), Module 32 (`modules/32_forestry/dynamic_may24/presolve.gms:59` and `:68`), and Module 35 itself (`presolve.gms:117` maturation test, `:242` youngsecdf carbon density). Declared + snapshotted in Module 52 (`modules/52_carbon/normal_dec17/declarations.gms:10`, `modules/52_carbon/normal_dec17/start.gms:43`).
 
 ---
@@ -286,7 +286,7 @@ pc35_forest_recovery_shr(j)$((...) > 0) =
 **Step 4**: Distribute remaining abandoned land
 ```gams
 * Portion becomes youngsecdf (recovering forest)
-pc35_land_other(j,"youngsecdf",ac_est) += p35_forest_recovery_area(t,j,ac_est);
+pc35_land_other(j,"youngsecdf",ac_est) = pc35_land_other(j,"youngsecdf",ac_est) + p35_forest_recovery_area(t,j,ac_est);
 * Remainder becomes othernat (non-forest)
 pc35_land_other(j,"othernat",ac_est) = pc35_land_other(j,"othernat",ac_est) - p35_forest_recovery_area(t,j,ac_est);
 ```
@@ -408,7 +408,7 @@ p35_land_restoration(j2,"secdforest");
 
 **Purpose**: Ensures that transitions from agricultural land and forestry into secondary forest meet the restoration target set for secondary forest. The constraint includes both agricultural-to-secdforest and forestry-to-secdforest transitions.
 **Key variables**:
-- `vm_lu_transitions` (land use transitions from Module 10; also consumed by Module 29 `modules/29_cropland/simple_apr24/equations.gms:49`, Module 59 `modules/59_som/cellpool_jan23/equations.gms:51`)
+- `vm_lu_transitions` (land use transitions from Module 10; also consumed by Module 29 (default realization: `modules/29_cropland/detail_apr24/equations.gms:60`; also `modules/29_cropland/simple_apr24/equations.gms:49`), Module 59 `modules/59_som/cellpool_jan23/equations.gms:51` and `:73`)
 - `p35_land_restoration` (restoration target, computed in presolve)
 
 **q35_other_restoration** (`equations.gms:30-33`):
@@ -878,7 +878,6 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 **To Module 10 (Land)**:
 - `vm_land(j,land_natveg)` - Natural vegetation areas
 - `vm_landdiff_natveg` - Gross changes in natural vegetation
-- `vm_landexpansion(j,land_natveg)` - Natural land expansion
 
 **To Module 52 (Carbon)**:
 - `vm_carbon_stock(j,land_natveg,ag_pools,stockType)` - Carbon stocks
@@ -899,6 +898,7 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 
 **From Module 10 (Land)**:
 - `vm_lu_transitions(j,land_from,land_to)` - Land use transitions
+- `vm_landexpansion(j,land)` - Land expansion, declared and computed in Module 10 (`modules/10_land/landmatrix_dec18/declarations.gms:20`; `q10_landexpansion` at `modules/10_land/landmatrix_dec18/equations.gms:30-33`). M35 **reads** it in `q35_max_forest_establishment` (`equations.gms:197`) and `q35_other_regeneration` (`equations.gms:222`); M35 does not produce it.
 
 **From Module 22 (Conservation)**:
 - `pm_land_conservation(t,j,land_natveg,consv_type)` - Protection and restoration targets
@@ -922,7 +922,7 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 
 #### Conservation Laws
 
-**Land Balance**: ✅ **CRITICAL PARTICIPANT (RESIDUAL ALLOCATOR)** - Module 35 receives land NOT claimed by other modules: `vm_land(j,"primforest")`, `v35_secdforest(j,ac)`, `vm_land_other(j,othertype,ac)`. Three land types: primary forest, secondary forest (age-classes 1-15), other land (grassland, shrubland, etc.). **CRITICAL ROLE**: Natural vegetation is the **RESIDUAL** in land balance - it absorbs consequences of all other land use decisions. Conservation constraints must be met: NPI/NDC/protected area targets enforced via Module 22.
+**Land Balance**: ✅ **CRITICAL PARTICIPANT (RESIDUAL ALLOCATOR)** - Module 35 receives land NOT claimed by other modules: `vm_land(j,"primforest")`, `v35_secdforest(j,ac)`, `vm_land_other(j,othertype,ac)`. Three land types: primary forest, secondary forest (62 age classes: ac0, ac5, ..., ac300, acx -- see Section 3), other land (grassland, shrubland, etc.). **CRITICAL ROLE**: Natural vegetation is the **RESIDUAL** in land balance - it absorbs consequences of all other land use decisions. Conservation constraints must be met: NPI/NDC/protected area targets enforced via Module 22.
 
 **Carbon Balance**: ✅ **CRITICAL PARTICIPANT (DOMINANT POOL)** - Natural vegetation holds **LARGEST carbon stocks** in model. Chapman-Richards growth: `vegc(age) = A × (1-exp(-k×age))^m`. Three pools: vegetation (age-dependent), litter, soil. Disturbances (fire, shifting agriculture, generic shocks) trigger carbon loss. **Avoided deforestation** is major carbon mitigation strategy (via Module 56 policy constraints).
 
@@ -1088,10 +1088,11 @@ cfg$gms$s35_secdf_distribution <- 1   # Equal distribution
    - ❌ BII coefficients globally uniform (no regional variation)
    - Reality: Biodiversity value varies by region, ecosystem type
 
-6. **Age-class initialization** (`realization.gms:30-34`):
-   - ❌ MODIS data available but causes negative LUC emissions
-   - ❌ Current default: Poulter distribution or equal/acx only
-   - Reality: Actual age distribution more complex
+6. **Age-class initialization** (`input.gms:26`, `preloop.gms:18-34`):
+   - The default `s35_secdf_distribution = 2` initializes secdforest age classes from the satellite-derived **GFAD** distribution (`im_forest_ageclass`, `preloop.gms:19-20`)
+   - Alternatives: 0 = all area in `acx`; 1 = equal across all age classes
+   - ⚠️ The `@limitations` block at `realization.gms:30-34` still says this satellite data "is not available for release yet" -- **that MAgPIE comment is stale**; the code path is the default
+   - Reality: Actual age distribution is more complex than any of the three options
 
 7. **Restoration** (`presolve.gms:191-198`):
    - ❌ Restoration targets may shift between forest and other land if potential area insufficient
@@ -1144,7 +1145,7 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 
 **Purpose**: Central hub for natural vegetation dynamics with age-class tracking, disturbances, harvest, and conservation
 
-**Complexity**: VERY HIGH (1,165 lines, 32 equations, 8 files)
+**Complexity**: VERY HIGH (1,165 lines, 32 equations, 9 files)
 
 **Key Innovation**: Age-class tracking with 20 tC/ha threshold for forest maturation
 
@@ -1185,6 +1186,7 @@ Check: sum(ac_est, v35_secdforest(t,j,ac_est)) = sum(ac_sub, v35_hvarea_secdfore
 | Variable | Dimensions | Description | Units |
 |----------|------------|-------------|-------|
 | `vm_land_other` | `(j,othertype35,ac)` | Detailed stock of other land | mio. ha |
+| `vm_landdiff_natveg` | (scalar) | Aggregated difference in natveg land compared to previous timestep | mio. ha |
 | `vm_prod_natveg` | `(j,land_natveg,kforestry)` | Production of woody biomass from natural vegetation | mio. tDM/yr |
 | `vm_cost_hvarea_natveg` | `(i)` | Cost of harvesting natural vegetation | mio. USD17MER |
 | `vm_natforest_reduction` | `(j)` | Natural forest reduction | mio. ha |

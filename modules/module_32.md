@@ -2,7 +2,7 @@
 
 **Status**: Fully documented
 **Location**: `modules/32_forestry/dynamic_may24/`
-**Code Size**: 1,331 lines across 9 files
+**Code Size**: 1,332 lines across 9 files (+26 in module.gms)
 **Authors**: Florian Humpenöder, Abhijeet Mishra
 **Realization**: `dynamic_may24` (only realization)
 
@@ -31,7 +31,7 @@
 - ❌ Does NOT model timber quality differences by age class
 
 **Role in MAgPIE**:
-- Provides `vm_land_forestry(j,type32)` interface to Module 10 (Land)
+- Provides `vm_land_forestry(j,type32)` to Module 58 (Peatland) - the sole consumer (`modules/58_peatland/v2/equations.gms:23`, via the `m58_LandMerge` macro)
 - Provides `vm_cdr_aff` to Module 56 (GHG Policy) for carbon pricing
 - Provides `vm_prod_forestry` to Module 73 (Timber) for production
 - Provides `vm_cost_fore` to Module 11 (Costs) for cost aggregation
@@ -59,7 +59,7 @@ i32_growing_stock_at_harvest(t,j) = sum(ac$(ac.off = p32_rotation_cellular_estb(
                                         im_growing_stock(t,j,ac,"forestry"));
 ```
 
-> **🔄 Renamed 2026-04-20 (PR #869, commit `75d7ee167`):**
+> **🔄 Renamed 2026-04-20 (PR #872, merged 2026-03-25; commit `75d7ee167`):**
 > Old: *p32_yield_forestry_future(t,j)* using *pm_timber_yield* (tDM/ha/yr, flux).
 > New: `i32_growing_stock_at_harvest(t,j)` using `im_growing_stock` (tDM/ha, stock).
 > Semantic: was "yield at rotation age"; now "growing stock at rotation age."
@@ -172,7 +172,7 @@ v32_land.fx(j,"aff",ac_est)$(fm_carbon_density(t,j,"forestry","vegc") <= 20) = 0
 
 **Regional averaging** (`preloop.gms`, aggregates cell-level to regional rotation lengths):
 ```
-p32_rotation_regional(t,i) = weighted average of cellular rotations by area
+p32_rotation_regional(t,i) = ceil( sum over cells j in region i of p32_rot_length_ac_eqivalent(t,j) / p32_ncells(i) )   [unweighted cell mean, preloop.gms:105]
 ```
 
 **Key insight**: Land owners "stick to their establishment decision" (`realization.gms:29-32`):
@@ -269,7 +269,7 @@ q32_land_expansion_forestry(j2,type32) ..
     - (v32_land_replant(j2))$sameas(type32,"plant");
 ```
 
-**Translation**: Net forestry expansion reported to Module 10 = total expansion minus replanted area (for `plant` type only). Replanting after harvest does not count as new expansion.
+**Translation**: Net forestry expansion reported to Module 58 (peatland) = total expansion minus replanted area (for `plant` type only). Replanting after harvest does not count as new expansion.
 
 **q32_land_reduction_forestry** (`equations.gms:64-65`):
 ```gams
@@ -278,7 +278,7 @@ q32_land_reduction_forestry(j2,type32) ..
     - (v32_land_replant(j2))$sameas(type32,"plant");
 ```
 
-**Translation**: Net forestry reduction reported to Module 10 = total reduction minus replanted area (for `plant` type only). Harvest followed by replanting does not count as net reduction.
+**Translation**: Net forestry reduction reported to Module 58 (peatland) = total reduction minus replanted area (for `plant` type only). Harvest followed by replanting does not count as net reduction.
 
 #### 4.3 Establishment Decision
 
@@ -312,11 +312,17 @@ q32_establishment_demand(i2)$s32_establishment_dynamic ..
 **Forward-looking demand** (`presolve.gms:197-205`):
 ```gams
 if(s32_demand_establishment = 1,
-  p32_demand_forestry_future(t,i,kforestry) = sum(t_ext$(t_ext.pos = t.pos + p32_rotation_regional(t,i)),
-                                                   pm_demand_forestry(t_ext,i,kforestry));
+  if(m_year(t) <= sm_fix_SSP2,
+    p32_demand_forestry_future(t,i,kforestry) = sum(t2$(m_year(t2) = sm_fix_SSP2), pm_demand_forestry(t2,i,kforestry));
+  else
+    p32_demand_forestry_future(t,i,kforestry) = sum(t_ext$(t_ext.pos = t.pos + p32_rotation_regional(t,i)), pm_demand_forestry(t_ext,i,kforestry));
+  );
+else
+  p32_demand_forestry_future(t,i,kforestry) = pm_demand_forestry(t,i,kforestry);
+);
 ```
 
-**Translation**: If forward-looking, use demand at time `t + rotation_length`, else use current demand
+**Translation**: If forward-looking, use demand at time `t + rotation_length`, else use current demand. During the SSP2-fixed historical period (`m_year(t) <= sm_fix_SSP2`) the demand of the fix year is used instead.
 
 **q32_establishment_hvarea** (`equations.gms:213-217`):
 ```gams
@@ -680,7 +686,7 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 ### 8. Module Dependencies
 
-**VERIFIED**: Module 32 has moderate connectivity (5 provides, 6 receives).
+**VERIFIED**: Module 32 provides interfaces to 7 modules (10, 11, 44, 52, 56, 58, 73) and receives from 11 modules.
 
 #### 8.1 Provides To (Outputs)
 
@@ -688,40 +694,47 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 |-----------|----------|-----|-----------|
 | **10_land** | vm_land(j,"forestry") | Total forestry land for land balance | equations.gms:55-56 |
 | **10_land** | vm_landdiff_forestry | Gross forestry land change | equations.gms:113-115 |
-| **10_land** | vm_landexpansion_forestry | Forestry expansion by type | equations.gms:61-62 |
-| **10_land** | vm_landreduction_forestry | Forestry reduction by type | equations.gms:64-65 |
 | **11_costs** | vm_cost_fore | Total forestry costs | equations.gms:21-27 |
-| **35_natveg** | pcm_land_forestry | Forestry land for max forest establishment calc | presolve.gms:102 |
+| **35_natveg** | vm_land(j,"forestry") / pcm_land(j,"forestry") | Subtracted from potential forest area when computing `pm_max_forest_est` | presolve.gms:100-101 |
+| **44_biodiversity** | vm_bv (slices "aff_co2p", "aff_ndc", "plant") | Biodiversity stock slices summed in q44_bii | equations.gms:128-141 |
+| **52_carbon** | pm_land_plantation | Plantation area by age class for growing-stock calibration | preloop.gms:179 |
+| **52_carbon** / **56_ghg_policy** | vm_carbon_stock(j,"forestry",...) | Forestry carbon-stock slice (read by q52_emis_co2_actual and q56_emis_pricing_co2) | equations.gms:108-109 |
 | **56_ghg_policy** | vm_cdr_aff | Projected CDR from afforestation | equations.gms:36-43 |
+| **58_peatland** | vm_landexpansion_forestry | Managed-forest expansion for the peatland land merge (`m58_LandMerge`) | equations.gms:61-62 |
+| **58_peatland** | vm_landreduction_forestry | Managed-forest reduction for the peatland land merge (`m58_LandMerge`) | equations.gms:64-65 |
+| **58_peatland** | pcm_land_forestry | Previous-timestep managed-forest land for the peatland land merge | presolve.gms:102 |
 | **73_timber** | vm_prod_forestry | Timber production from plantations | equations.gms:246-249 |
 
 #### 8.2 Receives From (Inputs)
 
 | From Module | Variable | Use | File:Line |
 |-------------|----------|-----|-----------|
+| **12_interest_rate** | pm_interest | Annuity factor + compound discounting of future harvest costs; IGR/Faustmann rotation calc | equations.gms:171,173; preloop.gms:41,68,75,78-79 |
 | **35_natveg** | pm_max_forest_est | Forest establishment potential | presolve.gms:22-23, equations.gms:86 |
+| **35_natveg** | vm_natforest_reduction | NPI/NDC afforestation must not come at the cost of natural forest (`q32_ndc_aff_limit`) | equations.gms:80 |
 | **10_land** | pcm_land | Previous land allocation | presolve.gms multiple |
 | **22_conservation** | pm_land_conservation | Avoid conflict with secdforest restoration / land restoration constraints | presolve.gms:20, 214-216 |
 | **28_age_class** | ac, ac_est, ac_sub | Age class structure | throughout |
 | **30_croparea** | vm_area | For NPI/NDC suitable area calculation | presolve.gms:17-18 |
 | **29_cropland** | vm_fallow | For NPI/NDC suitable area calculation | presolve.gms:18 |
-| **44_biodiversity** | fm_bii_coeff | BII coefficients by age class | equations.gms:131, 136, 141 |
+| **44_biodiversity** | fm_bii_coeff | BII coefficients by BII class; read into `p32_bii_coeff` | preloop.gms:204,206,208,209 |
 | **52_carbon** | pm_carbon_density_* | Carbon densities for plantations and regrowth | presolve.gms:58-68 |
+| **52_carbon** | fm_carbon_density | 20 tC/ha vegetation-carbon threshold below which afforestation is forbidden | presolve.gms:176 |
 | **73_timber** | pm_demand_forestry | Timber demand for establishment decision | presolve.gms:197-205 |
 | **14_yields** | im_growing_stock | Harvestable stem biomass by age class (tDM/ha) — renamed 2026-04-20 from *pm_timber_yield* | equations.gms:249, presolve.gms:181,185 |
-| **73_timber** | im_timber_prod_cost(i,kforestry) | Regional timber production cost — now region-dimensioned (2026-04-20) | equations.gms:165 |
+| **73_timber** | im_timber_prod_cost(i,kforestry) | Regional timber production cost — now region-dimensioned (2026-04-20) | equations.gms:172 |
 
 #### 8.3 Circular Dependencies
 
 **Module 10 ↔ Module 32**:
 - 32 provides `vm_land(j,"forestry")` to 10
 - 35 provides `pm_max_forest_est` to 32
-- **Resolved**: `pm_max_forest_est` calculated in Module 35 presolve, available before Module 32 presolve
+- **Resolved**: `pm_max_forest_est` is initialised in Module 35 **preloop** (`modules/35_natveg/pot_forest_may24/preloop.gms:63-64`) and refreshed for `t+1` in Module 35 **postsolve** (`postsolve.gms:22-23`). Module 32 presolve runs BEFORE Module 35 presolve (`modules/include.gms:29` vs `:31`), so the value Module 32 reads at time `t` is the one written by Module 35 postsolve at `t-1` (preloop value in the first timestep).
 
 **Module 32 ↔ Module 73**:
 - 32 provides `vm_prod_forestry` to 73
 - 73 provides `pm_demand_forestry` to 32
-- **Resolved**: Demand from previous timestep used for establishment decisions
+- **Resolved**: no lag is required - `pm_demand_forestry` is exogenous (GDP/population-driven) and computed once in Module 73 **preloop** (`modules/73_timber/default/preloop.gms:49-85`) for all timesteps including the extended horizon `t_ext`. Module 32 therefore reads FUTURE demand (`t` + rotation length) at `presolve.gms:201`. Module 73 does not depend on Module 32 output for this parameter, so this is a one-way coupling, not a true cycle.
 
 ---
 
@@ -751,7 +764,7 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 **Provides To**: Module 10 (Land), Module 11 (Costs + CDR rewards), Module 52 (Carbon), Module 56 (GHG policy), Module 73 (Timber)
 
-**Depends On**: Module 14 (Yields), Module 35 (Max forest establishment), Module 56 (Carbon price), plus 8 others
+**Depends On**: Module 12 (interest rate), Module 14 (yields), Module 35 (max forest establishment; `vm_natforest_reduction`), Module 52 (carbon densities), Module 73 (timber demand), plus 6 others. NOTE: Module 32 reads no Module-56 interface - the carbon-price incentive reaches it only through the objective function (M32 provides `vm_cdr_aff`, which M56 prices).
 
 **Key Role**: Carbon-price-driven afforestation - the PRIMARY mechanism for land-based carbon dioxide removal (CDR) in MAgPIE.
 
@@ -937,18 +950,18 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 
 #### 10.3 Rotation Lengths
 
-**p32_rotation_cellular_estb(t,j)** - `declarations.gms:29`:
+**p32_rotation_cellular_estb(t_all,j)** - `declarations.gms:29`:
 - **Purpose**: Rotation length for NEW establishments (in age class units)
 - **Calculation**: Preloop optimization (CAI/MAI/IGR maximization)
 - **Use**: Determine expected yield for establishment decisions
 
-**p32_rotation_cellular_harvesting(t,j)** - `declarations.gms:30`:
+**p32_rotation_cellular_harvesting(t_all,j)** - `declarations.gms:30`:
 - **Purpose**: Rotation length for EXISTING plantations
 - **Difference**: Reflects past rotation decisions (path-dependent)
 - **Use**: Set bounds on when plantations can be harvested
 
-**p32_rotation_regional(t,i)** - `declarations.gms:27`:
-- **Aggregation**: Area-weighted average of cellular rotations
+**p32_rotation_regional(t_all,i)** - `declarations.gms:27`:
+- **Aggregation**: Unweighted mean of the cellular rotation lengths across the cells of the region, rounded up with `ceil` (`preloop.gms:105`; cell count `p32_ncells(i)` at `preloop.gms:101`). NOT area-weighted.
 - **Use**: Regional establishment decisions, cost discounting
 
 #### 10.4 Growing Stock Projections (renamed 2026-04-20)
@@ -956,10 +969,10 @@ s32_harvesting_cost = 1230  / USD17MER per ha
 **i32_growing_stock_at_harvest(t,j)** - `declarations.gms:24`:
 - **Calculation**: Growing stock at rotation age (`presolve.gms:181`)
 - **Use**: Establishment cost-benefit analysis and `q32_prod_forestry_future`
-- **Formula**: `im_growing_stock(t,j,ac_rotation,"forestry")`
+- **Formula**: `sum(ac$(ac.off = p32_rotation_cellular_estb(t,j)), im_growing_stock(t,j,ac,"forestry"))` (`presolve.gms:181`)
 - **Units**: tDM/ha (stock, not flux)
 
-**Renamed 2026-04-20** (PR #869): formerly *p32_yield_forestry_future(t,j)* with units tDM/ha/yr. The new name reflects the variable's actual semantic (biomass stock at harvest).
+**Renamed 2026-04-20** (PR #872, merged 2026-03-25; commit `75d7ee167`): formerly *p32_yield_forestry_future(t,j)* with units tDM/ha/yr. The new name reflects the variable's actual semantic (biomass stock at harvest).
 
 **Additional new interface parameter (NEW 2026-04-20):**
 
@@ -1071,13 +1084,14 @@ Based on actual code verification with file:line references:
    - No spatial fire spread or pest dispersal
    - Each cell independent
 
-6. ❌ **Does NOT vary costs regionally or temporally**
-   - Global constant costs (`input.gms:23-27`)
+6. ❌ **Does NOT vary the establishment / recurring / harvesting cost scalars regionally or over time**
+   - `s32_est_cost_plant`, `s32_est_cost_natveg`, `s32_recurring_cost`, `s32_harvesting_cost` are global constants (`input.gms:23-27`)
    - No regional variation in labor costs, accessibility
    - No learning curves or technological change in forestry
+   - Note: the discounted future-harvest-cost term in `q32_cost_establishment` IS regional - it uses `im_timber_prod_cost(i,kforestry)` and `pm_interest(t,i)` (`equations.gms:171-173`)
 
 7. ❌ **Does NOT model timber quality differences** - `equations.gms:246-249`
-   - Yield measured in volume (m³) only
+   - Production measured in dry-matter mass (mio. tDM/yr, `declarations.gms:73`) - no timber-quality or assortment differentiation
    - No quality premium for older/larger trees
    - All timber same value per unit volume
 
@@ -1158,7 +1172,7 @@ s32_aff_plantation = 0  / Use natural regrowth curves
 s32_aff_plantation = 1  / Use plantation growth curves
 ```
 
-**Effect** (`presolve.gms:52-56`):
+**Effect** (`presolve.gms:58-62`):
 - Faster carbon sequestration → more CDR credited
 - Higher afforestation incentive under carbon pricing
 - More optimistic scenario
@@ -1351,7 +1365,7 @@ abline(v=rot_age, col="red", lty=2)  # Rotation age
 7. **Cost accounting** for establishment, recurring, and harvesting activities
 
 **Key Features**:
-- 1,331 lines of code across 9 files
+- 1,332 lines of code across 9 files (+26 in module.gms)
 - 31 equations managing costs, land, carbon, production, constraints
 - 3 plantation types with distinct purposes and management
 - Age-class tracking with 5-year intervals
@@ -1374,9 +1388,9 @@ abline(v=rot_age, col="red", lty=2)  # Rotation age
 - Constant costs (no regional or temporal variation)
 
 **Dependencies**:
-- **Receives from**: Modules 10 (land), 22 (conservation), 28 (age_class), 44 (biodiversity), 52 (carbon), 73 (timber)
-- **Provides to**: Modules 10 (land), 11 (costs), 35 (natveg), 56 (ghg_policy), 73 (timber)
-- **Circular**: With modules 10 and 73 (resolved via temporal lag)
+- **Receives from**: Modules 10 (land), 12 (interest rate), 14 (yields), 22 (conservation), 28 (age_class), 29 (cropland), 30 (croparea), 35 (natveg), 44 (biodiversity), 52 (carbon), 73 (timber)
+- **Provides to**: Modules 10 (land), 11 (costs), 44 (biodiversity), 52 (carbon), 56 (ghg_policy), 58 (peatland), 73 (timber)
+- **Circular**: with Module 10 / Module 35 (land competition, resolved by simultaneous equations + the previous-timestep `pm_max_forest_est`); Module 73's `pm_demand_forestry` is exogenous preloop data, so 32<->73 is not a true cycle
 
 **Typical Modifications**:
 - Adjust rotation extension factor (shorter/longer harvest cycles)

@@ -98,7 +98,7 @@ MAgPIE tracks carbon in 3 pools for each land type:
 **Key Difference**:
 - **M52 provides** underlying `fm_carbon_density`; **M59 derives** subsoil density and writes total soilc into `vm_carbon_stock`
 - **Module 59 tracks** dynamic topsoil carbon pools separately
-- Interface: `vm_carbon_stock(j,land,c_pools,stockType)` includes both — 4D, declared at `modules/56_ghg_policy/price_aug22/declarations.gms:34`; equations typically use the `"actual"` slice of `stockType`
+- Interface: `vm_carbon_stock(j,land,c_pools,stockType)` includes both - 4D, declared at `modules/56_ghg_policy/price_aug22/declarations.gms:34`. `stockType` has two members, `actual` and `actualNoAcEst` (`modules/56_ghg_policy/price_aug22/sets.gms:212-213`); the populating equations are indexed over the free set and fill **both** slices. The two readers then pick different slices: Module 52 accounts CO₂ from the **`"actual"`** slice (`modules/52_carbon/normal_dec17/equations.gms:19`), while Module 56 **prices** CO₂ from `%c56_carbon_stock_pricing%`, which defaults to **`actualNoAcEst`** (`modules/56_ghg_policy/price_aug22/equations.gms:22`; `config/default.cfg:1835`). In a default run the **priced** CO₂ is therefore not computed from the same stock slice as the **reported** CO₂.
 
 ---
 
@@ -131,13 +131,13 @@ v59_som_target(j,"crop") = (
 ) × Natural_density(j)
 ```
 
-The simplified `Σ(crops) Area × C_ratio × Natural_density` shorthand used in earlier versions of this doc omitted terms 2-4. Term 2 (SCM = dedicated soil-carbon management) is gated by `i59_scm_target` per scenario; terms 3-4 (fallow + treecover) are land-management categories distinct from cropping area. See `modules/module_59.md` for the full equation walk-through.
+The simplified `Σ(crops) Area × C_ratio × Natural_density` shorthand used in earlier versions of this doc omitted terms 2-4. Term 2 (SCM = dedicated soil-carbon management) is gated by `i59_scm_target` per scenario; terms 3-4 (fallow + treecover) are land-management categories distinct from cropping area. See `modules/module_59.md` for the full equation walk-through. Default `s59_scm_target = 0` (`config/default.cfg:1975`), so term 2 is zero in a default run.
 
 **C_ratio Factors** (Module 59):
 - Land use: Cropland vs set-aside
 - Tillage: Full, reduced, no-till (default: full)
 - Input level: Low, medium, high without manure (default: medium)
-- Irrigation: Increases carbon (optional, controlled by `c59_irrigation_scenario`)
+- Irrigation: adjusts the equilibrium via `f59_cratio_irrigation`, **active by default** (`c59_irrigation_scenario = "on"`, `config/default.cfg:1953`); set to `"off"` to neutralise it (factor forced to 1, `modules/59_som/cellpool_jan23/input.gms:70`)
 
 ---
 
@@ -176,6 +176,8 @@ vegc(ac) = S + (A - S) * (1 - exp(-k * ac*5))^m
 - A = Secondary forest vegc (mature target)
 - k, m = Climate-specific growth parameters (from `f52_growth_par.csv`)
 - ac = Age class (5-year intervals)
+
+⚠️ **The `f52_growth_par` k/m are only the STARTING curve.** With `s52_growingstock_calib = 1` - the hard default (`modules/52_carbon/normal_dec17/input.gms:46`; **not** exposed in `config/default.cfg`, so it is ON in every default run) - Module 52's preloop **overwrites the `vegc` slice** of `pm_carbon_density_secdforest_ac` (`normal_dec17/preloop.gms:71-73`) and `pm_carbon_density_plantation_ac` (`:114-116`) with curves whose `k` is calibrated **per region by bisection** to FAO **FRA 2025** growing-stock targets (`i52_k_calib_secdf` / `i52_k_calib_plant`) and whose `m` is the **region-average** (`i52_m_avg_natveg` / `i52_m_avg_plant`, `:29-30`) - not the cell-level climate-weighted `m`. The asymptote `A` is unchanged (`fm_carbon_density(t,j,"secdforest","vegc")`). The uncalibrated curves survive as `pm_carbon_density_*_ac_uncalib` (`modules/52_carbon/normal_dec17/start.gms:43-44`) and are what M14's `im_growing_stock_ysf` (`14_yields/managementcalib_aug19/presolve.gms:66`), M29's tree cover (`29_cropland/detail_apr24/preloop.gms:46,48`), M32's afforestation and NDC curves (`32_forestry/dynamic_may24/presolve.gms:59,61,68`) and M35's youngsecdf (`35_natveg/pot_forest_may24/presolve.gms:242`, plus the 20 tC/ha maturation test at `:117`) read. M14 and M35 read the CALIBRATED curve as well - M14 for regular secdforest growing stock (`modules/14_yields/managementcalib_aug19/presolve.gms:44`), M35 for secdforest carbon density, which it BLENDS with the uncalibrated curve by natural-origin area share (`modules/35_natveg/pot_forest_may24/presolve.gms:248-252`).
 
 **Growth Rates** (illustrative):
 - **Tropical plantations** (high k): Approach equilibrium in ~30-50 years
@@ -229,12 +231,12 @@ vegc(ac) = 0 + (A - 0) * (1 - exp(-k * ac*5))^m
 
 | Pool | Source | Dynamics | Module |
 |------|--------|----------|--------|
-| vegc | Chapman-Richards growth | Grows if young secondary forest | 52 |
+| vegc | Chapman-Richards growth | Grows with age class (both subtypes); youngsecdf uses the secdforest asymptote, othernat the lower other-land asymptote | 52 |
 | litc | Linear growth | Converges to equilibrium | 52 |
 | soilc | LPJmL | Static or converging | 59 |
 
 **Two Subtypes** (Module 35):
-- `othernat`: Natural grassland, savanna, shrubland (stable)
+- `othernat`: Natural grassland, savanna, shrubland - grows along the **other-land** Chapman-Richards curve (`pm_carbon_density_other_ac`, `modules/35_natveg/pot_forest_may24/presolve.gms:240`), whose low asymptote makes the pool near-static in practice
 - `youngsecdf`: Young secondary forest with vegc < 20 tC/ha (recovering)
 
 **Maturation Threshold**:
@@ -242,14 +244,14 @@ vegc(ac) = 0 + (A - 0) * (1 - exp(-k * ac*5))^m
 - Tracked by Module 35 age-class dynamics
 
 **⚠️ youngsecdf must stay on ONE growth curve — wood yield AND carbon.**
-`youngsecdf` reads the **uncalibrated** secdforest curve (`pm_carbon_density_secdforest_ac_uncalib`) for all three of: its carbon density (`modules/35_natveg/pot_forest_may24/presolve.gms:242`), its 20 tC/ha maturation test (`modules/35_natveg/pot_forest_may24/presolve.gms:117`), and — since MAgPIE commit `6b00f9dea` (2026-07-14) — its **wood yield**, via the new `im_growing_stock_ysf` (`modules/14_yields/managementcalib_aug19/presolve.gms:64-71`).
+`youngsecdf` reads the **uncalibrated** secdforest curve (`pm_carbon_density_secdforest_ac_uncalib`) for all three of: its carbon density (`modules/35_natveg/pot_forest_may24/presolve.gms:242`), its 20 tC/ha maturation test (`modules/35_natveg/pot_forest_may24/presolve.gms:117`), and — since MAgPIE commit `6b00f9dea` (2026-07-01) — its **wood yield**, via the new `im_growing_stock_ysf` (`modules/14_yields/managementcalib_aug19/presolve.gms:64-71`).
 
 Until that commit, the wood yield alone came from the **FRA-2025-calibrated** curve (`im_growing_stock(...,"secdforest")`), while the carbon came from the uncalibrated one — so the wood a cell yielded no longer corresponded to the carbon that harvesting it released. The commit author's stated motivation is the carbon-arbitrage channel: harvest relocating onto youngsecdf to book "almost no carbon for secondary-forest-level wood volumes", evading land-CO2 caps and prices.
 
 **The invariant worth carrying forward:** whenever a land pool's *yield* and its *carbon* are both derived from growth curves, **the harvest term and the carbon term must be driven by the same curve** — otherwise harvest becomes a carbon-accounting arbitrage.
 
 ⚠️ **Two caveats, so this is not over-applied:**
-1. **The sign of the pre-fix bias is not uniform.** Both curves share an asymptote, so the difference reduces to the growth-rate `k`, and the FRA calibration raises `k` in some regions and lowers it in others (`modules/52_carbon/normal_dec17/input.gms:47` says FRA stock is below LPJmL potential "in most regions" — not all). Where `k` is lowered, the pre-fix yield was too *low*, and the fix *increases* youngsecdf wood supply. Do not assume the fix reduces other-land harvest globally.
+1. **The sign of the pre-fix bias is not uniform.** Both curves share the same asymptote (`fm_carbon_density(t,j,"secdforest","vegc")`), so the difference lives entirely in the growth parameters - **both of them**: the FRA calibration replaces the cell-level `k` with a region-level bisection-calibrated `k`, **and** the cell-level `m` with the region-average `i52_m_avg_natveg` (`modules/52_carbon/normal_dec17/preloop.gms:29-30, 71-73`), so the calibrated curve is also spatially coarser in shape. The FRA calibration raises `k` in some regions and lowers it in others (`modules/52_carbon/normal_dec17/input.gms:47` says FRA stock is below LPJmL potential "in most regions" - not all). Where `k` is lowered, the pre-fix yield was too *low*, and the fix *increases* youngsecdf wood supply. Do not assume the fix reduces other-land harvest globally.
 2. **An analogous mismatch may still be live for `secdforest` proper** — `q35_prod_secdforest` reads the purely *calibrated* `im_growing_stock(...,"secdforest")`, while `q35_carbon_secdforest` reads `p35_carbon_density_secdforest`, a **blend** of calibrated and uncalibrated weighted by the natural-origin share (`modules/35_natveg/pot_forest_may24/presolve.gms:248-252`). Natural-origin area is bound against harvest (`modules/35_natveg/pot_forest_may24/presolve.gms:177-180`), which mitigates but may not fully close the gap, because the blend is an age-class average. **Flagged as an unverified lead, not an established defect** — it was raised by an adversarial audit on 2026-07-14 and derived algebraically, not confirmed by a run. See `audit/BACKLOG.md`.
 
 ---
@@ -428,7 +430,7 @@ C_equilibrium = C_natural × FLU × FMG × FI
 - **FI** (Input): Low / Medium / High / High with manure (default: medium, no manure)
 
 **Additional**:
-- **Irrigation effect**: Optional increase in equilibrium (controlled by `c59_irrigation_scenario`)
+- **Irrigation effect**: adjusts the equilibrium via `f59_cratio_irrigation`, active by default (`c59_irrigation_scenario = "on"`, `config/default.cfg:1953`); set to `"off"` to neutralise it (factor forced to 1, `modules/59_som/cellpool_jan23/input.gms:70`)
 - **Crop-specific**: Different crops produce different residue amounts
 
 **Example Stock Change Factors** (typical values from IPCC):
@@ -473,6 +475,8 @@ m_eff = Σ(climate_class) climate_share × m(climate_class)
 ```
 
 **Climate shares** from Module 45 (Climate): `pm_climate_class(j,clcl)`
+
+⚠️ **The `f52_growth_par` k/m are only the STARTING curve.** With `s52_growingstock_calib = 1` - the hard default (`modules/52_carbon/normal_dec17/input.gms:46`; **not** exposed in `config/default.cfg`, so it is ON in every default run) - Module 52's preloop **overwrites the `vegc` slice** of `pm_carbon_density_secdforest_ac` (`normal_dec17/preloop.gms:71-73`) and `pm_carbon_density_plantation_ac` (`:114-116`) with curves whose `k` is calibrated **per region by bisection** to FAO **FRA 2025** growing-stock targets (`i52_k_calib_secdf` / `i52_k_calib_plant`) and whose `m` is the **region-average** (`i52_m_avg_natveg` / `i52_m_avg_plant`, `:29-30`) - not the cell-level climate-weighted `m`. The asymptote `A` is unchanged (`fm_carbon_density(t,j,"secdforest","vegc")`). The uncalibrated curves survive as `pm_carbon_density_*_ac_uncalib` (`modules/52_carbon/normal_dec17/start.gms:43-44`) and are what M14's `im_growing_stock_ysf` (`14_yields/managementcalib_aug19/presolve.gms:66`), M29's tree cover (`29_cropland/detail_apr24/preloop.gms:46,48`), M32's afforestation and NDC curves (`32_forestry/dynamic_may24/presolve.gms:59,61,68`) and M35's youngsecdf (`35_natveg/pot_forest_may24/presolve.gms:242`, plus the 20 tC/ha maturation test at `:117`) read. M14 and M35 read the CALIBRATED curve as well - M14 for regular secdforest growing stock (`modules/14_yields/managementcalib_aug19/presolve.gms:44`), M35 for secdforest carbon density, which it BLENDS with the uncalibrated curve by natural-origin area share (`modules/35_natveg/pot_forest_may24/presolve.gms:248-252`).
 
 ---
 
@@ -576,7 +580,7 @@ v59_som_pool(j,land) = lossrate × target + (1-lossrate) × legacy
 **Not Part of Carbon Balance**:
 - CH₄ tracked separately from CO₂
 - CH₄ emissions do NOT appear in `vm_carbon_stock` changes
-- Both sent to Module 56 (GHG Policy) for carbon pricing
+- Both are priced in Module 56 - but by **different paths**: CH₄ flows through `vm_emissions_reg` into `q56_emis_pricing` (`modules/56_ghg_policy/price_aug22/equations.gms:15-17`, the `emis_annual` subset), whereas CO₂ is **recomputed inside M56** from `pcm_carbon_stock - vm_carbon_stock` in `q56_emis_pricing_co2` (`:19-22`). M56 does **not** consume M52's `vm_emissions_reg(...,"co2_c")`: M52 and M56 are **parallel readers** of `vm_carbon_stock`, not a serial producer→consumer chain.
 
 ---
 
@@ -585,12 +589,14 @@ v59_som_pool(j,land) = lossrate × target + (1-lossrate) × legacy
 **Role**: Calculates costs of technical GHG mitigation
 
 **Provides**:
-- `im_maccs_mitigation(t,i,emis_source,pollutant)`: Mitigation fractions (0 to ~0.3)
+- `im_maccs_mitigation(t,i,emis_source,pollutants)`: Mitigation fractions (0 to ~0.3)
 - `vm_maccs_costs(i,factors)`: Labor and capital costs of mitigation → to Module 11
 
-**Applies to**:
-- CH₄ from enteric fermentation, AWMS, rice, residue burning (Module 53)
-- N₂O from fertilizer, manure, rice (Module 51)
+**Applies to** (verified against code - the mitigation factor `(1 - im_maccs_mitigation)` appears in exactly these equations):
+- **CH₄, Module 53** - enteric fermentation (`modules/53_methane/ipcc2006_aug22/equations.gms:29`), AWMS (`:52`), rice (`:63`). **NOT residue burning**: `q53_emissions_resid_burn` (`:70-72`) has no mitigation term, and M57's CH₄ category set is `maccs_ch4 / rice_ch4, ent_ferm_ch4, awms_ch4 /` (`modules/57_maccs/on_aug22/sets.gms:28-29`).
+- **N₂O, Module 51** - MACC applied directly to AWMS/manure only (`modules/51_nitrogen/rescaled_jan21/equations.gms:71`); note it multiplies ALL `n_pollutants_direct`, not just N₂O (measures also reduce NH₃/NO₃ losses, per code comment `:62-64`).
+- **N₂O from soils (incl. inorganic fertilizer), Module 50 - not Module 51.** The `inorg_fert_n2o` MACC is applied in `modules/50_nr_soil_budget/macceff_aug22/presolve.gms:54-64` as an uplift to nitrogen-use efficiency; M51's `q51_emissions_inorg_fert` (`modules/51_nitrogen/rescaled_jan21/equations.gms:30-39`) carries no MACC factor and responds only transitively via `vm_nr_eff`.
+- **Rice has no N₂O emission in MAgPIE at all** - rice is not a member of `emis_source_n51` (`/inorg_fert, man_crop, awms, resid, resid_burn, man_past, som/`, `modules/51_nitrogen/rescaled_jan21/sets.gms:15-16`), and M51's preloop fixes `vm_emissions_reg.fx(i,emis_source,n_pollutants)=0`, relaxing bounds only for `emis_source_n51` (`modules/51_nitrogen/rescaled_jan21/preloop.gms:8-10`). So `vm_emissions_reg(i,"rice",n_pollutants)` is fixed at zero and there is no rice N₂O to mitigate.
 
 **Does NOT affect**:
 - CO₂ emissions from land-use change (Module 52) - no technical mitigation
@@ -759,7 +765,10 @@ emissions_co2 <- readGDX(gdx, "ov_emissions_reg", select=list(type="level"))
 emissions_co2 <- emissions_co2[,,"co2_c",]
 
 # Read timestep length
-timestep <- readGDX(gdx, "pm_timestep_length")  # or calculate from years
+# Timestep length is a GAMS macro (m_timestep_length, core/macros.gms:51), NOT a GDX parameter.
+# Derive it from the time set instead:
+years    <- getYears(carbon_stock_curr, as.integer = TRUE)
+timestep <- c(5, diff(years))   # first timestep length is 1 in GAMS; adjust if ord(t)=1 matters
 
 # Check consistency
 stock_change <- (carbon_stock_prev - carbon_stock_curr) / timestep
@@ -862,10 +871,11 @@ plot(ages, vegc_by_age, xlab="Age (years)", ylab="Vegetation Carbon (tC/ha)",
 - But emissions lumped with general LUC emissions
 - Implication: Cannot track fire emissions specifically (important for some policies)
 
-**7. Peatland Carbon Not Modeled**:
-- Module 59 uses mineral soil carbon dynamics (IPCC 2019 for mineral soils)
-- Reality: Peatlands have different dynamics (very high carbon, sensitive to drainage)
-- Implication: Peatland drainage/restoration not accurately represented
+**7. Peatland Carbon Is Outside the Module-59 Soil Pool** (not outside MAgPIE):
+- Module 59 models **mineral** soil carbon only (IPCC 2019 mineral-soil stock-change factors); it contains no peat representation, so `vm_carbon_stock(...,"soilc",...)` does **not** carry peat carbon.
+- Peatlands ARE modelled, in **Module 58 (`peatland`, default realization `v2` - `config/default.cfg:1871`)**: intact / degraded / rewetted peatland areas, drainage driven by managed-land change, rewetting, and peat extraction, with GHG emission factors (Humpenoeder et al. 2020; `modules/58_peatland/v2/realization.gms:8-17`). Peatland emissions enter the emissions interface directly via `q58_peatland_emis` → `vm_emissions_reg(i,"peatland",poll58)` (`modules/58_peatland/v2/equations.gms:91-92`), as an `emis_annual` source (`core/sets.gms:322`) - **not** through the `vm_carbon_stock` stock-change path of section 4.1.
+- Default `s58_fix_peatland = 2020` (`config/default.cfg:1928`): peatland area is held at historic levels up to 2020 and is dynamic thereafter.
+- **Implication**: peatland carbon must be read from the Module-58 emission stream, not from the carbon-balance stock accounting documented here. Double-counting is avoided by construction (peat is not in `c_pools`).
 
 ---
 
