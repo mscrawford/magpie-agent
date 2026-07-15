@@ -1,17 +1,26 @@
-# R54 — live state (paused 2026-07-14 ~20:40)
+# R54 — state (COMPLETE for Batch 1; 2026-07-15)
 
-**Read `round54_design.md` first — it is the spec. This file is only "where we got to".**
+**Read `round54_design.md` first — it is the spec. This file is "where we got to".**
+**Round recorded in `audit/validation_rounds.json` as R54. Batch-1 fixes committed `4acff24`; engine fixes `68f4823`.**
 
 ## Status
 
 | Stage | State |
 |---|---|
 | Stage 0 — develop worktree | ✅ DONE. `/tmp/magpie_develop_ro` detached @ `0d7ebeb90`. Persists on disk; verify with `git -C /tmp/magpie_develop_ro rev-parse --short HEAD`. |
-| Engine fixes | ✅ COMMITTED (`68f4823`). See below. |
-| Stage 1 — mechanical validator | ✅ PASS. 42 checks, 41 passed, **0 errors**, 1 known-benign warning (6 files reference `CLAUDE.md` — that IS the deployed copy's filename). Matches the expected baseline exactly. |
+| Engine fixes | ✅ COMMITTED (`68f4823`). Producer rule + offline fix. See below. |
+| Stage 1 — mechanical validator | ✅ PASS. 42 checks, 41 passed, **0 errors**, 1 known-benign warning. |
 | Positive control | ✅ **PASSED (round goes RED on a planted bug).** Detail below. |
-| Stage 2 — semantic doc-vs-code | ❌ **NOT RUN.** Launched twice, killed twice, **0 agents completed, 0 reports written, nothing salvageable.** |
-| Stage 3 — QA flywheel | ⬜ NOT STARTED. |
+| Stage 2 — semantic doc-vs-code (Batch 1: 5 docs) | ✅ **DONE, committed `4acff24`.** 73 confirmed bugs fixed (7 Critical, 30 Major, 33 Minor, 3 Info); gate clean. Reports in `round54_docaudits/` + `round54_verify/`. |
+| Stage 2 — Batch 2 (5 docs) | ⬜ **DEFERRED** (module_22, GAMS_MAgPIE_Patterns, AGENT_QUERY_FLOWCHART, GAMS_Advanced_Features, debugging_gams_errors). ~3M tokens; best after weekly reset. |
+| Stage 3 — QA answer-quality anchors | ✅ **DONE.** 6/6 anchors at **10.0**, zero drift, gate clean. Reports in `round54_answers/` + `round54_audits/`. The retraction regression scored 10 → **the retraction took.** |
+
+## Headline findings (Batch 1)
+
+- **My own R53 retraction was over-corrected** (module_32_notes.md). The `.cs3` is BOTH a downloaded all-zero dummy AND a run-time artifact; the real `recalc_npi_ndc<-FALSE` footgun is broader than I wrote (zeroes the default `npi` too). The producer rule injected into the engine this morning caught it.
+- **Module 58 (peatland, default realization) was absent from the cross-module graph** — a confident false-negative "peatland not modeled" in carbon_balance, plus 4 M32 interfaces mis-attributed to M10/M35.
+- **Two module_14 Criticals independently replicated** by the blind control auditor: `fm_croparea` M10→M30, and a fabricated M14 dependency cycle (§21.3).
+- **Lead A**: structural half confirmed, materiality refused (needs a run). **Lead B**: unresolved — the "raises k in 10/12 regions" figure is not reproducible (calibration inputs gitignored/absent) and is downgraded to unverified.
 
 ## Engine fixes committed in `68f4823` (`audit/tools/doc_audit_round.workflow.js`)
 

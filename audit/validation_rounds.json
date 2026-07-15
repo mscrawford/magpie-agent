@@ -7729,17 +7729,123 @@
    ],
    "regression_questions_scored": [],
    "summary": "The highest-value round in the campaign's recent history, and the clearest possible justification for keeping semantic validation drift-triggered rather than retiring it. Both probes targeted doc content written HOURS earlier by this same agent during the develop sync -- i.e. the round audited the auditor. Result: 1 CRITICAL and 1 MAJOR self-inflicted doc defect, both of which had passed the full 42-check syntactic validator (0 errors) and both of which the docs-only answerers reproduced perfectly and confidently. The Critical one was a FALSE BUG REPORT against a colleague's just-merged PRISMA feature that was one step from being sent upstream. Doc-quality mean 4.5 is the lowest since R30 and is entirely self-inflicted -- which is the point: a green validator, a fluent answer, and a confident agent are jointly compatible with a doc that is simply wrong, and only code-grounded adversarial audit closes that gap. Answer quality was high throughout (9.0): the answerers were not the failure point. Also of note: both answerers spontaneously surfaced real doc gaps unprompted (a stale 'Last Verified' footer; the s32_npi_ndc_reversal-vs-ndcdelay naming collision), which is evidence the docs-only answering discipline is working as designed."
+  },
+  {
+   "round": 54,
+   "date": "2026-07-15",
+   "type": "post-sync verification (2 doc-validators + QA); follow-up to R53. Stage 1 mechanical validator + Stage 2 semantic doc-vs-code (doccentric+verify) + Stage 3 answer-quality anchors + a planted-bug positive control.",
+   "scope": "Batch 1 of a planned 10-doc round: the 5 highest-risk docs rewritten during the 2026-07-14 develop sync (module_14, module_32, module_32_notes, module_35, cross_module/carbon_balance_conservation). Carried the 2 unverified R53 leads (A: secdforest yield/carbon curve mismatch; B: M52 bisection direction) as baseline advisories with a mandatory decidability split. Batch 2 (module_22 + 3 reference docs + debugging_gams_errors helper) DEFERRED to post-weekly-reset.",
+   "code_base": "0d7ebeb90",
+   "commit_after": "4acff24",
+   "engine_changes": "Before running, injected the R53 'FIND THE PRODUCER' rule into the engine GREP_GUARD (68f4823) and closed an offline-principle violation: the reference-klass ground-truth clause had instructed auditors to WebFetch gams.com, contradicting AGENT.md Core Principle 7 committed hours earlier the same session. The principle had landed in the docs but not in the agent-spawning machinery.",
+   "positive_control": "PASSED. A scratch copy of module_14.md with im_growing_stock_ysf's producer re-pointed M14->M52 was audited with the production prompt; caught as Critical/producer_declaration (MANDATE 18) with correct code evidence, and the planted citation was additionally caught as pointing at a nonexistent file. The auditor also declined a false positive unprompted (pm_climate_class, declared as a table in 45_climate/static/input.gms). Confirms a clean result is meaningful, not auditor-blindness.",
+   "stage2_doc_audit": {
+    "docs": 5,
+    "confirmed_bugs_fixed": 73,
+    "severity_totals": {
+     "critical": 7,
+     "major": 30,
+     "minor": 33,
+     "informational": 3
+    },
+    "gate": "42 checks, 41 pass, 0 errors (baseline held)",
+    "verify_pass": "adversarial refute-pass ran on every confirmed bug; module_32 20/20 UPHELD, module_32_notes 3 UPHELD + 1 CORRECTED (prose-only), 0 REFUTED/CITATION_FAILED. Highest-stakes findings (the .cs3 provenance, the M58 cluster, the npi default, the guard mechanism) independently hand-verified against the develop worktree before commit.",
+    "per_doc": [
+     {
+      "doc": "modules/module_32_notes.md",
+      "critical": 0,
+      "major": 3,
+      "minor": 1,
+      "headline": "MY OWN R53 RETRACTION WAS OVER-CORRECTED. It claimed the .cs3 is 'a generated artifact, not an input you download'; verified it is BOTH -- a downloaded all-zero DUMMY (header 'Dummy file for NPI/INDC policies'; manifest files:5; 6400 rows 0 nonzero) that is regenerated at run start. The real footgun is BROADER than I wrote: with recalc_npi_ndc<-FALSE, EVERY policy silently zeroes incl. the DEFAULT npi (c32_aff_policy defaults to 'npi', not 'none')."
+     },
+     {
+      "doc": "modules/module_32.md",
+      "critical": 3,
+      "major": 8,
+      "minor": 8,
+      "informational": 2,
+      "headline": "Module 58 (peatland, default realization v2) was ABSENT from the cross-module graph; 4 M32 interfaces (vm_land_forestry, vm_landexpansion_forestry, vm_landreduction_forestry, pcm_land_forestry) mis-attributed to M10/M35 when M58 is their sole external consumer (M10 references none). Plus M12 missing as a source, mass-vs-volume unit error, unweighted-vs-weighted rotation mean, inverted circular-dep ordering. Retraction text itself verified CLEAN."
+     },
+     {
+      "doc": "modules/module_14.md",
+      "critical": 2,
+      "major": 11,
+      "minor": 12,
+      "informational": 1,
+      "headline": "Two Criticals INDEPENDENTLY REPLICATED by the blind positive-control auditor: fm_croparea attributed to M10 but declared in M30 (simple_apr24/input.gms:71, default); and a fabricated M14<->M17/M55/M59 circular-dependency chain (S21.3) whose arrows do not exist in code. The 2026-07-14 im_growing_stock_ysf section verified CORRECT (sole consumer q35_prod_other; clamps/sets/citations exact)."
+     },
+     {
+      "doc": "modules/module_35.md",
+      "critical": 1,
+      "major": 2,
+      "minor": 6,
+      "headline": "vm_landexpansion listed as an M35 OUTPUT to M10; it is DECLARED and DEFINED in M10, M35 only reads it (MANDATE 21 inverted data-flow). 2 count-drift Majors (4-vs-5 disturbance modes; '15 age-classes' vs the 62-member ac set). Both leads refuted/deferred; line 305 left untouched."
+     },
+     {
+      "doc": "cross_module/carbon_balance_conservation.md",
+      "critical": 1,
+      "major": 6,
+      "headline": "'Peatland Carbon Not Modeled' was FALSE -- M58/v2 (default) models it (q58_peatland_emis -> vm_emissions_reg(i2,'peatland',...)). Plus phantom residue-burn CH4 MACC, N2O MACC misattributed to M51 (it is M50, transitive), invented pm_timestep_length GDX read (it is a compile-time macro m_timestep_length), default-ON FRA calibration omitted."
+     }
+    ]
+   },
+   "stage3_answer_quality": {
+    "mean_score": 10.0,
+    "n_anchors": 6,
+    "drift_observed": false,
+    "gate": "42 checks, 0 errors",
+    "anchors": [
+     {
+      "id": "R54-retraction",
+      "score": 10,
+      "note": "Docs-only answerer said 'works by default', explicitly flagged the retraction, isolated both failure modes of the recalc_npi_ndc<-FALSE footgun, did NOT resurrect the 'silently broken' claim. THE RETRACTION TOOK -- direct regression test for the R53 self-inflicted Critical."
+     },
+     {
+      "id": "R54-youngsecdf",
+      "score": 10,
+      "note": "Named im_growing_stock_ysf, M14 producer / M35 q35_prod_other sole consumer, uncalibrated curve; regional-direction caveat present and grounded (did NOT claim a universal pre-fix bias direction)."
+     },
+     {
+      "id": "R54-offline",
+      "score": 10,
+      "note": "Routed to the SHA-pinned .cache/sources/magpie4/ clone + version_pins.json; refused web/URL; warned off the workspace clone. The answer-side complement to the engine-side offline fix."
+     },
+     {
+      "id": "G1",
+      "score": 10,
+      "note": "managementcalib_aug19 default; exactly 2 equations (q14_yield_crop, q14_yield_past); phantom q14_yieldcalib omitted. Regression check on heavily-edited module_14.md -- edits did not break core facts."
+     },
+     {
+      "id": "G2",
+      "score": 10,
+      "note": "vm_carbon_stock DECLARED M56 not M52; populators M29/31/32/34/35/59; M52 only READS; default actualNoAcEst. Regression check on edited carbon_balance_conservation.md."
+     },
+     {
+      "id": "G3",
+      "score": 10,
+      "note": "v2.70.0 @ a360d8c9ec triple-verified (version_pins.json = .cache clone HEAD = renv.lock RemoteSha); read the pin file, no training-data confab."
+     }
+    ]
+   },
+   "doc_quality_mean": 4.8,
+   "n_questions_doc_quality": 5,
+   "doc_quality_mean_method": "Scored on the DOC (Stage 2 direct doc-vs-code audit), NOT the Stage 3 answer. Batch-1 mean of per-doc quality is low (~4.8/10) because every one of the 5 freshly-written docs carried >=1 Critical or a cluster of Majors -- consistent with R53's finding of a high defect rate in same-session content. Stage 3's 10.0 answer-quality mean is on the CORRECTED docs and is the regression proof that the fixes convey correctly; the two numbers measure different things (pre-fix doc state vs post-fix answer state) and must not be conflated.",
+   "leads_disposition": {
+    "lead_A": "Structural half CONFIRMED from code by both module_35 and carbon_balance auditors (different curves do feed q35_prod_secdforest yield vs q35_carbon_secdforest carbon). Materiality DELIBERATELY NOT ADJUDICATED (needs a model run); unchecked layers named (pcm_carbon_stock postsolve carry-forward, M56 pricing scope f56_emis_policy.csv, magpie4 reporting); settling experiment stated. Neither doc asserts anything false -> no edit. The decidability split held exactly as designed.",
+    "lead_B": "UNRESOLVED. The M52 bisection inputs (f52_fra_nrf_gs.cs4, f52_growth_par.csv, lpj_carbon_stocks.cs3) are gitignored R-layer products ABSENT from the repo, so the prior auditor's 'calibration raises k in 10 of 12 regions' figure is NOT reproducible here. That figure had driven an R53 Major correction; it should now be treated as UNVERIFIED. Line 305 left untouched in either direction."
+   },
+   "summary": "R54 verified the 2026-07-14 sync's 5 highest-risk docs (Batch 1 of 10) and settled the 2 R53 leads. Positive control PASSED. Stage 2 found + fixed 73 confirmed bugs incl. 7 Criticals; gate clean. Two epistemic headlines: (1) MY OWN R53 retraction of the ndcdelay claim was itself over-corrected in the opposite direction -- the .cs3 is both a downloaded dummy AND a run-time artifact, and the real footgun is broader (recalc<-FALSE zeroes the default npi too); the producer rule injected into the engine this morning is what caught it. (2) Module 58 (peatland, default realization) was entirely absent from the cross-module doc graph, producing a confident false-negative 'peatland not modeled' plus 4 mis-attributed M32 interfaces. Two module_14 Criticals were independently replicated by the blind control auditor (fm_croparea M10->M30; a fabricated M14 dependency cycle). Stage 3 answer-quality on the CORRECTED docs: 6/6 anchors at 10.0, zero drift -- the retraction demonstrably took. Lead A structural-only (materiality refused, needs a run); Lead B unresolved (calibration inputs absent from repo; the 'raises k in 10/12' figure is not reproducible and is downgraded to unverified). Batch 2 + a possible model run to settle Lead A remain open."
   }
  ],
  "cumulative_stats": {
-  "total_rounds": 53,
+  "total_rounds": 54,
   "total_docs_validated": 85,
   "module_docs_validated": 46,
   "non_module_docs_validated": 33,
-  "approx_total_bugs_found": 952,
-  "approx_total_bugs_fixed": 688,
-  "last_validation_date": "2026-07-14",
-  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly->R43 validate-teammate-edits + periphery: raw 9.57 (HIGHEST on record), doc_quality 10.0, ZERO doc bugs; teammate f4f44b0 module_80.md+module_37.md validated ACCURATE; M58 peatland bypasses M52 (parameterized), M73 no-HWP verified; G1=10 G2=10 drift FALSE->R44 DIAGNOSTIC weak-spot re-test (targeted): raw 9.28; M20 processing 4.0(R27)->9.5 RESOLVED (R27 was answerer_confab vs a correct doc); driver->demand->production chain P1=8.0/P4=9.5 recovered from R41's shared 6.0; ALL parameterization-vs-mechanism lens checks PASSED (P1/P2/P3/P4); ZERO doc bugs (doc_quality 10.0, incl 1 synthesis root-cause correction P5 doc_error->answerer_confab after verifying module_71.md/module_21.md directly); verifier_gaps sparse+idiosyncratic (MANDATE-12/16/18 once each, NO recurrence) -> NO lens-audit escalation per round44_design section 5; G4 drift FALSE (pin 2.70.0@a360d8c verified fresh).->R45 least-verified set A (M57/M53/M62/M45/M55 + G3): raw 10.0, doc_q 10.0, ZERO Minor+ bugs; weak spots M57/M53 (both @7 R41) RESOLVED to clean 10 on fresh parameterization probes; all 4 parameterization-vs-mechanism lens checks PASSED; 2 trivial doc-hygiene fixes (module_53.md:71 citation drift, module_56.md:675 t_all); 1 auditor false-positive (PR#869 BEF) withdrawn after git/sync_log verify->R46 least-verified set B (M13/M22/M28/M18/M12 + G2): raw 9.5, doc_q 10.0, ZERO doc bugs; weak sub-9 modules M13/M22 (both @8 R41) held at 9 (new sub-10s are answerer label/citation slips, not doc defects); R16 age-class TRUNCATION anchor PASSED (ac=62 elements, not ac140); G2 carbon-stock producer/consumer anchor HELD (drift FALSE, R26 regression stays healed); 3 Minor bugs all answerer-side vs correct docs, 0 doc fixes->R47 CAPSTONE cross_module/core_docs re-validation (user-flagged blind spot): raw 9.5, doc_q 10.0; ALL THREE R30 Critical fixes HELD (Core_Architecture loop-once, mod_safety centrality/vm_land-consumers, Module_Dependencies phantom-consumer exclusion); worst-ever doc nitrogen_food_balance 4.0@R7->10; found+fixed 1 Major latent doc bug in persistently-weak circular_dependency_resolution.md (yields-endogeneity); P4 score-7 = answerer citation drift not doc defect. Campaign -> reactive mode.->R48 cross_module conservation (carbon/land/water) + 2 core_docs, post-R47 stale set: raw 8.57, doc_q 9.0 (excl P2 answerer pseudo-formula); land + water balance docs CLEAN 10/10; 3 doc bugs FIXED - emis_land cite range (carbon_balance_conservation:325 332-335->332-354), LUH3 land-use-init mislabel+omission (Data_Flow:39-41/414), and R20-class producer-set bug in module_21.md (provides-to 8->1, M21 produces only vm_cost_trade_* to M11, depends-on 1->2) as doc_error_answerer_beat_it; G4 anchor drift FALSE (106 unique report*, no control/grepl gating). Lens-bridge win: auditor's blanket Data_Flow LUH2->LUH3 refined after direct read (the :39 files are genuine LUH2 side-layers). Commits pending review. ->R49 integrative corpus (cross_module + 2 core docs) raw 8.63, 7 doc bugs fixed + AGENT.md realization-count self-bug (40->22) + 3 cross-doc bugs surfaced; ->R50 module_56 emissions cluster + 2 core docs raw 8.14, 23 edits incl M57-not-a-vm_emissions_reg-producer fix, anchors G2/G4 stable, completed via resume after a session cap. Both rounds: verify 0 refuted. Commits pending review.->R51 CALIBRATION (Phase 0 auditor-FNR gate; Fable downgraded to Opus by nitrogen safeguard): per-claim auditor FNR=0% (24/24 planted incl 7/7 historically-survived replay bugs), genuine FP=0/13 (auditor also caught 2 fixture-designer errors), isolation verified. Verdict: H1 supported for per-claim regime; residual risk is COVERAGE not auditor-blindness; unknown-unknown class still open. 0 DOC bugs (calibration round, no doc changes).->R52 broader carbon/emissions post-sync (adopts 931db85c4 soil carry-forward): raw 8.5 / doc_q 8.4 (n=5, excl P2 pure-answerer); P5=10 + P1 INDEPENDENTLY VALIDATED this session's soil carry-forward edits (none wrong); G2=8 drift FALSE (anchor held; dip=answerer pulled wrong land-type from a stale land-set doc, not ground-truth drift); 5 pre-existing doc bugs fixed across module_52/56/59 incl CRITICAL land-set (invented plant_pri/plant_sec, omitted forestry), 1000x s59_nitrogen_uptake unit error, soilc-init doc gap, NPi mislabel, $3.67/tC floor vs 'no carbon pricing'.->R53 TARGETED drift-triggered post-/sync, auditing THIS SESSION's own sync docs: answers 9.0 but doc_quality 4.5 (lowest since R30, entirely self-inflicted). 1 CRITICAL: the ndcdelay/affexp 'silent zero' written hours earlier was a FALSE BUG REPORT against a colleague's merged PRISMA feature -- premises all true, conclusion false (npi_ndc_aff_pol.cs3 is gitignored and REGENERATED at run start by scripts/start_functions.R:380-391 under the default cfg$recalc_npi_ndc='ifneeded'; the guards were added BY the accused commits). Retracted before it reached anyone. 1 MAJOR: the youngsecdf carbon-arbitrage narrative asserted a universal direction; FRA calibration raises k in some regions and lowers it in others, so the fix INCREASES wood supply where k is lowered. Both defects passed the 42-check syntactic validator with 0 errors and were reproduced perfectly by docs-only answerers. Root cause of the Critical: reasoned about a GENERATED input artifact from modules/*/input/ + git history without ever grepping the R start layer. New rule recorded. This round is the strongest evidence in the ledger that the drift-triggered flywheel must stay.",
+  "approx_total_bugs_found": 1025,
+  "approx_total_bugs_fixed": 761,
+  "last_validation_date": "2026-07-15",
+  "mean_score_trend": "6.7\u21928.2\u21925.8\u21928.6\u21927.2\u21928.7\u21926.9\u21926.0\u21927.5\u21927.0\u21927.6\u21927.3\u21928.6\u21927.8\u21927.7\u21928.0\u21928.2\u21928.0\u21928.67\u21929.0\u21927.5\u21928.93\u21928.2\u21927.1\u21928.4\u21927.9\u21927.0(R30)\u2192capped(R31)\u2192doccentric(R32)\u2192R33-R37 doc-centric+verify (G1/G2=9,G3=10,G4=8-drift)->R38(anchors 10, hardening validated)->R39(non-module reference, doc-centric)->R40(targeted M21/M32 /sync, 2 minor fixed, 0 false refute)->R41 classic Q-round post-doc-push: raw 8.43 / docq 8.83; G2=9 G4=9 (both drift FALSE, G4 recovered 106 from R37's 101); R3+R16 Critical anchors NOT reproduced (Q2=10,Q3=10); 2 Major doc bugs fixed (M56 emis-table CH4/N2O, M22 M13 default-OFF caveat)->R42 follow-on (quantitative/edge-case/provenance/parameterization): raw 9.29 (highest since R25); 6/7=10; G1=10 G3=10 drift FALSE (G3 pin verified fresh vs renv.lock); caught the predicted M56:662 emis-policy sibling bug (1 Critical doc_error fixed); Q2 parameterization + Q3 wrong-realization traps both handled correctly->R43 validate-teammate-edits + periphery: raw 9.57 (HIGHEST on record), doc_quality 10.0, ZERO doc bugs; teammate f4f44b0 module_80.md+module_37.md validated ACCURATE; M58 peatland bypasses M52 (parameterized), M73 no-HWP verified; G1=10 G2=10 drift FALSE->R44 DIAGNOSTIC weak-spot re-test (targeted): raw 9.28; M20 processing 4.0(R27)->9.5 RESOLVED (R27 was answerer_confab vs a correct doc); driver->demand->production chain P1=8.0/P4=9.5 recovered from R41's shared 6.0; ALL parameterization-vs-mechanism lens checks PASSED (P1/P2/P3/P4); ZERO doc bugs (doc_quality 10.0, incl 1 synthesis root-cause correction P5 doc_error->answerer_confab after verifying module_71.md/module_21.md directly); verifier_gaps sparse+idiosyncratic (MANDATE-12/16/18 once each, NO recurrence) -> NO lens-audit escalation per round44_design section 5; G4 drift FALSE (pin 2.70.0@a360d8c verified fresh).->R45 least-verified set A (M57/M53/M62/M45/M55 + G3): raw 10.0, doc_q 10.0, ZERO Minor+ bugs; weak spots M57/M53 (both @7 R41) RESOLVED to clean 10 on fresh parameterization probes; all 4 parameterization-vs-mechanism lens checks PASSED; 2 trivial doc-hygiene fixes (module_53.md:71 citation drift, module_56.md:675 t_all); 1 auditor false-positive (PR#869 BEF) withdrawn after git/sync_log verify->R46 least-verified set B (M13/M22/M28/M18/M12 + G2): raw 9.5, doc_q 10.0, ZERO doc bugs; weak sub-9 modules M13/M22 (both @8 R41) held at 9 (new sub-10s are answerer label/citation slips, not doc defects); R16 age-class TRUNCATION anchor PASSED (ac=62 elements, not ac140); G2 carbon-stock producer/consumer anchor HELD (drift FALSE, R26 regression stays healed); 3 Minor bugs all answerer-side vs correct docs, 0 doc fixes->R47 CAPSTONE cross_module/core_docs re-validation (user-flagged blind spot): raw 9.5, doc_q 10.0; ALL THREE R30 Critical fixes HELD (Core_Architecture loop-once, mod_safety centrality/vm_land-consumers, Module_Dependencies phantom-consumer exclusion); worst-ever doc nitrogen_food_balance 4.0@R7->10; found+fixed 1 Major latent doc bug in persistently-weak circular_dependency_resolution.md (yields-endogeneity); P4 score-7 = answerer citation drift not doc defect. Campaign -> reactive mode.->R48 cross_module conservation (carbon/land/water) + 2 core_docs, post-R47 stale set: raw 8.57, doc_q 9.0 (excl P2 answerer pseudo-formula); land + water balance docs CLEAN 10/10; 3 doc bugs FIXED - emis_land cite range (carbon_balance_conservation:325 332-335->332-354), LUH3 land-use-init mislabel+omission (Data_Flow:39-41/414), and R20-class producer-set bug in module_21.md (provides-to 8->1, M21 produces only vm_cost_trade_* to M11, depends-on 1->2) as doc_error_answerer_beat_it; G4 anchor drift FALSE (106 unique report*, no control/grepl gating). Lens-bridge win: auditor's blanket Data_Flow LUH2->LUH3 refined after direct read (the :39 files are genuine LUH2 side-layers). Commits pending review. ->R49 integrative corpus (cross_module + 2 core docs) raw 8.63, 7 doc bugs fixed + AGENT.md realization-count self-bug (40->22) + 3 cross-doc bugs surfaced; ->R50 module_56 emissions cluster + 2 core docs raw 8.14, 23 edits incl M57-not-a-vm_emissions_reg-producer fix, anchors G2/G4 stable, completed via resume after a session cap. Both rounds: verify 0 refuted. Commits pending review.->R51 CALIBRATION (Phase 0 auditor-FNR gate; Fable downgraded to Opus by nitrogen safeguard): per-claim auditor FNR=0% (24/24 planted incl 7/7 historically-survived replay bugs), genuine FP=0/13 (auditor also caught 2 fixture-designer errors), isolation verified. Verdict: H1 supported for per-claim regime; residual risk is COVERAGE not auditor-blindness; unknown-unknown class still open. 0 DOC bugs (calibration round, no doc changes).->R52 broader carbon/emissions post-sync (adopts 931db85c4 soil carry-forward): raw 8.5 / doc_q 8.4 (n=5, excl P2 pure-answerer); P5=10 + P1 INDEPENDENTLY VALIDATED this session's soil carry-forward edits (none wrong); G2=8 drift FALSE (anchor held; dip=answerer pulled wrong land-type from a stale land-set doc, not ground-truth drift); 5 pre-existing doc bugs fixed across module_52/56/59 incl CRITICAL land-set (invented plant_pri/plant_sec, omitted forestry), 1000x s59_nitrogen_uptake unit error, soilc-init doc gap, NPi mislabel, $3.67/tC floor vs 'no carbon pricing'.->R53 TARGETED drift-triggered post-/sync, auditing THIS SESSION's own sync docs: answers 9.0 but doc_quality 4.5 (lowest since R30, entirely self-inflicted). 1 CRITICAL: the ndcdelay/affexp 'silent zero' written hours earlier was a FALSE BUG REPORT against a colleague's merged PRISMA feature -- premises all true, conclusion false (npi_ndc_aff_pol.cs3 is gitignored and REGENERATED at run start by scripts/start_functions.R:380-391 under the default cfg$recalc_npi_ndc='ifneeded'; the guards were added BY the accused commits). Retracted before it reached anyone. 1 MAJOR: the youngsecdf carbon-arbitrage narrative asserted a universal direction; FRA calibration raises k in some regions and lowers it in others, so the fix INCREASES wood supply where k is lowered. Both defects passed the 42-check syntactic validator with 0 errors and were reproduced perfectly by docs-only answerers. Root cause of the Critical: reasoned about a GENERATED input artifact from modules/*/input/ + git history without ever grepping the R start layer. New rule recorded. This round is the strongest evidence in the ledger that the drift-triggered flywheel must stay.->R54(Batch1: Stage2 doc-audit 73 bugs/7 crit fixed, docq~4.8 pre-fix; Stage3 anchors 6/6=10.0 post-fix, 0 drift; positive control PASSED)",
   "doc_push_2026_05_30": {
    "rounds": "R30-R32",
    "docs": 30,
