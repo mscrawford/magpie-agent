@@ -178,7 +178,13 @@ def load_allowlist() -> set[tuple[str, str]]:
     return {(e.get("file", ""), e.get("key", "")) for e in rows if e.get("check") == CHECK_NAME}
 
 # Cross-module interface prefixes (MANDATE-18 core set + fm_ input params).
-CROSS_IFACE_RE = re.compile(r"^(?:vm|pm|im|pcm|fm)_[a-z]")
+# Case-INSENSITIVE after the prefix (R57): the earlier `[a-z]` gate silently dropped
+# vm_AEI -- a real interface var declared in M41 and consumed by M30 -- from the role
+# map entirely, so every doc claim about it passed Checks 33/34/35 unverified. It also
+# contradicted is_interface_var(), which resolves via the case-insensitive
+# GAMS_INTERFACE_RE and returned True for the same name. Guarded by
+# scripts/check_rolemap_completeness.py.
+CROSS_IFACE_RE = re.compile(r"^(?:vm|pm|im|pcm|fm)_[a-zA-Z]")
 
 # ---------------------------------------------------------------------------
 # CODE SIDE — the role-resolved reference map

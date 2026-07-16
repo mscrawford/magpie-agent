@@ -84,7 +84,12 @@ CHECK_NAME = "check_attribution_prose"
 
 # Cross-module interface var prefixes (MANDATE-18 core set + fm_ input params).
 # Numbered module-internal vars (v32_/p56_/…) are deliberately excluded.
-CROSS_IFACE_RE = re.compile(r"^(?:vm|pm|im|pcm|fm)_[a-z]")
+# Case-INSENSITIVE after the prefix (R57) -- see the twin definition in
+# check_attribution_omissions.py. A `[a-z]` gate silently dropped vm_AEI (M41->M30).
+# NOTE: this constant is DUPLICATED across the two modules; keep them in sync (the
+# duplication itself is an R57 finding -- a single definition would have made this a
+# one-site fix).
+CROSS_IFACE_RE = re.compile(r"^(?:vm|pm|im|pcm|fm)_[a-zA-Z]")
 
 BACKTICK_TOKEN_RE = re.compile(r"`([^`]+)`")
 ID_TOKEN_RE = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
