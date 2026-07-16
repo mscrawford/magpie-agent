@@ -1,0 +1,814 @@
+{
+ "round": 55,
+ "date": "2026-07-16",
+ "agent": "magpie-agent",
+ "scope": {
+  "docs": [
+   "module_10",
+   "module_52",
+   "module_56"
+  ],
+  "lenses": [
+   "declare_populate",
+   "consumer_read",
+   "config_realization",
+   "citation_formula",
+   "mechanism_direction"
+  ],
+  "develop_sha": "0d7ebeb90",
+  "method": "depth-first per-claim; K=5 decorrelated Opus lenses armed with the code-derived role map; every Critical/Major adversarially refuted (only UPHELD/CORRECTED counted)"
+ },
+ "IMPORTANT": "This is DOC-quality (doc-vs-code) residual density, NOT answer-quality. Never relay alongside or as a '9.52'-style answer score. Every cell carries its coverage denominator.",
+ "totals": {
+  "confirmed": 28,
+  "critical": 1,
+  "major": 7,
+  "refuted": 0,
+  "citation_failed": 0
+ },
+ "matrix": {
+  "pooled": {
+   "by_class": {
+    "attribution_declare": {
+     "Critical": 0,
+     "Major": 0,
+     "Minor": 0,
+     "Informational": 0
+    },
+    "attribution_populate": {
+     "Critical": 0,
+     "Major": 1,
+     "Minor": 2,
+     "Informational": 0
+    },
+    "attribution_read": {
+     "Critical": 1,
+     "Major": 3,
+     "Minor": 5,
+     "Informational": 0
+    },
+    "citation": {
+     "Critical": 0,
+     "Major": 0,
+     "Minor": 1,
+     "Informational": 0
+    },
+    "formula": {
+     "Critical": 0,
+     "Major": 0,
+     "Minor": 2,
+     "Informational": 0
+    },
+    "default_value": {
+     "Critical": 0,
+     "Major": 0,
+     "Minor": 0,
+     "Informational": 0
+    },
+    "realization": {
+     "Critical": 0,
+     "Major": 0,
+     "Minor": 0,
+     "Informational": 0
+    },
+    "mechanism": {
+     "Critical": 0,
+     "Major": 0,
+     "Minor": 2,
+     "Informational": 0
+    },
+    "data_flow_direction": {
+     "Critical": 0,
+     "Major": 2,
+     "Minor": 1,
+     "Informational": 0
+    },
+    "set_membership": {
+     "Critical": 0,
+     "Major": 1,
+     "Minor": 6,
+     "Informational": 0
+    },
+    "other": {
+     "Critical": 0,
+     "Major": 0,
+     "Minor": 0,
+     "Informational": 1
+    }
+   },
+   "denominator": {
+    "total": 498,
+    "by_class": {
+     "attribution_declare": 22,
+     "attribution_populate": 28,
+     "attribution_read": 38,
+     "citation": 89,
+     "formula": 50,
+     "default_value": 36,
+     "realization": 3,
+     "mechanism": 81,
+     "data_flow_direction": 47,
+     "set_membership": 44,
+     "other": 60
+    }
+   }
+  },
+  "per_doc": {
+   "module_10": {
+    "by_class": {
+     "attribution_declare": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "attribution_populate": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 2,
+      "Informational": 0
+     },
+     "attribution_read": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 2,
+      "Informational": 0
+     },
+     "citation": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 1,
+      "Informational": 0
+     },
+     "formula": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "default_value": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "realization": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "mechanism": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "data_flow_direction": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 1,
+      "Informational": 0
+     },
+     "set_membership": {
+      "Critical": 0,
+      "Major": 1,
+      "Minor": 2,
+      "Informational": 0
+     },
+     "other": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     }
+    },
+    "denominator": {
+     "attribution_declare": 9,
+     "attribution_populate": 3,
+     "attribution_read": 8,
+     "citation": 24,
+     "formula": 10,
+     "default_value": 7,
+     "realization": 1,
+     "mechanism": 9,
+     "data_flow_direction": 32,
+     "set_membership": 16,
+     "other": 16
+    },
+    "total_checkable": 135
+   },
+   "module_52": {
+    "by_class": {
+     "attribution_declare": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "attribution_populate": {
+      "Critical": 0,
+      "Major": 1,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "attribution_read": {
+      "Critical": 1,
+      "Major": 3,
+      "Minor": 3,
+      "Informational": 0
+     },
+     "citation": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "formula": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "default_value": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "realization": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "mechanism": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 2,
+      "Informational": 0
+     },
+     "data_flow_direction": {
+      "Critical": 0,
+      "Major": 1,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "set_membership": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "other": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     }
+    },
+    "denominator": {
+     "attribution_declare": 10,
+     "attribution_populate": 14,
+     "attribution_read": 27,
+     "citation": 4,
+     "formula": 24,
+     "default_value": 12,
+     "realization": 1,
+     "mechanism": 62,
+     "data_flow_direction": 9,
+     "set_membership": 9,
+     "other": 34
+    },
+    "total_checkable": 206
+   },
+   "module_56": {
+    "by_class": {
+     "attribution_declare": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "attribution_populate": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "attribution_read": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "citation": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "formula": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 2,
+      "Informational": 0
+     },
+     "default_value": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "realization": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "mechanism": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "data_flow_direction": {
+      "Critical": 0,
+      "Major": 1,
+      "Minor": 0,
+      "Informational": 0
+     },
+     "set_membership": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 4,
+      "Informational": 0
+     },
+     "other": {
+      "Critical": 0,
+      "Major": 0,
+      "Minor": 0,
+      "Informational": 1
+     }
+    },
+    "denominator": {
+     "attribution_declare": 3,
+     "attribution_populate": 11,
+     "attribution_read": 3,
+     "citation": 61,
+     "formula": 16,
+     "default_value": 17,
+     "realization": 1,
+     "mechanism": 10,
+     "data_flow_direction": 6,
+     "set_membership": 19,
+     "other": 10
+    },
+    "total_checkable": 157
+   }
+  }
+ },
+ "per_doc": [
+  {
+   "label": "module_10",
+   "total_checkable": 135,
+   "confirmed_total": 9,
+   "confirmed_critical": 0,
+   "confirmed_major": 1,
+   "attribution_omissions": 4,
+   "refuted": 0,
+   "corrected": 0,
+   "citation_failed": 0,
+   "dropped_lenses": 0
+  },
+  {
+   "label": "module_52",
+   "total_checkable": 206,
+   "confirmed_total": 11,
+   "confirmed_critical": 1,
+   "confirmed_major": 5,
+   "attribution_omissions": 8,
+   "refuted": 0,
+   "corrected": 1,
+   "citation_failed": 0,
+   "dropped_lenses": 0
+  },
+  {
+   "label": "module_56",
+   "total_checkable": 157,
+   "confirmed_total": 8,
+   "confirmed_critical": 0,
+   "confirmed_major": 1,
+   "attribution_omissions": 0,
+   "refuted": 0,
+   "corrected": 1,
+   "citation_failed": 0,
+   "dropped_lenses": 0
+  }
+ ],
+ "measurement": {
+  "expected_corpus_criticals": "~2-3.5 Criticals across the 39 remaining module docs (~0.05-0.09/doc; one Critical per 11-19 docs) \u2014 vs the GO bar of 1 per 2 docs, i.e. 5.5-9.5x below threshold.\n\nDERIVATION (estimate, not a guarantee; a 2-event numerator sits upstream):\n- Step 1 \u2014 attribution claims per unit centrality, from the hub sample: 88 attribution claims / 81 hub reader-edges = 1.086 claims/edge.\n- Step 2 \u2014 corpus denominator: 39 non-hub declaring modules carry 285 reader-edges (audit/integrated/depth_rolemap.json, 125 interfaces with a declaring module over 42 modules) \u2192 285 x 1.086 \u2248 310 attribution claims.\n- Step 3a \u2014 flat hub density (UPPER BOUND): deduped hub Critical density = 1/88 = 1.14 per 100 \u2192 310 x 0.0114 = 3.5 Criticals.\n- Step 3b \u2014 centrality-adjusted (PREFERRED): an incomplete-consumer-set Critical is only possible on an interface with >=3 readers (with 2 readers there is no set to get wrong). Eligible surface: HUB 14/21 (67%), REST 30/104 (29%). Hub rate = 1/14 = 0.071 per eligible interface \u2192 30 x 0.071 = 2.1 Criticals.\n\nROBUSTNESS: the conclusion does not depend on the point estimate. At 3x the observed Critical rate the corpus still lands at ~1 per 4-6 docs \u2014 below the bar. The gap to threshold exceeds the estimate's own uncertainty.\n\nEXPOSURE SPLIT: top-centrality quartile (8 untested docs) = 15 eligible interfaces \u2192 ~1.1 Criticals (0.14/doc); remaining 31 docs = 15 eligible \u2192 ~1.1 (0.035/doc). Top quartile yields 4x more per doc, capturing 50% of exposure for 21% of full-campaign cost. Note the gain is more modest than the 3.69x centrality ratio implies \u2014 eligible-interface count does not track reader-edges (32_forestry: 18 edges, 0 eligible; 09_drivers: 35 edges, 5 eligible), so targeting must key on eligible-interface count, not raw centrality.\n\nATTRIBUTION RESIDUAL (reported separately; MUST NOT be relayed as answer-quality in either direction): 12 confirmed / 88 attribution claims = 13.64 per 100. attribution_read = 23.68/100 (worst class, ~4x the 5.62 all-class mean); attribution_populate = 10.71/100; attribution_declare = 0.00/22 (clean). Per-doc omissions: M52=8, M10=4 (all Minor), M56=0. All 12 are stale OMISSIONS, zero phantoms (verify__module_10.md:54: \"in doc not in union = (none)\") \u2014 a maintenance-lag signature, not confabulation. Docs track declarations reliably and lose track of readers.",
+  "reasoning": "DECISION RULE, applied:\n- (a) >=1 Critical attribution omission PER HUB: 1 of 3 (module_52 only; M10=0, M56=0). FAIL.\n- (b1) Criticals per doc: 0.33 (1/3 docs) vs 0.50 bar. FAIL (66% of bar).\n- (b2) Major-attribution per 100: 2.27 deduped vs ~2 bar. MARGINAL.\n\nThe verdict turns entirely on (b2), and (b2) turns entirely on a double-count that the verification pass itself already retired. verify__module_52.md:161 states bugs 1/5/10 are \"three views of one defect (M14 missing from the uncalib consumer list at 458); recommend merging to a single Critical finding\" \u2014 same variable, same doc line 458. Deduped, attribution_read Major goes 3\u21921 (only bug 9, the im_vol_conv false M14 attribution, is independent), so Major-attribution = 2/88 = 2.27/100 (raw 4/88 = 4.55). Separately, M52:4 and M56:7 are one code fact (52\u219256 vm_emissions_reg parallel-not-serial) documented wrongly in two docs: attribution+direction cross-doc-deduped = 3/135 = 2.22/100.\n\n2.27 vs ~2 is a threshold-straddler on a numerator of TWO EVENTS. Poisson 95% CI on 2 events \u2248 [0.24, 7.22] \u2192 [0.27, 8.2] per 100; the bar sits well inside. (b2) is not measurable at this sample size \u2014 reporting \"2.27 > 2 \u2192 GO\" would be a bare label on a continuous quantity that flips under any reasonable re-count.\n\nDECISIVE: I verified the rule's own premise rather than assuming it. From depth_rolemap.json \u2014 hub reader-edges/doc = 27.0 vs rest 7.3 (3.69x); hubs rank #1/#3/#7 of 42. The premise HOLDS: the sample is the top of the centrality distribution. An upper-bound sample that fails (a), fails (b1), and clears (b2) by 11% on 2 events predicts a corpus below threshold on every criterion. The rule's own NO_GO branch names this case: \"reserve semantic depth for the top-centrality quartile\" = TARGETED_ONLY.\n\nNot NO_GO: the residual is real, non-zero, and concentrated in attribution_read (23.68/100) \u2014 a class mechanical checks cannot see. Not GO: 39 docs at hub-density assumptions buys a yield the measurement does not support.\n\nCONCENTRATION: module_52 carries 100% of Criticals and 5/7 Majors. module_56 has ZERO attribution bugs across 157 claims. module_10 has zero Criticals. After dedup the entire GO case reduces to one variable's consumer list in one doc \u2014 a targeted-fix signal, not a campaign signal.\n\nSTRUCTURAL FINDING (more valuable than the go/no-go): module_56.md contains BOTH the correct statement (lines 90-92: \"bypassing vm_emissions_reg\") AND the contradiction (line 66). A probe-based pass samples the doc through the answerer's retrieval, which finds the correct passage, scores 9, and never costs the wrong line a point. R52 (2026-06-28, mean 8.5) probed this exact cluster with 4 relevant probes and surfaced NONE of the three R55 findings; verify__module_52.md:107 notes the parallel-not-serial pattern was already the named R51 anchor and the doc-sites still survived. Width measures answers, depth measures lines \u2014 neither certifies the other. This cuts both ways: the retrieval bias hiding line 66 from auditors hides it from users too, so the residual is a doc-integrity defect with low measured answer-impact.\n\nQUALITY OF THE NUMERATOR: 0 refuted, 0 citation-failed, 30/30 cited artifacts reproduced mechanically across all 3 docs. The matrix is internally consistent (28 = 9+11+8; 498 = 135+206+157; 88 = 20+51+17). The issue is semantic (double-count), not arithmetic.\n\nPROVENANCE FLAG: I could not locate the \"2026-06-29 wide-net 9.52 pass\" given as a premise. rg \"9\\.52\" over audit/ returns nothing; no round in validation_rounds.json carries mean_score 9.52 or a 2026-06-29 date. Nearest wide-net pass is R52 (2026-06-28, mean_score 8.5, 6 probes, code_base 6304d830b), which I used as the actual baseline. The \u00a73 mechanism is baseline-independent, but the round label needs correcting if a different artifact was meant.\n\nLOAD-BEARING ASSUMPTION: the dedup is the single judgment (not measurement) in this report. If verify__module_52.md:161 is wrong and 1/5/10 are independent, (b2) reads 4.55/100 and the verdict flips to GO. I weight this low \u2014 same variable, same line \u2014 but flag it as the one thing that would move me.",
+  "recommendation": "TARGETED_ONLY, in reversibility order:\n\n1. FIX THE 28 CONFIRMED R55 FINDINGS FIRST (the entire verified yield). Apply the VERIFY files' corrected fixes, not the auditors' originals \u2014 two of the originals would introduce NEW errors:\n   - module_52.md: merge bugs 1/5/10 into ONE Critical fix at line 458; restore M14 and M35; add switch-conditionality (s32_aff_plantation, s29_treecover_plantation). Do NOT add M14 at line 727 \u2014 wrong subsection (verify__module_52.md:113).\n   - module_56.md: fix lines 66 and 716 ONLY. KEEP 52 in the whole-variable producer lists at 591/1026 \u2014 deleting it strips a genuine emis_oneoff x co2_c producer relationship (verify__module_56.md:86). Fix line 591's citation (covers only emis_annual).\n   - module_10.md: \"15 modules\" is stale at TEN sites (13, 14, 275, 295, 774, 789, 791, 834, 861, 866), not the auditor's two. Correct blast radius = 18. Lines 834 \u2192 \"11 modules\" and 866 \u2192 \"10 modules depend on vm_land\" are wrong on their own terms (verify__module_10.md:93-99).\n\n2. RUN THE MECHANICAL VALIDATOR CORPUS-WIDE (bash scripts/validate_consistency.sh) \u2014 free; the citation class at 1.12/100 confirms it is working.\n\n3. DEPTH-AUDIT 8 TOP-CENTRALITY DOCS, ranked by Critical-ELIGIBLE INTERFACES (not reader-edges): 09_drivers (35 edges, 5 eligible \u2014 #2 most central module in MAgPIE, never depth-audited, highest-value single target in the corpus), 17_production (2), 29_cropland (3), 70_livestock (2), 18_residues (2), 30_croparea (1). DEPRIORITIZE 32_forestry and 35_natveg despite high centrality \u2014 0 eligible interfaces each. Expected ~1.1 Criticals for 21% of full-campaign cost. Scope each pass to attribution_read + attribution_populate + set_membership (15.91/100); SKIP attribution_declare, default_value, realization entirely (0 bugs / 61 claims combined) \u2014 roughly halves per-doc cost again at no measured loss.\n\n4. DO NOT depth-audit the remaining 31 docs: ~1.1 Criticals over 31 docs (~1 per 28) at 79% of campaign cost.\n\n5. HIGHEST-LEVERAGE ITEM \u2014 fix the root cause instead of paying per doc. All 12 attribution bugs are stale omissions, never phantoms, and probe-based validation is structurally blind to them (\u00a73). Both point at the same fix: consumer sets are MECHANICALLY DERIVABLE from code \u2014 depth_rolemap.json already reconstructs them and was used to find every one of these bugs. A recurring role-map-vs-doc consumer-set diff catches this entire class continuously at near-zero marginal cost, and would have caught all 12 findings with ZERO LLM audit passes. A depth campaign pays per-doc for a defect class a diff detects for free. Recommend scoping this as R56 BEFORE spending further on semantic depth.",
+  "report_file": "/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/audit/archive/rounds/round55_depth/MEASUREMENT.md",
+  "verdict": "TARGETED_ONLY"
+ },
+ "findings": [
+  {
+   "doc": "module_10",
+   "id": "module_10:1",
+   "severity": "Minor",
+   "bug_class": "attribution_populate",
+   "doc_line": "module_10.md:318",
+   "claim": "pcm_land ... declared in declarations.gms:11, populated in postsolve.gms:9 (also lines 209, 368-371, 891; Code-Truth #8 presents postsolve.gms:9 as THE recursive update point)",
+   "reality": "pcm_land is populated by M10 postsolve.gms:9 (full recursive update) AND overwritten in slices every timestep by 34_urban (pcm_land(j,'urban')), 32_forestry (pcm_land(j,'forestry')), and 35_natveg (pcm_land(j,'primforest'|'secdforest'|'other')). Doc attributes population solely to M10; the populate SET is incomplete. Not a false claim about M10, but omits co-populators relevant to modification safety of a CRITICAL-centrality module.",
+   "evidence": "modules/34_urban/exo_nov21/preloop.gms:17; modules/32_forestry/dynamic_may24/presolve.gms:101; modules/35_natveg/pot_forest_may24/presolve.gms:39,131,137",
+   "fix": "In pcm_land descriptions (318, 209-210, 891) add: 'M10 sets the full recursive update in postsolve.gms:9; modules 32 (forestry), 34 (urban), and 35 (natveg) then overwrite their own pool slices of pcm_land in their preloop/presolve phases.'",
+   "lenses": [
+    "declare_populate"
+   ]
+  },
+  {
+   "doc": "module_10",
+   "id": "module_10:2",
+   "severity": "Minor",
+   "bug_class": "citation",
+   "doc_line": "module_10.md:363",
+   "claim": "Initializes from LUH2 Historical Data (input.gms:8-16, start.gms:8-12) ... Uses LUH2 0.5deg data aggregated to 200 cells (365) ... Initialize from LUH2 data (1995-2015 historical) (771)",
+   "reality": "These three lines describe File 1 = f10_land / avl_land_t.cs3 (historical land INITIALIZATION data). The doc's own Section 4 line 223 corrected this exact source on 2026-07-09 to 'Land-Use Harmonization 3 (LUH3)' via calcLUH3, and line 229 uses 'LUH3 categories'. Lines 363/365/771 are stale/self-contradictory - the LUH3 correction was not propagated. (Line 239 'File 2: LUH2 Side Layers' is correct and must stay LUH2: code identifier is fm_luh2_side_layers / luh2_side_layers10.)",
+   "evidence": "module_10.md:223 (LUH3 correction, self-referential); code identifiers: modules/10_land/landmatrix_dec18/sets.gms:12 (luh2_side_layers10), input.gms:19 (fm_luh2_side_layers)",
+   "fix": "Change 'LUH2' -> 'LUH3' on lines 363, 365, 771 (File-1 historical-initialization references only). Leave line 239 (File-2 Side Layers) as LUH2.",
+   "lenses": [
+    "declare_populate"
+   ]
+  },
+  {
+   "doc": "module_10",
+   "id": "module_10:3",
+   "severity": "Minor",
+   "bug_class": "attribution_read",
+   "doc_line": "module_10.md:841",
+   "claim": "Key downstream dependents: ... Module 42 (Water): Land area for water demand; Module 52 (Carbon): Land area for carbon stocks",
+   "reality": "Neither module 42 nor module 52 reads ANY M10 interface variable (vm_land, vm_lu_transitions, vm_landexpansion, vm_landreduction, pm_land_start, pm_land_hist, pcm_land) in any .gms file. Both are transitive-only dependents: M42 via vm_area (M30, which reads vm_land); M52 via vm_carbon_stock (populated by 29/31/32/34/35/59) plus vm_land_other(M35)/vm_land_forestry(M32). This contradicts the doc's own Section 5, which correctly omits 42 and 52 from the direct-consumer lists. MANDATE 17 (direct vs transitive).",
+   "evidence": "modules/42_water_demand/*.gms and modules/52_carbon/*.gms (no M10 var); positive controls: modules/59_som/cellpool_jan23/equations.gms, modules/29_cropland/detail_apr24/equations.gms",
+   "fix": "Label 42 and 52 as INDIRECT/transitive dependents: 'Module 42 (Water): indirectly via vm_area (M30)'; 'Module 52 (Carbon): indirectly via vm_carbon_stock'. Or remove them from a list sitting alongside genuine direct consumers (11, 59) to avoid implying a direct land-area handoff.",
+   "lenses": [
+    "consumer_read"
+   ]
+  },
+  {
+   "doc": "module_10",
+   "id": "module_10:4",
+   "severity": "Major",
+   "bug_class": "set_membership",
+   "doc_line": "module_10.md:791",
+   "claim": "Changes to Module 10 affect 15 modules; line 789 enumerates 'Provides to: 15 modules (11,14,22,29,30,31,32,34,35,39,50,58,59,71,80)'",
+   "reality": "M10 also owns pcm_land (declarations.gms:11, populated postsolve.gms:9), read by 13_tc, 44_biodiversity, 56_ghg_policy (none in the 15 list, none reading any other M10 var). True distinct-dependent count = 18. Contradicts the doc's own line 316-318/891 which correctly list pcm_land's 12 consumers incl. 13/44/56. A maintainer using the summary blast-radius (line 858-869) would omit testing 13/44/56 on a pcm_land refactor.",
+   "evidence": "modules/13_tc/endo_jan22/presolve.gms:9; modules/44_biodiversity/bii_target/preloop.gms:15; modules/56_ghg_policy/price_aug22/preloop.gms:10",
+   "fix": "Reconcile aggregate with the doc's own detail: state total distinct dependents = 18, or scope '15' as 'consumers of M10 decision variables + initialization parameters, excluding the 3 additional pcm_land-only consumers (13_tc,44_biodiversity,56_ghg_policy) listed in section 5'; update lines 14/791 blast-radius to 18.",
+   "lenses": [
+    "config_realization"
+   ]
+  },
+  {
+   "doc": "module_10",
+   "id": "module_10:5",
+   "severity": "Minor",
+   "bug_class": "set_membership",
+   "doc_line": "module_10.md:789",
+   "claim": "Provides to: 15 modules (11, 14, 22, 29, 30, 31, 32, 34, 35, 39, 50, 58, 59, 71, 80); repeated as 'Changes to this module affect 15 other modules' (lines 13-14, 295, 791, 861).",
+   "reality": "pcm_land is declared in M10 (declarations.gms:11), populated in M10 (postsolve.gms:9), and listed by the doc itself as a provided interface variable (line 891). Its consumers include 13_tc, 44_biodiversity, 56_ghg_policy, which appear in no other M10 variable's reader set. True count of downstream modules receiving an M10-provided interface variable is 18, not 15.",
+   "evidence": "modules/13_tc/endo_jan22/presolve.gms:9; modules/44_biodiversity/bii_target/preloop.gms:15; modules/56_ghg_policy/price_aug22/preloop.gms:10",
+   "fix": "Reconcile the count: state 'provides to 18 modules' (adding 13_tc, 44_biodiversity, 56_ghg_policy via pcm_land) in the centrality/impact lines, or explicitly scope the 15 as 'modules receiving a non-pcm_land allocation variable; pcm_land adds 3 more (13, 44, 56) for 18 total downstream dependents.'",
+   "lenses": [
+    "citation_formula"
+   ]
+  },
+  {
+   "doc": "module_10",
+   "id": "module_10:6",
+   "severity": "Minor",
+   "bug_class": "attribution_read",
+   "doc_line": "module_10.md:840",
+   "claim": "Module 14 (Yields): Cropland area for production",
+   "reality": "Module 14 reads pm_land_start(j,\"past\") (PASTURE) for pasture-yield calibration, not cropland/production. Contradicts the doc's own authoritative table at module_10.md:306 ('14_yields | pm_land_start (1) | Pasture-yield aggregation').",
+   "evidence": "modules/14_yields/managementcalib_aug19/preloop.gms:15-16",
+   "fix": "Change line 840 to 'Module 14 (Yields): pm_land_start(past) for pasture-yield calibration' to match line 306 and the code.",
+   "lenses": [
+    "mechanism_direction"
+   ]
+  },
+  {
+   "doc": "module_10",
+   "id": "module_10:7",
+   "severity": "Minor",
+   "bug_class": "data_flow_direction",
+   "doc_line": "module_10.md:841-842",
+   "claim": "Module 42 (Water): Land area for water demand / Module 52 (Carbon): Land area for carbon stocks [listed as key downstream dependents]",
+   "reality": "Neither module directly reads any module-10 interface variable. M52 reads vm_carbon_stock (declared M56, populated by land modules 29/31/32/34/35/59) at equations.gms:19 - a transitive path, not direct land-area provision; M42 reads its own vm_watdem and cropland vm_area (M30), not vm_land. Direct-vs-transitive error (MANDATE 17). The authoritative provides-to table (Section 5) correctly omits 42/52.",
+   "evidence": "modules/52_carbon/normal_dec17/equations.gms:19; zero M10-var hits in modules/42_*/ and modules/52_*/",
+   "fix": "Label 42/52 as transitive/indirect dependents (affected via land-allocation modules), not recipients of 'Land area'; or drop the 'Land area for' phrasing.",
+   "lenses": [
+    "mechanism_direction"
+   ]
+  },
+  {
+   "doc": "module_10",
+   "id": "module_10:8",
+   "severity": "Minor",
+   "bug_class": "attribution_populate",
+   "doc_line": "module_10.md:891",
+   "claim": "pcm_land ... populated in postsolve.gms:9 [presented as module-10's product, dropping the declaration's 'including possible changes after optimization' qualifier]",
+   "reality": "pcm_land declaration (declarations.gms:11) reads 'Land area in previous time step including possible changes after optimization'. M32/M34/M35 overwrite specific slices after M10's postsolve: M32 pcm_land(j,'forestry') from age classes, M34 pcm_land(j,'urban') exogenously, M35 pcm_land(j,'primforest'/'secdforest'/'other'). Role map populated_by = ['10','32','34','35'].",
+   "evidence": "modules/32_forestry/dynamic_may24/presolve.gms:101; modules/34_urban/exo_nov21/preloop.gms:17; modules/35_natveg/pot_forest_may24/presolve.gms:39,131,137",
+   "fix": "Add a note that pcm_land is initialized by M10 (postsolve.gms:9) but its forestry/urban/primforest/secdforest/other slices are subsequently modified by M32/M34/M35 (per the declaration's 'including possible changes after optimization').",
+   "lenses": [
+    "mechanism_direction"
+   ]
+  },
+  {
+   "doc": "module_10",
+   "id": "module_10:9",
+   "severity": "Minor",
+   "bug_class": "set_membership",
+   "doc_line": "module_10.md:14",
+   "claim": "Changes to this module affect 15 other modules - testing must be comprehensive (also 'Provides to: 15' at :275, :791)",
+   "reality": "The provides-to table's 15 excludes the pcm_land-only consumers 13_tc, 44_biodiversity, 56_ghg_policy. Union of direct consumers across ALL module-10-declared vars (incl. pcm_land) is 18 modules: 11,13,14,22,29,30,31,32,34,35,39,44,50,56,58,59,71,80. Doc is internally transparent (lists 13/44/56 at line 318), so '15' is a defined provides-to-table metric, but the modification-safety headline undercounts by 3.",
+   "evidence": "audit/integrated/depth_rolemap.json read_by union across M10 vars",
+   "fix": "Reconcile the 'affects N modules' headline with the pcm_land consumers, e.g. '15 via the shared vm_/pm_ interface, plus 13/44/56 via pcm_land (18 total)'.",
+   "lenses": [
+    "mechanism_direction"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:1",
+   "severity": "Critical",
+   "bug_class": "attribution_read",
+   "doc_line": "module_52.md:458",
+   "claim": "pm_carbon_density_secdforest_ac_uncalib Consumers: Module 32 (afforestation \"aff\" and NDC \"ndc\"), Module 29 (tree cover on cropland). (lines 138/292 add Module 35.) Module 14 nowhere in the uncalib-secdforest consumer list.",
+   "reality": "Module 14 (default realization managementcalib_aug19) READS pm_carbon_density_secdforest_ac_uncalib on the RHS of the im_growing_stock_ysf (young secondary forest growing stock) assignment. Role map read_by = [14,29,32,35,52]; doc lists only 29,32,35.",
+   "evidence": "modules/14_yields/managementcalib_aug19/presolve.gms:66",
+   "fix": "Add Module 14 to the pm_carbon_density_secdforest_ac_uncalib consumer list at line 458 (and mirror at lines 138, 292): 'Module 14 (young secondary forest growing stock im_growing_stock_ysf, modules/14_yields/managementcalib_aug19/presolve.gms:66)'. Confirmed consumer set = {14,29,32,35}. R20 immutable Critical anchor (pm_carbon_density_*_ac_uncalib family, incomplete consumer set). tier_uncertainty: only 1 of 4 missed and M14 appears for the calibrated sibling, so Major is defensible; Critical assigned per the rubric section 1.5 mandate.",
+   "lenses": [
+    "declare_populate",
+    "consumer_read",
+    "mechanism_direction"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:2",
+   "severity": "Major",
+   "bug_class": "attribution_populate",
+   "doc_line": "module_52.md:712",
+   "claim": "Land Modules (provide carbon stocks to Module 56): 'Module 30 (Cropland): Cropland carbon stocks'",
+   "reality": "Module 30 is 30_croparea, not 'Cropland' (29_cropland is Cropland). Module 30 does NOT populate vm_carbon_stock; it populates the separate vm_carbon_stock_croparea, folded into vm_carbon_stock by Module 29 (one hop). The direct crop-pool populator of vm_carbon_stock is Module 29. Role map vm_carbon_stock populated_by = [29,31,32,34,35,59]. The doc's own line 424 states this correctly, so line 712 is internally contradictory; it also omits 29 and 59.",
+   "evidence": "modules/29_cropland (=Cropland), modules/30_croparea (=Croparea); depth_rolemap.json vm_carbon_stock populated_by=[29,31,32,34,35,59]",
+   "fix": "Change line 712 to 'Module 29 (Cropland): Cropland carbon stocks (crop pool)'; note Module 30 (Croparea) is one hop removed via vm_carbon_stock_croparea -> M29; add Module 59 (soilc) to match the correct list at line 424.",
+   "lenses": [
+    "declare_populate"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:3",
+   "severity": "Minor",
+   "bug_class": "attribution_read",
+   "doc_line": "module_52.md:1201",
+   "claim": "Provides to: Modules 56 (ghg_policy), 11 (costs), 44 (biodiversity)",
+   "reality": "Module 52 provides vm_emissions_reg(\"co2_c\") to Module 56 (correct). Neither Module 11 nor Module 44 reads any M52-provided variable. M11 gets carbon into the cost objective transitively via M56's vm_emission_costs (one hop through M56). M44 (biodiversity) has no path from M52 carbon outputs.",
+   "evidence": "modules/11_costs/*/*.gms (no match), modules/44_biodiversity/*/*.gms (no match)",
+   "fix": "Replace 'Provides to: Modules 56, 11, 44' with 'Provides to: Module 56 (via vm_emissions_reg); Module 73 (via im_vol_conv); Modules 14/29/32/35 (age-class carbon densities). Carbon reaches costs (M11) transitively through M56 vm_emission_costs.' Drop Module 44. tier_uncertainty: Major under MANDATE 17 if used for modification-impact reasoning; Minor assigned because it is centrality-footer metadata.",
+   "lenses": [
+    "declare_populate",
+    "consumer_read",
+    "mechanism_direction"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:4",
+   "severity": "Major",
+   "bug_class": "data_flow_direction",
+   "doc_line": "module_52.md:443",
+   "claim": "vm_emissions_reg Consumers: Module 56 (GHG Policy) for carbon pricing and emission constraints (also line 740-741 for the emis_oneoff/co2_c slice; Execution Sequence 764-765 'Module 56: Apply carbon prices to emissions').",
+   "reality": "M52 writes only the emis_oneoff/co2_c slice; no equation reads it. M56 carbon pricing (q56_emis_pricing_co2, equations.gms:19-22) RE-COMPUTES CO2 directly from pcm_carbon_stock - vm_carbon_stock (parallel to M52), and M56's only vm_emissions_reg read (equations.gms:17) is the DISJOINT emis_annual slice. M52's co2_c output flows only to postsolve/reporting. R51 parallel-not-serial anchor.",
+   "evidence": "modules/56_ghg_policy/price_aug22/equations.gms:17 (reads emis_annual only) + :19-22 (recomputes CO2 from vm_carbon_stock)",
+   "fix": "Reframe as parallel, not serial: M52's vm_emissions_reg(i,emis_oneoff,'co2_c') is a REPORTING output (postsolve ov_emissions_reg / magpie4). Land-use CO2 PRICING is done independently by M56 q56_emis_pricing_co2 (modules/56_ghg_policy/price_aug22/equations.gms:19-22) reading vm_carbon_stock directly; M56 reads vm_emissions_reg only for the emis_annual (non-CO2) slice at equations.gms:17.",
+   "lenses": [
+    "consumer_read"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:5",
+   "severity": "Major",
+   "bug_class": "attribution_read",
+   "doc_line": "module_52.md:458",
+   "claim": "pm_carbon_density_secdforest_ac_uncalib ... Consumers: Module 32 (afforestation and NDC), Module 29 (tree cover). (Line 292 adds Module 35; NO location lists Module 14.)",
+   "reality": "Module 14 reads pm_carbon_density_secdforest_ac_uncalib to compute im_growing_stock_ysf (young secondary forest growing stock). Role map read_by = [14,29,32,35]; the doc's fullest statement covers only {29,32,35}, omitting 14 entirely; the formal line-458 entry omits both 14 and 35.",
+   "evidence": "modules/14_yields/managementcalib_aug19/presolve.gms:66",
+   "fix": "Add 'Module 14 (modules/14_yields/managementcalib_aug19/presolve.gms:66 - im_growing_stock_ysf)' to the consumer lists at lines 458, 138, 292, 727; also restore Module 35 to the line-458 Consumers list (present at 138/292, dropped at 458). Critical-prone per the R20 immutable anchor (missed consumer of the pm_carbon_density_*_ac family); tie-broken to Major.",
+   "lenses": [
+    "config_realization"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:6",
+   "severity": "Minor",
+   "bug_class": "attribution_read",
+   "doc_line": "module_52.md:747",
+   "claim": "7. All Land Modules (30, 31, 32, 34, 35): fm_carbon_density ... Used for carbon stock calculations for non-age-class land types.",
+   "reality": "Module 34 (urban) does NOT read fm_carbon_density; it fixes urban carbon to zero. The doc's own authoritative consumer lists (lines 265-273, 484) correctly exclude 34 and read {14,29,30,31,32,35,56,59}. Role map read_by has no 34.",
+   "evidence": "modules/34_urban/exo_nov21/presolve.gms:8",
+   "fix": "Drop 34 from the 'All Land Modules (30,31,32,34,35)' grouping at line 747 (-> 30,31,32,35), or note that 34/urban fixes carbon to 0 and does not read fm_carbon_density.",
+   "lenses": [
+    "config_realization"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:7",
+   "severity": "Minor",
+   "bug_class": "mechanism",
+   "doc_line": "module_52.md:258",
+   "claim": "Bisection: if GS_trial < f52_fra_nrf_gs(i), raise lower bound; else raise upper bound.",
+   "reality": "When GS_trial >= target the code sets the UPPER bound to the midpoint (i52_k_high := (k_low+k_high)/2), which LOWERS the upper bound, not raises it. GS is monotone increasing in k, so overshoot shrinks the interval from the top. 'Raise lower bound' is correct.",
+   "evidence": "modules/52_carbon/normal_dec17/preloop.gms:67",
+   "fix": "Change to 'else lower the upper bound (set it to the midpoint)'.",
+   "lenses": [
+    "config_realization"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:8",
+   "severity": "Minor",
+   "bug_class": "mechanism",
+   "doc_line": "module_52.md:757",
+   "claim": "2. Start phase (each timestep, before optimization): Module 52: Calculate age-class carbon densities ...",
+   "reality": "The start phase runs ONCE in the preprocessing block, before the timestep loop (not each timestep). start and preloop sit above the loop(t...); the timestep loop contains only presolve/solve/postsolve. The pm_carbon_density_* params are t_all-indexed and computed once. (Section 2 line 78 correctly says 'before optimization'; only this summary adds the wrong 'each timestep'.)",
+   "evidence": "core/calculations.gms:13,15,40",
+   "fix": "Change to 'Start phase (once, before the timestep loop)'.",
+   "lenses": [
+    "config_realization"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:9",
+   "severity": "Major",
+   "bug_class": "attribution_read",
+   "doc_line": "module_52.md:5",
+   "claim": "interface parameter `im_vol_conv(i)` (used by Module 73 and shared with Module 14's growing-stock formula)",
+   "reality": "Module 14 never references im_vol_conv. M14's growing-stock formula (managementcalib_aug19/presolve.gms:44-73) = carbon_density / sm_carbon_fraction * fm_aboveground_fraction / (climate-weighted fm_ipcc_bef), producing tDM/ha stem biomass; it does NOT divide by basic wood density. The div-by-im_vol_conv (to m3/ha) step exists only in M52 preloop and M73. Doc's own consumer section (line 490) correctly lists only M73.",
+   "evidence": "modules/14_yields/managementcalib_aug19/presolve.gms:44-73 (no im_vol_conv)",
+   "fix": "Delete 'and shared with Module 14's growing-stock formula' from line 5; im_vol_conv is read only by M52 (its own calibration) and M73.",
+   "lenses": [
+    "citation_formula"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:10",
+   "severity": "Major",
+   "bug_class": "attribution_read",
+   "doc_line": "module_52.md:458",
+   "claim": "Consumers: Module 32 (afforestation \"aff\" at ...presolve.gms:59 and NDC forest \"ndc\" at ...presolve.gms:68), Module 29 (tree cover on cropland at ...preloop.gms:46). All three use cases represent new establishment rather than existing managed forest.",
+   "reality": "pm_carbon_density_secdforest_ac_uncalib read_by = [14,29,32,35]. Omitted: Module 14 (presolve.gms:66, im_growing_stock_ysf) and Module 35 (presolve.gms:117,242,250-251, youngsecdf). Both are youngsecdf regrowth, not afforestation 'new establishment', so the 'all three use cases' universal is false and the set incomplete. M35 is noted at doc:292 but M14 is undocumented.",
+   "evidence": "modules/14_yields/managementcalib_aug19/presolve.gms:66; modules/35_natveg/pot_forest_may24/presolve.gms:117,242,250-251",
+   "fix": "Add Module 14 (presolve.gms:66, young-secondary-forest growing stock) and Module 35 (presolve.gms:117 etc.) to the consumer list; replace 'All three use cases represent new establishment' with a note that M32/M29 use it for new establishment while M14/M35 use it for youngsecdf regrowth.",
+   "lenses": [
+    "citation_formula"
+   ]
+  },
+  {
+   "doc": "module_52",
+   "id": "module_52:11",
+   "severity": "Minor",
+   "bug_class": "attribution_read",
+   "doc_line": "module_52.md:747",
+   "claim": "All Land Modules (30, 31, 32, 34, 35): fm_carbon_density ... Used for carbon stock calculations for non-age-class land types",
+   "reality": "Module 34 (Urban) does not reference fm_carbon_density (urban carbon fixed to 0). This summary grouping wrongly includes 34 and also omits 29 (a real consumer). Contradicts the doc's own correct consumer lists at lines 265-273 and 484 (14,29,30,31,32,35,56,59 - no 34).",
+   "evidence": "modules/34_urban/* (zero fm_carbon_density references)",
+   "fix": "Remove Module 34 from the line 747 grouping (and add 29); align it with the authoritative consumer list at line 484.",
+   "lenses": [
+    "citation_formula"
+   ]
+  },
+  {
+   "doc": "module_56",
+   "id": "module_56:1",
+   "severity": "Minor",
+   "bug_class": "set_membership",
+   "doc_line": "module_56.md:629",
+   "claim": "**f56_emis_policy(scen56,pollutants,emis_source)**: Emission policy matrix (0/1)",
+   "reality": "Table is declared over pollutants_all (16 members), not pollutants (the 7-member taxable subset). f56_emis_policy(scen56,pollutants_all,emis_source).",
+   "evidence": "modules/56_ghg_policy/price_aug22/input.gms:113 (decl over pollutants_all); sets.gms:171 pollutants_all=16; sets.gms:187 pollutants=7",
+   "fix": "Change `pollutants` to `pollutants_all` in the line-629 signature. (Doc's own dimension count at line 494 already says 16 pollutants, i.e. pollutants_all.)",
+   "lenses": [
+    "declare_populate"
+   ]
+  },
+  {
+   "doc": "module_56",
+   "id": "module_56:2",
+   "severity": "Minor",
+   "bug_class": "set_membership",
+   "doc_line": "module_56.md:662",
+   "claim": "N2O for reddnatveg_nosoil: (ag: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice + indirect N) \u2014 omits peatland",
+   "reality": "f56_emis_policy('reddnatveg_nosoil','n2o_n_direct','peatland')=1; peatland N2O IS priced under the default policy. Doc includes peatland in the CH4 and CO2 lists under the same 'ag:' convention but drops it from the N2O list.",
+   "evidence": "modules/56_ghg_policy/input/f56_emis_policy.csv (run-time input; working-tree copy) reddnatveg_nosoil/n2o_n_direct row: peatland column=1",
+   "fix": "Add `peatland` to the reddnatveg_nosoil (and redd+natveg_nosoil) N2O source enumerations at lines 499, 662, 663; matches the code (peatland N2O is priced).",
+   "lenses": [
+    "declare_populate"
+   ]
+  },
+  {
+   "doc": "module_56",
+   "id": "module_56:3",
+   "severity": "Minor",
+   "bug_class": "set_membership",
+   "doc_line": "module_56.md:505-508",
+   "claim": "f56_emis_policy(\"redd_nosoil\",\"co2_c\",\"deforest\") = 1 ; f56_emis_policy(\"redd_nosoil\",\"co2_c\",\"cropland_soil\") = 0 ; f56_emis_policy(\"redd_nosoil\",\"ch4\",\"livestock\") = 0 (Selective Pricing Example, in GAMS index syntax)",
+   "reality": "The third index of f56_emis_policy is an emis_source member. 'deforest', 'cropland_soil', and 'livestock' are NOT members of emis_source (core/sets.gms:302-312 = inorg_fert, man_crop, awms, resid, man_past, som, rice, ent_ferm, resid_burn, {crop,past,forestry,primforest,secdforest,urban,other}_{vegc,litc,soilc}, peatland). Intended real analogs: secdforest_vegc, crop_soilc, ent_ferm/awms.",
+   "evidence": "/private/tmp/magpie_develop_ro/core/sets.gms:302-312",
+   "fix": "Relabel as 'Conceptually:' and drop GAMS syntax, or use real emis_source members, e.g. f56_emis_policy(\"redd_nosoil\",\"co2_c\",\"secdforest_vegc\") = 1, f56_emis_policy(\"redd_nosoil\",\"co2_c\",\"crop_soilc\") = 0, f56_emis_policy(\"redd_nosoil\",\"ch4\",\"ent_ferm\") = 0.",
+   "lenses": [
+    "consumer_read"
+   ]
+  },
+  {
+   "doc": "module_56",
+   "id": "module_56:4",
+   "severity": "Minor",
+   "bug_class": "set_membership",
+   "doc_line": "module_56.md:505-508",
+   "claim": "Selective Pricing Example: f56_emis_policy(\"redd_nosoil\",\"co2_c\",\"deforest\")=1; f56_emis_policy(\"redd_nosoil\",\"co2_c\",\"cropland_soil\")=0; f56_emis_policy(\"redd_nosoil\",\"ch4\",\"livestock\")=0",
+   "reality": "deforest, cropland_soil, and livestock are NOT members of the emis_source set. Real members: primforest_vegc/secdforest_vegc (deforestation CO2), crop_soilc (cropland soil CO2), ent_ferm/awms (livestock CH4).",
+   "evidence": "core/sets.gms:302-312 (emis_source set definition)",
+   "fix": "Replace fabricated labels with real emis_source members, e.g. f56_emis_policy(\"redd_nosoil\",\"co2_c\",\"secdforest_vegc\")=1; ...,\"crop_soilc\")=0; f56_emis_policy(\"redd_nosoil\",\"ch4\",\"ent_ferm\")=0. Example is hedged ('might have') but formats invalid strings as real GAMS set lookups.",
+   "lenses": [
+    "config_realization"
+   ]
+  },
+  {
+   "doc": "module_56",
+   "id": "module_56:5",
+   "severity": "Informational",
+   "bug_class": "other",
+   "doc_line": "module_56.md:1139",
+   "claim": "Depends on: Modules 52 (carbon stocks), 53 (methane), 51 (N2O)",
+   "reality": "vm_emissions_reg (a direct M56 input) is populated by 51, 52, 53 AND 58 (peatland). Module 58 is omitted from this abbreviated dependency line. Full correct list appears at module_56.md:1076.",
+   "evidence": "audit/integrated/depth_rolemap.json vm_emissions_reg.populated_by=[51,52,53,58]",
+   "fix": "Add module 58 (peatland) to the abbreviated 'Depends on' line, or mark it as a top-dependency summary pointing to the complete list at line 1076.",
+   "lenses": [
+    "config_realization"
+   ]
+  },
+  {
+   "doc": "module_56",
+   "id": "module_56:6",
+   "severity": "Minor",
+   "bug_class": "formula",
+   "doc_line": "module_56.md:203",
+   "claim": "Annual cost = 10 Tg/yr x 10 yr x $100/tC x 0.05/1.05 ~= $4,762/yr / This equals the annual payment on a $100,000 perpetuity at 5% interest",
+   "reality": "The literal expression evaluates to $476.19/yr, not $4,762. 10*10*100*(0.05/1.05)=476.19. The $4,762 result matches an annuity-due payment on a $100,000 PV, but the stated inputs (100 Tg total x $100/tC) hand-wave to only a $10,000 PV -> $476/yr. Internally inconsistent by exactly 10x. Formula STRUCTURE, annuity factor r/(1+r), and m_timestep_length roles are all correct; only the final number is wrong. Labeled 'Example:', so illustrative.",
+   "evidence": "modules/56_ghg_policy/price_aug22/equations.gms:45-52 (q56_emission_cost_oneoff annuity formula)",
+   "fix": "Change '$4,762/yr' to '$476/yr' and 'a $100,000 perpetuity' to 'a $10,000 perpetuity'; OR raise the price to $1,000/tC to keep the $100,000/$4,762 pairing. Keep inputs, formula, and result mutually consistent.",
+   "lenses": [
+    "citation_formula"
+   ]
+  },
+  {
+   "doc": "module_56",
+   "id": "module_56:7",
+   "severity": "Major",
+   "bug_class": "data_flow_direction",
+   "doc_line": "module_56.md:66",
+   "claim": "vm_emissions_reg(i,emis_annual,pollutants): Actual regional emissions from the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland) [feeding q56_emis_pricing]. Recurs at :591, :716, :1026, :1068, :1076 as '56 receives/prices emissions from 52 via vm_emissions_reg'.",
+   "reality": "q56_emis_pricing reads vm_emissions_reg ONLY over emis_annual (equations.gms:15-17). Module 52 populates vm_emissions_reg ONLY for emis_oneoff x co2_c (52_carbon/normal_dec17/equations.gms:16-19). emis_annual and emis_oneoff are disjoint (core/sets.gms:314,320), so 52 contributes nothing to the slice 56 reads. Annual-pricing sources are 51(N),53(CH4),58(peatland). 56 prices LULUCF CO2 via its OWN carbon-stock diff (q56_emis_pricing_co2, equations.gms:19-22, stockType actualNoAcEst) in PARALLEL to 52's q52_emis_co2_actual (stockType actual) - neither hands off. Doc's own Section 2.2 (lines 88-92) states this bypass correctly, so the interface listings self-contradict.",
+   "evidence": "modules/56_ghg_policy/price_aug22/equations.gms:15-17 (read emis_annual) + modules/52_carbon/normal_dec17/equations.gms:16-19 (populate emis_oneoff co2_c) + core/sets.gms:314,320 (disjoint sets)",
+   "fix": "In line 66 and the recurring lists (591,716,1026,1068,1076) split the attribution: the emis_annual vm_emissions_reg pricing input comes from 51(N), 53(CH4), 58(peatland) only. Module 52 (LULUCF CO2) is NOT consumed by module 56's pricing - 52 computes 'actual' LULUCF CO2 for reporting; 56 computes its own priced LULUCF CO2 (q56_emis_pricing_co2, actualNoAcEst) directly from vm_carbon_stock, in parallel with 52. Make the summaries consistent with the doc's own Section 2.2.",
+   "lenses": [
+    "mechanism_direction"
+   ]
+  },
+  {
+   "doc": "module_56",
+   "id": "module_56:8",
+   "severity": "Minor",
+   "bug_class": "formula",
+   "doc_line": "module_56.md:203",
+   "claim": "Annual cost = 10 Tg/yr x 10 yr x $100/tC x 0.05/1.05 ~= $4,762/yr; This equals the annual payment on a $100,000 perpetuity at 5% interest",
+   "reality": "The stated inputs give 10*10*100*(0.05/1.05) = 476.19 on a principal of $10,000 (annuity-due 10,000*0.05/1.05 = 476.19). The doc's $4,762/yr and $100,000 perpetuity are each 10x too large (they correspond to a $100,000 principal). Formula structure (equations.gms:45-52) is correct; only the worked number is off - internal inconsistency.",
+   "evidence": "modules/56_ghg_policy/price_aug22/equations.gms:45-52 (formula structure correct); arithmetic self-check",
+   "fix": "Change '~= $4,762/yr' to '~= $476/yr' and '$100,000 perpetuity' to '$10,000 perpetuity' (or scale all inputs up 10x). Either restores internal consistency.",
+   "lenses": [
+    "mechanism_direction"
+   ]
+  }
+ ]
+}
