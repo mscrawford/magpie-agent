@@ -66,9 +66,35 @@ I computed degree centrality from the role map's own `--dump-rolemap` output. Th
 |---|---|---|---|---|---|
 | M11 costs | 241 | 4 | 7 | 3 | 14 |
 | M29 cropland | 168 | 2 | 13 | 4 | 19 |
-| M70 livestock | _(pending)_ | | | | |
+| M70 livestock | 186 | 1 | 7 | 5 | 14 (+1 Info) |
+| **TOTAL (raw)** | **595** | **7** | **27** | **12** | **47** |
 
-_(rate + R55 comparison pending M70; findings not yet refuted or confirmed against develop)_
+### After the adversarial refutation pass (this is the comparable number)
+
+Each module's findings were attacked by an independent refuter told to *refute*, not agree. R55's 28 were post-refutation survivors, so only post-refutation numbers may be compared to it.
+
+| module | claims | raw | **survivors** | Critical | Major | Minor | Info |
+|---|---|---|---|---|---|---|---|
+| M11 | 241 | 14 | 14 (3 downgraded) | 3 | 7 | 4 | 0 |
+| M29 | 168 | 19 | 19 (1 partial) | 2 | 12 | 5 | 0 |
+| M70 | 186 | 14 | **13** (1 refuted, 4 partial, 1 escalated) | 2 | 5 | 5 | 1 |
+| **TOTAL** | **595** | 47 | **46** | **7** | **24** | **14** | **1** |
+
+**Only 1 of 47 was fully refuted.** Two findings got *stronger* under attack (M29-F8: the doc's carbon trade-off is INVERTED, not merely unsupported — plantation `k` strictly exceeds natveg's in `f52_growth_par.csv`, so plantation carbon is >= natveg at every age class; M11-F6: the bioenergy subsidy is 6.5 at defaults and applied as a price floor, so `vm_bioenergy_utility` is strictly negative and the doc's prescribed `stopifnot(all(emission_costs >= 0))` fires on a correct default run).
+
+## THE RATE — with its denominator, and its caveat
+
+| | R55 (2026-07-16) | R58 (tonight) |
+|---|---|---|
+| targets | the 3 **most**-audited hubs (M10/M32/M52) | 3 **stale** hubs (M11/M29/M70) |
+| claims evaluated | 498 | **595** |
+| confirmed findings | 28 | **46** |
+| **claim-level defect rate** | **5.6%** | **7.7%** |
+| **Criticals** | **1** | **7** |
+
+**The stale hubs are worse — but the comparison is NOT clean, and must never be quoted as if it were.** R55 *imposed* its taxonomy (auditors were handed the class to hunt); R58 was open-ended (auditors named their own classes). An open-ended auditor should find >= a lens-directed one on the same claims, so **an unknown share of the 5.6% -> 7.7% delta is method, not corpus.** The Critical ratio (1 -> 7) is the more robust signal, because Critical is defined by reader-harm triggers that both rounds shared.
+
+**What this does NOT license:** "recency predicts defects" as a causal claim. n=3 per arm, no randomisation, different instruments. What it does license: the stale hubs are **not** clean, and the hypothesis that the recent clean rounds were an artifact of re-auditing already-audited modules **survives its first real test**.
 
 ### The structural signal — both auditors converged on it independently
 
