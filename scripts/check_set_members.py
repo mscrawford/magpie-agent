@@ -43,11 +43,22 @@ Usage: python3 scripts/check_set_members.py [--self-test]
 import json
 import os
 import re
+import subprocess
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 AGENT_DIR = os.path.dirname(SCRIPT_DIR)
-MAGPIE_DIR = os.path.dirname(AGENT_DIR)
+# Ground-truth GAMS tree. Defaults to the parent working tree, but honours a
+# MAGPIE_DIR env override so callers can point every checker at a pinned,
+# read-only `origin/develop` worktree. Backward compatible: unset -> unchanged.
+# This checker previously IGNORED the override while check_gams_variables.py
+# honoured it, so a caller pinning MAGPIE_DIR got a silent split-brain ground
+# truth (some checkers on the pinned tree, some on the working tree). R58.
+MAGPIE_DIR = (
+    os.path.abspath(os.environ["MAGPIE_DIR"])
+    if os.environ.get("MAGPIE_DIR")
+    else os.path.dirname(AGENT_DIR)
+)
 
 DOCS_DIR = os.path.join(AGENT_DIR, "modules")
 ALLOWLIST_PATH = os.path.join(AGENT_DIR, "audit", "advisory_allowlist.json")
@@ -260,6 +271,64 @@ def scan_doc(doc_path, canonical_map, allowlist=frozenset()):
     return findings
 
 
+def _write_setmap_fixture(root):
+    """Synthetic tree exercising the REAL build_canonical_map + parse_set_members.
+
+    Pins the properties the pre-R58 self-test could not reach (it injected a
+    canonical_map and never touched a tree):
+      - word-boundary: `land` must not absorb `land_ag`'s member block
+      - multi-file resolution: ag_pools comes from a module sets.gms, not core/
+      - `*`-comment stripping (R53 hardening)
+      - a `/` inside the free-text description (e.g. a unit "tN/ha") must NOT be
+        mistaken for the member-block delimiter (R53 hardening)
+    """
+    def w(rel, text):
+        p = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w") as f:
+            f.write(text)
+
+    w("core/sets.gms",
+      "***LAND POOLS***\n"
+      "  land Land pools\n"
+      "        / crop, past, forestry /\n"
+      "\n"
+      "  land_ag(land) Agricultural land pools\n"
+      "        / crop, past /\n"
+      "\n"
+      "  land_timber(land) timber land\n"
+      "        / forestry, other /\n"
+      "\n"
+      "  land_forest(land_timber) forested\n"
+      "        / forestry /\n"
+      "\n"
+      "* land_natveg(land_timber) COMMENTED OUT / should_not, appear /\n"
+      "  land_natveg(land_timber) Natural vegetation\n"
+      "        / primforest, secdforest /\n"
+      "\n"
+      "  forest_type Forest type measured in tN/ha in this description\n"
+      "        / natveg, plantations /\n"
+      "\n"
+      "  c_pools Carbon pools\n"
+      "        / vegc, litc, soilc /\n")
+
+    w("modules/56_ghg_policy/price_aug22/sets.gms",
+      "  ag_pools(c_pools) Agricultural carbon pools\n"
+      "        / vegc, litc /\n")
+
+
+def _scan_only():
+    """Internal: drive the REAL build_canonical_map over MAGPIE_DIR, emit JSON.
+
+    Exists so the self-test can exercise the ground-truth extractor against a
+    real tree instead of injecting a canonical_map -- the defect R57/W0a found
+    across the battery.
+    """
+    cm = build_canonical_map()
+    print(json.dumps({k: sorted(v) for k, v in cm.items()}))
+    return 0
+
+
 def self_test():
     """Synthesize the module_52 bug FIRST, then assert the check flags it.
 
@@ -388,6 +457,65 @@ def self_test():
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
+    # ---- GROUND-TRUTH half: drive the REAL build_canonical_map over a tree ----
+    # Pre-R58 build_canonical_map was dead to this test: every control above
+    # injects a hand-written canonical_map, so the function that READS the tree
+    # and decides what is true was never called. Replacing it with `raise` left
+    # the suite green.
+    gt_tmp = tempfile.mkdtemp()
+    try:
+        _write_setmap_fixture(gt_tmp)
+        env = dict(os.environ, MAGPIE_DIR=gt_tmp)
+        p = subprocess.run(
+            [sys.executable, os.path.abspath(__file__), "--_scan-only"],
+            capture_output=True, text=True, env=env, timeout=120,
+        )
+        if p.returncode != 0:
+            print(f"  SELF-TEST FAIL [ground-truth]: subprocess rc={p.returncode}: {p.stderr[:300]}")
+            ok = False
+        else:
+            cm = {k: set(v) for k, v in json.loads(p.stdout).items()}
+            gt = [
+                ("land resolved from core/sets.gms",
+                 cm.get("land") == {"crop", "past", "forestry"}),
+                # word boundary: `land` must not absorb land_ag/land_timber blocks
+                ("land not polluted by land_ag/land_timber blocks",
+                 cm.get("land") == {"crop", "past", "forestry"} and cm.get("land_ag") == {"crop", "past"}),
+                # multi-file: ag_pools lives under modules/, not core/
+                ("ag_pools resolved from a module sets.gms",
+                 cm.get("ag_pools") == {"vegc", "litc"}),
+                ("c_pools resolved", cm.get("c_pools") == {"vegc", "litc", "soilc"}),
+                # R53 hardening: `/` inside the description ("tN/ha") is not the delimiter
+                ("slash-in-description not treated as member delimiter",
+                 cm.get("forest_type") == {"natveg", "plantations"}),
+                # R53 hardening: `*` comment lines stripped before parsing
+                ("commented-out set line ignored",
+                 cm.get("land_natveg") == {"primforest", "secdforest"}),
+            ]
+            for name, cond in gt:
+                print(f"  SELF-TEST {'PASS' if cond else 'FAIL'} [ground-truth]: {name}")
+                if not cond:
+                    ok = False
+
+        # The REAL allowlist file must parse. NOTE: check_set_members legitimately
+        # has ZERO entries today (both live entries are check_param_defaults), so
+        # asserting non-empty would be wrong. Assert the SCHEMA instead: the file
+        # parses and exposes the 'allowlist' key this loader reads. That is the
+        # fixture-vs-real-schema-drift guard (R57: a checker read data["entries"]
+        # while the live file keyed "allowlist", silently emptying its suppressions).
+        with open(ALLOWLIST_PATH) as f:
+            real = json.load(f)
+        if "allowlist" not in real:
+            print("  SELF-TEST FAIL [schema]: real allowlist file has no 'allowlist' key — loader would silently suppress nothing")
+            ok = False
+        elif not isinstance(load_allowlist(), set):
+            print("  SELF-TEST FAIL [schema]: load_allowlist() did not return a set on the real file")
+            ok = False
+        else:
+            print(f"  SELF-TEST PASS [schema]: real allowlist parses; 'allowlist' key present ({len(real['allowlist'])} entries, 0 for this checker by design)")
+    finally:
+        shutil.rmtree(gt_tmp, ignore_errors=True)
+
     if ok:
         print("check_set_members self-test: PASS")
         print("SELFTEST_OK check_set_members")
@@ -397,6 +525,8 @@ def self_test():
 
 
 def main():
+    if "--_scan-only" in sys.argv:
+        return _scan_only()
     if "--self-test" in sys.argv:
         return self_test()
     if not os.path.isdir(DOCS_DIR):
