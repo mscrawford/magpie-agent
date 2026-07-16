@@ -88,19 +88,34 @@ HISTORICAL_RE = re.compile(
 )
 
 
+def parse_allowlist(data) -> set[tuple[str, str]]:
+    """Return {(doc_file, var)} pairs allow-listed for this check.
+
+    Split out from load_allowlist() so the suppression path is actually assertable:
+    R57/W0a measured load_allowlist as DEAD to this checker's --self-test (it could be
+    replaced with `raise` and the self-test stayed green), which is exactly how the
+    key bug below survived.
+
+    R57 FIX: this read only "entries", but audit/advisory_allowlist.json keys its rows
+    under "allowlist" -- so this checker's suppression list was silently ALWAYS EMPTY.
+    Latent rather than active (no rows currently target check_role_attribution), but
+    any allowlist entry added for it would have been ignored without a word. Accept
+    both keys, as check_attribution_omissions.py already does.
+    """
+    rows = data if isinstance(data, list) else (
+        data.get("allowlist") or data.get("entries") or [])
+    return {(e.get("file", ""), e.get("key", "")) for e in rows
+            if e.get("check") == CHECK_NAME}
+
+
 def load_allowlist() -> set[tuple[str, str]]:
-    """Return {(doc_file, var)} pairs allow-listed for this check."""
+    """I/O wrapper around parse_allowlist()."""
     if not ALLOWLIST_PATH.exists():
         return set()
     try:
-        data = json.loads(ALLOWLIST_PATH.read_text())
+        return parse_allowlist(json.loads(ALLOWLIST_PATH.read_text()))
     except (ValueError, OSError):
         return set()
-    out: set[tuple[str, str]] = set()
-    for entry in data if isinstance(data, list) else data.get("entries", []):
-        if entry.get("check") == CHECK_NAME:
-            out.add((entry.get("file", ""), entry.get("key", "")))
-    return out
 
 
 def declarer_num(var: str, producers: dict) -> int | None:
@@ -280,6 +295,41 @@ def self_test() -> int:
         for p in tmp.iterdir():
             p.unlink()
         tmp.rmdir()
+
+    # --- suppression path (R57): this was DEAD to the self-test, which is how the
+    # "entries"-vs-"allowlist" key bug survived. Assert BOTH schema shapes parse.
+    row = [{"check": CHECK_NAME, "file": "modules/module_99.md", "key": "vm_x"}]
+    for label, payload, expect in [
+        ("allowlist-key-schema", {"allowlist": row}, {("modules/module_99.md", "vm_x")}),
+        ("entries-key-schema", {"entries": row}, {("modules/module_99.md", "vm_x")}),
+        ("bare-list-schema", row, {("modules/module_99.md", "vm_x")}),
+        ("other-check-rows-ignored",
+         {"allowlist": [{"check": "check_other", "file": "f", "key": "k"}]}, set()),
+    ]:
+        got = parse_allowlist(payload)
+        if got == expect:
+            print(f"  SELF-TEST PASS [{label}]")
+        else:
+            print(f"  SELF-TEST FAIL [{label}]: expected {expect}, got {got}")
+            ok = False
+
+    # The real file must be parseable by THIS checker's reader -- a synthetic fixture
+    # alone cannot catch a schema drift in the actual allowlist (that is precisely the
+    # gap that hid the key bug: the fixture never used the real file's shape).
+    if ALLOWLIST_PATH.exists():
+        try:
+            real = json.loads(ALLOWLIST_PATH.read_text())
+            rows = real if isinstance(real, list) else (
+                real.get("allowlist") or real.get("entries") or [])
+            if rows:
+                print("  SELF-TEST PASS [real-allowlist-file-has-parseable-rows]")
+            else:
+                print("  SELF-TEST FAIL [real-allowlist-file-has-parseable-rows]: "
+                      "0 rows -- schema drift would silently empty every suppression list")
+                ok = False
+        except (ValueError, OSError) as e:
+            print(f"  SELF-TEST FAIL [real-allowlist-file-has-parseable-rows]: {e}")
+            ok = False
 
     if ok:
         print(f"{CHECK_NAME} self-test: PASS")
