@@ -325,8 +325,11 @@ COMPLETENESS_RE = re.compile(
 # EACH optionally followed by a "(label)". Real corpus forms:
 #   module_52.md:484  "Consumers: Modules 14, 29, 30, ..."
 #   module_12.md:878  "Module 13 (TC ...), 29 (cropland ...), 32 (...), ..."
+# NOTE the ",\s*and" alternative MUST precede the bare "," (ordered alternation): an
+# OXFORD list "Modules 14, 29, ..., 56, and 59" otherwise stops at 56 and reports the
+# last member as omitted -- a real FP this checker produced on module_52.md:484.
 MODULE_LIST_RE = re.compile(
-    r"\bModules?\s+(\d{1,2}(?:\s*\([^)]*\))?(?:\s*(?:,|and|&)\s+\d{1,2}(?:\s*\([^)]*\))?)+)",
+    r"\bModules?\s+(\d{1,2}(?:\s*\([^)]*\))?(?:\s*(?:,\s*and|,|and|&)\s*\d{1,2}(?:\s*\([^)]*\))?)+)",
     re.IGNORECASE)
 
 
@@ -447,6 +450,64 @@ _TBL_HEADER_CELL_RE = re.compile(
     r"variable|interface|receives|provides|from|to|use|file|desc)\b", re.IGNORECASE)
 
 
+# --- Var-BLOCK form: a bolded heading names ONE var, then field bullets describe it:
+#       **1b. pm_carbon_density_secdforest_ac_uncalib** (declarations.gms:10)
+#       - **Dimensions**: `(t_all,j,ac,ag_pools)`
+#       - **Consumers**: Module 32 (...), Module 29 (...)
+# The Consumers bullet carries NO var of its own (it inherits the heading's), which is
+# why the line-scoped parser skipped it -- and that block is exactly where the R55
+# Critical hid (module_52.md:458 omits M14 + M35). A "**Consumers**:" FIELD LABEL is a
+# completeness claim about that var -> anchor=True.
+_VARBLOCK_HEAD_RE = re.compile(r"^\s*\*\*[^*]+\*\*")          # bolded heading (NOT "- **Field**:")
+_MD_HEAD_RE = re.compile(r"^\s*#{1,6}\s")
+_FIELD_READ_RE = re.compile(
+    r"^\s*[-*]?\s*\*\*(?:consumers?|consumed\s+by|read\s+by|used\s+by)\*\*\s*:", re.IGNORECASE)
+_FIELD_POP_RE = re.compile(
+    r"^\s*[-*]?\s*\*\*(?:populated\s+by|produced\s+by|written\s+by)\*\*\s*:", re.IGNORECASE)
+
+
+def parse_doc_varblock_triples(text: str) -> list[dict]:
+    """Triples from var-scoped field bullets under a bolded var heading."""
+    triples: list[dict] = []
+    lines = text.splitlines()
+    in_fence = False
+    scope_var: str | None = None
+    for i, line in enumerate(lines):
+        if FENCE_RE.match(line):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if _MD_HEAD_RE.match(line):
+            scope_var = None
+            continue
+        # A bolded heading line (not a "- **Field**:" bullet) opens/closes a var scope.
+        if _VARBLOCK_HEAD_RE.match(line) and not (_FIELD_READ_RE.match(line) or _FIELD_POP_RE.match(line)):
+            found: set[str] = set()
+            for bold in re.findall(r"\*\*([^*]+)\*\*", line):
+                found |= _cross_vars(bold)
+            scope_var = next(iter(found)) if len(found) == 1 else None
+            continue
+        if not scope_var:
+            continue
+        rd, pp = _FIELD_READ_RE.match(line), _FIELD_POP_RE.match(line)
+        if not (rd or pp):
+            continue
+        deb = _debacktick(line)
+        if NEGATION_RE.search(deb) or HISTORICAL_RE.search(line):
+            continue
+        listed = _mod_nums(deb)
+        if not listed:
+            continue
+        triples.append({
+            "lineno": i + 1, "var": scope_var, "listed": listed,
+            "direction": "READ" if rd else "POPULATE", "anchor": True,
+            "hedged": bool(HEDGE_RE.search(deb)), "source": "varblock",
+            "row": line.strip()[:160],
+        })
+    return triples
+
+
 def parse_doc_table_triples(text: str) -> list[dict]:
     """Return attribution triples from Provides-To / Receives-From tables.
 
@@ -529,7 +590,7 @@ def diff_doc(text: str, rel_path: str, role, realiz, ref_any, producers,
 
     omissions: list[dict] = []
     phantoms: list[dict] = []
-    triples = parse_doc_triples(text) + parse_doc_table_triples(text)
+    triples = parse_doc_triples(text) + parse_doc_table_triples(text) + parse_doc_varblock_triples(text)
     for t in triples:
         var, listed, direction = t["var"], t["listed"], t["direction"]
         rolemap = role.get(var, {})
@@ -859,6 +920,38 @@ def self_test() -> int:
             print(f"  SELF-TEST FAIL [{label}]: "
                   f"om_missing={sorted(miss_om)} om_extra={sorted(extra_om)} "
                   f"ph_missing={sorted(miss_ph)} ph_extra={sorted(extra_ph)}")
+
+    # POSITIVE 7 — VAR-BLOCK form: the var comes from a bolded heading and the
+    # "**Consumers**:" bullet carries NO var of its own. This is the exact shape that
+    # carried the R55 Critical (module_52.md:458, omitting M14+M35) and that the
+    # line-scoped parser skipped entirely.
+    cases.append((
+        "pos-varblock-consumers",
+        "**1b. vm_land_forestry** (NEW 2026-04-20, declarations.gms:10)\n"
+        "- **Description**: uncalibrated variant\n"
+        "- **Dimensions**: `(j,type32)`\n"
+        "- **Consumers**: Module 32 (afforestation)\n",
+        {"omit": {("vm_land_forestry", "58")}, "phantom": set()},
+    ))
+    # NEGATIVE 10 — OXFORD list: "Modules A, B, ..., and Z" must parse the LAST
+    # member. Without the ",\\s*and" alternative the list stops before 58 and reports
+    # it omitted — a real FP this checker produced on module_52.md:484.
+    cases.append((
+        "neg-oxford-list",
+        "**Consumers of `vm_land`**: Modules 29, 30, 32, 35, and 58.\n",
+        {"omit": set(), "phantom": set()},
+    ))
+    # NEGATIVE 11 — a bolded NON-var heading must CLOSE a var scope, so a later
+    # "**Consumers**:" bullet is not bound to a stale var.
+    cases.append((
+        "neg-varblock-scope-closes",
+        "**1. vm_land_forestry** (declarations.gms:10)\n"
+        "- **Dimensions**: `(j,type32)`\n"
+        "\n"
+        "**Some Unrelated Section**\n"
+        "- **Consumers**: Module 32\n",
+        {"omit": set(), "phantom": set()},
+    ))
 
     # Coverage-counter sanity.
     SCAN_STATS["triples"] = 0
