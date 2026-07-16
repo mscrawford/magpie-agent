@@ -281,6 +281,110 @@ def build_role_map() -> tuple[dict[str, dict[str, set[str]]], dict[str, dict[str
     return role, realiz
 
 
+# ---------------------------------------------------------------------------
+# SLICE-SCOPED role map - the complement to build_role_map() (see
+# scripts/gams_slices.py for WHY: the role map above is WHOLE-VARIABLE, and a
+# doc's consumer/producer claim is often scoped to ONE SLICE of a shared
+# interface var). This section ADDS a per-occurrence, argument-tuple-carrying
+# map alongside build_role_map(); it does not change build_role_map() itself
+# (other checkers depend on its exact behaviour - see module docstring).
+# ---------------------------------------------------------------------------
+
+# A cross-module interface var CALL with an explicit parenthesized argument
+# list: `VAR(a1,a2,...)`, optionally with a `.fx`/`.lo`/`.up`/`.l`/`.m`
+# attribute between the name and the parens (the assignment-attribute forms
+# _classify_statement's own docstring calls out). No nested parens inside the
+# argument list - mirrors the `[^()]*` convention used elsewhere in this file
+# (TABLE_ROW_RE, CRITICAL_CONSUMERS_RE) and is rare/absent for real GAMS index
+# tuples (a literal, a bare set name, or a $-conditional fragment - none of
+# which nest parens one level in).
+_VAR_CALL_RE = re.compile(
+    r"\b((?:vm|pm|im|pcm|fm)_[a-zA-Z0-9_]+)(?:\.(?:fx|lo|up|l|m))?\s*\(([^()]*)\)"
+)
+
+
+def _cross_var_calls(fragment: str) -> list[tuple[str, tuple[str, ...]]]:
+    """Return [(var_base, (arg1, arg2, ...)), ...] for each cross-iface var CALL
+    (an explicit `VAR(...)` occurrence, not a bare mention) in `fragment`.
+
+    Filters the same way `_cross_vars` does (CROSS_IFACE_RE + is_interface_var
+    + glob-stem skip), so the two never disagree about which names qualify.
+    """
+    out: list[tuple[str, tuple[str, ...]]] = []
+    for m in _VAR_CALL_RE.finditer(fragment):
+        base = m.group(1)
+        if not (CROSS_IFACE_RE.match(base) and is_interface_var(base)):
+            continue
+        if _is_glob_stem(base, fragment):
+            continue
+        args = tuple(a.strip() for a in m.group(2).split(","))
+        out.append((base, args))
+    return out
+
+
+def build_slice_role_map() -> dict[str, dict[str, dict[str, list]]]:
+    """Return {var: {modnum: {"POPULATE": [slice_tuple,...], "READ": [slice_tuple,...]}}}.
+
+    `slice_tuple` is the RAW argument tuple captured from one `VAR(a1,a2,...)`
+    call occurrence (e.g. `("i2", "emis_oneoff", '"co2_c"')`) - not yet resolved
+    to members. Resolve each position with `gams_slices.resolve_index` and
+    compare with `gams_slices.slices_intersect` to test whether two documented
+    occurrences of the SAME variable could plausibly refer to the same slice.
+
+    Reuses `_strip_comments` + the ';'-statement split + `_classify_statement`
+    (UNCHANGED - see its docstring) for the POPULATE/READ decision, so the
+    slice-scoped map can never disagree with `build_role_map()` about which
+    side a var is classified on for a given statement. This function only ADDS
+    a second, per-occurrence pass over the SAME statement to also capture each
+    call's raw argument tuple - it does not reimplement the classification
+    logic, and it does not alter `build_role_map()` or `_classify_statement`.
+
+    KNOWN LIMIT: `_classify_statement` returns per-statement ROLE SETS, not
+    per-occurrence roles. If the SAME var appears more than once in one
+    statement (rare for cross-module interface vars - e.g. a self-referential
+    update `VAR(dims) = VAR(dims) + x;`), every occurrence of that var in the
+    statement is bucketed under whichever single role (POPULATE xor READ,
+    disjoint by construction in `_classify_statement`) it was assigned for the
+    statement as a whole - so a genuinely distinct second occurrence's own
+    slice could be filed under the wrong role. This mirrors a known limit of
+    the whole-variable role map itself and has not been observed in the
+    corpus for cross-module vars.
+    """
+    slice_role: dict[str, dict[str, dict[str, list]]] = defaultdict(
+        lambda: defaultdict(lambda: defaultdict(list)))
+    modules_root = MAGPIE_DIR / "modules"
+    if not modules_root.is_dir():
+        return {}
+    for module_dir in sorted(modules_root.iterdir()):
+        if not module_dir.is_dir():
+            continue
+        mnum = module_dir.name.split("_", 1)[0]
+        if not mnum.isdigit():
+            continue
+        for path in module_dir.rglob("*.gms"):
+            code = _strip_comments(read_text_or_empty(path))
+            if not code:
+                continue
+            for stmt in code.split(";"):
+                stmt = stmt.strip()
+                if not stmt:
+                    continue
+                pop_bases, read_bases = _classify_statement(stmt)
+                if not (pop_bases or read_bases):
+                    continue
+                for base, args in _cross_var_calls(stmt):
+                    if base in pop_bases:
+                        role = "POPULATE"
+                    elif base in read_bases:
+                        role = "READ"
+                    else:
+                        continue  # not classified as either side for this statement
+                    slice_role[base][mnum][role].append(args)
+    # Collapse the nested defaultdicts to plain dicts for a clean, JSON-able,
+    # externally-safe return value (mirrors build_role_map's own contract).
+    return {v: {m: dict(roles) for m, roles in mm.items()} for v, mm in slice_role.items()}
+
+
 def build_default_realization_by_modnum() -> dict[str, str]:
     """{modnum: default_realization} from config/default.cfg + dir suffixes."""
     modules_root = MAGPIE_DIR / "modules"
