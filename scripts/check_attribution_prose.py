@@ -145,7 +145,8 @@ def load_allowlist() -> set[tuple[str, str]]:
     except (ValueError, OSError):
         return set()
     out: set[tuple[str, str]] = set()
-    for entry in data if isinstance(data, list) else data.get("entries", []):
+    rows = data if isinstance(data, list) else (data.get("allowlist") or data.get("entries") or [])
+    for entry in rows:
         if entry.get("check") == CHECK_NAME:
             out.add((entry.get("file", ""), entry.get("key", "")))
     return out

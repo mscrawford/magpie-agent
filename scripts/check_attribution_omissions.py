@@ -65,6 +65,24 @@ Omissions are INHERENTLY lower-confidence than phantoms (a doc may legitimately
 list only key consumers). They are ADVISORY and must pass adversarial refutation
 + human confirmation before any doc edit.
 
+KNOWN FP CLASS -- SLICE-SCOPED CLAIMS (accepted; use the allowlist)
+  The role map is WHOLE-VARIABLE. A doc's consumer list is often scoped to ONE
+  SLICE of a shared interface. A module can therefore read the VARIABLE without
+  reading the SLICE the doc is about -> a spurious "omission".
+  Live example (R55, allowlisted): module_52.md:443 lists consumers of the
+  `vm_emissions_reg` slice that M52 writes (emis_oneoff x "co2_c"). M57 reads
+  `vm_emissions_reg(i2,emis_source,pollutants_maccs57)` but
+  `pollutants_maccs57 = {ch4, n2o_n_direct}` (57_maccs/on_aug22/sets.gms:25-26)
+  EXCLUDES co2_c -> M57 is NOT a consumer of M52's slice, and "adding" it would
+  inject a new error. Contrast module_58.md:391, where the same M57 omission IS
+  real: M58 writes (i,"peatland",poll58) with poll58 = {co2_c, ch4, n2o_n_direct}
+  and peatland is in emis_annual (core/sets.gms:320-322), so M57's read genuinely
+  intersects M58's slice.
+  Deciding this MECHANICALLY needs per-slice set reasoning (which set members each
+  module writes/reads) -- out of scope here. Until then: adjudicate slice-scoped
+  lines by hand and record confirmed FPs in audit/advisory_allowlist.json
+  (check="check_attribution_omissions", key="<NN>:<var>").
+
 Ground truth: `<MAGPIE_DIR>/modules`. Point MAGPIE_DIR at a pinned develop
 worktree for an authoritative run (the working tree can lag; see memory
 magpie_agent_sync_against_develop):
@@ -112,7 +130,25 @@ from check_attribution_prose import (  # noqa: E402
 AGENT_DIR = SCRIPT_DIR.parent
 DOCS_DIR = AGENT_DIR / "modules"
 CROSS_DIR = AGENT_DIR / "cross_module"
+ALLOWLIST_PATH = AGENT_DIR / "audit" / "advisory_allowlist.json"
 CHECK_NAME = "check_attribution_omissions"
+
+
+def load_allowlist() -> set[tuple[str, str]]:
+    """{(file, "<NN>:<var>")} suppressed known FPs (see audit/advisory_allowlist.json).
+
+    NOTE the real file keys its rows under "allowlist"; accept "entries" too so a
+    schema change cannot silently empty the list (the sibling checkers read only
+    "entries" and therefore never load any suppression at all).
+    """
+    if not ALLOWLIST_PATH.exists():
+        return set()
+    try:
+        data = json.loads(ALLOWLIST_PATH.read_text())
+    except (ValueError, OSError):
+        return set()
+    rows = data if isinstance(data, list) else (data.get("allowlist") or data.get("entries") or [])
+    return {(e.get("file", ""), e.get("key", "")) for e in rows if e.get("check") == CHECK_NAME}
 
 # Cross-module interface prefixes (MANDATE-18 core set + fm_ input params).
 CROSS_IFACE_RE = re.compile(r"^(?:vm|pm|im|pcm|fm)_[a-z]")
@@ -582,8 +618,9 @@ SCAN_STATS = {"triples": 0, "docs_with_triples": 0, "unbound_docs": 0}
 
 
 def diff_doc(text: str, rel_path: str, role, realiz, ref_any, producers,
-             default_real, multi_real) -> tuple[list[dict], list[dict], int]:
+             default_real, multi_real, allow=None) -> tuple[list[dict], list[dict], int]:
     """Return (omissions, phantoms, triples_evaluated) for one doc."""
+    allow = allow or set()
     fname = os.path.basename(rel_path)
     mod_m = re.search(r"module_(\d{1,2})", fname)
     doc_own = f"{int(mod_m.group(1)):02d}" if mod_m else None
@@ -638,6 +675,11 @@ def diff_doc(text: str, rel_path: str, role, realiz, ref_any, producers,
         truth = read_nums if direction == "READ" else (pop_nums if direction == "POPULATE" else role_any)
         omitted = truth - listed - exclude
         for m in sorted(omitted):
+            # Allowlisted known FP (e.g. a SLICE-scoped consumer list -- see the
+            # module docstring). Match the doc path in either form.
+            key = f"{m}:{var}"
+            if (rel_path, key) in allow or (fname, key) in allow:
+                continue
             # Realization-scope: if m is multi-realization and references the var
             # ONLY in non-default realizations, tag low-confidence.
             confidence = "high"
@@ -709,6 +751,7 @@ def main() -> int:
     producers = build_producer_map()
     default_real = build_default_realization_by_modnum()
     multi_real = _multi_realization_modnums()
+    allow = load_allowlist()
 
     all_om: list[dict] = []
     all_ph: list[dict] = []
@@ -718,7 +761,8 @@ def main() -> int:
         rel = str(doc.relative_to(AGENT_DIR))
         before = SCAN_STATS["triples"]
         om, ph, ntrip = diff_doc(doc.read_text(encoding="utf-8", errors="ignore"),
-                                  rel, role, realiz, ref_any, producers, default_real, multi_real)
+                                  rel, role, realiz, ref_any, producers, default_real,
+                                  multi_real, allow)
         if ntrip:
             SCAN_STATS["docs_with_triples"] += 1
         all_om.extend(om)
