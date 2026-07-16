@@ -173,10 +173,19 @@ def scan_doc(text: str, rel_path: str, ref_map: dict[str, set[int]],
 scan_doc.rows_evaluated = 0  # coverage counter; reset by callers (see main / self_test)
 
 
-def _ref_map_from_consumers() -> dict[str, set[int]]:
-    """build_consumer_map (var -> {"NN_name"}) normalized to var -> {NN:int}."""
+def _ref_map_from_consumers(consumers=None) -> dict[str, set[int]]:
+    """build_consumer_map (var -> {"NN_name"}) normalized to var -> {NN:int}.
+
+    `consumers` is injectable (defaulting to the real build_consumer_map()) so the
+    self-test can exercise this normalization directly. Pre-R58 it was dead to the
+    test: it could be replaced with `raise` and the suite stayed green. Note this
+    function is DUPLICATED verbatim in check_attribution_tables.py and
+    check_attribution_prose.py -- the same duplication shape as the CROSS_IFACE_RE
+    bug R57 had to fix at two sites. Keep both copies in sync.
+    """
+    src = consumers if consumers is not None else build_consumer_map()
     out: dict[str, set[int]] = {}
-    for var, mods in build_consumer_map().items():
+    for var, mods in src.items():
         nums = set()
         for m in mods:
             head = m.split("_", 1)[0]
@@ -261,6 +270,28 @@ def self_test() -> int:
     if len(findings) != 1:
         print(f"SELF-TEST FAIL: expected exactly 1 finding, got {len(findings)}: {findings}")
         ok = False
+    # ---- GROUND-TRUTH: _ref_map_from_consumers normalization ------------------
+    # Pre-R58 this wrapper was dead to the test -- both self-tests inject a ref-map
+    # ("no parent repo", per their own docstrings), so the function that BUILDS the
+    # ref map was never called. Its extractor (build_consumer_map) is now covered in
+    # check_consumer_attribution.py; this covers the normalization layered on top:
+    # "70_livestock" -> 70, non-numeric dirs dropped, dims stripped from the key.
+    _rm = _ref_map_from_consumers(consumers={
+        "vm_x(i,j)": {"70_livestock", "29_cropland", "not_a_module"},
+        "vm_y": {"11_costs"},
+    })
+    if _rm.get("vm_x") != {70, 29}:
+        ok = False
+        print(f"  SELF-TEST FAIL [ref-map-norm]: vm_x -> {_rm.get('vm_x')}, want {{70, 29}}")
+    elif "vm_x(i,j)" in _rm:
+        ok = False
+        print("  SELF-TEST FAIL [ref-map-norm]: dims not stripped from var key")
+    elif _rm.get("vm_y") != {11}:
+        ok = False
+        print(f"  SELF-TEST FAIL [ref-map-norm]: vm_y -> {_rm.get('vm_y')}, want {{11}}")
+    else:
+        print("  SELF-TEST PASS [ref-map-norm]: NN_name -> NN, non-numeric dropped, dims stripped")
+
     if ok:
         print("SELF-TEST PASS: planted phantom flagged, all correct rows clean.")
         print(f"SELFTEST_OK {CHECK_NAME}")  # sentinel required by selftest_validator.sh [4/5]
