@@ -182,7 +182,13 @@ vm_cost_prod_livst(i2,"capital") =e=
 
 **Units**: mio. USD17MER per yr
 
-**Total Livestock Costs**: `vm_cost_prod_livst(i,"labor") + vm_cost_prod_livst(i,"capital")` passed to Module 11 (Costs) for aggregation into objective function.
+**Total Livestock Costs**: `vm_cost_prod_livst(i,"labor") + vm_cost_prod_livst(i,"capital")` passed to Module 11 (Costs) for aggregation into the objective function (`modules/11_costs/default/equations.gms`).
+
+**`vm_cost_prod_livst` has TWO consumers, not one.** Module 36 (Employment) also reads it — the `"labor"` slice — to compute agricultural employment: `vm_cost_prod_crop(i2,"labor") + vm_cost_prod_livst(i2,"labor") + ...` (`modules/36_employment/exo_may22/equations.gms:24`).
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: M36 was missing from this consumer set. This also means the
+> M70↔M36 relationship is **reciprocal** — M36 reads `vm_cost_prod_livst` while M70 reads M36's wage
+> scenario parameters (see §Depends On) — a real cycle the doc did not record.
 
 ---
 
@@ -703,8 +709,25 @@ vm_feed_intake(i,kap,kall)  // mio. tDM per yr
 ```
 vm_feed_balanceflow(i,kap,kall)  // mio. tDM
 ```
-- Used internally for FAO consistency and scavenging adjustments
+- Used for FAO consistency and scavenging adjustments
 - Contributes to `vm_dem_feed` via `q70_feed`
+- **To Module 71 (Livestock Disaggregation)**: consumed by M71's **default** realization
+  `foragebased_jul23` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms`), and also by
+  `foragebased_aug18`.
+  > ⚠️ **CORRECTED (R58, 2026-07-17)**: this entry previously read "Used **internally** for FAO
+  > consistency..." — an affirmative claim that no other module reads it. It is false: M71's default
+  > realization consumes it. Note this variable is listed under *Outputs to Other Modules* while
+  > being described as internal-only, so the doc contradicted its own section heading.
+
+**3b. Feed Baskets** (`declarations.gms:36`):
+```
+im_feed_baskets(t,i,kli,kall)
+```
+- **To Module 71 (Livestock Disaggregation)**: consumed by the **default** realization
+  `foragebased_jul23` (`modules/71_disagg_lvst/foragebased_jul23/equations.gms:24`) and by
+  `foragebased_aug18` (`equations.gms:17,32`).
+  > ⚠️ **ADDED (R58, 2026-07-17)**: this interface output was absent from this section entirely.
+  > The M70→M71 blind spot spanned **two** identifiers, not one.
 
 **4. Livestock Production Costs** (`declarations.gms:12-13`):
 ```
