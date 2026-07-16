@@ -13,9 +13,12 @@ Exit:
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 from collections import Counter
 from pathlib import Path
 
@@ -182,6 +185,42 @@ def find_typo_allow_markers(text: str) -> list[str]:
     return typos
 
 
+def _write_index_fixture(root: Path) -> None:
+    """Synthetic MAgPIE tree exercising build_gams_index's PER-ROOT flag matrix.
+
+    The old self-test re-applied the regexes to one in-memory blob, so it could
+    never test the thing that actually distinguishes this function: different
+    roots get different regex sets (modules -> iface+numbered+core_scalar;
+    core -> iface+core_scalar, NO numbered; main.gms/default.cfg -> iface only).
+    """
+    def w(rel: str, text: str) -> None:
+        p = root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text)
+
+    w("main.gms", " vm_from_main(j) = 1;\n")
+    w("modules/10_land/landmatrix_dec18/declarations.gms",
+      " vm_from_modules(j) a\n v10_numbered(j) b\n s_scalar_in_modules c\n")
+    # core/ must yield iface + core scalars but NOT module-numbered vars.
+    w("core/sets.gms",
+      " vm_from_core(j) a\n v99_numbered_in_core(j) b\n s_scalar_in_core c\n")
+    w("config/default.cfg", 'cfg$gms$x <- "vm_from_cfg"\n')
+    # Non-scannable extension: must be skipped by file_is_scannable.
+    w("modules/10_land/landmatrix_dec18/data.mz", " vm_should_be_skipped(j) a\n")
+
+
+def _scan_only() -> int:
+    """Internal: drive the REAL build_gams_index over MAGPIE_DIR, emit JSON.
+
+    Lets the self-test exercise the actual extractor (and its per-root flag
+    matrix) against a real tree on disk, rather than re-implementing its regex
+    application -- which is what the pre-R58 self-test did, leaving the function
+    itself entirely dead to the test.
+    """
+    print(json.dumps(sorted(build_gams_index())))
+    return 0
+
+
 def self_test() -> int:
     """Positive-control self-test using a self-contained temp fixture.
 
@@ -278,11 +317,54 @@ def self_test() -> int:
               f"mismatches={len(empty_mismatches)}")
 
     print()
+    # ---- GROUND-TRUTH half: drive the REAL build_gams_index over a real tree --
+    # Pre-R58 this function was 100% dead to the test: it could be replaced with
+    # `raise` and the suite stayed green, because the test re-applied the regexes
+    # to an in-memory blob instead of calling it. That also meant the per-root
+    # flag matrix -- the only interesting logic here -- was never exercised.
+    print()
+    print("  [ground-truth] driving REAL build_gams_index over a synthetic tree:")
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        _write_index_fixture(root)
+        env = dict(os.environ, MAGPIE_DIR=str(root))
+        p = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve()), "--_scan-only"],
+            capture_output=True, text=True, env=env, timeout=120,
+        )
+        if p.returncode != 0:
+            print(f"  FAIL: extractor subprocess rc={p.returncode}: {p.stderr[:300]}")
+            ok = False
+        else:
+            idx = set(json.loads(p.stdout))
+            gt_checks = [
+                ("main.gms iface indexed", "vm_from_main" in idx),
+                ("modules iface indexed", "vm_from_modules" in idx),
+                ("modules numbered indexed", "v10_numbered" in idx),
+                ("modules core-scalar indexed", "s_scalar_in_modules" in idx),
+                ("core iface indexed", "vm_from_core" in idx),
+                ("core core-scalar indexed", "s_scalar_in_core" in idx),
+                ("config/default.cfg iface indexed", "vm_from_cfg" in idx),
+                # The per-root asymmetry: core/ is scanned with want_numbered=False.
+                ("core does NOT index module-numbered vars",
+                 "v99_numbered_in_core" not in idx),
+                # file_is_scannable gate.
+                ("non-scannable ext (.mz) skipped", "vm_should_be_skipped" not in idx),
+            ]
+            for name, cond in gt_checks:
+                print(f"    {'ok  ' if cond else 'FAIL'} {name}")
+                if not cond:
+                    ok = False
+
+    print()
     print(f"SELF-TEST {'PASS' if ok else 'FAIL'}")
     return 0 if ok else 1
 
 
 def main() -> int:
+    if "--_scan-only" in sys.argv:
+        return _scan_only()
+
     if "--self-test" in sys.argv:
         rc = self_test()
         if rc == 0:
