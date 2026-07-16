@@ -113,3 +113,35 @@ Step 1: one session (checker + fixture + self-test). Step 2: ~free (mechanical).
 **HONEST SCOPE CAVEAT (what 99.2 % does NOT claim).** 205 is the UNAMBIGUOUSLY-PARSEABLE subset: exactly one "Module NN", exactly one backticked cross-module interface var (vm_/pm_/im_/pcm_/fm_), one `;`-clause. The checker deliberately SKIPS (precision-first): multi-module prose, multi-var clauses, var-less "provides to Modules 52, 53" forms, non-backticked mentions, and OMISSIONS (a real consumer missing from a list — the M58 class that actually hid in R54). Those remain LLM-audit / manual territory. So "99.2 % on the checkable subset" is a strong quality signal on the CLEANLY-STATED attributions and a proof the deterministic lever works (it found 2 reals the LLM missed) — it is NOT a bound on the whole attribution-error population. The omission direction, in particular, is the known blind spot and the natural next build.
 
 **Harness wiring** (both checkers' `--self-test` in `selftest_validator.sh`; advisory non-gating hook in `validate_consistency.sh`, mirroring Check 31) is the cheap next increment — still deferred to avoid gate churn; proposed, not done.
+
+---
+
+## Update 2026-07-16 (R55) — plan EXECUTED; step 4's baseline measured; the omission half is now mechanized
+
+The ⭑ step-0 decision was taken (user: the "9.52 = solved" premise is a misunderstanding — test it depth-first). All four steps are now done, plus the "natural next build" this plan named at line 113 (the omission direction).
+
+**Step 1-2 (build + run the checker) — DONE.** `scripts/check_attribution_omissions.py` = **Check 34**. It goes beyond this plan's proposal: rather than only diffing tables, it builds a **role-resolved** {declared / populated-by / read-by} map from develop (POPULATE = the leading LHS identifier of an equation/assignment; ambiguity defaults to READ, so a false populate-omission is structurally impossible; comment-only mentions never enter the map — which is precisely why the *omission* direction is now reliable where `build_consumer_map`'s over-listing made it noisy). It flags **omissions AND phantoms** across owner Provides-To tables, explicit "consumers of `V`" lists, and var-block `**Consumers**:` fields. `--dump-rolemap` exports the ground truth for LLM layers. Corpus: **0 findings / 153 triples across 33/53 docs**, and that 0 is *meaningful* — a real historical replay on pre-R54 `module_32.md` flags all 3 genuine M58 omissions, so the checker discriminates broken-vs-fixed rather than being vacuously green.
+
+**Step 3 (triage) — DONE.** R55 fixed 28 confirmed findings across module_10/52/56 (+ module_58), commit `581e26d`, gate green.
+
+**Step 4 (re-derive the true baseline, recorded SEPARATELY from answer-quality) — DONE.** Depth-first, 3 highest-centrality hubs, **498 code-checkable claims**, every Critical/Major adversarially refuted:
+
+| Class | per 100 claims | Mechanized? |
+|---|---|---|
+| attribution_read | **23.68** | ✗ → now Check 34 |
+| set_membership | **15.91** | ~partial (Check 29) |
+| attribution_populate | 10.71 | ✗ |
+| data_flow_direction | 6.38 | ✗ (and *not* cheaply mechanizable — see below) |
+| formula / mechanism | 4.0 / 2.47 | ✗ (genuinely semantic, low density) |
+| citation | 1.12 | ✓ |
+| **attribution_declare** | **0.00** | **✓ Check 31** |
+| **default_value** | **0.00** | **✓ Check 20** |
+| **realization** | **0.00** | **✓ Checks 16/18** |
+
+**This is the plan's thesis, measured: every mechanized class is clean; all residual sits in unmechanized classes.** It is also a falsifiable prediction — mechanize `attribution_read`/`set_membership` and their density should collapse the way `attribution_declare`'s did.
+
+**Two corrections to this plan's own claims, on the record:**
+1. This plan (line 32) said "running the LLM doc-audit yet again, even deep, is not the fix — it has a floor FNR on this class." R55 **confirms the direction and sharpens it**: the deep LLM audit's *entire* attribution yield (12 bugs) was mechanically derivable from the role map, and the broadened diff reproduced the R55 **Critical** in milliseconds **and found 2 omissions the 2.73M-token audit MISSED** (`module_58.md:391` — outside the audit's scope entirely). A depth campaign pays per-doc for a class a diff detects for free.
+2. This plan's cost line was optimistic twice over. The *first* recalibration (2026-07-15) was "not one cheap pass; table checker + prose checker." The *second*: the omission direction additionally needs **var-block field parsing** and **Oxford-list parsing**, and carries an irreducible **slice-scoped FP class** (whole-variable role map vs slice-scoped doc claims) that needs per-slice set reasoning to close — so it ships with an allowlist, not a clean sweep.
+
+**Verdict on the broader campaign: TARGETED_ONLY** (see `audit/archive/rounds/round55_depth/MEASUREMENT.md`). The hubs are an upper-bound sample (premise verified, not assumed) and fail 2 of 3 GO criteria; the third straddles on a 2-event numerator. Do **not** depth-audit the remaining 39 docs; extend the mechanical diff instead.
