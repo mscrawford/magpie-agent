@@ -1,0 +1,1526 @@
+{
+ "fm_aboveground_fraction": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "14",
+   "52"
+  ]
+ },
+ "fm_attributes": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "15",
+   "16",
+   "18",
+   "20",
+   "50",
+   "53",
+   "55",
+   "60",
+   "70"
+  ]
+ },
+ "fm_bii_coeff": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "29",
+   "30",
+   "31",
+   "32",
+   "34",
+   "35",
+   "44"
+  ]
+ },
+ "fm_carbon_density": {
+  "declared_in": null,
+  "populated_by": [
+   "52"
+  ],
+  "read_by": [
+   "14",
+   "29",
+   "30",
+   "31",
+   "32",
+   "35",
+   "52",
+   "56",
+   "59"
+  ]
+ },
+ "fm_croparea": {
+  "declared_in": null,
+  "populated_by": [
+   "30"
+  ],
+  "read_by": [
+   "14",
+   "17",
+   "30",
+   "59"
+  ]
+ },
+ "fm_feed_balanceflow": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "70",
+   "71"
+  ]
+ },
+ "fm_gdp_defl_ppp": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "09",
+   "15"
+  ]
+ },
+ "fm_ipcc_bef": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "14",
+   "52"
+  ]
+ },
+ "fm_land_iso": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "10",
+   "22"
+  ]
+ },
+ "fm_luh2_side_layers": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "10",
+   "29",
+   "30",
+   "31",
+   "32",
+   "34",
+   "35"
+  ]
+ },
+ "fm_nutrition_attributes": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "15",
+   "70"
+  ]
+ },
+ "fm_tau1995": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "13",
+   "14"
+  ]
+ },
+ "im_demography": {
+  "declared_in": "09_drivers",
+  "populated_by": [
+   "09"
+  ],
+  "read_by": [
+   "09",
+   "15"
+  ]
+ },
+ "im_development_state": {
+  "declared_in": "09_drivers",
+  "populated_by": [
+   "09"
+  ],
+  "read_by": [
+   "09",
+   "12",
+   "18",
+   "42",
+   "55",
+   "56"
+  ]
+ },
+ "im_feed_baskets": {
+  "declared_in": "70_livestock",
+  "populated_by": [
+   "70"
+  ],
+  "read_by": [
+   "70",
+   "71"
+  ]
+ },
+ "im_forest_ageclass": {
+  "declared_in": "28_ageclass",
+  "populated_by": [
+   "28"
+  ],
+  "read_by": [
+   "28",
+   "35",
+   "52"
+  ]
+ },
+ "im_gdp_pc_mer": {
+  "declared_in": "09_drivers",
+  "populated_by": [
+   "09"
+  ],
+  "read_by": [
+   "09",
+   "42"
+  ]
+ },
+ "im_gdp_pc_mer_iso": {
+  "declared_in": "09_drivers",
+  "populated_by": [
+   "09"
+  ],
+  "read_by": [
+   "09",
+   "15",
+   "36"
+  ]
+ },
+ "im_gdp_pc_ppp_iso": {
+  "declared_in": "09_drivers",
+  "populated_by": [
+   "09"
+  ],
+  "read_by": [
+   "09",
+   "13",
+   "15",
+   "38",
+   "73"
+  ]
+ },
+ "im_growing_stock": {
+  "declared_in": "14_yields",
+  "populated_by": [
+   "14"
+  ],
+  "read_by": [
+   "14",
+   "32",
+   "35"
+  ]
+ },
+ "im_growing_stock_ysf": {
+  "declared_in": "14_yields",
+  "populated_by": [
+   "14"
+  ],
+  "read_by": [
+   "14",
+   "35"
+  ]
+ },
+ "im_maccs_mitigation": {
+  "declared_in": "57_maccs",
+  "populated_by": [
+   "57"
+  ],
+  "read_by": [
+   "50",
+   "51",
+   "53",
+   "57"
+  ]
+ },
+ "im_physical_inactivity": {
+  "declared_in": "09_drivers",
+  "populated_by": [],
+  "read_by": [
+   "09",
+   "15"
+  ]
+ },
+ "im_pollutant_prices": {
+  "declared_in": "56_ghg_policy",
+  "populated_by": [
+   "56"
+  ],
+  "read_by": [
+   "56",
+   "57"
+  ]
+ },
+ "im_pop": {
+  "declared_in": "09_drivers",
+  "populated_by": [
+   "09"
+  ],
+  "read_by": [
+   "09",
+   "15",
+   "62",
+   "70"
+  ]
+ },
+ "im_pop_iso": {
+  "declared_in": "09_drivers",
+  "populated_by": [
+   "09"
+  ],
+  "read_by": [
+   "09",
+   "12",
+   "13",
+   "15",
+   "42",
+   "50",
+   "55",
+   "56",
+   "60",
+   "70",
+   "73"
+  ]
+ },
+ "im_slaughter_feed_share": {
+  "declared_in": "70_livestock",
+  "populated_by": [],
+  "read_by": [
+   "55",
+   "70"
+  ]
+ },
+ "im_timber_prod_cost": {
+  "declared_in": "73_timber",
+  "populated_by": [
+   "73"
+  ],
+  "read_by": [
+   "32",
+   "73"
+  ]
+ },
+ "im_vol_conv": {
+  "declared_in": "52_carbon",
+  "populated_by": [
+   "52"
+  ],
+  "read_by": [
+   "52",
+   "73"
+  ]
+ },
+ "im_wat_avail": {
+  "declared_in": "43_water_availability",
+  "populated_by": [
+   "43"
+  ],
+  "read_by": [
+   "42",
+   "43"
+  ]
+ },
+ "pcm_carbon_stock": {
+  "declared_in": "56_ghg_policy",
+  "populated_by": [
+   "56",
+   "59"
+  ],
+  "read_by": [
+   "52",
+   "56",
+   "59"
+  ]
+ },
+ "pcm_land": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10",
+   "32",
+   "34",
+   "35"
+  ],
+  "read_by": [
+   "10",
+   "13",
+   "22",
+   "29",
+   "31",
+   "32",
+   "34",
+   "35",
+   "44",
+   "56",
+   "58",
+   "59",
+   "71"
+  ]
+ },
+ "pcm_land_forestry": {
+  "declared_in": "32_forestry",
+  "populated_by": [
+   "32"
+  ],
+  "read_by": [
+   "32",
+   "58"
+  ]
+ },
+ "pcm_tau": {
+  "declared_in": "13_tc",
+  "populated_by": [
+   "13"
+  ],
+  "read_by": [
+   "13",
+   "14"
+  ]
+ },
+ "pm_avl_cropland_iso": {
+  "declared_in": "29_cropland",
+  "populated_by": [
+   "29"
+  ],
+  "read_by": [
+   "13",
+   "29",
+   "30",
+   "59"
+  ]
+ },
+ "pm_carbon_density_other_ac": {
+  "declared_in": "52_carbon",
+  "populated_by": [
+   "52"
+  ],
+  "read_by": [
+   "14",
+   "35",
+   "52"
+  ]
+ },
+ "pm_carbon_density_plantation_ac": {
+  "declared_in": "52_carbon",
+  "populated_by": [
+   "52"
+  ],
+  "read_by": [
+   "14",
+   "32",
+   "52"
+  ]
+ },
+ "pm_carbon_density_plantation_ac_uncalib": {
+  "declared_in": "52_carbon",
+  "populated_by": [
+   "52"
+  ],
+  "read_by": [
+   "29",
+   "32",
+   "52"
+  ]
+ },
+ "pm_carbon_density_secdforest_ac": {
+  "declared_in": "52_carbon",
+  "populated_by": [
+   "52"
+  ],
+  "read_by": [
+   "14",
+   "35",
+   "52"
+  ]
+ },
+ "pm_carbon_density_secdforest_ac_uncalib": {
+  "declared_in": "52_carbon",
+  "populated_by": [
+   "52"
+  ],
+  "read_by": [
+   "14",
+   "29",
+   "32",
+   "35",
+   "52"
+  ]
+ },
+ "pm_climate_class": {
+  "declared_in": null,
+  "populated_by": [],
+  "read_by": [
+   "14",
+   "45",
+   "52",
+   "58",
+   "59"
+  ]
+ },
+ "pm_demand_forestry": {
+  "declared_in": "73_timber",
+  "populated_by": [
+   "73"
+  ],
+  "read_by": [
+   "32",
+   "62",
+   "73"
+  ]
+ },
+ "pm_factor_cost_shares": {
+  "declared_in": "38_factor_costs",
+  "populated_by": [
+   "38"
+  ],
+  "read_by": [
+   "36",
+   "38",
+   "57",
+   "70"
+  ]
+ },
+ "pm_hourly_costs": {
+  "declared_in": "36_employment",
+  "populated_by": [
+   "36"
+  ],
+  "read_by": [
+   "36",
+   "38",
+   "57",
+   "70"
+  ]
+ },
+ "pm_interest": {
+  "declared_in": "12_interest_rate",
+  "populated_by": [],
+  "read_by": [
+   "12",
+   "13",
+   "29",
+   "32",
+   "38",
+   "39",
+   "41",
+   "56",
+   "58",
+   "70"
+  ]
+ },
+ "pm_kcal_pc_initial": {
+  "declared_in": "15_food",
+  "populated_by": [
+   "15"
+  ],
+  "read_by": [
+   "15",
+   "70"
+  ]
+ },
+ "pm_labor_prod": {
+  "declared_in": "37_labor_prod",
+  "populated_by": [
+   "37"
+  ],
+  "read_by": [
+   "37",
+   "38"
+  ]
+ },
+ "pm_land_conservation": {
+  "declared_in": "22_land_conservation",
+  "populated_by": [
+   "22",
+   "32",
+   "35"
+  ],
+  "read_by": [
+   "13",
+   "22",
+   "29",
+   "31",
+   "32",
+   "35"
+  ]
+ },
+ "pm_land_hist": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10"
+  ],
+  "read_by": [
+   "10",
+   "29"
+  ]
+ },
+ "pm_land_plantation": {
+  "declared_in": "32_forestry",
+  "populated_by": [
+   "32"
+  ],
+  "read_by": [
+   "32",
+   "52"
+  ]
+ },
+ "pm_land_start": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10"
+  ],
+  "read_by": [
+   "10",
+   "14",
+   "32",
+   "59",
+   "71"
+  ]
+ },
+ "pm_max_forest_est": {
+  "declared_in": "35_natveg",
+  "populated_by": [
+   "35"
+  ],
+  "read_by": [
+   "32",
+   "35"
+  ]
+ },
+ "pm_past_mngmnt_factor": {
+  "declared_in": "70_livestock",
+  "populated_by": [],
+  "read_by": [
+   "14",
+   "70"
+  ]
+ },
+ "pm_prod_init": {
+  "declared_in": "17_production",
+  "populated_by": [
+   "17"
+  ],
+  "read_by": [
+   "17",
+   "38"
+  ]
+ },
+ "pm_productivity_gain_from_wages": {
+  "declared_in": "36_employment",
+  "populated_by": [
+   "36"
+  ],
+  "read_by": [
+   "36",
+   "38",
+   "57",
+   "70"
+  ]
+ },
+ "pm_yields_semi_calib": {
+  "declared_in": "14_yields",
+  "populated_by": [
+   "14"
+  ],
+  "read_by": [
+   "14",
+   "17"
+  ]
+ },
+ "vm_area": {
+  "declared_in": "30_croparea",
+  "populated_by": [
+   "30"
+  ],
+  "read_by": [
+   "18",
+   "29",
+   "30",
+   "32",
+   "41",
+   "42",
+   "50",
+   "53",
+   "59"
+  ]
+ },
+ "vm_bioenergy_utility": {
+  "declared_in": "60_bioenergy",
+  "populated_by": [
+   "60"
+  ],
+  "read_by": [
+   "11",
+   "60"
+  ]
+ },
+ "vm_bv": {
+  "declared_in": "44_biodiversity",
+  "populated_by": [
+   "29",
+   "30",
+   "31",
+   "32",
+   "34",
+   "35"
+  ],
+  "read_by": [
+   "44"
+  ]
+ },
+ "vm_carbon_stock": {
+  "declared_in": "56_ghg_policy",
+  "populated_by": [
+   "29",
+   "31",
+   "32",
+   "34",
+   "35",
+   "56",
+   "59"
+  ],
+  "read_by": [
+   "52",
+   "56",
+   "59"
+  ]
+ },
+ "vm_carbon_stock_croparea": {
+  "declared_in": "30_croparea",
+  "populated_by": [
+   "30"
+  ],
+  "read_by": [
+   "29",
+   "30"
+  ]
+ },
+ "vm_cdr_aff": {
+  "declared_in": "32_forestry",
+  "populated_by": [
+   "32"
+  ],
+  "read_by": [
+   "32",
+   "56"
+  ]
+ },
+ "vm_cost_AEI": {
+  "declared_in": "41_area_equipped_for_irrigation",
+  "populated_by": [
+   "41"
+  ],
+  "read_by": [
+   "11",
+   "41"
+  ]
+ },
+ "vm_cost_bv_loss": {
+  "declared_in": "44_biodiversity",
+  "populated_by": [
+   "44"
+  ],
+  "read_by": [
+   "11",
+   "44"
+  ]
+ },
+ "vm_cost_cropland": {
+  "declared_in": "29_cropland",
+  "populated_by": [
+   "29"
+  ],
+  "read_by": [
+   "11",
+   "29"
+  ]
+ },
+ "vm_cost_fore": {
+  "declared_in": "32_forestry",
+  "populated_by": [
+   "32"
+  ],
+  "read_by": [
+   "11",
+   "32"
+  ]
+ },
+ "vm_cost_glo": {
+  "declared_in": "11_costs",
+  "populated_by": [
+   "11",
+   "80"
+  ],
+  "read_by": [
+   "11",
+   "80"
+  ]
+ },
+ "vm_cost_hvarea_natveg": {
+  "declared_in": "35_natveg",
+  "populated_by": [
+   "35"
+  ],
+  "read_by": [
+   "11",
+   "35"
+  ]
+ },
+ "vm_cost_land_transition": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10"
+  ],
+  "read_by": [
+   "10",
+   "11"
+  ]
+ },
+ "vm_cost_landcon": {
+  "declared_in": "39_landconversion",
+  "populated_by": [
+   "39"
+  ],
+  "read_by": [
+   "11",
+   "39"
+  ]
+ },
+ "vm_cost_processing": {
+  "declared_in": "20_processing",
+  "populated_by": [
+   "20"
+  ],
+  "read_by": [
+   "11",
+   "20"
+  ]
+ },
+ "vm_cost_prod_crop": {
+  "declared_in": "38_factor_costs",
+  "populated_by": [
+   "38"
+  ],
+  "read_by": [
+   "11",
+   "36",
+   "38"
+  ]
+ },
+ "vm_cost_prod_fish": {
+  "declared_in": "70_livestock",
+  "populated_by": [
+   "70"
+  ],
+  "read_by": [
+   "11",
+   "70"
+  ]
+ },
+ "vm_cost_prod_kres": {
+  "declared_in": "18_residues",
+  "populated_by": [
+   "18"
+  ],
+  "read_by": [
+   "11",
+   "18"
+  ]
+ },
+ "vm_cost_prod_livst": {
+  "declared_in": "70_livestock",
+  "populated_by": [
+   "70"
+  ],
+  "read_by": [
+   "11",
+   "36",
+   "70"
+  ]
+ },
+ "vm_cost_prod_past": {
+  "declared_in": "31_past",
+  "populated_by": [
+   "31"
+  ],
+  "read_by": [
+   "11",
+   "31"
+  ]
+ },
+ "vm_cost_scm": {
+  "declared_in": "59_som",
+  "populated_by": [
+   "59"
+  ],
+  "read_by": [
+   "11",
+   "59"
+  ]
+ },
+ "vm_cost_timber": {
+  "declared_in": "73_timber",
+  "populated_by": [
+   "73"
+  ],
+  "read_by": [
+   "11",
+   "73"
+  ]
+ },
+ "vm_cost_trade_feasibility": {
+  "declared_in": "21_trade",
+  "populated_by": [
+   "21"
+  ],
+  "read_by": [
+   "11",
+   "21"
+  ]
+ },
+ "vm_cost_trade_margin": {
+  "declared_in": "21_trade",
+  "populated_by": [
+   "21"
+  ],
+  "read_by": [
+   "11",
+   "21"
+  ]
+ },
+ "vm_cost_trade_tariff": {
+  "declared_in": "21_trade",
+  "populated_by": [
+   "21"
+  ],
+  "read_by": [
+   "11",
+   "21"
+  ]
+ },
+ "vm_cost_transp": {
+  "declared_in": "40_transport",
+  "populated_by": [
+   "11",
+   "40"
+  ],
+  "read_by": [
+   "11",
+   "40"
+  ]
+ },
+ "vm_cost_urban": {
+  "declared_in": "34_urban",
+  "populated_by": [
+   "34"
+  ],
+  "read_by": [
+   "11",
+   "34"
+  ]
+ },
+ "vm_costs_additional_mon": {
+  "declared_in": "71_disagg_lvst",
+  "populated_by": [
+   "71"
+  ],
+  "read_by": [
+   "11",
+   "71"
+  ]
+ },
+ "vm_dem_bioen": {
+  "declared_in": "60_bioenergy",
+  "populated_by": [
+   "60"
+  ],
+  "read_by": [
+   "16",
+   "60"
+  ]
+ },
+ "vm_dem_feed": {
+  "declared_in": "70_livestock",
+  "populated_by": [
+   "70"
+  ],
+  "read_by": [
+   "16",
+   "70"
+  ]
+ },
+ "vm_dem_food": {
+  "declared_in": "15_food",
+  "populated_by": [
+   "15",
+   "20"
+  ],
+  "read_by": [
+   "15",
+   "16",
+   "62"
+  ]
+ },
+ "vm_dem_material": {
+  "declared_in": "62_material",
+  "populated_by": [
+   "62"
+  ],
+  "read_by": [
+   "16",
+   "62"
+  ]
+ },
+ "vm_dem_processing": {
+  "declared_in": "20_processing",
+  "populated_by": [
+   "20"
+  ],
+  "read_by": [
+   "16",
+   "20"
+  ]
+ },
+ "vm_dem_seed": {
+  "declared_in": "16_demand",
+  "populated_by": [
+   "16"
+  ],
+  "read_by": [
+   "16",
+   "50"
+  ]
+ },
+ "vm_emission_costs": {
+  "declared_in": "56_ghg_policy",
+  "populated_by": [
+   "15",
+   "56"
+  ],
+  "read_by": [
+   "11",
+   "15",
+   "56"
+  ]
+ },
+ "vm_emissions_reg": {
+  "declared_in": "56_ghg_policy",
+  "populated_by": [
+   "51",
+   "52",
+   "53",
+   "58"
+  ],
+  "read_by": [
+   "56",
+   "57"
+  ]
+ },
+ "vm_fallow": {
+  "declared_in": "29_cropland",
+  "populated_by": [
+   "29"
+  ],
+  "read_by": [
+   "29",
+   "32",
+   "50",
+   "59"
+  ]
+ },
+ "vm_feed_balanceflow": {
+  "declared_in": "70_livestock",
+  "populated_by": [
+   "70"
+  ],
+  "read_by": [
+   "70",
+   "71"
+  ]
+ },
+ "vm_feed_intake": {
+  "declared_in": "70_livestock",
+  "populated_by": [
+   "70"
+  ],
+  "read_by": [
+   "53",
+   "55",
+   "70"
+  ]
+ },
+ "vm_land": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10",
+   "29",
+   "31",
+   "32",
+   "34",
+   "35"
+  ],
+  "read_by": [
+   "10",
+   "22",
+   "29",
+   "30",
+   "31",
+   "32",
+   "34",
+   "35",
+   "50",
+   "58",
+   "59"
+  ]
+ },
+ "vm_land_forestry": {
+  "declared_in": "32_forestry",
+  "populated_by": [
+   "32"
+  ],
+  "read_by": [
+   "32",
+   "58"
+  ]
+ },
+ "vm_land_other": {
+  "declared_in": "35_natveg",
+  "populated_by": [
+   "35"
+  ],
+  "read_by": [
+   "35",
+   "59"
+  ]
+ },
+ "vm_landdiff": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10"
+  ],
+  "read_by": [
+   "10",
+   "80"
+  ]
+ },
+ "vm_landdiff_forestry": {
+  "declared_in": "32_forestry",
+  "populated_by": [
+   "32"
+  ],
+  "read_by": [
+   "10",
+   "32"
+  ]
+ },
+ "vm_landdiff_natveg": {
+  "declared_in": "35_natveg",
+  "populated_by": [
+   "35"
+  ],
+  "read_by": [
+   "10",
+   "35"
+  ]
+ },
+ "vm_landexpansion": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10"
+  ],
+  "read_by": [
+   "10",
+   "35",
+   "39",
+   "58",
+   "59"
+  ]
+ },
+ "vm_landexpansion_forestry": {
+  "declared_in": "32_forestry",
+  "populated_by": [
+   "32"
+  ],
+  "read_by": [
+   "32",
+   "58"
+  ]
+ },
+ "vm_landreduction": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10"
+  ],
+  "read_by": [
+   "10",
+   "39",
+   "58"
+  ]
+ },
+ "vm_landreduction_forestry": {
+  "declared_in": "32_forestry",
+  "populated_by": [
+   "32"
+  ],
+  "read_by": [
+   "32",
+   "58"
+  ]
+ },
+ "vm_lu_transitions": {
+  "declared_in": "10_land",
+  "populated_by": [
+   "10"
+  ],
+  "read_by": [
+   "10",
+   "29",
+   "35",
+   "59"
+  ]
+ },
+ "vm_maccs_costs": {
+  "declared_in": "57_maccs",
+  "populated_by": [
+   "57"
+  ],
+  "read_by": [
+   "11",
+   "36",
+   "57"
+  ]
+ },
+ "vm_manure": {
+  "declared_in": "55_awms",
+  "populated_by": [
+   "55"
+  ],
+  "read_by": [
+   "50",
+   "51",
+   "53",
+   "55"
+  ]
+ },
+ "vm_manure_confinement": {
+  "declared_in": "55_awms",
+  "populated_by": [
+   "55"
+  ],
+  "read_by": [
+   "51",
+   "55"
+  ]
+ },
+ "vm_manure_recycling": {
+  "declared_in": "55_awms",
+  "populated_by": [
+   "55"
+  ],
+  "read_by": [
+   "50",
+   "51",
+   "55"
+  ]
+ },
+ "vm_natforest_reduction": {
+  "declared_in": "35_natveg",
+  "populated_by": [
+   "35"
+  ],
+  "read_by": [
+   "32",
+   "35"
+  ]
+ },
+ "vm_nr_eff": {
+  "declared_in": "50_nr_soil_budget",
+  "populated_by": [
+   "50"
+  ],
+  "read_by": [
+   "50",
+   "51"
+  ]
+ },
+ "vm_nr_eff_pasture": {
+  "declared_in": "50_nr_soil_budget",
+  "populated_by": [
+   "50"
+  ],
+  "read_by": [
+   "50",
+   "51"
+  ]
+ },
+ "vm_nr_inorg_fert_costs": {
+  "declared_in": "50_nr_soil_budget",
+  "populated_by": [
+   "50"
+  ],
+  "read_by": [
+   "11",
+   "50"
+  ]
+ },
+ "vm_nr_inorg_fert_reg": {
+  "declared_in": "50_nr_soil_budget",
+  "populated_by": [],
+  "read_by": [
+   "50",
+   "51"
+  ]
+ },
+ "vm_nr_som": {
+  "declared_in": "59_som",
+  "populated_by": [
+   "59"
+  ],
+  "read_by": [
+   "51",
+   "59"
+  ]
+ },
+ "vm_nr_som_fertilizer": {
+  "declared_in": "59_som",
+  "populated_by": [
+   "59"
+  ],
+  "read_by": [
+   "50",
+   "59"
+  ]
+ },
+ "vm_p_fert_costs": {
+  "declared_in": "54_phosphorus",
+  "populated_by": [
+   "54"
+  ],
+  "read_by": [
+   "11",
+   "54"
+  ]
+ },
+ "vm_peatland_cost": {
+  "declared_in": "58_peatland",
+  "populated_by": [
+   "58"
+  ],
+  "read_by": [
+   "11",
+   "58"
+  ]
+ },
+ "vm_processing_substitution_cost": {
+  "declared_in": "20_processing",
+  "populated_by": [
+   "20"
+  ],
+  "read_by": [
+   "11",
+   "20"
+  ]
+ },
+ "vm_prod": {
+  "declared_in": "17_production",
+  "populated_by": [
+   "30",
+   "31",
+   "71",
+   "73"
+  ],
+  "read_by": [
+   "17",
+   "18",
+   "31",
+   "38",
+   "40",
+   "42",
+   "71",
+   "73"
+  ]
+ },
+ "vm_prod_forestry": {
+  "declared_in": "32_forestry",
+  "populated_by": [],
+  "read_by": [
+   "32",
+   "73"
+  ]
+ },
+ "vm_prod_natveg": {
+  "declared_in": "35_natveg",
+  "populated_by": [],
+  "read_by": [
+   "35",
+   "73"
+  ]
+ },
+ "vm_prod_reg": {
+  "declared_in": "17_production",
+  "populated_by": [
+   "17",
+   "18",
+   "20",
+   "71"
+  ],
+  "read_by": [
+   "16",
+   "17",
+   "18",
+   "20",
+   "21",
+   "38",
+   "50",
+   "70",
+   "71"
+  ]
+ },
+ "vm_res_ag_burn": {
+  "declared_in": "18_residues",
+  "populated_by": [
+   "18"
+  ],
+  "read_by": [
+   "18",
+   "51",
+   "53"
+  ]
+ },
+ "vm_res_biomass_ag": {
+  "declared_in": "18_residues",
+  "populated_by": [
+   "18"
+  ],
+  "read_by": [
+   "18",
+   "50"
+  ]
+ },
+ "vm_res_biomass_bg": {
+  "declared_in": "18_residues",
+  "populated_by": [
+   "18"
+  ],
+  "read_by": [
+   "18",
+   "50"
+  ]
+ },
+ "vm_res_recycling": {
+  "declared_in": "18_residues",
+  "populated_by": [
+   "18"
+  ],
+  "read_by": [
+   "18",
+   "50",
+   "51"
+  ]
+ },
+ "vm_reward_cdr_aff": {
+  "declared_in": "56_ghg_policy",
+  "populated_by": [
+   "56"
+  ],
+  "read_by": [
+   "11",
+   "56"
+  ]
+ },
+ "vm_rotation_penalty": {
+  "declared_in": "30_croparea",
+  "populated_by": [
+   "30"
+  ],
+  "read_by": [
+   "11",
+   "30"
+  ]
+ },
+ "vm_secondary_overproduction": {
+  "declared_in": "20_processing",
+  "populated_by": [
+   "20"
+  ],
+  "read_by": [
+   "16",
+   "20"
+  ]
+ },
+ "vm_supply": {
+  "declared_in": "16_demand",
+  "populated_by": [
+   "16"
+  ],
+  "read_by": [
+   "16",
+   "21"
+  ]
+ },
+ "vm_tau": {
+  "declared_in": "13_tc",
+  "populated_by": [
+   "13"
+  ],
+  "read_by": [
+   "13",
+   "14"
+  ]
+ },
+ "vm_tech_cost": {
+  "declared_in": "13_tc",
+  "populated_by": [
+   "13"
+  ],
+  "read_by": [
+   "11",
+   "13"
+  ]
+ },
+ "vm_treecover": {
+  "declared_in": "29_cropland",
+  "populated_by": [
+   "29"
+  ],
+  "read_by": [
+   "22",
+   "29",
+   "59"
+  ]
+ },
+ "vm_watdem": {
+  "declared_in": "42_water_demand",
+  "populated_by": [
+   "42"
+  ],
+  "read_by": [
+   "42",
+   "43"
+  ]
+ },
+ "vm_water_cost": {
+  "declared_in": "42_water_demand",
+  "populated_by": [
+   "42"
+  ],
+  "read_by": [
+   "11",
+   "42"
+  ]
+ },
+ "vm_yld": {
+  "declared_in": "14_yields",
+  "populated_by": [
+   "14"
+  ],
+  "read_by": [
+   "14",
+   "30",
+   "31"
+  ]
+ }
+}

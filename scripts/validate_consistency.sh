@@ -110,7 +110,7 @@ check_error() {
 # 2026-07-15: +2 advisory checks (32 attribution-TABLES phantom, 33 attribution-PROSE
 # phantom: the CONSUMER/provides-to half of MANDATE 18, deterministic ~0-FNR) -> 33.
 SECTION_NUM=0
-SECTION_TOTAL=33
+SECTION_TOTAL=34
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1202,6 +1202,40 @@ if [ -f "$ATTR_PROSE_SCRIPT" ]; then
     fi
 else
     check_warning "Attribution-prose checker not found: $ATTR_PROSE_SCRIPT"
+fi
+
+# Check 34: Attribution OMISSIONS — role-resolved completeness (2026-07-16, advisory).
+# The OMISSION complement to Checks 32/33 (which flag phantoms only). Builds a
+# code-derived {declared/populated/read} role map and flags a real consumer/producer
+# absent from an owner's Provides-To table or an explicit "consumers of `V`" list —
+# the exact class that hid Module 58 in R54. Deterministic; precision-first (owner +
+# completeness gate); coverage line ALWAYS printed. Positive control in --self-test
+# (16 cases incl. the M58 hider) + historical replay on pre-R54 module_32.
+# ===============================================
+print_section "" "Checking interface-attribution OMISSIONS vs code (advisory)..."
+
+ATTR_OMIT_SCRIPT="$AGENT_DIR/scripts/check_attribution_omissions.py"
+if [ -f "$ATTR_OMIT_SCRIPT" ]; then
+    if ATTROMIT_OUTPUT=$(python3 "$ATTR_OMIT_SCRIPT" 2>&1); then ATTROMIT_EXIT=0; else ATTROMIT_EXIT=$?; fi
+    ATTROMIT_COVERAGE=$(echo "$ATTROMIT_OUTPUT" | grep -m1 "coverage =" | sed 's/^[[:space:]]*//')
+    ATTROMIT_SUMMARY=$(echo "$ATTROMIT_OUTPUT" | grep -m1 "SUMMARY")
+    ATTROMIT_NPH=$(echo "$ATTROMIT_SUMMARY" | grep -oE "phantoms=[0-9]+" | grep -oE "[0-9]+")
+    ATTROMIT_NOM=$(echo "$ATTROMIT_SUMMARY" | grep -oE "omissions_high=[0-9]+" | grep -oE "[0-9]+")
+    if echo "$ATTROMIT_OUTPUT" | grep -q "GAMS modules not found"; then
+        check_warning "Attribution omissions: skipped (parent modules/ not found)"
+    elif [ "${ATTROMIT_NPH:-0}" = "0" ] && [ "${ATTROMIT_NOM:-0}" = "0" ]; then
+        check_pass "${ATTROMIT_COVERAGE:-Attribution omissions: 0 findings}"
+    elif [ $ATTROMIT_EXIT -eq 0 ]; then
+        check_warning "Attribution omissions: ${ATTROMIT_NPH:-?} phantom / ${ATTROMIT_NOM:-?} omission (advisory; run scripts/check_attribution_omissions.py)"
+        echo "$ATTROMIT_OUTPUT" | grep -E "omits M[0-9]|references the var nowhere" | head -10 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Attribution-omissions checker failed (exit $ATTROMIT_EXIT)"
+        echo "$ATTROMIT_OUTPUT" | head -5 | while read -r line; do log "    $line"; done
+    fi
+else
+    check_warning "Attribution-omissions checker not found: $ATTR_OMIT_SCRIPT"
 fi
 
 # ============

@@ -21,7 +21,15 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 AGENT_DIR = SCRIPT_DIR.parent
-MAGPIE_DIR = AGENT_DIR.parent
+# Ground-truth GAMS tree. Defaults to the parent working tree, but honours a
+# MAGPIE_DIR env override so callers can point every checker at a pinned,
+# read-only `origin/develop` worktree (the authoritative code). Backward
+# compatible: unset -> unchanged behaviour. See magpie_agent_sync_against_develop.
+MAGPIE_DIR = (
+    Path(os.environ["MAGPIE_DIR"]).resolve()
+    if os.environ.get("MAGPIE_DIR")
+    else AGENT_DIR.parent
+)
 
 DOCS_DIR = AGENT_DIR / "modules"
 
