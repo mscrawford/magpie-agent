@@ -1,6 +1,6 @@
 # R58 — adversarial round on stale hubs
 
-**Status:** IN PROGRESS (started 2026-07-17 00:21 CEST, autonomous overnight)
+**Status:** COMPLETE (2026-07-17, 00:21–01:10 CEST, autonomous overnight)
 **Branch:** `r57-rolemap-guard` · **Base:** `664f6f8` · **MAgPIE develop:** `0d7ebeb90`
 **Baseline gate at start:** 47 checks / 45 passed / 2 warnings / 0 errors / PASS
 
@@ -105,21 +105,81 @@ Neither was told what the other found. Both reported that **the machine-checkabl
 
 M29's auditor states the consequence directly: an audit reading `equations.gms` + `declarations.gms` + `input.gms` and scoring per-claim would find **zero of the Criticals** and would be justified in writing the clean-bill banner. **This is a mechanism for how "9.52 = solved" happened** — not a restatement of it.
 
-## The grade
+## THE GRADE
 
-_(pending — see runplan for the required framing: defect rate WITH denominator; instrument grade as a before/after pair with the retrofit count as denominator; per-guard positive-control status; expiry)_
+Mike asked for "the grade… correctly set in the context of our infrastructure." The honest answer is that **the headline grade cannot answer the question**, and that is the finding.
+
+### 1. R57 has no rubric grade
+It was not a Q-round — it asked no questions. It found 2 bugs, both `instrument_defect`. Any number quoted for R57 would be invented.
+
+### 2. The Q-round grade is a low-power instrument — and tonight re-demonstrated it
+The Q-grade (9.52, 9.57) is a mean over ~5–7 questions: a sample of ~7 against thousands of claims. It **structurally cannot detect a 5–8% defect rate.**
+
+Tonight's QA round scored **8.375/10** on 4 questions. In the *same corpus*, the depth arm found **46 defects in 595 claims**. Both numbers are correct. They measure different things, and only one of them is a corpus statement. **A QA mean is a smoke test. It may never be quoted as evidence the corpus is clean — that is precisely the 9.52 error.**
+
+### 3. The grades that mean something
+
+| grade | value | what it licenses |
+|---|---|---|
+| **Claim-level defect rate** (stale hubs) | **46/595 = 7.7%** | the corpus is ~8% defective at depth on these modules |
+| same, R55 (most-audited hubs) | 28/498 = 5.6% | **not a clean comparison** — see the method caveat above |
+| **Criticals** | **7** (R58) vs **1** (R55) | the more robust signal; Critical triggers were shared by both rounds |
+| **QA product smoke test** | **8.375/10** (n=4) | the docs mostly answer correctly; **licenses nothing about corpus cleanliness** |
+| G1 regression anchor (M14) | **10/10** | holding |
+| G2 regression anchor (`vm_carbon_stock` populators) | **9.5/10**, set exact | holding, no regression |
+| **Mutation survival** | **51.2%** (was 54.9%) | **FAILS the <5% bar by 10×.** "0 findings" is still NOT licensed as "clean" |
+| **Dead-to-test** | **22.9%** (was 41%) | improved, but see the denominator caveat |
+| Retrofit denominator | **9 of 9** named extractors | the number that makes the dead-to-test delta interpretable |
+
+### 4. The number I must not let you misread
+
+**Dead-to-test 41% → 22.9% overstates the improvement.** The denominators differ: 164 → 231 functions, because **I added covered helper functions** (`_write_fixture`, `_scan_only`) which inflate the denominator with things that pass. Absolute dead count: **67 → 53**.
+
+**And mutation survival barely moved: 54.9% → 51.2%, despite retrofitting all 9 extractors.** This is the most important negative result of the night. The two metrics measure different things:
+- **dead-to-test** asks "is this function called and asserted at all?" — a neuter probe (`body → raise`) is the crudest possible test.
+- **mutation survival** asks "would a one-character change in a predicate be caught?"
+
+My retrofit fixed the first and barely touched the second. `check_consumer_attribution` is now the *worst* checker (74.8% survival) despite being the first one I retrofitted, because its large `scan_*` functions remain uncovered. **The instruments are better, not fixed.** The halt threshold (>20% survival ⇒ "fix the instruments") is still exceeded 2.5×.
+
+### 5. Expiry
+This statement expires on the **next `/sync` touching module `.gms` files.** Coverage and scope are properties of a code snapshot (`develop @ 0d7ebeb90`). Both prior "done" claims had no expiry; that, more than any threshold, is what makes this attempt different.
+
+## What was AUTOMATED (Phase 2) — two new checkers, both replay- or live-validated
+
+**Check 38 `check_cfg_gams_wiring`** — **a real MAgPIE bug class**, found by the M70 auditor, confirmed by me. 3 of 312 scalar `cfg$gms$` keys name a GAMS identifier that does not exist. Set them and nothing happens, silently:
+
+| | |
+|---|---|
+| `config/default.cfg:673` | `s21_trade_bal_damper` (0.65) |
+| `config/default.cfg:1590` | `s52_plantation_threshold` (8) |
+| `config/default.cfg:2197` | `s70_feed_subst_functional_form` (1) → real name `s70_subst_functional_form` |
+
+The M70 one means the **sigmoid feed-substitution fader is unreachable from the config surface.** Nothing else can catch this: `check_config` validates a run's cfg against `default.cfg` itself (wrong in both ⇒ consistent ⇒ passes); `manipulateConfig` is a regex substitution with no existence check; GAMS never sees the key, so no compile error is possible. **These are parent-repo bugs — NOT fixed here. They need Mike.**
+
+**Check 39 `check_fenced_identifiers`** — closes the gap that let the M29 Critical live. Replay-validated against the real pre-fix doc. **It immediately found 2 more real phantoms in `module_17.md`** (`vm_demand`, `vm_import` in a dependency diagram, with module attributions, neither existing anywhere) — in a module this round never audited. Found by mechanization, not by an auditor, which is the point. FP rate measured down from 32/32 → 2 real / 1 suppressible before shipping.
+
+Both advisory. **Neither wired to gating — Mike's call.**
+
+## What was FIXED, and what was deliberately NOT
+
+**Fixed (9):** all **7 Criticals** (M11 ×3, M29 ×2, M70 ×2) + the 2 `module_17.md` diagram phantoms. Each independently re-verified against develop with positive controls before editing.
+
+**NOT fixed (39):** the surviving Major/Minor findings are documented in the per-module audit + refute files and left for review. Fixing 39 doc claims autonomously overnight exceeds "as you deem fit" for a corpus Mike has to trust. They are listed, evidenced, and ready.
+
+**NOT touched (guardrail):** the 3 unadjudicated dependent-count findings and their `Module_Dependencies.md` twins. No truth number written.
 
 ## Verification log
 
 - [x] Preconditions: lock acquired, R58-idempotence guard passed, remote=mscrawford, branch=r57-rolemap-guard, tree clean, caffeinate alive
 - [x] Baseline gate: 0 errors (47 checks, 2 warnings)
-- [ ] Phase 1 auditors returned
-- [ ] Findings confirmed against develop by direct read
-- [ ] Adversarial refutation pass
-- [ ] Phase 2 automation (only for classes with ≥2 instances + local anchor)
-- [ ] Phase A′ retrofit (n of 9)
-- [ ] Phase 3 mutation pass (SELFCHECK_OK first)
-- [ ] Phase 4 QA (conditional ≥40%)
+- [x] Phase 1: 3 auditors returned (595 claims, open-ended taxonomy, barred from the instruments)
+- [x] Findings confirmed against develop by direct read (with positive controls)
+- [x] Adversarial refutation: 3 refuters; 1 of 47 fully refuted, 2 findings got stronger
+- [x] Phase 2: 2 new checkers (Check 38, Check 39), both with real-bug positive controls
+- [x] Phase A′ retrofit: **9 of 9** — complete, not truncated
+- [x] Phase 3: `SELFCHECK_OK` confirmed BEFORE any mutation number was trusted
+- [x] Phase 4 QA: ran (window was ~75% remaining, well above the 40% gate)
+- [x] Gate held at 0 errors throughout; battery PASS at 27 scripts
 
 ## Guardrails honoured
 
