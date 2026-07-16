@@ -109,7 +109,7 @@ SELFTEST_SCRIPTS=(check_gams_citations_impl check_default_realizations check_gam
                   check_intra_doc_contradiction check_role_attribution \
                   check_attribution_tables check_attribution_prose \
                   check_attribution_omissions check_dependent_counts \
-                  gams_slices)
+                  gams_slices check_dependent_direction check_bindability)
 for s in "${SELFTEST_SCRIPTS[@]}"; do
     if [ ! -f "$SCRIPT_DIR/$s.py" ]; then
         fail "$s.py missing (expected a --self-test)"
