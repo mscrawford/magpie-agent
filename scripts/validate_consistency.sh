@@ -109,8 +109,12 @@ check_error() {
 # declarations.gms) appended -> 31.
 # 2026-07-15: +2 advisory checks (32 attribution-TABLES phantom, 33 attribution-PROSE
 # phantom: the CONSUMER/provides-to half of MANDATE 18, deterministic ~0-FNR) -> 33.
+# 2026-07-16: +2 advisory checks (34 attribution-OMISSIONS role-map diff, 35
+# dependent-COUNT claims vs role-map truth) -> 35.
+# 2026-07-16 (later): +1 advisory check (36 hand-off DIRECTION claims vs
+# slice-resolved code truth, check_dependent_direction.py) -> 36.
 SECTION_NUM=0
-SECTION_TOTAL=35
+SECTION_TOTAL=36
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1268,6 +1272,44 @@ if [ -f "$DEPCOUNT_SCRIPT" ]; then
     fi
 else
     check_warning "Dependent-counts checker not found: $DEPCOUNT_SCRIPT"
+fi
+
+# Check 36: Serial HAND-OFF direction claims vs slice-resolved code truth
+# (2026-07-16, advisory). Mechanizes (part of) the data_flow_direction class
+# (R55: 6.38 findings per 100 claims, previously judged NOT cheaply mechanizable
+# because both surviving Majors were SLICE-disjointness bugs, not plain role-map
+# omissions). A doc claiming "A provides V to B" / "B receives V from A" / "V
+# flows A -> B" is flagged ONLY when the producer's code write-slice and the
+# consumer's code read-slice are PROVABLY DISJOINT on every occurrence pair
+# (gams_slices.slices_intersect), with a producer-homogeneity gate (found
+# empirically on module_52.md's own OTHER consumer claims) preventing a false
+# flag when the producer writes the var via several heterogeneous literal
+# slices. Fixture-first --self-test (14 assertions) + a real historical replay
+# (pre-fix module_52.md/module_56.md text correctly flagged; current fixed text
+# clean). Coverage line ALWAYS printed.
+# ===============================================
+print_section "" "Checking hand-off DIRECTION claims vs slice-resolved code truth (advisory)..."
+
+DEPDIR_SCRIPT="$AGENT_DIR/scripts/check_dependent_direction.py"
+if [ -f "$DEPDIR_SCRIPT" ]; then
+    if DEPDIR_OUTPUT=$(python3 "$DEPDIR_SCRIPT" 2>&1); then DEPDIR_EXIT=0; else DEPDIR_EXIT=$?; fi
+    DEPDIR_COVERAGE=$(echo "$DEPDIR_OUTPUT" | grep -m1 "coverage =" | sed 's/^[[:space:]]*//')
+    DEPDIR_N=$(echo "$DEPDIR_OUTPUT" | grep -m1 "SUMMARY" | grep -oE "findings=[0-9]+" | grep -oE "[0-9]+")
+    if echo "$DEPDIR_OUTPUT" | grep -q "GAMS modules not found"; then
+        check_warning "Dependent direction: skipped (parent modules/ not found)"
+    elif [ "${DEPDIR_N:-0}" = "0" ]; then
+        check_pass "${DEPDIR_COVERAGE:-Dependent direction: 0 findings}"
+    elif [ $DEPDIR_EXIT -eq 0 ]; then
+        check_warning "Dependent direction: ${DEPDIR_N:-?} parallel-not-serial finding(s) (advisory; run scripts/check_dependent_direction.py --verbose)"
+        echo "$DEPDIR_OUTPUT" | grep -E "claims M[0-9]|disjoint\)" | head -8 | while read -r line; do
+            log "    $line"
+        done
+    else
+        check_error "Dependent-direction checker failed (exit $DEPDIR_EXIT)"
+        echo "$DEPDIR_OUTPUT" | head -5 | while read -r line; do log "    $line"; done
+    fi
+else
+    check_warning "Dependent-direction checker not found: $DEPDIR_SCRIPT"
 fi
 
 # ============

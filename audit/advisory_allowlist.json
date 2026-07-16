@@ -31,14 +31,6 @@
       "reason": "Unit-conversion false positive: doc says '200 kg N/ha', source value is 0.2 t N/ha. Same physical quantity, different unit. The checker does not perform unit normalization.",
       "added": "2026-05-23",
       "added_in_round": "R22-followup"
-    },
-    {
-      "check": "check_attribution_omissions",
-      "file": "modules/module_52.md",
-      "key": "57:vm_emissions_reg",
-      "reason": "SLICE-scoped claim vs whole-variable role map: line 443 lists consumers of the vm_emissions_reg slice M52 writes (emis_oneoff x co2_c). M57 reads the variable but only over pollutants_maccs57={ch4,n2o_n_direct} (57_maccs/on_aug22/sets.gms:25-26), which excludes co2_c, so M57 is NOT a consumer of M52's slice. Contrast module_58.md:391 where the same M57 omission IS real (poll58 includes ch4/n2o and peatland is in emis_annual).",
-      "added": "2026-07-16",
-      "added_in_round": "R55"
     }
   ]
 }

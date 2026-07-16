@@ -65,23 +65,45 @@ Omissions are INHERENTLY lower-confidence than phantoms (a doc may legitimately
 list only key consumers). They are ADVISORY and must pass adversarial refutation
 + human confirmation before any doc edit.
 
-KNOWN FP CLASS -- SLICE-SCOPED CLAIMS (accepted; use the allowlist)
-  The role map is WHOLE-VARIABLE. A doc's consumer list is often scoped to ONE
-  SLICE of a shared interface. A module can therefore read the VARIABLE without
-  reading the SLICE the doc is about -> a spurious "omission".
-  Live example (R55, allowlisted): module_52.md:443 lists consumers of the
-  `vm_emissions_reg` slice that M52 writes (emis_oneoff x "co2_c"). M57 reads
-  `vm_emissions_reg(i2,emis_source,pollutants_maccs57)` but
-  `pollutants_maccs57 = {ch4, n2o_n_direct}` (57_maccs/on_aug22/sets.gms:25-26)
-  EXCLUDES co2_c -> M57 is NOT a consumer of M52's slice, and "adding" it would
-  inject a new error. Contrast module_58.md:391, where the same M57 omission IS
-  real: M58 writes (i,"peatland",poll58) with poll58 = {co2_c, ch4, n2o_n_direct}
-  and peatland is in emis_annual (core/sets.gms:320-322), so M57's read genuinely
-  intersects M58's slice.
-  Deciding this MECHANICALLY needs per-slice set reasoning (which set members each
-  module writes/reads) -- out of scope here. Until then: adjudicate slice-scoped
-  lines by hand and record confirmed FPs in audit/advisory_allowlist.json
-  (check="check_attribution_omissions", key="<NN>:<var>").
+FORMERLY-KNOWN FP CLASS -- SLICE-SCOPED CLAIMS (RESOLVED mechanically, 2026-07-16)
+  The role map above (`build_role_map`) is WHOLE-VARIABLE. A doc's consumer list
+  is often scoped to ONE SLICE of a shared interface. A module can therefore
+  read the VARIABLE without reading the SLICE the doc is about -> a spurious
+  "omission". This USED to be handled by hand-adjudication + an allowlist entry
+  (R55: module_52.md:443 / M57 / vm_emissions_reg). It is now resolved
+  MECHANICALLY: `build_slice_role_map()` (below) captures each occurrence's raw
+  argument tuple, and `scripts/gams_slices.py` (`build_set_index`,
+  `resolve_index`, `slices_intersect`) resolves GAMS index tokens to member sets
+  and tests whether two occurrences of the same var could plausibly overlap.
+  In `diff_doc`, when the doc's own module NN POPULATES var V (NN present in the
+  whole-variable role map with role POPULATE) and a READ-direction omission
+  candidate M is found, the omission is suppressed IFF EVERY pair of
+  (NN's write-slice, M's read-slice) resolves to `slices_intersect(...) is
+  False` (provably disjoint on at least one dimension, every time). If ANY pair
+  is True (a genuine overlap exists, e.g. a `.l`-postsolve dump over the bare
+  declared sets) or None (unresolved -- aliases, macros, dynamic/mapping sets),
+  the omission is KEPT (fall back to today's pre-slice behaviour) -- this
+  mirrors `gams_slices`'s own binding precision rule (a wrong DISJOINT verdict
+  would delete a real documented consumer, so disjointness must be proven on
+  EVERY pair, never assumed). Verified against the real M57 case: M52 writes
+  ONLY `(i2,emis_oneoff,"co2_c")`; M57's two occurrences
+  (`(i2,emis_source,pollutants_maccs57)`, `(i2,emis_source_inorg_fert_n2o,
+  "n2o_n_direct")`) both resolve disjoint (pollutants_maccs57 = {ch4,
+  n2o_n_direct} excludes co2_c; "n2o_n_direct" != "co2_c") -> suppressed, no
+  allowlist entry needed. Contrast module_58.md:391, where the same M57
+  omission IS real (M58 writes `(i,"peatland",poll58)`, poll58 = {co2_c, ch4,
+  n2o_n_direct}, peatland is in emis_annual -- overlapping/ambiguous, not
+  disjoint -> correctly NOT suppressed, stays a real flag).
+  STILL UNRESOLVED (honest limits, inherited from gams_slices.py -- see its
+  module docstring "WHAT THIS DOES NOT DO"): no macro expansion
+  (`%compiletime_macro%` tokens), no alias resolution (`i2`/`j2`/`ac2` never
+  trace back to their parent set, so a dimension keyed only on an alias on both
+  sides is ignored rather than compared), no dynamic/runtime set membership
+  (`ct(t)`-style sets with no static `/ ... /` list), no relation/mapping-set
+  flattening (2+-arity sets like `supreg(h,i)` are excluded entirely). Any of
+  these makes a dimension resolve to None, which per the rule above KEEPS the
+  omission (never wrongly suppresses) -- the mechanism is precision-first by
+  construction, so genuinely ambiguous cases still surface for human review.
 
 Ground truth: `<MAGPIE_DIR>/modules`. Point MAGPIE_DIR at a pinned develop
 worktree for an authoritative run (the working tree can lag; see memory
@@ -125,6 +147,11 @@ from check_attribution_prose import (  # noqa: E402
     MODNAME_RE,
     MODULE_WORD_RE,
     NEGATION_RE,
+)
+from gams_slices import (  # noqa: E402
+    build_set_index,
+    resolve_index,
+    slices_intersect,
 )
 
 AGENT_DIR = SCRIPT_DIR.parent
@@ -721,16 +748,45 @@ def parse_doc_table_triples(text: str) -> list[dict]:
 SCAN_STATS = {"triples": 0, "docs_with_triples": 0, "unbound_docs": 0}
 
 
+def _slice_disjoint_derivation(write_slices: list, read_slices: list,
+                                set_index: dict) -> dict | None:
+    """Test EVERY (write_slice, read_slice) pair. Return a derivation dict IFF
+    every pair resolves to `slices_intersect(...) is False`; else None (a True
+    or None verdict on ANY pair means the omission must be KEPT -- see the
+    module docstring's "FORMERLY-KNOWN FP CLASS" section for the rationale).
+    """
+    if not write_slices or not read_slices:
+        return None
+    for w in write_slices:
+        wr = tuple(resolve_index(tok, set_index) for tok in w)
+        for r in read_slices:
+            rr = tuple(resolve_index(tok, set_index) for tok in r)
+            if slices_intersect(wr, rr) is not False:
+                return None
+    return {"write_slices": write_slices, "read_slices": read_slices,
+            "sample_write": write_slices[0], "sample_read": read_slices[0]}
+
+
 def diff_doc(text: str, rel_path: str, role, realiz, ref_any, producers,
-             default_real, multi_real, allow=None) -> tuple[list[dict], list[dict], int]:
-    """Return (omissions, phantoms, triples_evaluated) for one doc."""
+             default_real, multi_real, allow=None, slice_role=None,
+             set_index=None) -> tuple[list[dict], list[dict], list[dict], int]:
+    """Return (omissions, phantoms, slice_suppressed, triples_evaluated) for one doc.
+
+    `slice_role` / `set_index` are the outputs of `build_slice_role_map()` /
+    `gams_slices.build_set_index()` respectively (both default to `{}`, which
+    makes the slice-suppression path a no-op -- safe for any caller that does
+    not have them built yet).
+    """
     allow = allow or set()
+    slice_role = slice_role or {}
+    set_index = set_index or {}
     fname = os.path.basename(rel_path)
     mod_m = re.search(r"module_(\d{1,2})", fname)
     doc_own = f"{int(mod_m.group(1)):02d}" if mod_m else None
 
     omissions: list[dict] = []
     phantoms: list[dict] = []
+    slice_suppressed: list[dict] = []
     triples = parse_doc_triples(text) + parse_doc_table_triples(text) + parse_doc_varblock_triples(text)
     for t in triples:
         var, listed, direction = t["var"], t["listed"], t["direction"]
@@ -779,11 +835,29 @@ def diff_doc(text: str, rel_path: str, role, realiz, ref_any, producers,
         truth = read_nums if direction == "READ" else (pop_nums if direction == "POPULATE" else role_any)
         omitted = truth - listed - exclude
         for m in sorted(omitted):
-            # Allowlisted known FP (e.g. a SLICE-scoped consumer list -- see the
-            # module docstring). Match the doc path in either form.
+            # Allowlisted known FP (legacy path -- the slice-scoped class below is
+            # now mechanical; this stays for any FUTURE FP kind not yet mechanized).
             key = f"{m}:{var}"
             if (rel_path, key) in allow or (fname, key) in allow:
                 continue
+            # SLICE-SCOPED suppression (mechanical, see module docstring
+            # "FORMERLY-KNOWN FP CLASS"): only applies to READ-direction omissions
+            # where doc_own is itself a POPULATOR of var (its implicit write-slice
+            # is the doc's real subject). Suppressed IFF every (doc_own write-slice,
+            # m read-slice) pair is provably disjoint; any True/None pair keeps it.
+            if direction == "READ" and doc_own is not None and doc_own in pop_nums:
+                derivation = _slice_disjoint_derivation(
+                    slice_role.get(var, {}).get(doc_own, {}).get("POPULATE", []),
+                    slice_role.get(var, {}).get(m, {}).get("READ", []),
+                    set_index,
+                )
+                if derivation is not None:
+                    slice_suppressed.append({
+                        "file": rel_path, "line": t["lineno"], "var": var,
+                        "omitted_module": m, "direction": direction,
+                        "doc_own": doc_own, "row": t["row"], "derivation": derivation,
+                    })
+                    continue
             # Realization-scope: if m is multi-realization and references the var
             # ONLY in non-default realizations, tag low-confidence.
             confidence = "high"
@@ -799,7 +873,7 @@ def diff_doc(text: str, rel_path: str, role, realiz, ref_any, producers,
             })
 
     SCAN_STATS["triples"] += len(triples)
-    return omissions, phantoms, len(triples)
+    return omissions, phantoms, slice_suppressed, len(triples)
 
 
 # ---------------------------------------------------------------------------
@@ -856,21 +930,25 @@ def main() -> int:
     default_real = build_default_realization_by_modnum()
     multi_real = _multi_realization_modnums()
     allow = load_allowlist()
+    slice_role = build_slice_role_map()
+    set_index = build_set_index()
 
     all_om: list[dict] = []
     all_ph: list[dict] = []
+    all_supp: list[dict] = []
     n_docs = 0
     for doc in _iter_docs():
         n_docs += 1
         rel = str(doc.relative_to(AGENT_DIR))
         before = SCAN_STATS["triples"]
-        om, ph, ntrip = diff_doc(doc.read_text(encoding="utf-8", errors="ignore"),
-                                  rel, role, realiz, ref_any, producers, default_real,
-                                  multi_real, allow)
+        om, ph, supp, ntrip = diff_doc(doc.read_text(encoding="utf-8", errors="ignore"),
+                                        rel, role, realiz, ref_any, producers, default_real,
+                                        multi_real, allow, slice_role, set_index)
         if ntrip:
             SCAN_STATS["docs_with_triples"] += 1
         all_om.extend(om)
         all_ph.extend(ph)
+        all_supp.extend(supp)
 
     # Coverage denominator ALWAYS printed (a "0" over few triples is BLIND).
     print(f"{CHECK_NAME}: coverage = {SCAN_STATS['triples']} multi-module attribution "
@@ -904,11 +982,33 @@ def main() -> int:
             print(f"  {f['file']}:{f['line']}  `{f['var']}` omits M{f['omitted_module']} "
                   f"(references only in a non-default realization).")
 
+    # SLICE-SUPPRESSED omissions: would be flagged by the whole-variable role map,
+    # but the doc-own module's write-slice and the omitted module's read-slice are
+    # provably disjoint (gams_slices.slices_intersect on EVERY pair) -- see the
+    # module docstring "FORMERLY-KNOWN FP CLASS". Always print the COUNT (so a
+    # reviewer can see the mechanism is live); print the derivation only with
+    # --verbose.
+    if all_supp:
+        print(f"\n{CHECK_NAME}: {len(all_supp)} omission(s) SLICE-SUPPRESSED "
+              f"(mechanically proven disjoint slice, not allowlisted):")
+        if verbose:
+            for f in all_supp:
+                d = f["derivation"]
+                print(f"  {f['file']}:{f['line']}  `{f['var']}` M{f['omitted_module']} SUPPRESSED "
+                      f"-- M{f['doc_own']} writes {d['sample_write']}, M{f['omitted_module']} reads "
+                      f"{d['sample_read']} (disjoint on >=1 dimension, every pair checked). "
+                      f"Line: {f['row']}")
+        else:
+            print(f"  (rerun with --verbose to see each suppressed case + derivation)")
+    else:
+        print(f"\n{CHECK_NAME}: 0 slice-suppressed omissions.")
+
     print(f"\n{CHECK_NAME}: NOTE omissions are advisory + lower-confidence than phantoms; "
           f"confirm against develop + adversarial refute before any doc edit.")
     # Machine-greppable summary line (for validate_consistency.sh Check 34).
     print(f"{CHECK_NAME}: SUMMARY phantoms={len(all_ph)} omissions_high={len(high)} "
-          f"omissions_advisory={len(ndr)} coverage_triples={SCAN_STATS['triples']}")
+          f"omissions_advisory={len(ndr)} coverage_triples={SCAN_STATS['triples']} "
+          f"slice_suppressed={len(all_supp)}")
     return 0
 
 
@@ -932,19 +1032,47 @@ def self_test() -> int:
         "pm_carbon_density_ac": {"52": {"POPULATE"}, "14": {"READ"}, "35": {"READ"}},
         "vm_prod": {"17": {"POPULATE"}, "18": {"READ"}, "30": {"READ"}},
         "vm_tau": {"13": {"POPULATE"}, "14": {"READ"}},
+        # Real R55/Check-34 fixture (module_52.md:443): M52 POPULATEs a slice of a
+        # var DECLARED in M56; M56/57/58/59 all READ it (whole-variable). Used
+        # below for the slice-suppression self-tests.
+        "vm_emissions_reg": {"52": {"POPULATE"}, "56": {"READ"}, "57": {"READ"},
+                              "58": {"READ"}, "59": {"READ"}},
     }
     realiz = {v: {m: {"only_dec18"} for m in role[v]} for v in role}
     ref_any = {v: set(role[v].keys()) for v in role}
     ref_any["vm_land"] |= {"11"}  # M11 mentions vm_land only in a comment -> ref_any but not role
     producers = {"vm_land": "10_land", "vm_land_forestry": "32_forestry",
                  "pm_carbon_density_ac": "52_carbon", "vm_prod": "17_production",
-                 "vm_tau": "13_tc"}
+                 "vm_tau": "13_tc", "vm_emissions_reg": "56_ghg_policy"}
     default_real: dict[str, str] = {}      # treat all as single-realization here
     multi_real: set[str] = set()
 
-    def run(text, fname="modules/module_TEST.md"):
+    # Hermetic slice-role / set-index fixtures (mirrors the REAL M52/M57 case
+    # verified live against MAGPIE_DIR=/private/tmp/magpie_develop_ro): M52 writes
+    # ONLY (i2,emis_oneoff,"co2_c"). M57's read is DISJOINT (pollutants_maccs57
+    # excludes co2_c) -> must suppress. M58's read is IDENTICAL (co2_c) -> a real
+    # overlap exists -> must NOT suppress (kept). M59's read has an UNRESOLVED
+    # 3rd-position token -> ambiguous -> must NOT suppress (kept, never a false
+    # DISJOINT).
+    slice_role_fixture = {
+        "vm_emissions_reg": {
+            "52": {"POPULATE": [("i2", "emis_oneoff", '"co2_c"')]},
+            "57": {"READ": [("i2", "emis_oneoff", "pollutants_maccs57")]},
+            "58": {"READ": [("i2", "emis_oneoff", '"co2_c"')]},
+            "59": {"READ": [("i2", "emis_oneoff", "unresolved_tok")]},
+        },
+    }
+    set_index_fixture = {
+        "emis_oneoff": frozenset({"co2_c"}),
+        "pollutants_maccs57": frozenset({"ch4", "n2o_n_direct"}),
+    }
+
+    def run(text, fname="modules/module_TEST.md", use_slice=True):
         SCAN_STATS["triples"] = 0
-        return diff_doc(text, fname, role, realiz, ref_any, producers, default_real, multi_real)
+        sr = slice_role_fixture if use_slice else None
+        si = set_index_fixture if use_slice else None
+        return diff_doc(text, fname, role, realiz, ref_any, producers, default_real, multi_real,
+                         None, sr, si)
 
     cases = []
     # POSITIVE 1 — the M58 hider: consumers-of header + list omits a real reader.
@@ -1051,23 +1179,15 @@ def self_test() -> int:
         "modules/module_32.md",
     ))
 
-    for case in cases:
-        label, text, expect = case[0], case[1], case[2]
-        fname = case[3] if len(case) > 3 else "modules/module_TEST.md"
-        om, ph, _ = run(text, fname)
-        got_om = {(o["var"], o["omitted_module"]) for o in om if o["confidence"] == "high"}
-        got_ph = {(p["var"], p["claimed_module"]) for p in ph}
-        miss_om = expect["omit"] - got_om
-        extra_om = got_om - expect["omit"]
-        miss_ph = expect["phantom"] - got_ph
-        extra_ph = got_ph - expect["phantom"]
-        if not (miss_om or extra_om or miss_ph or extra_ph):
-            print(f"  SELF-TEST PASS [{label}]")
-        else:
-            ok = False
-            print(f"  SELF-TEST FAIL [{label}]: "
-                  f"om_missing={sorted(miss_om)} om_extra={sorted(extra_om)} "
-                  f"ph_missing={sorted(miss_ph)} ph_extra={sorted(extra_ph)}")
+    # NOTE: the case-execution loop was HOISTED below (after every cases.append()
+    # call, see "Run every case" further down) -- it used to sit HERE, which meant
+    # every case appended AFTER this point (POSITIVE 7 / NEGATIVE 10 / NEGATIVE 11
+    # below, plus the new slice-suppression cases) was silently never executed
+    # (Python iterates the list object as it stood at loop-start; later appends to
+    # the SAME list are invisible to an already-running `for`). Found while wiring
+    # in slice-suppression (2026-07-16): self-test claimed "19 cases / PASS" but
+    # only 16 assertions (15 cases + coverage-counter) actually ran. Fixed by
+    # moving the loop after ALL appends.
 
     # POSITIVE 7 — VAR-BLOCK form: the var comes from a bolded heading and the
     # "**Consumers**:" bullet carries NO var of its own. This is the exact shape that
@@ -1100,6 +1220,64 @@ def self_test() -> int:
         "- **Consumers**: Module 32\n",
         {"omit": set(), "phantom": set()},
     ))
+
+    # POSITIVE 8 / MANDATORY slice-suppression controls (the real M52/M57 case,
+    # verified live against MAGPIE_DIR=/private/tmp/magpie_develop_ro before this
+    # fixture was written): a var-block "Consumers" field (doc_own=52, which
+    # POPULATEs the var) omits 3 real whole-variable readers. M57's read-slice is
+    # PROVABLY DISJOINT from M52's write-slice -> suppressed (never surfaces as an
+    # omission, and never needs an allowlist entry). M58's read-slice is IDENTICAL
+    # (a genuine overlap exists) -> kept. M59's read-slice has an unresolved token
+    # -> ambiguous -> kept (never a false suppress).
+    cases.append((
+        "pos-slice-suppress-m57-keep-58-59",
+        "**1. vm_emissions_reg** (Module 56 declarations.gms)\n"
+        "- **Dimensions**: `(i,emis_source,pollutants)`\n"
+        "- **Consumers**: Module 56 (GHG Policy)\n",
+        {"omit": {("vm_emissions_reg", "58"), ("vm_emissions_reg", "59")}, "phantom": set(),
+         "suppress": {("vm_emissions_reg", "57")}},
+        "modules/module_52.md",
+    ))
+    # NEGATIVE 12 (critical) — the SAME doc, but with the slice maps NOT wired in
+    # (use_slice=False, mirrors any OTHER caller that hasn't built them yet): the
+    # slice-suppression path must be a total no-op, so M57 reverts to a plain
+    # (unsuppressed) omission alongside M58/M59 -- proves the feature is additive,
+    # never silently mandatory.
+    cases.append((
+        "neg-slice-suppress-disabled-without-maps",
+        "**1. vm_emissions_reg** (Module 56 declarations.gms)\n"
+        "- **Consumers**: Module 56 (GHG Policy)\n",
+        {"omit": {("vm_emissions_reg", "57"), ("vm_emissions_reg", "58"),
+                  ("vm_emissions_reg", "59")}, "phantom": set()},
+        "modules/module_52.md",
+        False,  # use_slice=False
+    ))
+
+    # Run every case (hoisted here so appends above are all visible -- see the
+    # NOTE left at the loop's old, premature location).
+    for case in cases:
+        label, text, expect = case[0], case[1], case[2]
+        fname = case[3] if len(case) > 3 else "modules/module_TEST.md"
+        use_slice = case[4] if len(case) > 4 else True
+        om, ph, supp, _ = run(text, fname, use_slice)
+        got_om = {(o["var"], o["omitted_module"]) for o in om if o["confidence"] == "high"}
+        got_ph = {(p["var"], p["claimed_module"]) for p in ph}
+        got_supp = {(s["var"], s["omitted_module"]) for s in supp}
+        miss_om = expect["omit"] - got_om
+        extra_om = got_om - expect["omit"]
+        miss_ph = expect["phantom"] - got_ph
+        extra_ph = got_ph - expect["phantom"]
+        exp_supp = expect.get("suppress", set())
+        miss_supp = exp_supp - got_supp
+        extra_supp = got_supp - exp_supp
+        if not (miss_om or extra_om or miss_ph or extra_ph or miss_supp or extra_supp):
+            print(f"  SELF-TEST PASS [{label}]")
+        else:
+            ok = False
+            print(f"  SELF-TEST FAIL [{label}]: "
+                  f"om_missing={sorted(miss_om)} om_extra={sorted(extra_om)} "
+                  f"ph_missing={sorted(miss_ph)} ph_extra={sorted(extra_ph)} "
+                  f"supp_missing={sorted(miss_supp)} supp_extra={sorted(extra_supp)}")
 
     # Coverage-counter sanity.
     SCAN_STATS["triples"] = 0
