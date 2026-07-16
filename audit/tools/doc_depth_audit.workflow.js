@@ -48,6 +48,12 @@ const MANDATES = `Apply the verifiers.md MANDATEs (read ${VERIFIERS} if unsure),
   - 3 default-parameter verification (grep the default in code + config/default.cfg);
   - Distinguish DECLARED vs POPULATED vs READ for interface variables (the G2 carbon-stock distinction).`
 
+// This repo is PUBLIC and git history is permanent. Agents are handed ABSOLUTE
+// machine paths (args.paths), and R55 showed they echo them straight into their
+// reports -- which would bake the local username into public history forever.
+// Every report-writing prompt carries this clause.
+const PATH_HYGIENE = `PATH HYGIENE (this repo is PUBLIC; git history is permanent): in the REPORT TEXT you write, refer to files by REPO-RELATIVE path only -- 'modules/module_10.md', 'modules/NN_name/realization/file.gms', 'audit/...'. NEVER write an absolute machine path (no '/Users/...', '/home/...', '/p/projects/...') into a report, even when quoting the target path given to you above. Absolute paths leak the local username into permanent public history.`
+
 const ROLEMAP_CLAUSE = `CODE-DERIVED GROUND TRUTH for interface-var attribution: read ${ROLEMAP} (JSON: var -> {declared_in, populated_by[], read_by[]}, computed deterministically from ${DEV} by scripts/check_attribution_omissions.py). For any DECLARED/POPULATED/READ or consumer/producer claim about a vm_/pm_/im_/pcm_/fm_ var, CHECK IT AGAINST THIS MAP FIRST (it is ~0-FNR on this class and kills the correlated-confabulation blind spot). The map is a SUPERSET reference: verify the specific direction (populate vs read) and confirm with a BOTH-endpoints grep before flagging; if the map and your grep disagree, re-grep (both NAME( and NAME.) and trust code, noting the discrepancy.`
 
 function groundTruthClause(doc) {
@@ -190,6 +196,8 @@ METHOD:
 2. For every discrepancy record a bug: severity, bug_class (use the enum), exact doc quote + doc_line (${doc.label}:NN), reality_in_code, file_evidence (develop file:line), the exact verify_cmd WITH its result, confirmed (true ONLY with reproducible evidence), precise proposed_fix.
 3. Anything you cannot verify or are unsure about -> one-line note in "deferred" (do NOT invent a bug; do NOT propose an edit). FALSE POSITIVES ARE WORSE THAN MISSES.
 
+${PATH_HYGIENE}
+
 OUTPUT: write your full report to ${ARC}/round${R}_depth/${doc.label}__${lens.key}.md and return the schema (summary <=300 chars; lens="${lens.key}").`
 }
 
@@ -215,6 +223,8 @@ STEP C - ADJUDICATE (only if citation_ok=true):
   - other: NOT_REVIEWABLE.
 Default to REFUTED / CORRECTED / CITATION_FAILED whenever the auditor's evidence does not reproduce. A false finding that looks freshly-verified is worse than a miss.
 
+${PATH_HYGIENE}
+
 OUTPUT: write full verification to ${ARC}/round${R}_depth/verify__${doc.label}.md; return the schema (notes <=300 chars).`
 }
 
@@ -231,6 +241,8 @@ DECISION RULE (the hubs are highest-centrality -> an UPPER-BOUND sample of corpu
   - GO (full-corpus depth warranted) if EITHER (a) >=1 confirmed Critical-class attribution omission per hub that survived the 2026-06-29 wide-net 9.52 pass, OR (b) pooled semantic density > ~1 confirmed Critical / 2 docs OR > ~2 Major-attribution bugs / 100 attribution claims checked.
   - NO_GO / TARGETED_ONLY if the hubs are below threshold: even the densest docs are clean at depth -> run mechanical-only corpus-wide (free) and reserve semantic depth for the top-centrality quartile.
 Extrapolate expected_corpus_criticals ~= hub_density x corpus_attribution_claim_count (state how you derived it; it is an estimate, not a guarantee). Report the attribution-class residual SEPARATELY and note it must NEVER be relayed as answer-quality.
+
+${PATH_HYGIENE}
 
 OUTPUT: write the full measurement report (matrix table, what the 9.52 pass missed, the go/no-go with reasoning) to ${ARC}/round${R}_depth/MEASUREMENT.md; return the schema.`
 }

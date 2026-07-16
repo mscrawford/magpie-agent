@@ -1,6 +1,6 @@
 # Adversarial Verification — module_52.md (Round 55 depth)
 
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_52.md` (1222 lines)
+**Target doc**: `<magpie-root>/magpie-agent/modules/module_52.md` (1222 lines)
 **Ground truth**: `/private/tmp/magpie_develop_ro` (read-only develop worktree)
 **Role map**: `audit/integrated/depth_rolemap.json`
 **Date**: 2026-07-16

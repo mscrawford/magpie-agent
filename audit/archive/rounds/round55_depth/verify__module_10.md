@@ -1,6 +1,6 @@
 # Adversarial verification — module_10.md (Round 55 depth)
 
-**Target doc**: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_10.md` (898 lines)
+**Target doc**: `<magpie-root>/magpie-agent/modules/module_10.md` (898 lines)
 **Ground truth**: `/private/tmp/magpie_develop_ro` (develop worktree, read-only)
 **Role map**: `audit/integrated/depth_rolemap.json`
 **Default realization (M10)**: `landmatrix_dec18` (`config/default.cfg`) — sole realization; `ls /private/tmp/magpie_develop_ro/modules/10_land/` → `input`, `landmatrix_dec18`, `module.gms`

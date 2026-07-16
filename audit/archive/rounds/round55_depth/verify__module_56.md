@@ -1,6 +1,6 @@
 # Adversarial verification — module_56.md (Round 55 depth)
 
-Target doc: `/Users/turnip/Documents/Work/Workspace/magpie/magpie-agent/modules/module_56.md` (1162 lines)
+Target doc: `<magpie-root>/magpie-agent/modules/module_56.md` (1162 lines)
 Ground truth: `/private/tmp/magpie_develop_ro` (read-only develop worktree)
 Default realization (config/default.cfg:1631): `cfg$gms$ghg_policy <- "price_aug22"` — and it is the ONLY realization (`ls -d modules/56_ghg_policy/*/` → `input/`, `price_aug22/`). No realization ambiguity.
 Relevant default (config/default.cfg:1835): `c56_carbon_stock_pricing <- "actualNoAcEst"`.
