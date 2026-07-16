@@ -1182,6 +1182,7 @@ Option 1: Reduce work intensity (manual → mechanized)
   • Productivity impact: ~50% smaller than 400W
   modules/37_labor_prod/exo/input.gms:15
 
+<!-- check-gams-vars: allow pm_labor_prod_adapted -->
 Option 2: Assume partial productivity recovery
   # Custom code (not standard MAgPIE)
   pm_labor_prod_adapted(t,j) = pm_labor_prod(t,j) +

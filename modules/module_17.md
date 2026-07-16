@@ -865,11 +865,11 @@ vm_prod(j,kcr) [17] → **BACK TO START** (via aggregation)
 
 **Dependency chain**:
 ```
-vm_demand(i,k) [16] → Food demand by region
+vm_dem_food(i,kall) [16] → Food demand by region
     ↓
 Module 21 (trade) → Trade balances production vs. demand
     ↓
-vm_import/export [21] → Trade flows
+vm_prod_reg / trade flows [21] → Trade balance
     ↓
 vm_prod_reg(i,k) [17] → Production must meet (demand - imports + exports)
     ↓
