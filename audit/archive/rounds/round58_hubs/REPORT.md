@@ -38,9 +38,46 @@ R55 measured **28 confirmed findings / 498 claims = 5.6%** claim-level defect ra
 - **Auditors were barred from the instruments.** No reading `scripts/check_*.py`, no role map, no `--dump-rolemap`. Using the instruments as the frame inherits the blind spots this round exists to find.
 - **Adversarial refutation** per finding-bearing module; R55's "refuted-and-survived" bar.
 
+## ⚠️ CORRECTION: the selection numbers in the section above were WRONG
+
+**Raised by the M11 auditor (O4), confirmed by independent re-derivation. The table above is left intact and is superseded by this one.**
+
+I computed degree centrality from the role map's own `--dump-rolemap` output. That map lists a module's own declared variable in its `read_by` set, so **every module double-counted its self-references** and I never checked the convention. Independent scan (own tokenizer, own comment-stripper, nothing imported from the instruments):
+
+| | as briefed | corrected (self-refs excluded) |
+|---|---|---|
+| **M11** | degree 35, rank **#2**, reads 33 | degree **33**, rank **#1**, produces 1 (`vm_cost_glo`), reads **32** |
+| M32 | degree 40, rank #1 | degree 29, rank #2 |
+| **M29** | degree 24 | degree **19**, rank #4 |
+| **M70** | degree 25 | degree **16**, rank **#8** |
+
+**Root cause, stated plainly: I used the instrument to select the targets and inherited its counting convention unexamined — the exact error this round exists to catch, committed while designing the round.** The auditors were explicitly barred from the instruments' frame; I did not hold myself to the same rule. It surfaced only because an independent auditor tried to reproduce the number and could not.
+
+**What survives:** the selection. M11 is *more* central than briefed (#1, not #2) and had gone 6 weeks unexamined — the round's core claim holds and is strengthened. M29 (#4) is a fair target.
+**What does not:** M70 at rank #8 is a materially weaker "hub" than the degree-25 figure I briefed. Its inclusion was justified by an inflated number. It is still a stale, reasonably-central production module, but it was not the #3-tier target it was sold as.
+
+**Do not quote the original table.** Any downstream use of "M11 has degree 35 / consumes 33" is wrong.
+
 ## Results
 
-_(pending)_
+**Denominators and findings (Phase 1, open-ended taxonomy, auditors barred from the instruments' frame):**
+
+| module | claims_evaluated | Critical | Major | Minor | total |
+|---|---|---|---|---|---|
+| M11 costs | 241 | 4 | 7 | 3 | 14 |
+| M29 cropland | 168 | 2 | 13 | 4 | 19 |
+| M70 livestock | _(pending)_ | | | | |
+
+_(rate + R55 comparison pending M70; findings not yet refuted or confirmed against develop)_
+
+### The structural signal — both auditors converged on it independently
+
+Neither was told what the other found. Both reported that **the machine-checkable surface is clean and the defects have migrated to the layers checkers cannot parse**:
+
+- **M11 (O9):** all 32 variable names, 32 citations, 27 module attributions, both formulas and all GDX symbols are correct. *Every* defect sits in prose summaries, in descriptions attached to correct identifiers, or in testing prescriptions.
+- **M29 (O6):** all 16 formulas, all ~20 defaults, and 11/11 spot-checked cross-module citations are correct. The failures are (a) presolve bounds, (b) macro semantics, (c) interface *sets* vs *rows*, (d) the doc's self-description. (a) and (b) share a property: **one indirection away from the file the doc cites**. (c) exists only at the aggregate level and cannot be found by checking rows.
+
+M29's auditor states the consequence directly: an audit reading `equations.gms` + `declarations.gms` + `input.gms` and scoring per-claim would find **zero of the Criticals** and would be justified in writing the clean-bill banner. **This is a mechanism for how "9.52 = solved" happened** — not a restatement of it.
 
 ## The grade
 
