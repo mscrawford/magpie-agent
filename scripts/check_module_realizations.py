@@ -85,27 +85,38 @@ BODY_CITE_RE = re.compile(
 )
 
 
-def load_default_realizations():
-    """Parse default.cfg and return {config_key: default_realization}."""
-    if not CONFIG_DEFAULT.exists():
-        print(f"FATAL: {CONFIG_DEFAULT} not found", file=sys.stderr)
+def load_default_realizations(cfg_path=None):
+    """Parse default.cfg and return {config_key: default_realization}.
+
+    `cfg_path` is injectable (defaulting to the module constant) so the self-test
+    can drive this REAL parser over a synthetic file instead of stubbing it --
+    the dead-to-test defect R57/W0a found across the battery. Default preserves
+    the previous behaviour exactly.
+    """
+    cfg_path = Path(cfg_path) if cfg_path is not None else CONFIG_DEFAULT
+    if not cfg_path.exists():
+        print(f"FATAL: {cfg_path} not found", file=sys.stderr)
         sys.exit(3)
     defaults = {}
-    for line in CONFIG_DEFAULT.read_text().splitlines():
+    for line in cfg_path.read_text().splitlines():
         m = CONFIG_RE.match(line)
         if m:
             defaults[m.group("key")] = m.group("value")
     return defaults
 
 
-def load_module_map():
+def load_module_map(modules_dir=None):
     """Map module number → (dir_name, config_key).
-    Config key is the dir name with the leading 'NN_' stripped."""
+    Config key is the dir name with the leading 'NN_' stripped.
+
+    `modules_dir` injectable for the same reason as load_default_realizations.
+    """
+    modules_dir = Path(modules_dir) if modules_dir is not None else MODULES_CODE_DIR
     mapping = {}
-    if not MODULES_CODE_DIR.exists():
-        print(f"FATAL: {MODULES_CODE_DIR} not found", file=sys.stderr)
+    if not modules_dir.exists():
+        print(f"FATAL: {modules_dir} not found", file=sys.stderr)
         sys.exit(3)
-    for child in MODULES_CODE_DIR.iterdir():
+    for child in modules_dir.iterdir():
         if not child.is_dir():
             continue
         m = re.match(r'^(\d+)_(.+)$', child.name)
@@ -280,13 +291,59 @@ def _self_test():
     _h, claims = find_realization_claims(footer2)
     if claims != [("default", "11", "costs")]:
         failures.append(f"colon-inside-bold footer not parsed: {claims}")
+    # ---- GROUND-TRUTH half: drive the REAL loaders over a synthetic tree -------
+    # Pre-R58 both loaders were dead to this test: every control above works on
+    # doc prose only, so the two functions that READ default.cfg and the modules
+    # tree -- and thus decide which realization is DEFAULT -- were never called.
+    # Either could be replaced with `raise` and the suite stayed green. That is
+    # load-bearing: a wrong default realization is the project's anchor Critical.
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        cfg = root / "default.cfg"
+        cfg.write_text(
+            'cfg$gms$livestock <- "fbask_jan16"        # def = fbask_jan16\n'
+            'cfg$gms$cropland    <- "detail_apr24"     # def = detail_apr24\n'
+            '# cfg$gms$costs <- "commented_out"        # must be IGNORED\n'
+            "cfg$gms$s70_not_a_realization <- 1        # scalar, not a realization\n"
+        )
+        mods = root / "modules"
+        (mods / "70_livestock" / "fbask_jan16").mkdir(parents=True)
+        (mods / "70_livestock" / "fbask_jan16_sticky").mkdir(parents=True)
+        (mods / "29_cropland" / "detail_apr24").mkdir(parents=True)
+        (mods / "not_a_module").mkdir(parents=True)
+
+        defaults = load_default_realizations(cfg_path=cfg)
+        mmap = load_module_map(modules_dir=mods)
+
+        gt = [
+            ("load_default_realizations reads a real cfg",
+             defaults.get("livestock") == "fbask_jan16"),
+            ("load_default_realizations reads a second key",
+             defaults.get("cropland") == "detail_apr24"),
+            ("load_default_realizations ignores commented-out lines",
+             "costs" not in defaults),
+            ("load_module_map maps number -> (dir, key)",
+             mmap.get("70") == ("70_livestock", "livestock")),
+            ("load_module_map maps a second module",
+             mmap.get("29") == ("29_cropland", "cropland")),
+            ("load_module_map ignores a non-NN_ directory",
+             not any(v[0] == "not_a_module" for v in mmap.values())),
+            ("the two loaders JOIN: M70's default realization dir exists",
+             (mods / mmap["70"][0] / defaults[mmap["70"][1]]).is_dir()),
+        ]
+        for name, cond in gt:
+            if not cond:
+                failures.append(f"[ground-truth] {name}")
+
     if failures:
         print("SELF-TEST FAILED:", file=sys.stderr)
         for f in failures:
             print("  -", f, file=sys.stderr)
         return 1
     print("SELF-TEST OK - inline 'verified against' prose ignored; line-start "
-          "footers parsed.", file=sys.stderr)
+          "footers parsed; REAL cfg/module-map loaders exercised over a "
+          "synthetic tree (7 ground-truth assertions).", file=sys.stderr)
     return 0
 
 
