@@ -32,9 +32,12 @@ Exit: 0 always (advisory; mismatches surface via output text)
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 from collections import defaultdict
 from pathlib import Path
 
@@ -702,8 +705,80 @@ def scan_populator_claims(
     return findings
 
 
+def _write_selftest_fixture(root: Path) -> None:
+    """Write a synthetic MAgPIE module tree exercising the REAL extractors.
+
+    Deliberately covers the ground-truth branches the old self-test could not
+    reach, because it hand-wrote the maps instead of building them:
+      - single-module declaration  -> resolved producer
+      - two-module declaration     -> "" ambiguous sentinel
+      - section keywords / non-interface names -> skipped
+      - token word-boundary        -> vm_land_short must NOT credit vm_land
+    """
+    def w(rel: str, text: str) -> None:
+        p = root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text)
+
+    # MAGPIE_DIR sanity anchors that main() checks for.
+    w("main.gms", "* synthetic\n")
+
+    # 10_land declares vm_land (single producer) + vm_ambig (also in 32).
+    w("modules/10_land/landmatrix_dec18/declarations.gms",
+      "variables\n"
+      " vm_land(j,land) land area\n"
+      " vm_ambig(j) ambiguous on purpose\n"
+      "positive variables\n"
+      " v10_local(j) numbered-local, not a cross-module iface\n")
+
+    # 32_forestry ALSO declares vm_ambig -> must resolve to "" (ambiguous).
+    w("modules/32_forestry/dynamic_may24/declarations.gms",
+      "variables\n"
+      " vm_ambig(j) declared twice across modules\n")
+
+    # 29_cropland CONSUMES vm_land in an equation.
+    w("modules/29_cropland/detail_apr24/equations.gms",
+      " q29_x(j) .. sum(land, vm_land(j,land)) =e= 1;\n")
+
+    # 31_past mentions ONLY vm_land_short -> word boundary means it must NOT
+    # be credited as a vm_land consumer. This is the substring-false-positive
+    # class that has bitten real consumer attribution before.
+    w("modules/31_past/default/equations.gms",
+      " q31_y(j) .. vm_land_short(j) =e= 2;\n")
+
+    # 52_carbon reads vm_land at SOLUTION level only (.l) -- a paren-only grep
+    # would miss this; the extractor's token regex should still catch it.
+    w("modules/52_carbon/normal_dec17/presolve.gms",
+      " p52_tmp(j) = vm_land.l(j);\n")
+
+
+def _scan_only() -> int:
+    """Internal: drive the REAL extractors over MAGPIE_DIR and emit JSON.
+
+    Exists so the self-test can exercise build_producer_map/build_consumer_map
+    against a real tree on disk (via a MAGPIE_DIR-overridden subprocess) instead
+    of stubbing them. Stubbing the ground-truth extractor is exactly the defect
+    R57/W0a found across the battery; this must not reproduce it.
+    """
+    producers = build_producer_map()
+    consumers = build_consumer_map()
+    print(json.dumps({
+        "producers": producers,
+        "consumers": {k: sorted(v) for k, v in consumers.items()},
+    }))
+    return 0
+
+
 def _self_test() -> int:
-    """Positive control for Pattern D3 with synthetic maps (no codebase needed)."""
+    """Positive control for Pattern D3.
+
+    Two halves, deliberately:
+      1. the DIFFING half (scan_populator_claims) against synthetic maps;
+      2. the GROUND-TRUTH half (build_producer_map / build_consumer_map) driven
+         for real over a synthetic tree on disk. Before R58 the extractors were
+         100% dead to this test -- both could be replaced with `raise` and it
+         still printed SELFTEST_OK.
+    """
     failures = []
     producers = {"vm_carbon_stock": "56_ghg_policy"}
     consumers = {
@@ -734,6 +809,47 @@ def _self_test() -> int:
     )
     if scan_populator_claims(good, "x.md", producers, consumers):
         failures.append("flagged a correct populator list (false positive)")
+
+    # ---- GROUND-TRUTH half: drive the REAL extractors over a real tree -------
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        _write_selftest_fixture(root)
+        env = dict(os.environ, MAGPIE_DIR=str(root))
+        p = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve()), "--_scan-only"],
+            capture_output=True, text=True, env=env, timeout=120,
+        )
+        if p.returncode != 0:
+            failures.append(f"extractor subprocess rc={p.returncode}: {p.stderr[:300]}")
+        else:
+            data = json.loads(p.stdout)
+            prod = data["producers"]
+            cons = {k: set(v) for k, v in data["consumers"].items()}
+
+            # build_producer_map
+            if prod.get("vm_land") != "10_land":
+                failures.append(f"build_producer_map: vm_land -> {prod.get('vm_land')!r}, want '10_land'")
+            if prod.get("vm_ambig") != "":
+                failures.append(f"build_producer_map: vm_ambig -> {prod.get('vm_ambig')!r}, want '' (ambiguous sentinel)")
+            if "variables" in prod or "positive" in prod:
+                failures.append("build_producer_map: leaked a GAMS section keyword into the map")
+            # v10_local IS expected in the map: VAR_NAME_RE's alternation includes
+            # `v\d+_`, so this checker's notion of "interface var" deliberately
+            # spans module-numbered locals (it validates those too). Asserted so
+            # a future narrowing of VAR_NAME_RE cannot silently drop them.
+            if prod.get("v10_local") != "10_land":
+                failures.append(f"build_producer_map: v10_local -> {prod.get('v10_local')!r}, want '10_land' (numbered locals are in scope by VAR_NAME_RE)")
+
+            # build_consumer_map
+            if "29_cropland" not in cons.get("vm_land", set()):
+                failures.append(f"build_consumer_map: 29_cropland missing from vm_land consumers (got {sorted(cons.get('vm_land', []))})")
+            if "31_past" in cons.get("vm_land", set()):
+                failures.append("build_consumer_map: vm_land_short wrongly credited 31_past as a vm_land consumer (word-boundary broken)")
+            if "vm_land_short" not in cons:
+                failures.append("build_consumer_map: did not extract vm_land_short at all (fixture/regex mismatch)")
+            if "52_carbon" not in cons.get("vm_land", set()):
+                failures.append("build_consumer_map: missed a solution-level (.l) read in 52_carbon")
+
     if failures:
         print("SELF-TEST FAILED:", file=sys.stderr)
         for f in failures:
@@ -748,6 +864,9 @@ def main() -> int:
     args = sys.argv[1:]
     summary_only = "--summary-only" in args
     verbose = "--verbose" in args
+
+    if "--_scan-only" in args:
+        return _scan_only()
 
     if "--self-test" in args:
         rc = _self_test()
