@@ -886,13 +886,30 @@ Module 29 does NOT directly participate in water balance (no water equations), b
 **Total Connections**: 12 (provides to 6 modules, depends on 6)
 **Hub Type**: **Aggregation Hub** (aggregates cropland components: area + fallow + tree cover)
 
-**Provides To** (6 modules):
-1. **Module 10 (Land)** - Total cropland area (`vm_land(j,"crop")`)
-2. **Module 11 (Costs)** - Cropland management costs (fallow, tree cover, seminatural vegetation)
-3. **Module 52 (Carbon)** - Cropland above-ground carbon stocks (vegc, litc)
-4. **Module 59 (SOM)** - Soil organic matter targets for cropland
-5. **Module 22 (Conservation)** - Protected cropland area (if applicable)
-6. Plus potentially 1-2 other modules
+> ⚠️ **CORRECTED (R58, 2026-07-17).** The previous list named 6 modules, omitted
+> `pm_avl_cropland_iso`, `vm_carbon_stock` and `vm_bv` entirely, and hid four real consumers behind
+> "plus potentially 1-2 other modules". Rewritten below from a per-variable derivation.
+
+**Counting rule** (stated because the old list had none): M29 *provides* an interface variable if M29
+**populates** it — i.e. the variable is the LHS of an M29 equation, or is a parameter M29 declares and
+fills. Populating is NOT the same as declaring: three of the six variables below are declared in
+*other* modules and populated here. A consumer is any other module referencing the variable in `.gms`
+source, in either the `name(` (equation) or `name.` (solution-level) form.
+
+**Provides To** — 6 interface variables, populated by the default realization `detail_apr24`:
+
+| Variable | Declared in | Populated by M29 at | Consumed by |
+|---|---|---|---|
+| `vm_land(j,"crop")` — the **crop slice only** | M10 (`10_land/landmatrix_dec18/declarations.gms:19`) | `q29_cropland`, `detail_apr24/equations.gms:12` | M10's land balance (M29 owns only the `"crop"` slice; other modules own the other slices) |
+| `vm_cost_cropland(j)` | M29 (`detail_apr24/declarations.gms:38`) | `equations.gms` | **11** |
+| `vm_fallow(j)` | M29 | `equations.gms` | **32, 50, 59** |
+| `vm_treecover(j)` | M29 | `equations.gms` | **22, 59** |
+| `vm_carbon_stock(j,"crop",ag_pools,stockType)` | **M56** (`56_ghg_policy/price_aug22/declarations.gms:34`) | `detail_apr24/equations.gms:39` | **31, 32, 34, 35, 52, 56, 59** |
+| `vm_bv(j,...)` | **M44** (`44_biodiversity/bv_btc_mar21/declarations.gms:19`) | `detail_apr24/equations.gms` | **30, 31, 32, 34, 35, 44** |
+| `pm_avl_cropland_iso` | M29 | preloop/presolve | **13, 30, 59** |
+
+**Modules that consume at least one variable M29 populates:** 10, 11, 13, 22, 30, 31, 32, 34, 35, 44,
+50, 52, 56, 59. Note `simple_apr24` (non-default) populates only `vm_land` and `vm_carbon_stock`.
 
 **Depends On** (6 modules):
 1. **Module 10 (Land)** - Total land by type (`vm_land`), land use transitions (`vm_lu_transitions`)
@@ -933,19 +950,28 @@ Module 29 (Cropland) ──→ vm_land(j,"crop") ──→ Module 10 (Land)
 
 #### Cycle C29: Cropland ↔ SOM (Temporal Feedback)
 
-**Structure**:
+<!-- check-gams-vars: allow pm_carbon_density_soilc -->
+> ⚠️ **CORRECTED (R58, 2026-07-17): this is NOT a cycle.** The section previously showed a
+> return edge `pm_carbon_density_soilc` from M59 back to M29. **No such variable exists anywhere
+> in MAgPIE** (verified with positive controls: no interface variable containing `soilc` exists in
+> `modules/` at all), and M29 reads *nothing* that M59 declares — M59's entire declared interface is
+> `vm_cost_scm`, `vm_nr_som`, `vm_nr_som_fertilizer`. The relationship is a **one-way edge**, and
+> the heading is retained only so the old "Cycle C29" label remains findable.
+
+**Structure** (one-way, not a cycle):
 ```
 Module 29 (Cropland) ──→ vm_treecover(j) ──→ Module 59 (SOM)
-       ↑                                          │
-       │                                          │
-       └────────── pm_carbon_density_soilc ←──────┘
-                  (soil carbon equilibrium)
+                          (no return edge)
 ```
 
-**Resolution Mechanism**: **Type 1 - Temporal Feedback**
-- **Within timestep**: Module 59 calculates SOM equilibrium targets
-- **Across timesteps**: Soil carbon converges to equilibrium (15% annual rate)
-- Tree cover increases soil carbon → affects carbon accounting in future timesteps
+- Forward edge is real: M59 consumes `vm_treecover` in its SOM equations
+  (`modules/59_som/static_jan19/equations.gms:14`; `modules/59_som/cellpool_jan23/equations.gms:26`).
+- **There is no return edge.** M29 does not read any M59 output, so there is no feedback to resolve.
+
+**Resolution Mechanism**: **none required** — a one-way edge cannot deadlock.
+- Module 59 calculates SOM equilibrium targets within the timestep, consuming M29's tree cover.
+- Tree cover raises soil carbon **inside M59's own accounting**; that result does not flow back into
+  M29's decisions.
 
 **Testing Protocol** (if modifying Module 29):
 - ✅ Verify land balance: `sum(land, vm_land(j,land)) = pm_land_start(j)`

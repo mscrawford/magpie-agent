@@ -286,7 +286,7 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Dimensions:** i (regions)
 **Citation:** `equations.gms:30-32`, documented in the component comment block `equations.gms:49-69`
 
-> **PR #866 (2026-05)**: the former single trade-cost variable *vm_cost_trade* was removed and split into these three. Module 11's only change is that `q11_cost_reg` now adds three terms where it previously added one. `vm_cost_trade_feasibility` is fixed at 0 in the `exo` and `selfsuff_reduced_bilateral22` realizations of Module 21 (no feasibility-import mechanism there), so it contributes 0 to the sum in those cases — Module 11 still sums it unconditionally.
+> **PR #866 (2026-05)**: the former single trade-cost variable *vm_cost_trade* was removed and split into these three. Module 11's only change is that `q11_cost_reg` now adds three terms where it previously added one. `vm_cost_trade_feasibility` is fixed at 0 **only in the `exo` realization** of Module 21 (`modules/21_trade/exo/presolve.gms:10`, `vm_cost_trade_feasibility.fx(i) = 0;` — no feasibility-import mechanism there), so it contributes 0 to the sum in that case. In **`selfsuff_reduced_bilateral22` it is NOT fixed**: that realization has a live priced equation `q21_cost_trade_feasibility` (`modules/21_trade/selfsuff_reduced_bilateral22/equations.gms:98`) and no `presolve.gms` at all. Module 11 sums the term unconditionally in every realization.
 
 ---
 
@@ -591,11 +591,13 @@ Only **one realization exists:** `default`
 - Module 70 (Livestock): Livestock and fish production costs (`vm_cost_prod_livst`, `vm_cost_prod_fish`)
 - Module 31 (Pasture): Pasture production costs (`vm_cost_prod_past`)
 - Module 18 (Residues): Residue production costs (`vm_cost_prod_kres`)
-- Module 30 (Crop): Cropland and rotation costs
+- Module 30 (Croparea): Rotation penalty only (`vm_rotation_penalty`)
+- Module 29 (Cropland): Cropland costs (`vm_cost_cropland`)
 
 **Land Use Modules:**
 - Module 39 (Land Conversion): Conversion costs
-- Module 10 (Land): Land transition and urban costs
+- Module 10 (Land): Land transition costs (`vm_cost_land_transition`)
+- Module 34 (Urban): Urban technical adjustment costs (`vm_cost_urban`)
 
 **Input Modules:**
 - Module 50 (Nitrogen): Fertilizer costs
@@ -1133,15 +1135,15 @@ Module 11 does **not directly participate** in any conservation laws:
 <!-- check-gams-vars: allow v12_interest, v18_res_use_costs, v20_processing_costs, v22_cost_conservation, v28_cost_age_class, v36_employment_costs, vm_cost_bioen, vm_cost_croparea, vm_cost_cropland_expansion, vm_cost_livst, vm_cost_material, vm_cost_natveg, vm_cost_pasture, vm_cost_prod, vm_cost_som -->
 
 **What Module 11 provides**:
-- `vm_cost_glo` → **GAMS Solver** (objective function to minimize)
+- `vm_cost_glo` → **Module 80 (Optimization)**, which is the consumer: `solve magpie USING nlp MINIMIZING vm_cost_glo;` (`modules/80_optimization/nlp_apr17/solve.gms:34`). The endpoint is a module, not "the solver" — M80 owns the solve statement.
 - `v11_cost_reg(i)` → summed by q11_cost_glo into vm_cost_glo (the objective). It IS part of the optimization (regional intermediate of the objective), not a reporting-only artifact.
 
 ### 17.3 Circular Dependencies
 
 Module 11 participates in **zero circular dependencies**:
-- **No feedback loops**: Module 11 is a **terminal sink** (receives costs, provides only to solver)
-- **One-way data flow**: All cost modules → Module 11 → Solver objective
-- **No variables provided back**: Other modules do NOT depend on Module 11 variables
+- **No feedback loops**: Module 11 is a **terminal sink** (receives costs; its only downstream consumer is Module 80)
+- **One-way data flow**: All cost modules → Module 11 → Module 80 (Optimization) minimises `vm_cost_glo`
+- **One module depends on Module 11**: Module 80 reads `vm_cost_glo` as the objective (`modules/80_optimization/nlp_apr17/solve.gms:34`). No *other* module consumes an M11 variable, and no M11 equation reads anything M80 produces — so there is still no data-flow cycle.
 
 **Why no cycles?**
 - Module 11 only **aggregates** costs (sums them)
