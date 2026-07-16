@@ -2,7 +2,7 @@
 
 > **🔄 Major update 2026-04-20 (MAgPIE PR #869 "ipopt_part1", commit `75d7ee167`):**
 > Module 52 gained a **growing-stock calibration system** that tunes Chapman-Richards growth rates (`k`) per region via bisection to match **FAO FRA 2025** growing-stock targets. Calibrated `k` values overwrite `pm_carbon_density_secdforest_ac` (consumed by Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:44` and Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:248`) and `pm_carbon_density_plantation_ac` (consumed by Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:26` and Module 32 `modules/32_forestry/dynamic_may24/presolve.gms:65`) (vegc pool only). Uncalibrated versions are preserved for afforestation and NDC use cases.
-> **New features**: preloop.gms (118 lines, previously absent), input file `f52_volumetric_conversion.csv`, interface parameter `im_vol_conv(i)` (used by Module 73 and shared with Module 14's growing-stock formula), scalar switch `s52_growingstock_calib` (default = 1 — **calibration is ON by default**), FRA target files `f52_fra_nrf_gs.cs4`, `f52_fra_pla_gs.cs4`.
+> **New features**: preloop.gms (118 lines, previously absent), input file `f52_volumetric_conversion.csv`, interface parameter `im_vol_conv(i)` (used by Module 73), scalar switch `s52_growingstock_calib` (default = 1 — **calibration is ON by default**), FRA target files `f52_fra_nrf_gs.cs4`, `f52_fra_pla_gs.cs4`.
 
 **Purpose**: Provides carbon density information for different land types and age classes, and calculates CO2 emissions from land-use change. **As of 2026-04-20, also calibrates Chapman-Richards `k` parameter to FRA 2025 growing stock targets.**
 
@@ -135,7 +135,7 @@ pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc") =
 - Asymptote: Secondary forest vegc from LPJmL
 - Growth: Natural vegetation k and m
 
-> **⚠️ As of 2026-04-20**: The vegc value computed here is **overwritten in preloop.gms** when `s52_growingstock_calib = 1` (default). The uncalibrated value is preserved in `pm_carbon_density_secdforest_ac_uncalib` and is still used downstream for afforestation/NDC use cases (Module 32's `aff` and `ndc` plantation types (set type32), Module 29's tree cover, Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:117`). See Section 2.C below.
+> **⚠️ As of 2026-04-20**: The vegc value computed here is **overwritten in preloop.gms** when `s52_growingstock_calib = 1` (default). The uncalibrated value is preserved in `pm_carbon_density_secdforest_ac_uncalib` and is still used downstream: for new-establishment contexts (Module 32's `aff` and `ndc` plantation types (set type32), Module 29's tree cover), for young-secondary-forest regrowth (Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:66`, Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:117,242`), and for the secdforest natural-origin blend (Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:249-252`). See Section 2.C below.
 
 **Other land** (start.gms:48):
 ```
@@ -289,7 +289,7 @@ Writes a per-region table of `(FRA target NRF, achieved NRF, FRA target plantati
 - **Writes** `im_vol_conv(i)` (consumed by Module 73)
 - **Writes** `pm_carbon_density_secdforest_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:44` and Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:248`)
 - **Writes** `pm_carbon_density_plantation_ac(t_all,j,ac,"vegc")` (overwrites start.gms value; consumed by Module 14 `modules/14_yields/managementcalib_aug19/presolve.gms:26` and Module 32 `modules/32_forestry/dynamic_may24/presolve.gms:65`)
-- **Writes** `pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib` (preserved for new-establishment contexts; consumed by Module 32 afforestation+NDC and Module 29 tree cover; `pm_carbon_density_secdforest_ac_uncalib` also consumed by Module 35 `modules/35_natveg/pot_forest_may24/presolve.gms:117`)
+- **Writes** `pm_carbon_density_secdforest_ac_uncalib`, `pm_carbon_density_plantation_ac_uncalib` (consumed by Module 32 afforestation+NDC and Module 29 tree cover for new-establishment contexts; `pm_carbon_density_secdforest_ac_uncalib` also consumed by Module 14 for young-secondary-forest growing stock `modules/14_yields/managementcalib_aug19/presolve.gms:66` and by Module 35 for youngsecdf regrowth `modules/35_natveg/pot_forest_may24/presolve.gms:117,242` plus the secdforest natural-origin blend at `:249-252`)
 
 **Known caveat** (per `realization.gms:20`): LPJmL potential-vegetation asymptote `A` may exceed observed FRA growing stock in degraded tropical forests. Calibration adjusts `k` but cannot fix an over-estimated asymptote.
 
@@ -440,7 +440,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
   - `emis_source`: Emission sources (includes emis_oneoff)
   - `pollutants`: Pollutants (includes "co2_c")
 - **Usage**: Written by equation q52_emis_co2_actual (equations.gms:16)
-- **Consumers**: Module 56 (GHG Policy) for carbon pricing and emission constraints
+- **Consumers**: Module 56 (GHG Policy) reads this slice for **reporting only** (`ov_emissions_reg(...) = vm_emissions_reg.l(...)`, `modules/56_ghg_policy/price_aug22/postsolve.gms:27`). M56's carbon-pricing equation `q56_emis_pricing_co2` (`modules/56_ghg_policy/price_aug22/equations.gms:19-22`) does NOT read this variable - it recomputes CO2 emissions directly from `pcm_carbon_stock - vm_carbon_stock`, in parallel with Module 52's own calculation. M56's other read of `vm_emissions_reg` (`equations.gms:17`, for `q56_emis_pricing`) is restricted to the disjoint `emis_annual` slice, which excludes `emis_oneoff`/`"co2_c"` (`core/sets.gms:320-323`).
 
 ### Parameters Provided by Module 52
 
@@ -455,7 +455,7 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
 - **Description**: Uncalibrated secondary forest carbon density (preserved from start.gms before preloop overwrite — captures both vegc and litc pools)
 - **Dimensions**: `(t_all,j,ac,ag_pools)`
 - **Calculation**: `start.gms:43` copies the uncalibrated start.gms value
-- **Consumers**: Module 32 (afforestation `"aff"` at `modules/32_forestry/dynamic_may24/presolve.gms:59` and NDC forest `"ndc"` at `modules/32_forestry/dynamic_may24/presolve.gms:68`), Module 29 (tree cover on cropland at `modules/29_cropland/detail_apr24/preloop.gms:46`). All three use cases represent *new establishment* rather than existing managed forest.
+- **Consumers**: Module 32 (afforestation `"aff"` when `s32_aff_plantation = 0`, `modules/32_forestry/dynamic_may24/presolve.gms:59`; NDC forest `"ndc"`, `modules/32_forestry/dynamic_may24/presolve.gms:68`), Module 29 (tree cover on cropland when `s29_treecover_plantation = 0`, `modules/29_cropland/detail_apr24/preloop.gms:46`), Module 14 (young-secondary-forest growing stock `im_growing_stock_ysf`, `modules/14_yields/managementcalib_aug19/presolve.gms:66`), Module 35 (youngsecdf land/carbon at `modules/35_natveg/pot_forest_may24/presolve.gms:117,242` and the secdforest natural-origin blend at `:249-252`, anchor `:251`). M32/M29 use the uncalibrated curve for *new establishment*; M14 and M35 (`:117,242`) use it for *youngsecdf regrowth*; M35 (`:249-252`) uses it as the *natural-origin component of the secdforest blend*.
 
 **2. pm_carbon_density_other_ac** (declarations.gms:11)
 - **Description**: Vegetation other land carbon density by age class (tC per ha)
@@ -709,11 +709,13 @@ Module 52 **reads from** these modules:
 - Used in GS calibration to convert carbon density → stem biomass → volume
 
 **6. Land Modules** (provide carbon stocks to Module 56):
-- Module 30 (Cropland): Cropland carbon stocks
+- Module 29 (Cropland): Cropland carbon stocks (folds in Module 30's `vm_carbon_stock_croparea` via `q29_carbon`, `modules/29_cropland/detail_apr24/equations.gms:39-42`)
+- Module 30 (Croparea): Populates `vm_carbon_stock_croparea` (not `vm_carbon_stock` directly), consumed by Module 29
 - Module 31 (Pasture): Pasture carbon stocks
 - Module 32 (Forestry): Plantation carbon stocks
 - Module 34 (Urban): Urban carbon stocks
 - Module 35 (Natural Vegetation): Primary forest, secondary forest, other land carbon stocks
+- Module 59 (SOM): Soil carbon (soilc) stocks for all land types
 
 ### Downstream Dependencies
 
@@ -738,7 +740,7 @@ Module 52 **provides to** these modules:
 
 **5. Module 56 (GHG Policy)**:
 - `vm_emissions_reg(i,emis_oneoff,"co2_c")` — CO2 emissions from land-use change
-- Used for carbon pricing and emission constraints
+- Read only for reporting (`modules/56_ghg_policy/price_aug22/postsolve.gms:27`); M56's carbon-pricing equation `q56_emis_pricing_co2` recomputes CO2 directly from carbon stocks and does not read this variable (see Interface Variables section above)
 
 **6. Module 73 (Timber) [NEW consumer as of 2026-04-20]**:
 - `im_vol_conv(i)` — regional basic wood density (tDM/m³)
@@ -762,7 +764,7 @@ Module 52 **provides to** these modules:
    - Land modules (30-35): Calculate carbon stocks based on land allocation
    - Module 56: Aggregate carbon stocks from land modules
    - Module 52: Calculate CO2 emissions from stock changes (equation q52_emis_co2_actual)
-   - Module 56: Apply carbon prices to emissions
+   - Module 56: Compute CO2 pricing independently from carbon stocks (`pcm_carbon_stock - vm_carbon_stock`, `q56_emis_pricing_co2`), in parallel with (not downstream of) Module 52's emission calculation
 
 4. **Postsolve**:
    - Module 52: Report equation outputs

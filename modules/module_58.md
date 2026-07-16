@@ -388,7 +388,7 @@ Maps 31 detailed Köppen-Geiger classes to 3 simple classes
 - **Type**: Variable (free, -Inf to +Inf for poll58)
 - **Unit**: Tg per year (Tg C for co2_c, Tg N for n2o_n_direct, Tg CH4 for ch4)
 - **Equation**: q58_peatland_emis (equations.gms:91-94)
-- **Consumers**: 56_ghg_policy
+- **Consumers**: 56_ghg_policy (emission pricing - `peatland` is a member of `emis_annual` (`core/sets.gms:320-322`), which `q56_emis_pricing` reads at `modules/56_ghg_policy/price_aug22/equations.gms:15-17`); 57_maccs (MAC cost calculation at `modules/57_maccs/on_aug22/equations.gms:38,48`, which sums over all `emis_source` - reads only the `ch4` and `n2o_n_direct` slices via `pollutants_maccs57` (`modules/57_maccs/on_aug22/sets.gms:25-26`), excluding `co2_c`)
 - **Initialization**: All other pollutants fixed to zero (preloop.gms:31)
 
 ### 6.2 State Variables

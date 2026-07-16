@@ -63,7 +63,7 @@ For annual (recurring) emissions (CH4, N2O, annual CO2), the emissions subject t
 **Components:**
 
 - **v56_emis_pricing(i,emis_annual,pollutants)**: Emissions used for pricing calculation (Tg/yr)
-- **vm_emissions_reg(i,emis_annual,pollutants)**: Actual regional emissions from the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland) (Tg/yr)
+- **vm_emissions_reg(i,emis_annual,pollutants)**: Actual regional emissions from the emission modules (51 N2O, 53 CH4, 58 peatland) (Tg/yr). Module 52 (LULUCF CO2) does NOT feed this slice - it populates `vm_emissions_reg(i,emis_oneoff,"co2_c")` only, and `emis_oneoff` is disjoint from `emis_annual` (`core/sets.gms:314,320`). Module 56 prices LULUCF CO2 separately via `q56_emis_pricing_co2` (Section 2.2).
 - **emis_annual**: Recurring emission sources (fertilizer, livestock, etc.)
 
 **Conceptual Meaning:**
@@ -200,8 +200,8 @@ One-off emissions occur once but avoided emissions provide perpetual benefits. T
 
 - Deforestation emits 100 Tg C over 10 years (10 Tg C/yr)
 - C price = $100/tC, interest rate = 5%
-- Annual cost = 10 Tg/yr × 10 yr × $100/tC × 0.05/1.05 ≈ $4,762/yr
-- This equals the annual payment on a $100,000 perpetuity at 5% interest
+- Annual cost = 10 Tg/yr × 10 yr × $100/tC × 0.05/1.05 ≈ $476/yr
+- This equals the annual payment on a $10,000 perpetuity at 5% interest
 
 **Rationale:**
 
@@ -496,16 +496,16 @@ Dimensions: 44 policies × 16 pollutants × 31 emission sources
 Example policies:
 - **"none":** All entries = 0 (no pricing)
 - **"all":** All entries = 1 (price everything)
-- **"reddnatveg_nosoil"** (default): Prices CO2 from natural vegetation carbon stocks — specifically **vegc AND litc** for primforest, secdforest, and other land, plus peatland emissions. Does **not** price soil carbon (soilc) or cropland/pasture/forestry carbon stocks. Verified from `f56_emis_policy.csv`: co2_c entries = 1 for primforest_vegc, primforest_litc, secdforest_vegc, secdforest_litc, other_vegc, other_litc, and peatland. **However, `reddnatveg_nosoil` is NOT CO2-only**: the same policy also routes agricultural CH4 (awms, resid_burn, rice, ent_ferm, peatland) and N2O (inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice, plus indirect N) to pricing (see the `ch4` / `n2o_n_direct` / `n2o_n_indirect` rows of `f56_emis_policy.csv`). "nosoil" means soil C is excluded, not that non-CO2 gases are. Whether a nonzero price is actually applied is a separate switch (`c56_pollutant_prices`, default `R34M410-SSP2-NPi2025`, near-zero through 2030).
+- **"reddnatveg_nosoil"** (default): Prices CO2 from natural vegetation carbon stocks — specifically **vegc AND litc** for primforest, secdforest, and other land, plus peatland emissions. Does **not** price soil carbon (soilc) or cropland/pasture/forestry carbon stocks. Verified from `f56_emis_policy.csv`: co2_c entries = 1 for primforest_vegc, primforest_litc, secdforest_vegc, secdforest_litc, other_vegc, other_litc, and peatland. **However, `reddnatveg_nosoil` is NOT CO2-only**: the same policy also routes agricultural CH4 (awms, resid_burn, rice, ent_ferm, peatland) and N2O (inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice, peatland, plus indirect N) to pricing (see the `ch4` / `n2o_n_direct` / `n2o_n_indirect` rows of `f56_emis_policy.csv`). "nosoil" means soil C is excluded, not that non-CO2 gases are. Whether a nonzero price is actually applied is a separate switch (`c56_pollutant_prices`, default `R34M410-SSP2-NPi2025`, near-zero through 2030).
 - **"all_nosoil":** Price all gases except soil CO2
 - **"sdp_all":** Comprehensive pricing for Sustainable Development Pathway scenarios
 
 **Selective Pricing Example:**
 
 Policy "redd_nosoil" might have:
-- `f56_emis_policy("redd_nosoil","co2_c","deforest") = 1` (price deforestation CO2)
-- `f56_emis_policy("redd_nosoil","co2_c","cropland_soil") = 0` (exclude soil CO2)
-- `f56_emis_policy("redd_nosoil","ch4","livestock") = 0` (exclude livestock CH4)
+- `f56_emis_policy("redd_nosoil","co2_c","secdforest_vegc") = 1` (price deforestation CO2)
+- `f56_emis_policy("redd_nosoil","co2_c","crop_soilc") = 0` (exclude soil CO2)
+- `f56_emis_policy("redd_nosoil","ch4","ent_ferm") = 0` (exclude livestock CH4)
 
 **Historical Override:**
 
@@ -594,7 +594,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 
 **Sources include:** Enteric fermentation (CH4), fertilizer use (N2O), land-use change (CO2), peatland (CO2), etc.
 
-**Citation:** Used in `equations.gms:17`
+**Citation:** `equations.gms:17` (pricing equation; consumes only the `emis_annual` slice, populated by 51, 53, 58). Module 52's `(emis_oneoff,"co2_c")` slice reaches Module 56 only via `postsolve.gms:13,27,41,55` (reporting, not pricing).
 
 ---
 
@@ -626,7 +626,7 @@ Afforestation decisions depend on **expected future revenue**, not current price
 **From External Data:**
 
 - **f56_pollutant_prices(t,i,pollutants,ghgscen56)**: GHG price scenarios (USD17MER/Mg) — i.e., USD per tonne, NOT per million tons
-- **f56_emis_policy(scen56,pollutants,emis_source)**: Emission policy matrix (0/1)
+- **f56_emis_policy(scen56,pollutants_all,emis_source)**: Emission policy matrix (0/1)
 
 **Citation:** Used in `preloop.gms:35-91`
 
@@ -659,8 +659,8 @@ Module 56 provides 100+ price scenarios and 44 policy scenarios. Key examples:
 | **none** | ✗ | ✗ | ✗ | ✗ | Reference (no policy) |
 | **all** | ✓ | ✓ | ✓ | ✓ | Comprehensive carbon pricing |
 | **all_nosoil** | ✓ | ✗ | ✓ | ✓ | Price all except soil C (measurement challenges) |
-| **reddnatveg_nosoil** (default) | ✓ (primforest vegc+litc, secdforest vegc+litc, other vegc+litc, peatland) | ✗ | ✓ (ag: awms, resid_burn, rice, ent_ferm, peatland) | ✓ (ag: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice + indirect N) | REDD+ deforestation CO2 + agricultural non-CO2 |
-| **redd+natveg_nosoil** | ✓ (reddnatveg sources + forestry vegc+litc) | ✗ | ✓ (ag: awms, resid_burn, rice, ent_ferm, peatland) | ✓ (ag: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice + indirect N) | REDD+ plus plantation-forestry CO2; ag non-CO2 identical to the default reddnatveg_nosoil |
+| **reddnatveg_nosoil** (default) | ✓ (primforest vegc+litc, secdforest vegc+litc, other vegc+litc, peatland) | ✗ | ✓ (ag: awms, resid_burn, rice, ent_ferm, peatland) | ✓ (ag: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice, peatland + indirect N) | REDD+ deforestation CO2 + agricultural non-CO2 |
+| **redd+natveg_nosoil** | ✓ (reddnatveg sources + forestry vegc+litc) | ✗ | ✓ (ag: awms, resid_burn, rice, ent_ferm, peatland) | ✓ (ag: inorg_fert, man_crop, awms, resid, resid_burn, man_past, som, rice, peatland + indirect N) | REDD+ plus plantation-forestry CO2; ag non-CO2 identical to the default reddnatveg_nosoil |
 | **sdp_all** | ✓ | ✓ | ✓ | ✓ | Sustainable Development Pathway |
 
 **Note:** The CDR reward mechanism (`q56_reward_cdr_aff`) for afforestation is driven by `p56_c_price_aff`, which uses `im_pollutant_prices` for the source specified by `c56_cprice_aff` (default: `secdforest_vegc`). Because `f56_emis_policy("reddnatveg_nosoil","co2_c","secdforest_vegc") = 1`, the CDR afforestation reward **is active under the default `reddnatveg_nosoil` policy** — it operates independently of the emission pricing policy matrix. A separate `c56_emis_policy` is not required to incentivize afforestation.
@@ -713,7 +713,7 @@ Module 56 provides 100+ price scenarios and 44 policy scenarios. Key examples:
 ### 7.1 No Physical Emission Calculation
 
 - **Does NOT calculate** emissions (CH4, N2O, CO2)
-- **DOES price** emissions calculated by the emission modules (51 N2O, 52 LULUCF CO2, 53 CH4, 58 peatland)
+- **DOES price** emissions calculated by the emission modules (51 N2O, 53 CH4, 58 peatland) via `vm_emissions_reg`; LULUCF CO2 is priced via Module 56's own carbon-stock-difference calculation (`q56_emis_pricing_co2`), computed in parallel with Module 52's separate LULUCF CO2 accounting, not fed by it (see Section 2.2)
 - Emission calculation is in source modules (livestock, soils, land-use change, etc.)
 
 ### 7.2 No Carbon Sequestration Modeling
@@ -1136,7 +1136,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 **Centrality**: HIGH (Rank #3 - policy hub)
 **Hub Type**: GHG Policy & Carbon Pricing Hub
 **Provides to**: 13 modules (carbon price signal affects many decisions)
-**Depends on**: Modules 52 (carbon stocks), 53 (methane), 51 (N₂O)
+**Depends on**: Modules 52 (carbon stocks), 53 (methane), 51 (N₂O), 58 (peatland)
 
 ### Circular Dependencies
 

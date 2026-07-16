@@ -10,8 +10,8 @@
 **Core Function**: Module 10 is the **central land allocation hub** of MAgPIE, coordinating all land-related activities across the model. It maintains **total land area conservation**, tracks **land transitions** between 7 land pools via a full transition matrix, and calculates **gross land-use change** metrics.
 
 **Complexity**: CENTRAL HUB ⭐⭐⭐
-**Dependencies**: 17 total connections (2 inputs, 15 outputs) - **HIGHEST centrality in MAgPIE**
-**Impact**: Changes to this module affect **15 other modules** - testing must be comprehensive
+**Dependencies**: 20 total connections (2 inputs, 18 outputs) - **HIGHEST centrality in MAgPIE**
+**Impact**: Changes to this module affect **18 other modules** - testing must be comprehensive
 
 **From Module Header** (`module.gms:10-14`):
 ```gams
@@ -208,6 +208,7 @@ MAgPIE distinguishes **7 land pools**:
 3. **`pcm_land(j,land)`** - Previous timestep land (mio. ha)
    - Updated in `postsolve.gms:9` after each optimization
    - Critical for recursive dynamics: current becomes previous
+   - M10 sets the full recursive update in `postsolve.gms:9`; modules 32 (forestry), 34 (urban) and 35 (natveg) then overwrite their own pool slices of `pcm_land` in their preloop/presolve phases
 
 ---
 
@@ -272,7 +273,7 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 
 **From Phase 2 Analysis** (`detailed_module_analysis.txt:35-65`):
 
-**Centrality Score**: 17 (Provides to: 15, Depends on: 2)
+**Centrality Score**: 20 (Provides to: 18, Depends on: 2)
 **Rank**: 2nd most depended-upon module (after 09_drivers)
 
 #### **DEPENDS ON (2 modules)**:
@@ -292,30 +293,33 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 
 ---
 
-#### **PROVIDES TO (15 modules)** - **MOST in MAgPIE**:
+#### **PROVIDES TO (18 modules)** - **MOST in MAgPIE**:
 
 | Module | Variables Provided | Purpose |
 |--------|-------------------|---------|
-| **59_som** | vm_land, pm_land_start, vm_landexpansion, vm_lu_transitions (4) | Soil carbon tracking |
-| **29_cropland** | vm_land, pm_land_hist, vm_lu_transitions (3) | Cropland management |
-| **35_natveg** | vm_land, vm_landexpansion, vm_lu_transitions (3) | Natural vegetation dynamics |
-| **58_peatland** | vm_land, vm_landreduction, vm_landexpansion (3) | Peatland area changes |
-| **32_forestry** | vm_land, pm_land_start (2) | Plantation area |
-| **39_landconversion** | vm_landreduction, vm_landexpansion (2) | Land conversion costs |
+| **59_som** | pcm_land, pm_land_start, vm_land, vm_landexpansion, vm_lu_transitions (5) | Soil carbon tracking |
+| **29_cropland** | pcm_land, pm_land_hist, vm_land, vm_lu_transitions (4) | Cropland management |
+| **35_natveg** | pcm_land, vm_land, vm_landexpansion, vm_lu_transitions (4) | Natural vegetation dynamics |
+| **58_peatland** | pcm_land, vm_land, vm_landexpansion, vm_landreduction (4) | Peatland area changes |
+| **32_forestry** | pcm_land, pm_land_start, vm_land (3) | Plantation area |
+| **22_land_conservation** | pcm_land, vm_land (2) | Protected area constraints |
+| **31_past** | pcm_land, vm_land (2) | Pasture management |
+| **34_urban** | pcm_land, vm_land (2) | Urban expansion |
+| **39_landconversion** | vm_landexpansion, vm_landreduction (2) | Land conversion costs |
+| **71_disagg_lvst** | pcm_land, pm_land_start (2) | Livestock disaggregation |
 | **11_costs** | vm_cost_land_transition (1) | Cost aggregation |
+| **13_tc** | pcm_land (1) | Previous-timestep crop/pasture area for TC cost (`modules/13_tc/endo_jan22/presolve.gms:9-10`) |
 | **14_yields** | pm_land_start (1) | Pasture-yield aggregation |
-| **22_land_conservation** | vm_land (1) | Protected area constraints |
 | **30_croparea** | vm_land (1) | Crop allocation |
-| **31_past** | vm_land (1) | Pasture management |
-| **34_urban** | vm_land (1) | Urban expansion |
+| **44_biodiversity** | pcm_land (1) | Biome-share weighting for BII (`modules/44_biodiversity/bii_target/preloop.gms:15`) |
 | **50_nr_soil_budget** | vm_land (1) | Nitrogen budget |
-| **71_disagg_lvst** | pm_land_start (1) | Livestock disaggregation |
+| **56_ghg_policy** | pcm_land (1) | Previous-timestep carbon-stock initialization (`modules/56_ghg_policy/price_aug22/preloop.gms:10`) |
 | **80_optimization** | vm_landdiff (1) | Objective function |
 
 **Direct consumers of `vm_land`** (10 modules — authoritative list in `cross_module/modification_safety_guide.md:54-55`):
 - 22_land_conservation, 29_cropland, 30_croparea, 31_past, 32_forestry, 34_urban, 35_natveg, 50_nr_soil_budget, 58_peatland, 59_som
 
-`11_costs` consumes `vm_cost_land_transition`, and `39_landconversion` consumes `vm_landexpansion`/`vm_landreduction` — NOT `vm_land` itself. `13_tc`, `44_biodiversity`, and `56_ghg_policy` directly read `pcm_land` (M10 previous-timestep parameter, declared in `declarations.gms:11`, populated in `postsolve.gms:9`; 12 direct consumers — see `cross_module/modification_safety_guide.md`). `14_yields` and `71_disagg_lvst` directly read `pm_land_start`. `80_optimization` reads `vm_landdiff`. None of these six read `vm_land` directly. Verified: 11/14/39/71/80 contain zero `vm_land(` references in any `.gms` file (origin/develop ee98739fd).
+`11_costs` consumes `vm_cost_land_transition`, and `39_landconversion` consumes `vm_landexpansion`/`vm_landreduction` — NOT `vm_land` itself. `13_tc`, `44_biodiversity`, and `56_ghg_policy` directly read `pcm_land` (M10 previous-timestep parameter, declared in `declarations.gms:11`; M10 sets the full recursive update in `postsolve.gms:9`, and modules 32 (forestry), 34 (urban) and 35 (natveg) then overwrite their own pool slices of `pcm_land` in their preloop/presolve phases; 12 direct consumers — see `cross_module/modification_safety_guide.md`). `14_yields` and `71_disagg_lvst` directly read `pm_land_start`. `80_optimization` reads `vm_landdiff`. None of these six read `vm_land` directly. Verified: 11/14/39/71/80 contain zero `vm_land(` references in any `.gms` file (origin/develop ee98739fd).
 
 **Why vm_land is So Critical**: It's the fundamental spatial allocation that determines:
 - How much land available for production
@@ -360,9 +364,9 @@ $include "./modules/10_land/input/avl_land_t_iso.cs3"
 - Adds within-forestry changes (Module 32)
 - Produces global `vm_landdiff` metric
 
-✅ **7. Initializes from LUH2 Historical Data** (`input.gms:8-16`, `start.gms:8-12`)
+✅ **7. Initializes from LUH3 Historical Data** (`input.gms:8-16`, `start.gms:8-12`)
 - Starts from 1995 observed land area
-- Uses LUH2 0.5° data aggregated to 200 cells
+- Uses LUH3 0.5° data aggregated to 200 cells
 - Historical period (1995-2015) used for calibration
 
 ✅ **8. Updates Land State Recursively** (`postsolve.gms:9`)
@@ -768,10 +772,10 @@ for(yr in hist_years) {
 3. **Calculate expansion/reduction** for use by other modules
 4. **Apply transition restrictions** (protect primary forest, prevent natveg conversions)
 5. **Aggregate gross land-use change** (between-type transitions + within-type changes)
-6. **Initialize from LUH2 data** (1995-2015 historical)
+6. **Initialize from LUH3 data** (1995-2015 historical)
 
 **Key Features**:
-- Only ~292 lines of code, but **15 modules depend on it**
+- Only ~292 lines of code, but **18 modules depend on it**
 - 7 equations enforce accounting and conservation
 - 6 variables (most critical: `vm_land` used by 10 modules)
 - 2 parameters (initialization and history)
@@ -786,9 +790,9 @@ for(yr in hist_years) {
 
 **Dependencies**:
 - **Receives from**: Modules 32 (forestry), 35 (natveg) - for gross change components
-- **Provides to**: 15 modules (11, 14, 22, 29, 30, 31, 32, 34, 35, 39, 50, 58, 59, 71, 80)
+- **Provides to**: 18 modules (11, 13, 14, 22, 29, 30, 31, 32, 34, 35, 39, 44, 50, 56, 58, 59, 71, 80)
 - **Circular**: Yes - tight coupling with Modules 32, 35 (test together!)
-- **Impact**: Changes to Module 10 affect **15 modules** - most critical module for testing
+- **Impact**: Changes to Module 10 affect **18 modules** - most critical module for testing
 
 **Typical Modifications**:
 - Adjust transition costs (stabilization vs speed)
@@ -831,15 +835,15 @@ This section shows Module 10's role in system-level mechanisms. For complete det
 #### Dependency Chains
 
 **As Central Hub** (Rank #2 by centrality):
-- **Provides interface to**: 15 modules via `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`
+- **Provides interface to**: 11 modules via `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_lu_transitions`
 - **Consumes from**: 2 modules (32_forestry, 35_natveg for gross change components)
 - **Complete dependency map**: `core_docs/Module_Dependencies.md`
 
 **Key downstream dependents**:
 - Module 11 (Costs): Land conversion costs
-- Module 14 (Yields): Cropland area for production
-- Module 42 (Water): Land area for water demand
-- Module 52 (Carbon): Land area for carbon stocks
+- Module 14 (Yields): `pm_land_start(past)` for pasture-yield calibration
+- Module 42 (Water): Indirect/transitive - via `vm_area` (M30), which reads `vm_land` (no direct M10 interface read)
+- Module 52 (Carbon): Indirect/transitive - via `vm_carbon_stock` (populated by land-pool modules 29/31/32/34/35/59; no direct M10 interface read)
 - Module 59 (SOM): Land transitions for soil carbon dynamics
 
 #### Circular Dependencies
@@ -858,12 +862,12 @@ This section shows Module 10's role in system-level mechanisms. For complete det
 #### Modification Safety
 
 **Risk Level**: ⚠️ **CRITICAL** (Highest centrality module)
-- **Impact**: Changes affect 15 downstream modules
+- **Impact**: Changes affect 18 downstream modules
 - **Testing required**: Comprehensive validation of all dependents
 - **Safety protocols**: `cross_module/modification_safety_guide.md#module-10`
 
 **Before modifying Module 10**:
-1. Review dependency list (15 modules depend on vm_land)
+1. Review dependency list (10 modules depend on vm_land; 18 depend on Module 10 overall)
 2. Check conservation law implications (land balance is strict equality)
 3. Test with circular dependency modules (32, 35) together
 4. Verify no cascading failures in water (42), carbon (52), or costs (11)
@@ -888,7 +892,7 @@ This section shows Module 10's role in system-level mechanisms. For complete det
 | `vm_lu_transitions` | `(j,land_from,land_to)` | Land transitions between time steps | mio. ha |
 | `pm_land_start` | `(j,land)` | Land initialization area | mio. ha |
 | `pm_land_hist` | `(t_ini10,j,land)` | Land area for historical time steps | mio. ha |
-| `pcm_land` | `(j,land)` | Land area in previous time step (populated in `postsolve.gms:9`; 12 direct consumers including 13_tc, 44_biodiversity, 56_ghg_policy) | mio. ha |
+| `pcm_land` | `(j,land)` | Land area in previous time step (M10 sets the full update in `postsolve.gms:9`; modules 32/34/35 then overwrite their own pool slices in preloop/presolve; 12 direct consumers including 13_tc, 44_biodiversity, 56_ghg_policy) | mio. ha |
 
 **Source**: `declarations.gms` (verified against GAMS code)
 
