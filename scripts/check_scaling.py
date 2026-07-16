@@ -32,14 +32,26 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 import sys
+import tempfile
 from collections import defaultdict
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 AGENT_DIR = SCRIPT_DIR.parent
-MAGPIE_DIR = AGENT_DIR.parent
+# Ground-truth GAMS tree. Defaults to the parent working tree, but honours a
+# MAGPIE_DIR env override so callers can point every checker at a pinned,
+# read-only `origin/develop` worktree. Backward compatible: unset -> unchanged.
+# This checker previously IGNORED the override while check_gams_variables.py
+# honoured it, so a caller pinning MAGPIE_DIR got a silent split-brain ground
+# truth (some checkers on the pinned tree, some on the working tree). R58.
+MAGPIE_DIR = (
+    Path(os.environ["MAGPIE_DIR"]).resolve()
+    if os.environ.get("MAGPIE_DIR")
+    else AGENT_DIR.parent
+)
 MODULES_GMS = MAGPIE_DIR / "modules"
 MODULE_DOCS = AGENT_DIR / "modules"
 
@@ -97,11 +109,20 @@ def claims_in_line(line: str):
     return out
 
 
-def collect_canonical():
+def collect_canonical(modules_root=None, rel_to=None):
+    """Scan scaling.gms files for canonical `VAR.scale = VALUE` lines.
+
+    Roots are injectable (defaulting to the module constants) so the self-test can
+    drive this REAL extractor over a synthetic tree instead of stubbing it -- the
+    dead-to-test defect R57/W0a found across the battery. Defaults preserve the
+    previous behaviour exactly.
+    """
+    modules_root = Path(modules_root) if modules_root is not None else MODULES_GMS
+    rel_to = Path(rel_to) if rel_to is not None else MAGPIE_DIR
     canon = defaultdict(list)
-    if not MODULES_GMS.is_dir():
+    if not modules_root.is_dir():
         return canon
-    for gms in MODULES_GMS.rglob("scaling.gms"):
+    for gms in modules_root.rglob("scaling.gms"):
         try:
             text = gms.read_text(errors="ignore")
         except Exception:
@@ -118,23 +139,36 @@ def collect_canonical():
             f = to_float(val_raw)
             if f is None:
                 continue
-            rel = gms.relative_to(MAGPIE_DIR)
+            try:
+                rel = gms.relative_to(rel_to)
+            except ValueError:
+                rel = gms
             canon[m.group(1)].append((f, val_raw, str(rel), str(i)))
     return canon
 
 
-def collect_doc_claims():
+def collect_doc_claims(docs_root=None, rel_to=None):
+    """Scan module docs for `VAR.scale ... VALUE` claims.
+
+    Roots injectable for the same reason as collect_canonical (see there).
+    Defaults preserve the previous behaviour exactly.
+    """
+    docs_root = Path(docs_root) if docs_root is not None else MODULE_DOCS
+    rel_to = Path(rel_to) if rel_to is not None else AGENT_DIR
     claims = defaultdict(list)
-    if not MODULE_DOCS.is_dir():
+    if not docs_root.is_dir():
         return claims
-    for md in MODULE_DOCS.glob("module_*.md"):
+    for md in docs_root.glob("module_*.md"):
         if md.name.endswith("_notes.md"):
             continue
         try:
             text = md.read_text(errors="ignore")
         except Exception:
             continue
-        rel = md.relative_to(AGENT_DIR)
+        try:
+            rel = md.relative_to(rel_to)
+        except ValueError:
+            rel = md
         for i, line in enumerate(text.splitlines(), 1):
             for ident, raw, f in claims_in_line(line):
                 claims[ident].append((str(rel), i, raw, f))
@@ -188,6 +222,61 @@ def self_test() -> int:
     if len(good) != 0:
         print(f"  SELF-TEST FAIL: 1e4-vs-1e4 wrongly flagged ({len(good)})")
         ok = False
+    # ---- GROUND-TRUTH half: drive the REAL collectors over a synthetic tree ----
+    # Pre-R58 collect_canonical and collect_doc_claims were both dead to this test:
+    # every control above works on hand-written dicts, so the two functions that
+    # READ the tree and decide what is true were never called. Either could be
+    # replaced with `raise` and the suite stayed green.
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        gms = root / "modules" / "70_livestock" / "fbask_jan16"
+        gms.mkdir(parents=True)
+        (gms / "scaling.gms").write_text(
+            "vm_cost_prod_livst.scale(i) = 1e4;\n"
+            "* vm_disabled.scale(i) = 1e9;\n"          # col-0 comment: must be skipped
+            "vm_expr.scale(i) = 2 * card(i);\n"        # expression: must be skipped
+            "vm_plain.scale(i) = 5;\n"
+        )
+        docs = root / "docs"
+        docs.mkdir()
+        (docs / "module_70.md").write_text(
+            "`vm_cost_prod_livst.scale(i)` is scaled by 10e4 here\n"
+        )
+        (docs / "module_70_notes.md").write_text(
+            "`vm_plain.scale(i)` is scaled by 999 -- notes file, must be SKIPPED\n"
+        )
+
+        canon = collect_canonical(modules_root=root / "modules", rel_to=root)
+        claims = collect_doc_claims(docs_root=docs, rel_to=root)
+
+        gt = [
+            ("collect_canonical reads a real scaling.gms",
+             "vm_cost_prod_livst" in canon and canon["vm_cost_prod_livst"][0][0] == 1e4),
+            ("collect_canonical skips a col-0 commented line",
+             "vm_disabled" not in canon),
+            ("collect_canonical skips a non-atomic expression",
+             "vm_expr" not in canon),
+            ("collect_canonical keeps a plain integer scale value",
+             "vm_plain" in canon),
+            ("collect_doc_claims reads a real module doc",
+             "vm_cost_prod_livst" in claims),
+            ("collect_doc_claims skips _notes.md files",
+             "vm_plain" not in claims),
+        ]
+        for name, cond in gt:
+            print(f"  {'ok  ' if cond else 'FAIL'} [ground-truth] {name}")
+            if not cond:
+                ok = False
+
+        # end-to-end: the real collectors feed compare() and the 10e4-vs-1e4 drift
+        # is caught through the FULL composition, not just the injected-dict path.
+        found = compare(canon, claims)
+        if not any(f for f in found):
+            print("  FAIL [ground-truth] end-to-end: real collectors -> compare() missed the 10e4-vs-1e4 drift")
+            ok = False
+        else:
+            print("  ok   [ground-truth] end-to-end: real collectors -> compare() catches the drift")
+
     print("check_scaling self-test:", "PASS" if ok else "FAIL")
     return 0 if ok else 1
 
