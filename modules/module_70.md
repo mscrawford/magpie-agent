@@ -1,10 +1,10 @@
 # Module 70: Livestock (fbask_jan16)
 
-**Status**: Fully Verified
+**Status**: Verified against `0d7ebeb90`; R58 (2026-07-17) corrected 11 defects — see §Verification for scope
 **Realization**: `fbask_jan16` (feed basket-based, January 2016)
 **Alternative**: `fbask_jan16_sticky` (same methodology with additional stickiness mechanism, 8 equations)
 **Equations**: 7 (`fbask_jan16`) / 8 (`fbask_jan16_sticky`)
-**Lines of Code**: ~450 (main realization)
+**Lines of Code**: 625 (main realization, raw `wc -l` over its 9 `.gms` files; 466 excluding `input.gms` + `sets.gms`)
 **Authors**: Isabelle Weindl, Benjamin Bodirsky
 
 ---
@@ -122,7 +122,8 @@ vm_feed_balanceflow(i2,kli_rum,"pasture") =e=
 2. **If scavenging flag > 0**: Apply endogenous scavenging adjustment (reduce pasture demand by 38.5% of baseline pasture requirement)
 
 **Scavenging Flag Calculation** (`presolve.gms:14-20`):
-- Flag activated in first future timestep after historical period
+- Flag computed in the **last historical timestep** (under the default config: `t = y2015`), then
+  frozen — see the correction under §Feed Balance Flows → Scavenging Flag Activation
 - Compares previous balance flow ratio to scavenging threshold
 - If `(-fm_feed_balanceflow(t-1) / pc70_dem_feed_pasture) ≥ s70_scavenging_ratio`, enable endogenous scavenging for that region
 
@@ -268,9 +269,27 @@ p70_capital_need(t,i,kli) = i70_fac_req_livst(t,i,kli)
     * s70_multiplicator_capital_need
 ```
 
-**Capital Stock Update** (`fbask_jan16_sticky/presolve.gms`):
-- First timestep: `p70_capital = p70_capital_need × p70_initial_1995_prod`
-- Subsequent timesteps: `p70_capital = p70_capital × (1 - s70_depreciation_rate)^timestep_length`
+**Capital Stock Update** — a **two-phase** lifecycle. Both phases are required; presolve alone does
+not produce a stock.
+
+*Phase 1 — presolve* (`fbask_jan16_sticky/presolve.gms:83-95`):
+- First timestep (`ord(t) = 1`, `:87`): `p70_capital(t,i,kli) = p70_capital_need(t,i,kli) * p70_initial_1995_prod(i,kli)`
+- Subsequent timesteps (`else`, `:93`): `p70_capital(t,i,kli) = p70_capital(t,i,kli) * (1-s70_depreciation_rate)**(m_timestep_length)`
+
+*Phase 2 — postsolve* (`fbask_jan16_sticky/postsolve.gms:13`):
+```
+p70_capital(t+1,i,kli) = p70_capital(t,i,kli) + v70_investment.l(i,kli);
+```
+Realized investment (a `.l` solution-level read) is accumulated into the **next** timestep's stock.
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: the doc previously documented only the presolve phase, leaving
+> a mechanism that cannot carry anything over. Note the direction of the gap precisely: the
+> presolve `else`-branch at `:93` reads `p70_capital(t,...)` on its **right-hand side**, and the
+> **only** writer of `p70_capital(t,...)` for `t > 1` is `postsolve.gms:13`. Without the postsolve
+> line, `p70_capital(t>1)` would be **identically zero** (GAMS parameters default to 0), so the
+> else-branch would yield `0 × (1-δ)^len = 0` — not a stock decaying from its 1995 initialization.
+> The postsolve carry-forward is what makes the path dependency described above real. Non-default
+> realization, so the blast radius is capped.
 
 **Parameters**:
 - `s70_multiplicator_capital_need`: Multiplier for capital need (default: 1) (`fbask_jan16_sticky/input.gms:35`)
@@ -397,6 +416,33 @@ p70_endo_scavenging_flag(i,kli_rum) =
 ```
 If ratio ≥ s70_scavenging_ratio (0.385), flag set to ratio value; otherwise flag = 0.
 
+**Timing — fires in the LAST HISTORICAL timestep** (`presolve.gms:14`, `:16`):
+- **Outer guard** (`presolve.gms:14`): `if (sum(sameas(t_past,t),1) = 1, ...)` — true **iff the
+  current timestep `t` is itself in `t_past`**, i.e. iff `t` is a *historical* timestep. It can
+  never be true in a future timestep.
+- **Inner guard** (`presolve.gms:16`): `if (ord(t) = smax(t2, ord(t2)$(t_past(t2))) AND card(t) >
+  sum(t_all$(t(t_all) and t_past(t_all)), 1), ...)` — narrows to the **last** historical timestep,
+  and only when future timesteps exist at all.
+- **Resolved against the default config**: `c_past = "till_2015"` (`config/default.cfg:136`) →
+  `t_past = {y1965…y2015}`; `c_timesteps = "coup2100"` (`config/default.cfg:133`) →
+  `t = {y1995, y2000, …, y2100}`. So the flag is computed at **`t = y2015`**, and because presolve
+  precedes the solve, the switch to endogenous scavenging takes effect **within that same
+  historical timestep**. Every shipped `c_timesteps` option starts at `y1995`, so no configuration
+  makes this a future timestep.
+- **The flag then persists**: `p70_endo_scavenging_flag` is a parameter written once and never
+  reset (the outer guard never fires again once `t` leaves `t_past`). Every future timestep reads a
+  value computed at the historical boundary — scavenging is **fixed at the seam**, not recomputed
+  from each timestep's pasture demand.
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: the doc previously stated (in two places) that the flag is
+> "activated in first future timestep after historical period". That is the exact negation of the
+> outer guard. Consequence for readers: the last historical year (`y2015` by default) does **not**
+> still use exogenous FAO balance flows in flagged regions — it is already endogenous. Anyone
+> validating M70 against FAO history in that year, or attributing a discontinuity to the
+> historical/future boundary, is off by one timestep and on the wrong side of the seam. The doc's
+> *rationale* ("to avoid overwriting in subsequent timesteps") was correct; only the firing timestep
+> was wrong.
+
 **Interpretation**: Regions with large negative historical pasture balance flows (indicating substantial non-pasture feed sources like scavenging) continue to use scavenging in future, scaled to production levels.
 
 ---
@@ -407,15 +453,34 @@ Module 70 includes scenarios for substituting conventional feed (cereals, fodder
 
 ### Configuration
 
-**Switches** (`input.gms:18-19`):
-- `c70_cereal_scp_scen`: Cereal substitution scenario (default: "constant" = no substitution)
-- `c70_foddr_scp_scen`: Fodder substitution scenario (default: "constant" = no substitution)
+**Switches** (`input.gms:18-19`) — ⚠️ **INERT, do not use**:
+- `c70_cereal_scp_scen`: `$setglobal ... constant` (`input.gms:18`)
+- `c70_foddr_scp_scen`: `$setglobal ... constant` (`input.gms:19`)
 
-**Scenarios** (`sets.gms:41-45`):
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: these two switches were documented as the SCP scenario
+> control. **They select nothing.** Each occurs in exactly 4 places repo-wide — the `$setglobal`
+> line in each of the two realizations' `input.gms` — and is never expanded (`%c70_cereal_scp_scen%`
+> does not exist), never compared in a `$if`, never used as an index. They are also absent from
+> `config/default.cfg`, so they have no config surface at all. (Positive controls on the same search:
+> `c70_feed_scen` returns its `$setglobal` **plus** `%c70_feed_scen%` expansions at `preloop.gms:19-21`
+> **plus** `config/default.cfg:2170`; `c70_fac_req_regr` returns `$if "%c70_fac_req_regr%" ==` guards at
+> `preloop.gms:82,83,90` **plus** `config/default.cfg:2206`.)
+>
+> The SCP mechanism is driven **entirely** by the `s70_*` scalars below — substitution shares
+> (`s70_cereal_scp_substitution` / `s70_foddr_scp_substitution`), functional form
+> (`s70_subst_functional_form`), and the window (`s70_feed_substitution_start` / `_target`) — see
+> `preloop.gms:40-55`, which references the `c70_*` switches nowhere.
+
+**Scenario names** (`sets.gms:41-45`) — these are members of the set `fadeoutscen70`, which is
+declared and **never referenced again** anywhere in the repository. They are the legal values of an
+unexpanded switch, i.e. a transcription with no behavioral meaning. Listed for completeness only:
 - constant (no substitution)
 - Linear fadeout variants: lin_zero_10_50, lin_zero_20_50, lin_50pc_20_50, lin_80pc_20_50, etc.
 - Sigmoid fadeout variants: sigmoid_20pc_20_50, sigmoid_50pc_20_50, sigmoid_80pc_20_50
-- Format: `lin/sigmoid_TARGET_START_END` (e.g., lin_50pc_20_50 = linear to 50% substitution from 2020-2050)
+- Naming convention: `lin/sigmoid_TARGET_START_END` (e.g. `lin_50pc_20_50` reads as "linear to 50%
+  substitution from 2020-2050"). ⚠️ The name is **never parsed by any code** — nothing reads the
+  target, start, or end out of the string. The actual shape/target/window come only from the `s70_*`
+  scalars.
 
 **Substitution Levels** (`input.gms:32-33`):
 - `s70_cereal_scp_substitution`: Cereal substitution share (default: 0)
@@ -525,19 +590,39 @@ i70_cost_regr(i,kli,"cost_regr_a") = f70_cost_regr(kli,"cost_regr_a")
 **Regional Intercept** (`preloop.gms:83`):
 Solve for intercept that makes regression match last historical year:
 ```
-i70_cost_regr(i,kli,"cost_regr_a") =
-    (f70_hist_factor_costs_livst(t_past_last,i,kli) / f70_hist_prod_livst(t_past_last,i,kli,"dm"))
-    - f70_cost_regr(kli,"cost_regr_b") * livestock_productivity(t_past_last,i,sys)
+$if "%c70_fac_req_regr%" == "reg" i70_cost_regr(i,kli,"cost_regr_a") =
+    sum(t_past$(ord(t_past) eq card(t_past)),
+        (f70_hist_factor_costs_livst(t_past,i,kli) / f70_hist_prod_livst(t_past,i,kli,"dm"))
+        - f70_cost_regr(kli,"cost_regr_b") * sum(sys_to_kli(sys,kli), i70_livestock_productivity(t_past,i,sys)));
 ```
+The `sum(t_past$(ord(t_past) eq card(t_past)), ...)` wrapper is how "last historical year" is
+expressed in the code — there is no `t_past_last` set in MAgPIE.
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this block previously rendered the productivity term as
+> `livestock_productivity(t_past_last,i,sys)` — an identifier that **exists nowhere in MAgPIE**
+> (the real name is `i70_livestock_productivity`, `declarations.gms:35`) — and dropped the
+> `sum(sys_to_kli(sys,kli), ...)` mapping sum, which left `sys` dangling as an uncontrolled set that
+> would not compile as written. The doc renders the same construct correctly under §Core Equations →
+> Livestock Labor Costs (`preloop.gms:88`), with both the `i70_` prefix and the mapping sum.
 - Uses historical factor costs and production data (`input.gms:72-82`)
 - Keeps slope from global regression, adjusts intercept to match regional baseline
 
 **Historical Override** (`preloop.gms:90`):
-If regional regression enabled, use actual historical values instead of regression for years 1990-t_past_last:
+If regional regression enabled, use actual historical values instead of regression for years
+**strictly after 1990** up to and including the last historical year — i.e. the range is
+`(1990, t_past_last]`, **not** `[1990, t_past_last]`:
 ```
-i70_fac_req_livst(t_all,i,kli) =
-    f70_hist_factor_costs_livst(t_all,i,kli) / f70_hist_prod_livst(t_all,i,kli,"dm")
+$if "%c70_fac_req_regr%" == "reg" i70_fac_req_livst(t_all,i,kli)$(m_year(t_all) <= sum(t_past$(ord(t_past) eq card(t_past)), m_year(t_past))
+                                                                 and m_year(t_all) > 1990) =
+    (f70_hist_factor_costs_livst(t_all,i,kli) / f70_hist_prod_livst(t_all,i,kli,"dm"));
 ```
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: the range was stated as "years 1990-t_past_last". The guard is
+> `m_year(t_all) > 1990` — **strictly greater** — so a `y1990` slice keeps its regression value and is
+> not overridden. Doubly inert in practice: this path is gated behind the non-default
+> `c70_fac_req_regr = "reg"` (default `glo`, `config/default.cfg:2206`), and no shipped `c_timesteps`
+> option includes `y1990` in `t` (all start at `y1995`), so the misstated slice is one no equation
+> reads.
 
 ---
 
@@ -740,7 +825,16 @@ vm_cost_prod_fish(i)          // mio. USD17MER per yr
 ```
 pm_past_mngmnt_factor(t,i)  // dimensionless (≥1)
 ```
-- **To Module 14 (Yields)**: Scales pasture yields to account for exogenous intensification (`presolve.gms:23-26`; consumed in `modules/14_yields/managementcalib_aug19/equations.gms:38`)
+- **To Module 14 (Yields)**: Scales pasture yields to account for exogenous intensification
+  (`presolve.gms:23-26`). M14's default and only realization `managementcalib_aug19`
+  (`config/default.cfg:354`) reads it at **two** sites:
+  - `modules/14_yields/managementcalib_aug19/equations.gms:38` — inside `q14_yield_past` (NLP path)
+  - `modules/14_yields/managementcalib_aug19/nl_fix.gms:11` — inside the `vm_yld.fx(j,"pasture",w)`
+    fixing statement used to linearize the model (LP path)
+  > ⚠️ **CORRECTED (R58, 2026-07-17)**: only `equations.gms:38` was cited. The `nl_fix` site is a
+  > `.fx`-form read that a paren-only consumer grep misses. It matters because `nl_fix.gms` is what
+  > runs when the model is fixed to linear behavior — anyone changing this parameter's domain would
+  > break an LP-mode run while the NLP-mode path the doc points at still looks fine.
 
 **6. Slaughter Feed Share** (`declarations.gms:34`):
 ```
@@ -810,19 +904,13 @@ c70_feed_scen = "ssp2"
 
 ### SCP Substitution Scenarios
 
-**Cereal Substitution** (`input.gms:18`):
-```
-c70_cereal_scp_scen = "constant"
-```
-**Options**: constant, lin_zero_20_50, lin_50pc_20_50, sigmoid_50pc_20_50, etc. (`sets.gms:41-45`)
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: `c70_cereal_scp_scen` (`input.gms:18`) and
+> `c70_foddr_scp_scen` (`input.gms:19`) are **inert** — declared `$setglobal`s that are never
+> expanded, never compared, and absent from `config/default.cfg`. Setting either one has **no
+> effect**. They are NOT the SCP control surface; the `s70_*` scalars below are. See §SCP
+> Substitution → Configuration for the search evidence.
 
-**Fodder Substitution** (`input.gms:19`):
-```
-c70_foddr_scp_scen = "constant"
-```
-**Options**: Same as cereal substitution
-
-**Substitution Levels** (`input.gms:32-33`):
+**Substitution Levels** (`input.gms:32-33`) — the real magnitude control:
 ```
 s70_cereal_scp_substitution = 0  // 0 = no substitution, 1 = complete substitution
 s70_foddr_scp_substitution = 0
@@ -1100,14 +1188,34 @@ Small positive initial value prevents division by zero in scavenging flag calcul
 
 **Livestock Productivity** (`preloop.gms:26`):
 ```
-i70_livestock_productivity(t,i,sys) = max(i70_livestock_productivity(t,i,sys), 0.02)
+i70_livestock_productivity(t_all,i,sys)$(i70_livestock_productivity(t_all,i,sys)=0) = 0.02;
 ```
-Default minimum productivity (0.02 ton FM/animal/yr) prevents division by zero in cattle stock proxies (`presolve.gms:33-36`).
+Substitutes 0.02 ton FM/animal/yr **only where the value is exactly zero**, to prevent division by
+zero in the cattle stock proxies (`presolve.gms:32-36`). The code comment on the preceding line
+(`preloop.gms:25`) confirms the narrow intent: "set default livestock productivity to avoid division
+of zero in presolve.gms".
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this was rendered as
+> `max(i70_livestock_productivity(t,i,sys), 0.02)` and described as a "minimum productivity".
+> **It is not a floor.** `$(x = 0) = 0.02` substitutes at exact zero only; a productivity of 0.005
+> survives the code untouched but would be lifted to 0.02 under the `max()` reading. Consequence: a
+> very small but nonzero `i70_livestock_productivity` still produces an enormous
+> `p70_cattle_stock_proxy`, and the 20%-of-1995 bound at `presolve.gms:41-42` is a *lower* bound, so
+> it does not catch the blow-up. A reader debugging an implausible cattle-stock proxy would wrongly
+> eliminate this as the cause.
+>
+> The doc's `max()` house idiom is legitimate where the code really is a floor — e.g.
+> `presolve.gms:41-42` (`p70_cattle_stock_proxy(t,i)$(... < 0.2*...) = 0.2*...`), rendered as `max(...)`
+> under §Pasture Management Factor → Lower Bound, which is exactly equivalent. The rule does not
+> extend to `x$(x = 0) = c`.
 
 ### Conditional Statements
 
 **Scavenging Flag** (`presolve.gms:14-20`):
-Flag calculation only executed in first future timestep after historical period to avoid overwriting in subsequent timesteps.
+Flag calculation only executed in the **last historical timestep** (`t = y2015` under the default
+config), then frozen — the outer guard `sum(sameas(t_past,t),1) = 1` restricts it to timesteps in
+`t_past`, so it never fires in a future timestep. The intent is to avoid overwriting in subsequent
+timesteps. Full guard analysis: §Feed Balance Flows → Scavenging Flag Activation.
 
 **Pasture Management** (`presolve.gms:63-68`):
 Conditional logic ensures factor = 1 during fixed period, dynamic calculation thereafter.
@@ -1213,7 +1321,14 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 **Query**: "What is the land-sparing effect of replacing 50% of cereal feed with SCP by 2050?"
 
 **Approach**:
-1. Configure: `c70_cereal_scp_scen = "lin_50pc_20_50"`, `s70_cereal_scp_substitution = 0.5`
+1. Configure: `s70_cereal_scp_substitution = 0.5` (magnitude), `s70_feed_substitution_start = 2020`
+   and `s70_feed_substitution_target = 2050` (window), `s70_subst_functional_form = 1` (linear).
+   > ⚠️ **CORRECTED (R58, 2026-07-17)**: this step previously read
+   > `c70_cereal_scp_scen = "lin_50pc_20_50"`. That switch is **inert** and selects nothing — the
+   > shape, target and window come only from the `s70_*` scalars, so the `_20_50` in the scenario
+   > name buys nothing. Setting the switch alone yields **zero substitution** and a plausible-looking
+   > run. Note also that `s70_feed_substitution_start` defaults to **2025**, not 2020, so the window
+   > must be set explicitly to match the query.
 2. Run model and compare cereal feed demand with and without SCP scenario
 3. Calculate: Cereal feed reduction = baseline - SCP scenario
 4. Trace to cropland via Module 30 (Croparea)
@@ -1272,13 +1387,39 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 
 **Module Complexity**:
 - 7 equations
-- 4 interface variables (outputs)
-- 6 interface variables (inputs from other modules)
+- **8 interface identifiers (outputs)** — `vm_dem_feed`, `vm_cost_prod_livst`, `vm_cost_prod_fish`,
+  `vm_feed_balanceflow`, `vm_feed_intake`, `im_slaughter_feed_share`, `im_feed_baskets`,
+  `pm_past_mngmnt_factor`. Of these, **5 are GAMS variables** (`vm_`); the other 3 are parameters.
+- **7 interface identifiers (inputs from other modules)** — `vm_prod_reg` (M17),
+  `pm_factor_cost_shares` (M38), `pm_hourly_costs` + `pm_productivity_gain_from_wages` (M36),
+  `pm_kcal_pc_initial` (M15), `im_pop` + `im_pop_iso` (M09). Plus core data `fm_attributes`,
+  `fm_nutrition_attributes`, `sm_fix_SSP2` (not module interfaces).
 - 5 livestock production systems
 - 10 feed scenarios (SSPs, SDPs, constant)
-- 17 SCP substitution scenarios
+- 17 SCP substitution scenarios (set `fadeoutscen70`, `sets.gms:41-45` — declared but never
+  referenced by any code; see §SCP Substitution)
 - 2 factor cost regression modes (global/regional)
-- ~450 lines of code (fbask_jan16 realization)
+- **625 lines of code** (fbask_jan16 realization, raw `wc -l` over its 9 `.gms` files; 706 for
+  `fbask_jan16_sticky`)
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: the counts read "4 interface variables (outputs) / 6 interface
+> variables (inputs)". Both were tallies of a *wrong enumeration* rather than fabrications — `4` was
+> the 5 `vm_` outputs minus `vm_feed_balanceflow` (which the doc wrongly called internal-only), and
+> `6` was the doc's own 8 input identifiers minus the 2 core `fm_` ones, an enumeration that itself
+> omitted `im_pop_iso`. The counts above are re-derived from the corrected §Interface Variables
+> section under an explicit rule: an *interface identifier* carries a `vm_`/`pm_`/`im_` prefix; it is
+> an **output** if declared in `fbask_jan16/declarations.gms` and an **input** if read here but
+> declared elsewhere; core-owned `fm_`/`sm_` are data, not module interfaces. Edge case worth naming:
+> `fm_feed_balanceflow` carries an `fm_` prefix but is declared by M70 itself
+> (`fbask_jan16/input.gms:41`), so it is neither an input from another module nor counted above.
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: "~450 lines of code" (stated in 3 places) was **wrong when
+> written, not stale**. At this doc's own Last-Verified date (2026-03-06, MAgPIE `ce6e1a89a`) the
+> realization was already **624** lines; it is **625** at `0d7ebeb90` — a one-line delta across the
+> whole period, so nothing drifted and re-deriving on sync would never have caught it. Note **466**
+> is a defensible logic-only count (625 minus `input.gms` 113 and `sets.gms` 46), within 3.4% of
+> "~450" — so the original figure may have intended a logic-only rule it never stated. The counts
+> here use raw `wc -l` and say so.
 
 **Key Parameters**:
 - Feed baskets: Scenario-dependent, region × product × feed item (thousands of values)
@@ -1313,10 +1454,32 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 
 ---
 
-**Verification**: All 7 equations verified against source code. All formulas, dimensions, and parameter names confirmed exact. All interface variables cross-referenced with Phase 2 dependency documentation. Zero errors detected.
+**Verification** (scope-corrected R58, 2026-07-17):
+- **Equations — strong**: all 7 default formulas and both `fbask_jan16_sticky` formulas verified exact
+  against source; 33 of 34 `file:line` citations resolve to the right content (the exception,
+  `preloop.gms:26`, is corrected above).
+- **Interfaces — was the weak dimension, now repaired**: R58 found the consumer/producer sets wrong in
+  four places — `vm_feed_balanceflow` documented as internal-only (M71's default consumes it),
+  `im_feed_baskets` missing from §Outputs entirely, M36 missing from the `vm_cost_prod_livst` consumer
+  set, `pm_past_mngmnt_factor`'s `nl_fix.gms:11` site uncited, and the §Participates In upstream set
+  inverted. All are corrected above.
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this footer previously asserted "All interface variables
+> cross-referenced with Phase 2 dependency documentation. **Zero errors detected.**", and the header
+> read "**Status**: Fully Verified". Both were falsified by R58. The failure is worth naming because it
+> is systematic, not incidental: the footer was **loudest about the exact dimension that was weakest**
+> (interfaces), so a reader triaging what to re-check would have deprioritized the section that most
+> needed it. A clean-bill claim embedded in the artifact it certifies is not falsifiable by its own
+> reader — treat any such claim in these docs as a prompt to re-derive, not as evidence.
+>
+> The doc's consumer analysis appears to have been **hypothesis-driven** (checking edges it suspected)
+> rather than **sweep-driven** (enumerating every reader of each declared identifier). That explains the
+> pattern: it carefully verified a *non*-edge (M31, correctly hedged as INDIRECT in three places) while
+> missing two real ones. Interface claims here should be re-derived by grepping each declared identifier
+> repo-wide in **both** `name(` and `name.` forms.
 
 **MAgPIE Version**: 4.x series
-**Lines Documented**: ~450 (fbask_jan16 realization)
+**Lines Documented**: 625 (fbask_jan16 realization, raw `wc -l`)
 ---
 
 ## Participates In
@@ -1335,16 +1498,59 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 **Centrality**: HIGH (Rank #6 - livestock production hub)
 **Hub Type**: Livestock Production & Feed Demand Calculator
 **Provides to**: 7 modules (production, costs, emissions, manure)
-**Depends on**: Modules 14 (yields), 17 (production), 70 (self - feed baskets)
+**Depends on**: Modules 09 (drivers), 15 (food demand), 17 (production), 36 (employment), 38 (factor costs)
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this line read "Modules 14 (yields), 17 (production), 70 (self -
+> feed baskets)" — wrong in every element. **M14 is not upstream of M70**: across all 9 `.gms` files of
+> `fbask_jan16` there is no M14 identifier of any kind (no `vm_yld`, no `i14_*`, no `f14_*`, no `q14_*`;
+> verified against a positive control — `vm_prod_reg` returns 6 hits from the same search). The edge runs
+> the **other way**: M70 *produces* `pm_past_mngmnt_factor` (`presolve.gms:63-68`), which M14 consumes
+> (`modules/14_yields/managementcalib_aug19/equations.gms:38` and `nl_fix.gms:11`). "70 (self)" is not a
+> module dependency at all. And four real upstream providers (09, 15, 36, 38) were dropped — all four are
+> listed correctly in §Critical Module Dependencies above, so the doc contradicted itself. The corrected
+> set matches that section.
+>
+> ⚠️ This block cites `core_docs/Module_Dependencies.md` for details. That file is under
+> human-adjudication hold and was **not** touched in R58 — if it carries the same inverted edge, it needs
+> the same fix; **this file is the corrected one**.
 
 **Details**: `core_docs/Module_Dependencies.md`
 
 ### Circular Dependencies
 
-**Production-Yield-Livestock Cycle**:
-Module 17 (production) → 14 (yields) → **70 (livestock)** → 17
+**Pasture-Yield-Livestock Cycle** (M70 → M14 → M31 → M17 → M70):
+**70 (livestock)** → 14 (yields) → 31 (pasture) → 17 (production) → **70**
 
-**Resolution**: Feed conversion efficiencies and feed baskets resolved simultaneously
+Each leg verified at `0d7ebeb90`:
+- M70 → M14: `pm_past_mngmnt_factor` (`presolve.gms:63-68`) read by `q14_yield_past`
+  (`modules/14_yields/managementcalib_aug19/equations.gms:38`), scaling `vm_yld`
+- M14 → M31: `q31_prod` reads `vm_yld` — `vm_prod(j2,"pasture") =l= vm_land(j2,"past") * vm_yld(j2,"pasture","rainfed")`
+  (`modules/31_past/endo_jun13/equations.gms:16-18`)
+- M31 → M17: `q17_prod_reg` aggregates — `vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k))`
+  (`modules/17_production/flexreg_apr16/equations.gms:10-11`)
+- M17 → M70: `q70_feed` reads `vm_prod_reg` (`equations.gms:18`)
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this cycle read "Module 17 (production) → 14 (yields) →
+> **70 (livestock)** → 17", which contains the same reversed 14→70 edge as the "Depends on" line above
+> and therefore **does not close as drawn** (M14 sends nothing to M70). The old "Resolution: Feed
+> conversion efficiencies and feed baskets resolved simultaneously" described a mechanism for an edge
+> that does not exist — feed baskets are exogenous (`preloop.gms:13-23`) and are not resolved with M14.
+
+**Resolution**: The cycle is **not** simultaneous — it is broken at the M70 → M14 leg. Three of the
+four legs (M14 → M31 → M17 → M70) are equations solved together, but `pm_past_mngmnt_factor` is a
+**parameter**, not a variable (`declarations.gms:41`, declared under `parameters`). It is computed in
+M70's presolve *before* the solve, from exogenous drivers and lagged proxies — `im_pop` and
+`pm_kcal_pc_initial` feed the cattle stock proxies (`presolve.gms:32-36`), and `p70_incr_cattle`
+compares against `t-1` (`presolve.gms:52-58`). None of its inputs is a solution variable of the
+current solve, so it enters as a constant. The feedback from livestock to pasture yields is therefore
+**lagged across timesteps**, not resolved within one.
+
+**A second cycle the doc did not record — M70 ↔ M36**:
+M70 → M36: `vm_cost_prod_livst(i2,"labor")` read by `q36_employment`
+(`modules/36_employment/exo_may22/equations.gms:24`). M36 → M70: `pm_hourly_costs` and
+`pm_productivity_gain_from_wages` read by `q70_cost_prod_liv_labor` (`equations.gms:59-62`). Both
+realizations involved are defaults and M36's `exo_may22` is its sole realization, so this cycle is
+unconditionally live.
 
 **Details**: `cross_module/circular_dependency_resolution.md`
 
@@ -1359,7 +1565,13 @@ Module 17 (production) → 14 (yields) → **70 (livestock)** → 17
 
 ---
 
-**Last Verified**: 2026-03-06 (sticky realization added, 8/8 equations documented)
-**Verified Against**: `../modules/70_*/fbask_jan16/*.gms`
-**Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: None (stable)
+**Last Verified**: 2026-07-17 (R58 adversarial audit + refutation pass; 11 defects corrected)
+**Previously**: 2026-03-06 (sticky realization added, 8/8 equations documented — i.e. all 8 of the
+newly-added `fbask_jan16_sticky` equations; the default realization has 7, see header)
+**Verified Against**: `../modules/70_livestock/{fbask_jan16,fbask_jan16_sticky}/*.gms` @ develop `0d7ebeb90`
+**Verification Method**: Equations cross-referenced with source code; R58 additionally swept each
+declared interface identifier repo-wide in both `name(` and `name.` forms, and resolved config
+switches against `config/default.cfg` rather than the `input.gms` literal alone
+**Changes Since Last Verification**: MAgPIE code effectively unchanged (`fbask_jan16` went 624 → 625
+lines between `ce6e1a89a` and `0d7ebeb90`, a one-line delta in `scaling.gms`). The R58 corrections are
+doc defects, not code drift.
