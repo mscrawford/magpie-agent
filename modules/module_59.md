@@ -15,10 +15,17 @@
 - Crop-specific, climate-specific, and management-specific factors
 - Tracks land-use transitions using carbon densities
 
-**Dependencies**: MEDIUM (8 connections) - **MODERATE modification risk**
-- **Provides to**: Module 51 (nitrogen), Module 11 (costs)
-- **Receives from**: Modules 10 (land), 30 (croparea - via vm_area), 29 (crop management)
-- **Interfaces with**: Module 52 (carbon - via vm_carbon_stock)
+**Dependencies**: MEDIUM — **9 distinct connected modules** (5 in / 5 out; M52 is on both sides) — **MODERATE modification risk**
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: previously "8 connections", with no stated counting method and
+> matching nothing in the code. **Counting rule** (stated so it is checkable): a module is *connected*
+> if the default realization `cellpool_jan23` reads a variable it declares, or populates a variable it
+> consumes. Upstream {10, 29, 30, 45, 52}, downstream {11, 50, 51, 52, 56}, union = **9**.
+> `core_docs/Module_Dependencies.md:210` ("8") and `:322` ("5 dependencies") disagree with this and
+> with each other; **that file is under a human-adjudication hold from R57 and was NOT edited** — a
+> known open item, not an oversight. `:322`'s "5" coincidentally equals the true *inbound* count.
+- **Provides to**: Module 11 (costs, `vm_cost_scm`), Module 50 (soil N budget, `vm_nr_som_fertilizer`), Module 51 (N emissions, `vm_nr_som`), and Modules 52/56 via the `"soilc"` slice of `vm_carbon_stock`
+- **Receives from**: Modules 10 (land), 29 (cropland — `vm_treecover`, `vm_fallow`), 30 (croparea — `vm_area`), **45 (climate — `pm_climate_class`)**, **52 (carbon — `fm_carbon_density`)**
+- **Interfaces with**: Module 52 both ways (reads `fm_carbon_density`; populates the `"soilc"` slice of `vm_carbon_stock` that M52 consumes) — which is why the union is 9, not 10
 
 **Key Variables**:
 - `v59_som_pool(j,land)` - Actual soil organic matter pool (mio. tC)
@@ -48,11 +55,21 @@
 2. Calculates equilibrium carbon targets based on IPCC stock change factors
 3. Moves actual pools 15% toward equilibrium each year
 4. Estimates nitrogen release when SOM is lost
-5. Calculates costs for optional soil carbon management practices
+5. Calculates costs for optional soil carbon management practices — **but SCM is identically OFF at defaults, so this term is exactly zero out of the box** (see the caveat below)
+
+> ⚠️ **CAPABILITY vs. DEFAULT (R58, 2026-07-17)**: soil carbon management (SCM) is a capability, not
+> default behaviour. `presolve.gms:31-33` computes
+> `i59_scm_target(t,j) = i59_scm_scenario_fader(t) * (s59_scm_target * weight + s59_scm_target_noselect * (1-weight))`,
+> and **both** switches default to 0 (`config/default.cfg:1975-1976`; `input.gms:11-12`), so
+> `i59_scm_target ≡ 0` for every cell and timestep regardless of the fader. Consequently the SCM term
+> in `q59_som_target_cropland` (`equations.gms:20-27`) contributes nothing and `vm_cost_scm` is 0 at
+> defaults. Both switches must be raised to activate it — setting only `s59_scm_target` leaves
+> non-selected countries at zero.
 
 **What Module 59 does NOT do**:
 - ❌ Does NOT model detailed microbial decomposition processes
-- ❌ Does NOT track subsoil carbon dynamics (uses fixed reference value)
+- ❌ Does NOT track subsoil carbon **response to land use or management** — subsoil density is exogenous (an LPJmL reference). It is **not** frozen in time: `i59_subsoilc_density(t_all,j)` is time-indexed (`cellpool_jan23/declarations.gms:23`), computed from `fm_carbon_density(t_all,j,"other","soilc")` (`preloop.gms:12`), and read at the current timestep `ct` in `q59_carbon_soil` (`cellpool_jan23/equations.gms:61-64`). Under the **default** `c59_som_scenario = "cc"` (`config/default.cfg:1948`) and `c52_carbon_scenario = "cc"` (`:1587`) it varies over time with climate; the `nocc` overrides would be no-ops if it were already constant.
+  > ⚠️ **CORRECTED (R58, 2026-07-17)**: previously "uses fixed reference value", which misled a QA answerer into amplifying it to "static / derived once". The one genuinely fixed use is the *initial* pool, which reads the `"y1995"` slice (`preloop.gms:31`) — initialization is fixed; the density itself is not.
 - ❌ Does NOT model tillage effects separately (default = full tillage)
 - ❌ Does NOT model manure application effects separately (default = medium input)
 - ❌ Assumes pastures and forests do NOT change SOM relative to natural state (`realization.gms:21-24`)
@@ -177,7 +194,7 @@ pcm_carbon_stock(j,land,"soilc",stockType) = vm_carbon_stock.l(j,land,"soilc",st
 ```
 (`modules/59_som/cellpool_jan23/postsolve.gms:13`; `modules/59_som/static_jan19/postsolve.gms:9`). `pcm_carbon_stock` is declared in Module 56 and consumed as the "previous stock" term by `q52_emis_co2_actual` (Module 52) and `q56_emis_pricing_co2` (Module 56, `modules/56_ghg_policy/price_aug22/equations.gms:19`). The above-ground pools (`ag_pools`: vegc, litc) are carried forward separately in `modules/56_ghg_policy/price_aug22/postsolve.gms:8`; Module 59 owns only the `soilc` carry-forward.
 
-> ⚠️ **Bug fix (develop commit 931db85c4, 2026-06-25)**: This soil carry-forward line was previously ABSENT in both SOM realizations - `pcm_carbon_stock(...,"soilc",...)` stayed at its `preloop` initialization and was never updated between timesteps, unlike the above-ground pools. The soil term in `q52_emis_co2_actual` / `q56_emis_pricing_co2` therefore computed a cumulative-since-initialization stock change divided by the current timestep length, instead of the per-timestep flux it claims to compute (soil pools off by about 17x in a default H12 run). Default runs are unaffected: the default `c56_emis_policy` = `reddnatveg_nosoil` (`config/default.cfg:1810`) excludes the soil pool, and dynamic-SOM soil reporting routes through `magpie4::emisSOC`. Only soil-inclusive emission policies, or post-processing that reads per-pool soil `vm_emissions_reg` directly, were affected.
+> ⚠️ **Bug fix (develop commit 931db85c4, 2026-06-25)**: This soil carry-forward line was previously ABSENT in both SOM realizations - `pcm_carbon_stock(...,"soilc",...)` stayed at its `preloop` initialization and was never updated between timesteps, unlike the above-ground pools. The soil term in `q52_emis_co2_actual` / `q56_emis_pricing_co2` therefore computed a cumulative-since-initialization stock change divided by the current timestep length, instead of the per-timestep flux it claims to compute (soil pools off by about 17x in a default H12 run). Default runs are unaffected: the default `c56_emis_policy` = `reddnatveg_nosoil` (`config/default.cfg:1828`) excludes the soil pool, and dynamic-SOM soil reporting routes through `magpie4::emisSOC`. Only soil-inclusive emission policies, or post-processing that reads per-pool soil `vm_emissions_reg` directly, were affected.
 
 #### 3.5 Nitrogen Release from SOM Loss
 
@@ -973,7 +990,9 @@ Check: Monotonic increase between start and target
 
 **Key Limitation**: Pastures and forests assumed static; tillage/inputs at defaults
 
-**Dependencies**: MEDIUM (8 connections) - **MODERATE modification risk**
+**Dependencies**: MEDIUM — **9 distinct connected modules** (5 in / 5 out; M52 both sides) — **MODERATE modification risk**
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: previously "8 connections" here too — the same undefined count
+> stated twice in one doc. See the Quick Reference for the counting rule and the module sets.
 
 **Typical Modifications**:
 1. Enable soil carbon management (s59_scm_target = 0.3)
