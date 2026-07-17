@@ -1030,8 +1030,43 @@ Key input variables from other modules are documented in the Dependencies sectio
 
 **Centrality**: Medium (SOM calculator)
 **Hub Type**: Soil Carbon Dynamics
-**Provides to**: Module 52 (carbon stocks for topsoil component)
-**Depends on**: Modules 10 (land), 30 (croparea), 29 (cropland). (Module 35 natveg is a conceptual upstream driver of land transitions via Module 10, not a direct interface dependency.)
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: the previous "Depends on" set omitted **M45 and M52**, both
+> direct interface dependencies of the **default** realization. Found by the R58 QA round (a latent
+> doc bug the answerer partly re-derived around). Severity Critical by the R20 anchor — a wrong
+> dependency set is what a reader trusts before a refactor. The old "Provides to" line named only
+> M52 and missed M11/M50/M51 entirely.
+
+**Scope**: the sets below are for the **default** realization `cellpool_jan23`
+(`config/default.cfg:1934`). Realization differences are called out explicitly — they are not
+interchangeable.
+
+**Provides to** (5 modules):
+| Variable | Consumed by | Evidence |
+|---|---|---|
+| `vm_cost_scm(j)` | **M11** (costs) | `cellpool_jan23/declarations.gms:41` |
+| `vm_nr_som_fertilizer(j)` | **M50** (soil N budget) | `cellpool_jan23/declarations.gms:46` |
+| `vm_nr_som(j)` | **M51** (N emissions) | `cellpool_jan23/declarations.gms:45` |
+| `vm_carbon_stock(j,land,"soilc",stockType)` — **the `soilc` slice only** | **M52** (carbon), **M56** (GHG policy) | populated at `cellpool_jan23/equations.gms:62`; declared in M56 (`56_ghg_policy/price_aug22/declarations.gms:34`) |
+
+Note `vm_carbon_stock` is **declared by M56 and populated by M59** — populating is not declaring, and
+M59 owns only the `"soilc"` slice; other modules populate the other carbon pools.
+
+**Depends on** (5 modules, default realization):
+| Module | Variable(s) read | Evidence |
+|---|---|---|
+| **M10** (land) | `vm_land`, `pcm_land`, `pm_land_start`, `vm_lu_transitions` | `10_land/landmatrix_dec18/declarations.gms` |
+| **M29** (cropland) | `vm_treecover`, `vm_fallow` | read in M59's SOM equations |
+| **M30** (croparea) | `vm_area` | |
+| **M45** (climate) | `pm_climate_class` | declared `45_climate/static/input.gms:10` (a `table`); read at 4 sites in `59_som/cellpool_jan23/preloop.gms:16,61,74,89` |
+| **M52** (carbon) | `fm_carbon_density` | declared `52_carbon/normal_dec17/input.gms:31` |
+
+**M52 sits on both sides** (M59 reads `fm_carbon_density` from it and populates the `soilc` slice it
+consumes), so the union of upstream and downstream is **9 distinct modules**, not 10.
+
+**On Module 35**: correct for the default — `cellpool_jan23` does **not** read any M35 variable.
+But the previous parenthetical ("not a direct interface dependency") is realization-blind: the
+non-default `static_jan19` **does** read `vm_land_other` directly
+(`59_som/static_jan19/equations.gms:23-24`).
 
 ### Circular Dependencies
 
