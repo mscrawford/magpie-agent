@@ -3,7 +3,9 @@
 **Realization:** `default`
 **Total Lines of Code:** 149 (default/ realization; 170 incl. module.gms)
 **Equation Count:** 2
-**Status:** ✅ Fully Verified (2025-10-12)
+**Status:** ✅ Verified (2026-05-16 — PR #866 sync; R58 corrections applied 2026-07-17)
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: the header previously read "Fully Verified (2025-10-12)", contradicting both footers (2026-05-16). The footers are accurate — PR #866's trade split is present in the code and reflected here (`equations.gms:30-32`).
 
 ---
 
@@ -183,9 +185,11 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 
 **Variable:** `vm_cost_prod_kres(i,kres)`
 **Source Module:** Module 18 (Residues)
-**Description:** Costs for residue collection and processing (crop residues, wood fuel)
-**Dimensions:** i (regions), kres (residue types)
+**Description:** Production costs of harvesting **crop** residues (`modules/18_residues/flexreg_apr16/declarations.gms:17`)
+**Dimensions:** i (regions), kres (residue types) — `kres` has exactly **3** members: `res_cereals`, `res_fibrous`, `res_nonfibrous` (`modules/16_demand/sector_may15/sets.gms:13-14`)
 **Citation:** `equations.gms:16`
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this previously read "residue collection and processing (crop residues, wood fuel)". `woodfuel` is **not** in `kres` — it is a member of `k` (Primary products, `modules/14_yields/managementcalib_aug19/sets.gms:12-16`), which `q11_cost_reg` sums separately via `vm_cost_transp(j,k)` at `equations.gms:21`. Attributing wood fuel to `vm_cost_prod_kres` risks the double-counting §11.3 warns about. "Processing" is also not in the code's description, which says "harvesting".
 
 ---
 
@@ -226,9 +230,11 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 **Variable:** `vm_cost_landcon(j,land)`
 **Source Module:** Module 39 (Land Conversion)
 **Description:** One-time costs for converting land between types (clearing, drainage, leveling)
-**Dimensions:** j (cells), land (cropland, pasture, forest, urban, other)
-**Aggregation:** Sum over all cells in region
+**Dimensions:** j (cells), land (**7** members, exact labels: `crop`, `past`, `forestry`, `primforest`, `secdforest`, `urban`, `other` — `core/sets.gms:250-251`)
+**Aggregation:** Sum over all cells in region, all 7 land pools
 **Citation:** `equations.gms:20`, documented in the component comment block `equations.gms:49-69`
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: the `land` dimension previously read "(cropland, pasture, forest, urban, other)" — 5 friendly names. The set has **7** members; collapsing `forestry`/`primforest`/`secdforest` into one "forest" drops two pools whose conversion costs differ. `equations.gms:20` sums `vm_cost_landcon(j2,land)` over all 7.
 
 ---
 
@@ -247,10 +253,12 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 
 **Variable:** `vm_cost_cropland(j)`
 **Source Module:** Module 29 (Cropland)
-**Description:** Costs specific to cropland management (likely maintenance or baseline costs)
+**Description:** Cropland **tree-cover** costs plus policy-constraint shortfall penalties — **not** maintenance or baseline cropland costs. Under the default `detail_apr24` (`config/default.cfg:811`), `q29_cost_cropland` sums exactly four terms (`modules/29_cropland/detail_apr24/equations.gms:28-32`): tree-cover establishment (`v29_cost_treecover_est`) + tree-cover recurring cost (`v29_cost_treecover_recur`) + a fallow-shortfall penalty (`v29_fallow_missing × i29_fallow_penalty`) + a tree-cover-shortfall penalty (`v29_treecover_missing × i29_treecover_penalty`). Two of the four are agroforestry costs; the other two are penalties enforcing fallow and tree-cover targets — this is the channel through which those policy levers enter the objective.
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
 **Citation:** `equations.gms:43`
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this previously read "Costs specific to cropland management (likely maintenance or baseline costs)". The hedge was unearned — the equation is four lines of GAMS and is unambiguous, so AGENT.md Step 2c's "I'm not certain" licence does not apply.
 
 ---
 
@@ -258,10 +266,12 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 
 **Variable:** `vm_cost_urban(j)`
 **Source Module:** Module 34 (Urban) — verified `find ../modules -name declarations.gms -exec grep -l vm_cost_urban {} \;`
-**Description:** Costs for urban land expansion
+**Description:** A **symmetric deviation penalty** on urban land, not an economic cost of urban expansion. Under the default `exo_nov21` (`config/default.cfg:1144`), regional urban land is **exogenously fixed**: `q34_urban_land(i2) .. sum(cell(i2,j2), vm_land(j2,"urban")) =e= sum((ct,cell(i2,j2)), i34_urban_area(ct,j2));` (`modules/34_urban/exo_nov21/equations.gms:30-31`). The *cellular* allocation stays endogenous, and `vm_cost_urban` penalises deviation from the cellular input data in **both** directions — `v34_cost1` fires when urban land is *reduced* below input data, `v34_cost2` when it is *expanded* above it (`equations.gms:17-18`, `:20-21`) — priced at `s34_urban_deviation_cost`, which the code itself declares as an "**Artificial cost** for urban deviation variables (USD17MER per ha) / 1e+06 /" (`modules/34_urban/exo_nov21/input.gms:13`). The realization header states the purpose: "This safeguards against infeasible outcomes … it incurs the cost and shifts the land elsewhere in the region" (`equations.gms:9-13`). Expected value at a feasible optimum is ~0.
 **Dimensions:** j (cells)
 **Aggregation:** Sum over all cells in region
-**Citation:** `equations.gms:45`
+**Citation:** `equations.gms:45`; mechanism at `modules/34_urban/exo_nov21/equations.gms:25-26`
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this previously read "Costs for urban land expansion" — wrong in direction (the penalty is two-sided), in kind (a 1e6 USD/ha solver guardrail, not an economic cost), and in implication (MAgPIE does not price urban sprawl economically; regional urban area is prescribed). CODE TRUTH violation of the canonical "labelled X, actually Y" shape.
 
 ---
 
@@ -528,9 +538,38 @@ Module 11 aggregates costs from 27 modules. Here is the complete mapping of each
 
 Module 11 receives **32 cost variables** (31 costs + 1 reward) from other modules. See Section 3 for complete mapping.
 
-**Key Pattern:** All cost variables have naming convention `vm_cost_*` or `vm_*_cost*` and units of mio. USD17MER/yr.
+**Key Pattern:** **Most** cost variables follow `vm_cost_*` or `vm_*_cost*` and carry units of mio. USD17MER/yr, but the convention is **not universal** — at least four of the 32 terms match neither pattern: `vm_rotation_penalty(i2)` (`equations.gms:23`), `vm_reward_cdr_aff(i2)` (`:27`), `vm_bioenergy_utility(i2)` (`:38`), and `vm_costs_additional_mon(i2)` (`:40`, which fails `vm_cost_*` because the next character is `s`, not `_`). Do not rely on the naming pattern to enumerate the terms — read `equations.gms:15-47`.
 
-**Exception:** `vm_reward_cdr_aff` is revenue, not cost, hence the negative sign in the equation.
+**Sign exception:** `vm_reward_cdr_aff` is revenue, not cost, hence the negative sign in the equation. Note this is an exception about **sign**, not naming, and it does not discharge the naming claim. For the full sign-domain picture see §4.4.
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: this previously asserted "**All** cost variables have naming convention `vm_cost_*` or `vm_*_cost*`" — refuted by the doc's own canonical equation block in §2.2 above.
+
+---
+
+### 4.4 Sign Domains: 9 of the 32 Terms Are FREE Variables
+
+⚠️ **Do not assume the 32 terms are non-negative.** The sign each term carries in `q11_cost_reg` (all `+` except `- vm_reward_cdr_aff`) says nothing about its **sign domain**. That is set by the declaration block in the source module. In their **default** realizations, **9 of the 32** terms are declared in a plain `variables` block (free, sign-unconstrained), not `positive variables`:
+
+| Variable | Declaration (default realization) | Code's own description |
+|---|---|---|
+| `vm_processing_substitution_cost` | `modules/20_processing/substitution_may21/declarations.gms:24` | "Costs **or benefits** of substituting one product by another" |
+| `vm_cost_landcon` | `modules/39_landconversion/calib/declarations.gms:13` | "Costs for land expansion **and reduction**" |
+| `vm_cost_transp` | `modules/40_transport/gtap_nov12/declarations.gms:13` | Transportation costs |
+| `vm_cost_AEI` | `modules/41_area_equipped_for_irrigation/endo_apr13/declarations.gms:15` | Annuitized irrigation expansion costs |
+| `vm_p_fert_costs` | `modules/54_phosphorus/off/declarations.gms:10` | Costs for mineral fertilizers |
+| `vm_emission_costs` | `modules/56_ghg_policy/price_aug22/declarations.gms:39` | Costs for emission rights |
+| `vm_reward_cdr_aff` | `modules/56_ghg_policy/price_aug22/declarations.gms:43` | Revenue from afforestation |
+| `vm_peatland_cost` | `modules/58_peatland/v2/declarations.gms:45` | "One-time and recurring cost of peatland conversion and management" |
+| `vm_bioenergy_utility` | `modules/60_bioenergy/1st2ndgen_priced_feb24/declarations.gms:26` | "Utility as **negative costs** for producing bioenergy" |
+
+**The placement is deliberate, not incidental.** Five of the nine files contain *both* a `positive variables` block and a plain `variables` block, with the cost term put in the free one — e.g. M20 declares `vm_cost_processing` positive at `:20` and `vm_processing_substitution_cost` free at `:24`; M56 declares `vm_carbon_stock` positive at `:34` and both `vm_emission_costs`/`vm_reward_cdr_aff` free at `:39`/`:43`.
+
+**Two terms are negative in a correct DEFAULT run:**
+
+1. **`vm_bioenergy_utility` is negative by construction.** `q60_bioenergy_incentive` is a sum of terms each carrying an explicit unary minus on the subsidy (`modules/60_bioenergy/1st2ndgen_priced_feb24/equations.gms:73-75`). The subsidy is not zero by default: `config/default.cfg:2119` sets `s60_bioenergy_1st_subsidy <- 6.5`, applied as a **price floor** at `modules/60_bioenergy/1st2ndgen_priced_feb24/presolve.gms:60-61`. With `vm_dem_bioen` positive, `vm_bioenergy_utility` is **strictly negative** under the default configuration.
+2. **`vm_emission_costs` goes negative when carbon stocks grow.** `v56_emis_pricing(i2,emis_oneoff,"co2_c") =e= sum(..., (pcm_carbon_stock(...) - vm_carbon_stock(...))/m_timestep_length)` (`modules/56_ghg_policy/price_aug22/equations.gms:19-22`) is negative under regrowth/afforestation, so `q56_emission_costs` can sum to a negative cost.
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: §10.2, §16 and §17.4 previously prescribed "check all 32 cost variables are non-negative (except `vm_reward_cdr_aff`)" — a single-exception model. It is wrong, and the prescriptions are the executable parts of this doc: `stopifnot(all(emission_costs >= 0))` and "flag any negative cost → source module error" **fire on a correct default run** and send the reader to debug a bug-free M60/M56. §3.8 and §17.2 already stated the truth for `vm_bioenergy_utility`; the testing sections contradicted them.
 
 ---
 
@@ -550,9 +589,17 @@ Informs GAMS solver about typical magnitude of variables to improve numerical co
 
 **Scaling Values:**
 
-- **vm_cost_glo:** ~10^7 USD/yr (tens of billions of dollars globally)
-- **v11_cost_reg:** ~10^6 USD/yr (billions per region)
-- **vm_cost_transp:** ~10^3 USD/yr (thousands per cell-commodity)
+⚠️ **Read these in the variables' own declared unit, which is already `mio. USD17MER per yr`** (`declarations.gms:9-10`; `vm_cost_transp` likewise at `modules/40_transport/gtap_nov12/declarations.gms:13`). A scale of `1e7` therefore hints at ~10^7 **mio.** USD/yr = ~10^13 USD/yr, not 10^7 USD/yr.
+
+| Variable | `.scale` | Implied typical magnitude (own unit) | In plain USD |
+|---|---|---|---|
+| `vm_cost_glo` | `1e7` | ~10^7 mio. USD17MER/yr | ~10^13 USD/yr |
+| `v11_cost_reg` | `1e6` | ~10^6 mio. USD17MER/yr | ~10^12 USD/yr |
+| `vm_cost_transp` | `1e3` | ~10^3 mio. USD17MER/yr | ~10^9 USD/yr |
+
+These are **solver hints about order of magnitude**, not asserted solution values. The two global/regional hints are internally consistent (`1e6` × 12 regions in `i` ≈ 1.2e7 ≈ `1e7`).
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: the three glosses previously read "~10^7 USD/yr (tens of billions of dollars globally)", "~10^6 USD/yr (billions per region)" and "~10^3 USD/yr (thousands per cell-commodity)". Each dropped the declared `mio.` factor and re-read the numeral as plain USD — a uniform **10^3** error. (An earlier R58 draft titled this "off by 10^6"; that figure is itself wrong — the discrepancy is 10^3 throughout.) See also the §15.1 flag: §5's `1e7` and §15.1's 10^8–10^9 cannot both be right.
 
 **Why Scaling Matters:**
 
@@ -737,11 +784,15 @@ grep "^[ ]*q11_" modules/11_costs/default/declarations.gms | wc -l
 
 **After running MAgPIE:**
 
-1. **Check that all 32 cost variables are non-negative** (except `vm_reward_cdr_aff`):
+1. **Check the sign domain of each term against §4.4 — do NOT blanket-assert non-negativity:**
    ```gams
    * Inspect solution values for all cost variables listed in Section 3
-   * Flag any negative costs (would indicate source module error)
+   * Flag a negative value ONLY for the 23 terms declared `positive variables`
+   *   in their default realization (see Section 4.4 for the 9 that are FREE).
+   * vm_bioenergy_utility is strictly NEGATIVE in a correct default run;
+   *   vm_emission_costs is negative wherever carbon stocks grow.
    ```
+   ⚠️ **CORRECTED (R58, 2026-07-17)**: this previously read "Check that all 32 cost variables are non-negative (except `vm_reward_cdr_aff`) … Flag any negative costs (would indicate source module error)". That check fires on a **correct default run** and sends the reader to debug a bug-free M60/M56. See §4.4.
 
 2. **Check regional costs sum to global cost:**
    ```gams
@@ -986,15 +1037,17 @@ Module 11 is at the **end of the dependency chain** — it aggregates costs but 
 
 ### 15.1 Typical Magnitudes
 
-**Global costs (`vm_cost_glo`):**
-- Baseline scenarios: ~10^8 mio. USD/yr (100 billion USD/yr) in 1995
-- Future scenarios: ~10^8 to 10^9 mio. USD/yr by 2050 (population and production growth)
+> ⚠️ **CORRECTED (R58, 2026-07-17) — the figures below are UNVERIFIED and contradict §5.** Two separate defects were found here:
+> 1. **Arithmetic**: the gloss "~10^8 mio. USD/yr (100 billion USD/yr)" is self-inconsistent. 10^8 **mio.** USD = 10^14 USD = 100 **trillion**; "100 billion" is 10^11. A **10^3** error — the declared `mio.` factor dropped, the same mechanism as §5's.
+> 2. **Contradiction with §5**: §5 derives ~10^7 mio. USD/yr for `vm_cost_glo` from `scaling.gms:8` (`vm_cost_glo.scale = 1e7`); §15.1 asserts 10^8–10^9 mio. USD/yr. These differ by 10–100× and cannot both hold. The code's scaling factors (`1e7` global; `1e6` regional × 12 regions in `i` ≈ 1.2e7) are internally consistent with **§5**.
+>
+> **The true magnitude is not asserted here** — settling it requires reading a `fulldata.gdx`, which no R58 pass did. Treat §5's scaling-derived ~10^7 mio. USD/yr as the better-grounded figure (it is derived from code) and the numbers below as unverified recollection pending a GDX check. **Do not use them as an acceptance criterion.**
 
-**Regional costs (`v11_cost_reg`):**
-- Developed regions: ~10^7 mio. USD/yr (tens of billions)
-- Developing regions: ~10^6 to 10^7 mio. USD/yr
+**Global costs (`vm_cost_glo`):** 🔴 unverified — reported as ~10^8 mio. USD17MER/yr in 1995 rising to ~10^8–10^9 by 2050; contradicted by §5 (see above).
 
-**Scaling factors (Section 5):** Chosen based on these typical magnitudes to keep internal solver representation O(1-1000).
+**Regional costs (`v11_cost_reg`):** 🔴 unverified — reported as ~10^7 mio. USD17MER/yr (developed) and ~10^6–10^7 (developing); contradicted by §5's `v11_cost_reg.scale = 1e6`.
+
+**Scaling factors (Section 5):** derived from `scaling.gms:8-10`, read this session. Where §5 and §15.1 disagree, §5 is the code-derived side.
 
 ### 15.2 Cost Composition (Typical Shares)
 
@@ -1050,10 +1103,12 @@ Module 11 is the **simplest yet most critical module in MAgPIE**:
 - **No circular dependencies**
 
 **Testing Priority:**
-1. Verify all cost variables are defined and non-negative
+1. Verify all cost variables are defined, and check each against **its own sign domain** (§4.4) — 9 of the 32 are free variables and 2 are negative in a correct default run; a blanket non-negativity check is wrong
 2. Confirm regional costs sum to global cost (within solver tolerance)
 3. Check cost composition matches expected economic structure
-4. Validate objective function value is realistic (10^8-10^9 mio. USD/yr)
+4. Validate the objective function value is finite and plausibly scaled. **No acceptance range is asserted here** — §15.1's former "10^8-10^9 mio. USD/yr" is unverified and contradicts §5's scaling-derived ~10^7 mio. USD/yr (see §15.1). Settle it against a `fulldata.gdx` before using any range as a gate.
+
+> ⚠️ **CORRECTED (R58, 2026-07-17)**: items 1 and 4 previously prescribed a blanket non-negativity check and a "10^8-10^9 mio. USD/yr" acceptance range. Both would reject correct runs.
 
 **Common Use:**
 - Usually no changes needed to Module 11 itself
@@ -1106,7 +1161,7 @@ Module 11 does **not directly participate** in any conservation laws:
 | **30** (croparea) | `vm_rotation_penalty(i)` | + | Crop-rotation violation penalty (declared in M30) |
 | **31** (pasture) | `vm_cost_prod_past(i)` | + | Pasture production cost |
 | **32** (forestry) | `vm_cost_fore(i)` | + | Plantation establishment/management |
-| **34** (urban) | `vm_cost_urban(j)` | + | Urban land expansion (declared in M34) |
+| **34** (urban) | `vm_cost_urban(j)` | + | Symmetric deviation penalty on cellular urban land, priced at an artificial 1e6 USD/ha (declared in M34; **not** an urban-expansion cost — see §3.2) |
 | **35** (natveg) | `vm_cost_hvarea_natveg(i)` | + | Natural-forest harvest cost |
 | **38** (factor_costs) | `vm_cost_prod_crop(i,factors)` | + | LARGEST — labor + capital factor costs for crops |
 | **39** (landconversion) | `vm_cost_landcon(j,land)` | + | Land-conversion costs |
@@ -1127,7 +1182,7 @@ Module 11 does **not directly participate** in any conservation laws:
 
 **Total: 27 source modules contribute 31 input cost terms plus 1 reward term** (out of 46 modules total).
 
-**Modules that do NOT contribute to `q11_cost_reg`** (19 modules):
+**Modules that do NOT contribute to `q11_cost_reg`** (18 modules; 46 total − 27 contributors − Module 11 itself):
 - 09 (drivers), 12 (interest rate), 14 (yields), 15 (food), 16 (demand), 17 (production), 22 (land conservation), 28 (age class), 36 (employment), 37 (labor productivity), 43 (water availability), 45 (climate), 51 (nitrogen emissions), 52 (carbon), 53 (methane), 55 (AWMS), 62 (material), 80 (optimization)
 - These either provide non-cost outputs (yields, areas, biophysical accounting) or feed costs in indirectly (e.g., M12's `pm_interest` scales costs inside M13, M39, M41 rather than entering M11 as a separate term).
 
@@ -1142,7 +1197,7 @@ Module 11 does **not directly participate** in any conservation laws:
 
 Module 11 participates in **zero circular dependencies**:
 - **No feedback loops**: Module 11 is a **terminal sink** (receives costs; its only downstream consumer is Module 80)
-- **One-way data flow**: All cost modules → Module 11 → Module 80 (Optimization) minimises `vm_cost_glo`
+- **One-way data flow**: All cost modules → Module 11 → Module 80 (Optimization) minimises `vm_cost_glo`. **Caveat (non-default realization)**: in `lp_nlp_apr17` — *not* the default (`config/default.cfg:2300` = `nlp_apr17`) — M80 writes a **bound** onto M11's variable between solves: `vm_cost_glo.up = vm_cost_glo.l;` → `solve magpie USING nlp MINIMIZING vm_landdiff;` → `vm_cost_glo.up = Inf;` (`modules/80_optimization/lp_nlp_apr17/solve.gms:75-78`, repeated at `:195-198`). This is **solver control flow between solves, not a data-flow cycle** — no M11 equation reads anything M80 produces — so "zero circular dependencies" above still holds. But anyone changing `vm_cost_glo`'s bounds or sign domain in M11 must know `lp_nlp_apr17` manipulates `.up` and relies on `Inf` as the release value. (A `vm_cost_glo(`-only grep misses this; it is a `.`-form write.)
 - **One module depends on Module 11**: Module 80 reads `vm_cost_glo` as the objective (`modules/80_optimization/nlp_apr17/solve.gms:34`). No *other* module consumes an M11 variable, and no M11 equation reads anything M80 produces — so there is still no data-flow cycle.
 
 **Why no cycles?**
@@ -1198,9 +1253,13 @@ Module 11 participates in **zero circular dependencies**:
 1. **Objective function value check**:
    ```r
    cost_glo <- readGDX(gdx, "ov_cost_glo", field="l")
-   stopifnot(all(cost_glo > 0))  # Must be positive
-   stopifnot(all(is.finite(cost_glo)))  # No NaN/Inf
+   stopifnot(all(is.finite(cost_glo)))  # No NaN/Inf -- always valid
+   # NOTE: `stopifnot(all(cost_glo > 0))` is NOT a safe gate. vm_cost_glo is
+   # declared in a plain `variables` block (declarations.gms:9), and the CDR
+   # reward is SUBTRACTED (equations.gms:27), so under high carbon prices the
+   # objective can legitimately go negative -- see Limitations item 4.
    ```
+   ⚠️ **CORRECTED (R58, 2026-07-17)**: `stopifnot(all(cost_glo > 0))  # Must be positive` was removed. It contradicts this doc's own Limitations item 4 and `vm_cost_glo`'s free declaration. (Same class as the §4.4 defect; found while fixing it.)
 
 2. **Regional aggregation check** (Section 9):
    ```r
@@ -1212,17 +1271,28 @@ Module 11 participates in **zero circular dependencies**:
 
 3. **Cost composition check** (Section 15.2):
    ```r
-   # Verify all expected cost components are present and non-negative
-   factor_costs_crop <- readGDX(gdx, "ov_cost_prod_crop", field="l")
+   # Verify expected cost components are present and finite.
+   # Assert non-negativity ONLY for terms declared `positive variables`
+   # in their default realization -- see Section 4.4.
+   factor_costs_crop  <- readGDX(gdx, "ov_cost_prod_crop", field="l")
    factor_costs_livst <- readGDX(gdx, "ov_cost_prod_livst", field="l")
-   emission_costs <- readGDX(gdx, "ov_emission_costs", field="l")
+   emission_costs     <- readGDX(gdx, "ov_emission_costs", field="l")
    # PR #866: trade costs are now three separate GDX symbols
-   trade_costs <- readGDX(gdx, "ov_cost_trade_tariff", field="l")
+   trade_costs        <- readGDX(gdx, "ov_cost_trade_tariff", field="l")
+
+   # Positive-variable terms: non-negativity is a valid gate
    stopifnot(all(factor_costs_crop >= 0))
    stopifnot(all(factor_costs_livst >= 0))
-   stopifnot(all(emission_costs >= 0))
    stopifnot(all(trade_costs >= 0))
+
+   # FREE-variable term: only finiteness is a valid gate.
+   # vm_emission_costs is declared in a plain `variables` block
+   # (56_ghg_policy/price_aug22/declarations.gms:39) and is negative
+   # wherever carbon stocks grow. `stopifnot(all(emission_costs >= 0))`
+   # would abort a CORRECT run.
+   stopifnot(all(is.finite(emission_costs)))
    ```
+   ⚠️ **CORRECTED (R58, 2026-07-17)**: this block previously asserted `stopifnot(all(emission_costs >= 0))`. `vm_emission_costs` is a free variable and legitimately goes negative under afforestation/regrowth — the assertion aborts a correct validation suite. See §4.4.
 
 4. **All conservation laws** (mandatory):
    - Run all checks from land_balance_conservation.md
