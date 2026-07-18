@@ -370,7 +370,7 @@ f70_feed_baskets(t_all,i,kap,kall,feed_scen70)
 - Historical period (≤ sm_fix_SSP2): Use SSP2 feed baskets
 - Future period: Use scenario selected by `c70_feed_scen` switch (default: ssp2)
 
-> **Scope note**: the same `preloop.gms:13-23` loop also uses `c70_feed_scen` to select the `feed_scen70` slice of **two other** tables in the same pass — `f70_livestock_productivity` → `i70_livestock_productivity` and `f70_slaughter_feed_share` → `im_slaughter_feed_share`. `i70_livestock_productivity` propagates beyond feed composition into livestock factor costs and Module 14 pasture yields. See **Configuration Options → Feed Scenario Selection** below for the full scope and the downstream path.
+> **Scope note**: the same `preloop.gms:13-23` loop also uses `c70_feed_scen` to select the `feed_scen70` slice of **two other** tables in the same pass — `f70_livestock_productivity` → `i70_livestock_productivity`, and `f70_slaughter_feed_share` → `im_slaughter_feed_share` (the latter referenced only by Modules 70 and 55). Separately, `i70_livestock_productivity` propagates beyond feed composition into livestock factor costs and, via `pm_past_mngmnt_factor`, into pasture yields in Module 14. See **Configuration Options → Feed Scenario Selection** below for the full scope and the downstream path.
 
 **SSP Narratives** (`realization.gms:72-75`): Feed basket scenarios reflect SSP storylines regarding intensification trajectories, affecting feed conversion efficiency and feed composition.
 
