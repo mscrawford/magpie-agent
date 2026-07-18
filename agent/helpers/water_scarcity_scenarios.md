@@ -232,7 +232,7 @@ Formula: `v42_irrig_eff = 1 / (1 + 2.718282^((-22160 - GDP_pc) / 37767))`
 
 ## Common Pitfalls
 
-1. **Infeasibility from strict environmental flows**: Enabling `c42_env_flow_policy = "on"` with `s42_env_flow_scenario = 2` (Smakhtin) in arid regions can make the model infeasible. The water constraint `q43_water` is a hard cap with no slack variable. Check `oq43_water` marginals to identify binding cells, and consider a later `s42_efp_startyear` or the `"mixed"` policy mode.
+1. **Infeasibility from strict environmental flows**: Enabling `c42_env_flow_policy = "on"` with `s42_env_flow_scenario = 2` (Smakhtin) in arid regions can make the model infeasible. The water constraint `q43_water` is a hard cap with no penalty variable. Check `oq43_water` marginals to identify binding cells, and consider a later `s42_efp_startyear` or the `"mixed"` policy mode.
 
 2. **Mismatched climate scenarios**: Setting `c42_watdem_scenario = "cc"` but `c43_watavail_scenario = "nocc"` (or vice versa) creates an inconsistent water balance. Both should typically use the same climate scenario to avoid artifacts.
 
@@ -255,7 +255,7 @@ Key outputs for analyzing water scarcity results:
 | Output Variable | What It Shows |
 |----------------|---------------|
 | `oq43_water(t,j,"marginal")` | Water scarcity shadow price — positive = constraint binding |
-| `oq43_water(t,j,"level")` | Slack in water constraint — 0 = fully utilized |
+| `oq43_water(t,j,"level")` | Headroom in water constraint — 0 = fully utilized |
 | `ov43_watavail(t,wat_src,j,"level")` | Water available by source and cell |
 | `ov43_watavail(t,"ground",j,"level")` | Non-zero = infeasibility buffer activated |
 | `vm_watdem.l("agriculture",j)` | Agricultural water withdrawals |

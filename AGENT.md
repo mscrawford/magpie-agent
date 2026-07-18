@@ -263,6 +263,8 @@ This supplements the "docs first" workflow — docs are still the starting point
 
 **BEFORE** reading, writing, explaining, or debugging GAMS code, **ALWAYS load `reference/GAMS_MAgPIE_Patterns.md` first** (module structure, naming conventions, MAgPIE idioms — mandatory for any GAMS work), then pull the specific reference as needed: `GAMS_Fundamentals.md` (sets / params / vars / equations), `GAMS_Control_Structures.md` (loops, conditionals, `$()`), `GAMS_Advanced_Features.md` (`sum()` / `prod()` / macros / includes), `GAMS_Functions_Operations.md` (built-ins, string ops), `GAMS_Best_Practices.md` (debugging, performance).
 
+**Terminology:** report variable values as **"level"** (`.l` or 'level') and **"marginal"** / **"shadow price"** (`.m` or 'marginal') — never "slack" or "dual". The high-penalty relaxation variables — e.g. `v73_prod_heaven_timber`, `v21_import_for_feasibility`, `v44_bii_missing`, `v32_land_missing`, `v32_ndc_area_missing`, `v29_fallow_short_missing`, `v29_fallow_long_missing` — are **penalty variables**; call them that or by name, not "slack variables". (Genuine exceptions stay: the GAMS `.slack`/`.slacklo`/`.slackup` suffixes, and algorithm/design terms like "primal-dual" or "dual-pool".)
+
 **See `core_docs/Response_Guidelines.md` for complete workflow details, token efficiency, and quality checklist.**
 
 ---

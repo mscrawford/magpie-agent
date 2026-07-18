@@ -20,7 +20,7 @@
 5. **Tracks harvest residues** (15% of industrial roundwood, 50% recovery rate)
 6. **Optional construction wood demand** scenarios from Churkina et al. 2020
 7. **Income-elastic demand** with threshold of 10,000 USD17PPP/cap/yr
-8. **Slack variable** (v73_prod_heaven_timber) for technical feasibility at very high cost
+8. **Penalty variable** (v73_prod_heaven_timber) for technical feasibility at very high cost
 
 **What Module 73 does NOT do**:
 - ❌ Does NOT determine timber demand endogenously (`realization.gms:22`)
@@ -65,7 +65,7 @@ q73_prod_wood(j2)..
    - Environmental constraints
    - Cost premium: `s73_natveg_cost_premium = 0.15` (15% above plantation cost; `input.gms:23`)
 
-3. **Emergency slack** (`v73_prod_heaven_timber`):
+3. **Emergency penalty variable** (`v73_prod_heaven_timber`):
    - Cost: `s73_free_prod_cost = 1e+06 USD17MER/tDM` (`input.gms:17`)
    - Only activated when demand cannot be met from forests
    - Indicates supply shortage
@@ -311,7 +311,7 @@ q73_cost_timber(i2)..
    - Cost: 2.7 USD17MER/tDM (`s73_residue_removal_cost` at `input.gms:21`) — collecting branches, tops from harvest site
    - Note typo fix: formerly *s73_reisdue_removal_cost* (typo), now `s73_residue_removal_cost`
 
-4. **Emergency slack cost** (`v73_prod_heaven_timber × s73_free_prod_cost`):
+4. **Emergency penalty variable cost** (`v73_prod_heaven_timber × s73_free_prod_cost`):
    - Cost: 1,000,000 USD17MER/tDM (`input.gms:17`) — prohibitively high
    - Ensures technical feasibility; used only when real timber supply cannot meet demand
 
@@ -414,7 +414,7 @@ woodfuel . (wood_fuel)
 #### 7.1 q73_cost_timber (Regional Production Cost)
 
 **Location**: `equations.gms:23-31`
-**Purpose**: Calculate total timber production costs including base production, natveg premium, residue removal, and slack
+**Purpose**: Calculate total timber production costs including base production, natveg premium, residue removal, and the penalty variable
 
 **Formula** (4 terms):
 ```
@@ -431,7 +431,7 @@ vm_cost_timber(i) = Σ(vm_prod × im_timber_prod_cost(i))
 #### 7.2 q73_prod_wood (Wood Production Balance)
 
 **Location**: `equations.gms:43-50`
-**Purpose**: Aggregate industrial roundwood from plantations, natural forests, and emergency slack
+**Purpose**: Aggregate industrial roundwood from plantations, natural forests, and emergency penalty variable
 
 **Formula**:
 ```
@@ -443,7 +443,7 @@ vm_prod(j,"wood") = vm_prod_forestry(j,"wood") + Σ(vm_prod_natveg(j,land_natveg
 #### 7.3 q73_prod_woodfuel (Woodfuel Production Balance)
 
 **Location**: `equations.gms:52-61`
-**Purpose**: Aggregate woodfuel from plantations, natural forests, residues, and emergency slack
+**Purpose**: Aggregate woodfuel from plantations, natural forests, residues, and emergency penalty variable
 
 **Formula**:
 ```
@@ -464,10 +464,10 @@ vm_prod(j,"woodfuel") = vm_prod_forestry(j,"woodfuel") + Σ(vm_prod_natveg(j,lan
 v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j,land_natveg,kforestry)) × 0.15
 ```
 
-**Changed 2026-04-20**: The old formula used `vm_prod(j,"wood") × 0.15` — only industrial roundwood, and included the slack variable (phantom residues possible). The new formula:
+**Changed 2026-04-20**: The old formula used `vm_prod(j,"wood") × 0.15` — only industrial roundwood, and included the penalty variable (phantom residues possible). The new formula:
 - Includes **both wood and woodfuel** harvest as sources of residues
 - Includes **both plantation and natveg** harvest
-- **Excludes** the slack variable `v73_prod_heaven_timber` (no real harvest → no real residues)
+- **Excludes** the penalty variable `v73_prod_heaven_timber` (no real harvest → no real residues)
 - Excludes `v73_prod_residues` itself to avoid circularity
 
 **Interpretation**:
@@ -488,7 +488,7 @@ v73_prod_residues(j) ≤ (Σ vm_prod_forestry(j,kforestry) + Σ vm_prod_natveg(j
 |-----------|---------|------|-------------|----------|
 | `s73_timber_prod_cost_wood` | 89 | USD17MER/**m3** | Base price for industrial roundwood (UNECE, 72 EUR/m3 × 1.23). Converted to regional USD17MER/tDM in preloop via `im_vol_conv(i)`. | input.gms:15 |
 | `s73_timber_prod_cost_woodfuel` | 44 | USD17MER/**m3** | Base price for woodfuel (half of wood; LUKE 2025). Converted to regional USD17MER/tDM via `im_vol_conv(i)`. | input.gms:16 |
-| `s73_free_prod_cost` | 1,000,000 | USD17MER/tDM | Emergency slack cost | input.gms:17 |
+| `s73_free_prod_cost` | 1,000,000 | USD17MER/tDM | Emergency penalty variable cost | input.gms:17 |
 | `s73_timber_demand_switch` | 1 | 1/0 | Turn timber demand on (1) or off (0) | input.gms:18 |
 | `s73_income_threshold` | 10,000 | USD17PPP/cap/yr | GDP threshold for demand saturation | input.gms:19 |
 | `s73_residue_ratio` | 0.15 | fraction | Proportion of timber harvest recoverable as logging residues (branches, tops) | input.gms:20 |
@@ -660,7 +660,7 @@ Natural Forests
    - Past demand = FAO values: `preloop.gms:12`
    - Future = projected from historical base: `preloop.gms:20-28`
 
-7. ✅ **Emergency slack variable**:
+7. ✅ **Emergency penalty variable**:
    - Cost 1 million USD17MER/tDM: `input.gms:17`, `equations.gms:30`
    - Ensures model feasibility: `equations.gms:10-21`
 
@@ -758,7 +758,7 @@ s73_timber_demand_switch = 0
 ```
 **Effect**:
 - All demand = 0
-- Emergency slack cost reduced to s73_timber_prod_cost_wood to avoid cost distortions (`preloop.gms:9`)
+- Emergency penalty variable cost reduced to s73_timber_prod_cost_wood to avoid cost distortions (`preloop.gms:9`)
 - Plantations and natural forest harvest both = 0
 
 **Testing**: Compare land-use outcomes with vs. without timber sector
@@ -895,7 +895,7 @@ balance <- prod - demand
 ```
 
 **Watch For**:
-- Emergency slack activation (v73_prod_heaven_timber > 0) indicates supply shortage
+- Emergency penalty variable activation (v73_prod_heaven_timber > 0) indicates supply shortage
 - Negative balance impossible (production ≥ demand by construction)
 
 ---
@@ -986,7 +986,7 @@ constr_demand <- readGDX(gdx, "p73_demand_constr_wood")
 - Income-elastic demand with saturation threshold (10k USD17PPP/cap)
 - Optional construction wood scenarios (Churkina et al. 2020)
 - Residue recovery for woodfuel (15% of roundwood, 50% recovery)
-- Emergency slack for model feasibility
+- Emergency penalty variable for model feasibility
 - Historical FAO calibration
 
 **Limitations**:
@@ -1005,7 +1005,7 @@ constr_demand <- readGDX(gdx, "p73_demand_constr_wood")
 - Demand projection validation against literature
 - Production-demand balance checks
 - Residue use efficiency
-- Emergency slack activation (indicates supply shortage)
+- Emergency penalty variable activation (indicates supply shortage)
 - Income saturation effects in rich countries
 
 ---

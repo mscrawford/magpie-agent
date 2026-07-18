@@ -29,12 +29,12 @@ gdx <- "fulldata.gdx"
 # 1. Which timestep failed?
 readGDX(gdx, "p80_modelstat")
 
-# 2. Which slack variables activated (penalty costs)?
-# Non-zero slacks show where model is straining
-readGDX(gdx, "v73_prod_heaven_timber")     # timber slack ($1M/tDM)
-readGDX(gdx, "v44_bii_missing")            # biodiversity slack ($1M/unit)
-readGDX(gdx, "v32_land_missing")           # forestry slack ($1M/ha)
-readGDX(gdx, "v21_import_for_feasibility") # wood import slack ($1,500/tDM)
+# 2. Which penalty variables activated (penalty costs)?
+# Non-zero levels show where model is straining
+readGDX(gdx, "v73_prod_heaven_timber")     # timber penalty var ($1M/tDM)
+readGDX(gdx, "v44_bii_missing")            # biodiversity penalty var ($1M/unit)
+readGDX(gdx, "v32_land_missing")           # forestry penalty var ($1M/ha)
+readGDX(gdx, "v21_import_for_feasibility") # wood import penalty var ($1,500/tDM)
 
 # 3. Check land balance — is total land exhausted?
 readGDX(gdx, "ov_land", select = list(type = "level"))
@@ -117,11 +117,11 @@ Start by relaxing the most likely constraint (based on marginals) and re-run.
 
 ---
 
-## Built-In Slack Variables (Safety Valves)
+## Built-In Penalty Variables (Safety Valves)
 
-MAgPIE has several slack variables with high penalty costs. When they activate, the model "pays" a huge cost to relax a constraint. **Non-zero slack = constraint strain.** The table below lists the main high-penalty safety valves; it is not exhaustive (e.g. `v32_ndc_area_missing`, `v29_treecover_missing`, `v30_betr_missing`, and the CES relaxation `v38_relax_CES_lp` (only in the non-default `sticky_labor` factor-costs realization) also exist).
+MAgPIE has several penalty variables with high penalty costs. When they activate, the model "pays" a huge cost to relax a constraint. **Non-zero level = constraint strain.** The table below lists the main high-penalty safety valves; it is not exhaustive (e.g. `v32_ndc_area_missing`, `v29_treecover_missing`, `v30_betr_missing`, and the CES relaxation `v38_relax_CES_lp` (only in the non-default `sticky_labor` factor-costs realization) also exist).
 
-| Slack Variable | Module | Penalty | What it relaxes |
+| Penalty Variable | Module | Penalty | What it relaxes |
 |---|---|---|---|
 | `v73_prod_heaven_timber` | 73 | $1,000,000/tDM | Timber production shortfall |
 | `v44_bii_missing` | 44 | $1,000,000/unit | Biodiversity target gap |
@@ -129,7 +129,7 @@ MAgPIE has several slack variables with high penalty costs. When they activate, 
 | `v21_import_for_feasibility` | 21 | $1,500/tDM | Wood/woodfuel import (only!) |
 | `v29_fallow_missing` | 29 | $615/ha | Fallow land target gap |
 
-**⚠️ Critical gap**: Food, feed, and standard crop production have **NO slack variables**. If food demand can't be met, the model goes infeasible — there's no "import food for feasibility" option.
+**⚠️ Critical gap**: Food, feed, and standard crop production have **NO penalty variables**. If food demand can't be met, the model goes infeasible — there's no "import food for feasibility" option.
 
 ---
 

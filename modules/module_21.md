@@ -489,7 +489,7 @@ Explicit **bilateral** trade flows `v21_trade(i_ex,i_im,k_trade)`, bounded by a 
 | `q21_notrade` | `(h,k_notrade)` | Non-tradables produced within super-region |
 | `q21_trade_reg` | `(h,k_trade)` | Regional material balance: production covers supply ± net bilateral trade + balance flows |
 | `q21_trade_lower` | `(i_ex,i_im,k_trade)` | Lower bound on each bilateral flow (historical ratio − flexibility window) |
-| `q21_trade_upper` | `(i_ex,i_im,k_trade)` | Upper bound on each bilateral flow (historical ratio + flexibility window), relaxed by the `v21_import_for_feasibility` slack |
+| `q21_trade_upper` | `(i_ex,i_im,k_trade)` | Upper bound on each bilateral flow (historical ratio + flexibility window), relaxed by the `v21_import_for_feasibility` penalty variable |
 | `q21_costs_tariffs` | `(i,k_trade)` | Bilateral tariff costs per exporter → `v21_cost_tariff_reg` |
 | `q21_costs_margins` | `(i,k_trade)` | Bilateral margin costs per exporter → `v21_cost_margin_reg` |
 | `q21_cost_trade_tariff` | `(i)` | Aggregates `v21_cost_tariff_reg` over commodities → `vm_cost_trade_tariff` |

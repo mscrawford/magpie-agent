@@ -488,7 +488,7 @@ q43_water.scale(j) = 1e2;
 ### 9.2 Equation Outputs
 
 **oq43_water(t,j,type)** (postsolve.gms:11, 13, 15, 17):
-- **level**: Slack in water constraint (available - withdrawals, ≥ 0)
+- **level**: Unused capacity in water constraint (available - withdrawals, ≥ 0)
 - **marginal**: Shadow price of water constraint (scarcity value)
 - **upper/lower**: Constraint bounds
 
@@ -548,7 +548,7 @@ q43_water.scale(j) = 1e2;
 - Low water demand (agriculture + exogenous sectors)
 
 **Behavior**:
-- q43_water constraint slack (surplus water)
+- q43_water constraint surplus (unused capacity)
 - oq43_water.marginal = 0 (no scarcity value)
 - Irrigation expansion limited by other factors (land, labor, capital), not water
 
@@ -869,7 +869,7 @@ This section shows Module 43's role in system-level mechanisms.
 - **Centrality Rank**: Medium (water system enforcer)
 - **Hub Type**: Water Balance Enforcer
 
-**Provides to**: Module 42 (water_demand): `im_wat_avail` (read in M42 presolve to set environmental-flow and reserved-fraction water demands). Module 43 owns no cost variable and is not read by Module 11; the water cost in Module 11 (`vm_water_cost`, modules/11_costs/default/equations.gms:46) is produced by Module 42. The q43_water shadow price is a solver dual (diagnostic output `oq43_water.marginal`), not an interface variable provided to another module.
+**Provides to**: Module 42 (water_demand): `im_wat_avail` (read in M42 presolve to set environmental-flow and reserved-fraction water demands). Module 43 owns no cost variable and is not read by Module 11; the water cost in Module 11 (`vm_water_cost`, modules/11_costs/default/equations.gms:46) is produced by Module 42. The q43_water shadow price is a solver marginal (diagnostic output `oq43_water.marginal`), not an interface variable provided to another module.
 
 **Depends on**: Module 42 (water_demand): vm_watdem for all sectors
 

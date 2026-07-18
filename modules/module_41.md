@@ -670,7 +670,7 @@ vm_cost_AEI.fx(i) = 0;
 ### 9.2 Equation Outputs
 
 **oq41_area_irrig(t,j,type)** (postsolve.gms:13, 17):
-- **level**: Slack in irrigation constraint (vm_AEI - sum irrigated area)
+- **level**: Unused capacity in irrigation constraint (vm_AEI - sum irrigated area)
 - **marginal**: Shadow price (value of 1 ha additional AEI capacity)
 - **upper/lower**: Constraint bounds
 

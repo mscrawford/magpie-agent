@@ -208,12 +208,12 @@ v43_watavail(j,"surface")  [+ buffer if needed]
 
 **Implications of Inequality**:
 1. **Surplus water allowed**: Not all renewable water must be used
-2. **Slack variable**: `oq43_water.level` = available - withdrawals (≥ 0)
+2. **Surplus variable**: `oq43_water.level` = available - withdrawals (≥ 0)
 3. **Shadow price only when binding**: `oq43_water.marginal` > 0 only if constraint tight
 
 **Interpretation**:
-- **Binding constraint** (slack = 0): Water-scarce region, withdrawals = availability
-- **Slack > 0**: Water-abundant region, surplus flows unused (e.g., to ocean or downstream)
+- **Binding constraint** (surplus = 0): Water-scarce region, withdrawals = availability
+- **Surplus > 0**: Water-abundant region, surplus flows unused (e.g., to ocean or downstream)
 
 ---
 
@@ -446,7 +446,7 @@ sum(kli, vm_prod(j,kli) * ic42_wat_req_k(j,kli) * v42_irrig_eff(j))
 - Low water demand relative to supply
 
 **Behavior**:
-- q43_water constraint **not binding** (slack > 0)
+- q43_water constraint **not binding** (surplus > 0)
 - Shadow price = 0 (no scarcity value)
 - Surplus water flows unused (to ocean or downstream basin)
 
@@ -458,7 +458,7 @@ sum(kli, vm_prod(j,kli) * ic42_wat_req_k(j,kli) * v42_irrig_eff(j))
 - Domestic: 20 mio. m³
 - Ecosystem: 100 mio. m³
 - **Total demand: 300 mio. m³ << 500 mio. m³**
-- **Slack: 200 mio. m³ (surplus)**
+- **Surplus: 200 mio. m³ (surplus)**
 
 *Note: Made-up numbers for illustration.*
 
@@ -475,7 +475,7 @@ sum(kli, vm_prod(j,kli) * ic42_wat_req_k(j,kli) * v42_irrig_eff(j))
 - High water demand (intensive irrigation agriculture)
 
 **Behavior**:
-- q43_water constraint **binding** (slack = 0)
+- q43_water constraint **binding** (surplus = 0)
 - Shadow price > 0 (high scarcity value)
 - All renewable water fully utilized
 
@@ -487,7 +487,7 @@ sum(kli, vm_prod(j,kli) * ic42_wat_req_k(j,kli) * v42_irrig_eff(j))
 - Domestic: 15 mio. m³
 - Ecosystem: 15 mio. m³
 - **Total demand: 200 mio. m³ = 200 mio. m³**
-- **Slack: 0 (constraint binding)**
+- **Surplus: 0 (constraint binding)**
 - **Shadow price: High** (e.g., $50-500 per m³ depending on agricultural productivity)
 
 *Note: Made-up numbers for illustration.*
@@ -631,27 +631,27 @@ stopifnot(max_violation < 0.01)
 
 ---
 
-### 8.2 Slack Variable Check
+### 8.2 Surplus Variable Check
 
-**Slack** = Available water - Total demand (≥ 0 if constraint satisfied)
+**Surplus** = Available water - Total demand (≥ 0 if constraint satisfied)
 
 **R Code**:
 ```r
-# Calculate slack
-slack <- total_avail - total_demand
+# Calculate surplus
+surplus <- total_avail - total_demand
 
-# Positive slack = surplus water (abundant)
-# Zero slack = binding constraint (scarce)
-# Negative slack = violation (should not occur!)
+# Positive surplus = surplus water (abundant)
+# Zero surplus = binding constraint (scarce)
+# Negative surplus = violation (should not occur!)
 
-summary(slack)
+summary(surplus)
 
-# Identify water-scarce cells (slack near zero)
-scarce_cells <- which(slack < 1)  # < 1 mio. m³ slack
+# Identify water-scarce cells (surplus near zero)
+scarce_cells <- which(surplus < 1)  # < 1 mio. m³ surplus
 print(paste("Number of water-scarce cells:", length(scarce_cells)))
 
-# Identify water-abundant cells (large slack)
-abundant_cells <- which(slack > 100)  # > 100 mio. m³ surplus
+# Identify water-abundant cells (large surplus)
+abundant_cells <- which(surplus > 100)  # > 100 mio. m³ surplus
 print(paste("Number of water-abundant cells:", length(abundant_cells)))
 ```
 
@@ -667,7 +667,7 @@ print(paste("Number of water-abundant cells:", length(abundant_cells)))
 shadow_price <- readGDX(gdx, "oq43_water", select=list(type="marginal"), field="level")
 
 # High shadow price → water is scarce (binding constraint)
-# Zero shadow price → water abundant (slack > 0)
+# Zero shadow price → water abundant (surplus > 0)
 
 summary(shadow_price)
 
@@ -753,8 +753,8 @@ vm_AEI(j) high but vm_area(j,kcr,"irrigated") << vm_AEI(j)
 **Check 1: Water Constraint Binding**
 ```r
 # For each cell, check if constraint binding
-binding <- (slack < 0.1)  # < 0.1 mio. m³ slack
-fraction_binding <- sum(binding) / length(slack)
+binding <- (surplus < 0.1)  # < 0.1 mio. m³ surplus
+fraction_binding <- sum(binding) / length(surplus)
 print(paste("Fraction of cells water-scarce:", round(fraction_binding*100, 1), "%"))
 ```
 
@@ -924,7 +924,7 @@ THEN Groundwater Buffer = Shortfall × 1.01
 
 **For Users**:
 - Water balance satisfied if model solves (constraint enforced)
-- Surplus water common in humid regions (slack > 0)
+- Surplus water common in humid regions (surplus > 0)
 - Shadow prices indicate water scarcity value
 - Groundwater buffer use indicates unsustainable water use
 
