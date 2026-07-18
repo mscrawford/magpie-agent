@@ -12,7 +12,7 @@
 
 cd "$(dirname "$0")/../../../.." || exit 1
 echo "sweep root: $(pwd)"
-GAMS=/Users/turnip/Documents/Work/Workspace/magpie
+GAMS="$(cd .. && pwd)"   # MAgPIE parent checkout, derived - never hard-code a local path
 DOCS="modules cross_module core_docs reference agent"
 
 echo
