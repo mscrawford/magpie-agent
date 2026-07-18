@@ -1,0 +1,43 @@
+{
+ "_purpose": "Explicit, auditable exemptions for Check 40 (scripts/check_local_paths.py), which forbids local absolute paths in this PUBLIC repo per AGENT.md's secret & PII hygiene rule.",
+ "_policy": "RATCHET. Every entry below is PRE-EXISTING content that predates the check (added 2026-07-18, R59). None contains a username. The check is an ERROR for anything NOT listed here, so new leaks fail the gate while archived history is left alone. A `path_prefix` entry must ALSO pin `match` - a directory-wide exemption would hide the next real leak, which is exactly the failure this check exists to close.",
+ "_how_to_add": "Only add an entry with a stated reason, and only when the path is genuinely non-identifying or is institutional documentation a colleague needs. If you are tempted to add a /Users/<name> path, fix the content instead.",
+ "_added": "2026-07-18 (R59)",
+ "entries": [
+  {
+   "path_prefix": "audit/archive/rounds/round55_depth/",
+   "match": "/private/tmp/magpie_develop_ro",
+   "reason": "R55 depth-round artifacts cite the read-only develop worktree they were audited against. Frozen round history; contains no username and no personal data. Left as-is rather than rewriting archived evidence - the round's citations are its provenance.",
+   "kind": "private_tmp",
+   "pre_existing": true
+  },
+  {
+   "file": "agent/commands/bootstrap.md",
+   "match": "/p/projects/rd3mod",
+   "reason": "Institutional PIK path documenting where the shared R library lives - this is information a colleague following bootstrap NEEDS, not a local artifact. Non-identifying.",
+   "kind": "hpc_project",
+   "pre_existing": true
+  },
+  {
+   "file": "scripts/check_attribution_omissions.py",
+   "match": "/private/tmp/magpie_develop_ro",
+   "reason": "Pre-existing default path in the attribution checker (flagged during the R58 push as pre-existing and not introduced by that work). No username. Tracked separately as a cleanup item.",
+   "kind": "private_tmp",
+   "pre_existing": true
+  },
+  {
+   "file": "scripts/check_dependent_direction.py",
+   "match": "/private/tmp/magpie_develop_ro",
+   "reason": "Comment recording the read-only worktree the self-test fixture was verified against. Provenance note; no username.",
+   "kind": "private_tmp",
+   "pre_existing": true
+  },
+  {
+   "file": "audit/integrated/depth_residual_density.json",
+   "match": "/private/tmp/magpie_develop_ro",
+   "reason": "R55 measurement artifact recording the worktree it was computed from. No username.",
+   "kind": "private_tmp",
+   "pre_existing": true
+  }
+ ]
+}

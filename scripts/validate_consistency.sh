@@ -114,7 +114,7 @@ check_error() {
 # 2026-07-16 (later): +1 advisory check (36 hand-off DIRECTION claims vs
 # slice-resolved code truth, check_dependent_direction.py) -> 36.
 SECTION_NUM=0
-SECTION_TOTAL=36
+SECTION_TOTAL=37
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1310,6 +1310,38 @@ if [ -f "$DEPDIR_SCRIPT" ]; then
     fi
 else
     check_warning "Dependent-direction checker not found: $DEPDIR_SCRIPT"
+fi
+
+# ===============================================
+# Check 40: local absolute paths in a PUBLIC repo
+# Added R59 2026-07-18. AGENT.md BOUND this rule and nothing enforced it,
+# which is why it recurred (R58, R59) and why an earlier audit found local
+# paths in thousands of history blobs. ERROR, not advisory: the rule already
+# exists, so the only missing half was the gate. Pre-existing occurrences are
+# explicitly listed in audit/local_path_allowlist.json (ratchet), so this
+# fails on NEW leaks only.
+# ===============================================
+print_section "" "Checking for local absolute paths in tracked files (public-repo hygiene)..."
+
+LOCALPATH_SCRIPT="$AGENT_DIR/scripts/check_local_paths.py"
+if [ -f "$LOCALPATH_SCRIPT" ]; then
+    if LOCALPATH_OUTPUT=$(python3 "$LOCALPATH_SCRIPT" 2>&1); then LOCALPATH_EXIT=0; else LOCALPATH_EXIT=$?; fi
+    LOCALPATH_COVERAGE=$(echo "$LOCALPATH_OUTPUT" | grep -m1 "coverage =" | sed 's/^[[:space:]]*//')
+    LOCALPATH_N=$(echo "$LOCALPATH_OUTPUT" | grep -m1 "SUMMARY" | grep -oE "findings=[0-9]+" | grep -oE "[0-9]+")
+    if [ "$LOCALPATH_EXIT" -eq 2 ]; then
+        check_error "Local-path checker failed to run (exit 2) - a crash must NOT read as clean"
+        echo "$LOCALPATH_OUTPUT" | head -5 | while read -r line; do log "    $line"; done
+    elif [ "${LOCALPATH_N:-0}" = "0" ]; then
+        check_pass "${LOCALPATH_COVERAGE:-check_local_paths: 0 findings}"
+    else
+        check_error "Local absolute paths: ${LOCALPATH_N:-?} finding(s) in a PUBLIC repo (run scripts/check_local_paths.py --verbose)"
+        echo "$LOCALPATH_OUTPUT" | grep -E "^  " | head -10 | while read -r line; do
+            log "    $line"
+        done
+        log "    Fix the content, or add a justified entry to audit/local_path_allowlist.json."
+    fi
+else
+    check_warning "Local-path checker not found: $LOCALPATH_SCRIPT"
 fi
 
 # ============
