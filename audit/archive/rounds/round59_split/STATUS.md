@@ -110,6 +110,35 @@ earlier. It does not change what Arm A scores MEAN (§3: "did the fix hold", not
 
 ---
 
+**F-7 — MAgPIE PARENT-REPO BUG: `c56_carbon_stock_pricing` is unreachable from config, and
+Check 38 structurally cannot see it.** (Surfaced by B5's auditor as an aside; re-derived
+independently here with a positive control.)
+
+- **GAMS side (the switch is real and load-bearing)**:
+  `modules/56_ghg_policy/price_aug22/input.gms:90` → `$setglobal c56_carbon_stock_pricing  actualNoAcEst`
+  and `equations.gms:22` uses it inside the CO₂ pricing equation:
+  `(pcm_carbon_stock(j2,land,c_pools,"actual") - vm_carbon_stock(j2,land,c_pools,"%c56_carbon_stock_pricing%"))/m_timestep_length`
+- **Config side (malformed)**: `config/default.cfg:1835` reads
+  `c56_carbon_stock_pricing <- "actualNoAcEst"` — **missing the `cfg$gms$` prefix** that every
+  sibling line carries (e.g. `cfg$gms$maccs <- "on_aug22"` at :1840).
+- **Consequence**: the assignment creates an ordinary R variable in the config environment and is
+  never passed to GAMS. **The switch cannot be set from config.** A user editing `default.cfg` to
+  `"actual"` would silently keep getting `actualNoAcEst`.
+- **Currently benign, latent**: config value and GAMS default are both `actualNoAcEst`, so no run is
+  miscomputing today. It bites whoever first tries to change it — and this switch selects which
+  carbon-stock slice is priced, so that is a high-stakes silent no-op.
+- **Why the checker misses it**: Check 38 (`check_cfg_gams_wiring.py`, shipped by R58 for exactly
+  this bug class) anchors on `CFG_SCALAR_RE = ^\s*cfg\$gms\$([sc]\d+_[A-Za-z0-9_]+)\s*<-`. It
+  enumerates keys that HAVE the prefix and asks whether a GAMS identifier exists. A line MISSING the
+  prefix is invisible to it. R58's three findings were *key present → GAMS identifier absent*; this
+  is the **inverse subclass**: *GAMS identifier present → key malformed*.
+- **Scope**: swept `default.cfg` for all GAMS-shaped identifiers assigned without the prefix
+  (`^\s*[sc][0-9]{2}_[A-Za-z0-9_]+\s*<-`) — **exactly one hit**, this line. Isolated, not systemic.
+- **NOT fixed here**: parent-repo change, out of §9 scope, and `magpiemodel` is push-forbidden.
+  For Mike / the PIK briefing alongside R58's three dead keys.
+
+---
+
 ## PHASE 5 PROTOCOL (binding — from [[magpie_agent_lens_bridge_diagnostic]], R44/R48 lessons)
 
 The doc-error rule AUTO-mandates a fix keyed on the **auditor's root_cause classification**. That
