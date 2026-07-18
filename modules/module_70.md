@@ -154,10 +154,11 @@ vm_cost_prod_livst(i2,"labor") =e=
 
 **Factor Requirements** (`preloop.gms:88`):
 ```
-i70_fac_req_livst(t,i,kli) = i70_cost_regr(i,kli,"cost_regr_b")
-    * sum(sys_to_kli(sys,kli), i70_livestock_productivity(t,i,sys))
+i70_fac_req_livst(t_all,i,kli) = i70_cost_regr(i,kli,"cost_regr_b")
+    * sum(sys_to_kli(sys,kli), i70_livestock_productivity(t_all,i,sys))
     + i70_cost_regr(i,kli,"cost_regr_a")
 ```
+(indexed by `t_all`, not the optimization time set `t` — `t_all` spans all timesteps including history; both `i70_fac_req_livst` and `i70_livestock_productivity` are declared over `t_all`.)
 
 **Regression Logic** (`equations.gms:48-53`):
 - **Ruminants (beef, milk)**: Costs increase with productivity (linear regression: `b * productivity + a`)
@@ -369,6 +370,8 @@ f70_feed_baskets(t_all,i,kap,kall,feed_scen70)
 - Historical period (≤ sm_fix_SSP2): Use SSP2 feed baskets
 - Future period: Use scenario selected by `c70_feed_scen` switch (default: ssp2)
 
+> **Scope note**: the same `preloop.gms:13-23` loop also uses `c70_feed_scen` to select the `feed_scen70` slice of **two other** tables in the same pass — `f70_livestock_productivity` → `i70_livestock_productivity` and `f70_slaughter_feed_share` → `im_slaughter_feed_share`. `i70_livestock_productivity` propagates beyond feed composition into livestock factor costs and Module 14 pasture yields. See **Configuration Options → Feed Scenario Selection** below for the full scope and the downstream path.
+
 **SSP Narratives** (`realization.gms:72-75`): Feed basket scenarios reflect SSP storylines regarding intensification trajectories, affecting feed conversion efficiency and feed composition.
 
 **Units**: tDM feed per tDM livestock product (dimensionless ratio)
@@ -547,11 +550,12 @@ Module 70 calculates livestock factor costs using regression relationships betwe
 
 **Factor Requirements** (`preloop.gms:88`):
 ```
-i70_fac_req_livst(t,i,kli) =
+i70_fac_req_livst(t_all,i,kli) =
     i70_cost_regr(i,kli,"cost_regr_b")
-    * sum(sys_to_kli(sys,kli), i70_livestock_productivity(t,i,sys))
+    * sum(sys_to_kli(sys,kli), i70_livestock_productivity(t_all,i,sys))
     + i70_cost_regr(i,kli,"cost_regr_a")
 ```
+(indexed by `t_all`, not `t` — `t_all` spans all timesteps including history; both `i70_fac_req_livst` and `i70_livestock_productivity` are declared over `t_all`, per `declarations.gms:47` and `:35` respectively.)
 
 **Interpretation**: Linear relationship where:
 - Slope (b): Change in costs per unit productivity increase (USD17MER per tDM per (ton FM/animal/yr))
@@ -900,7 +904,17 @@ c70_feed_scen = "ssp2"
 ```
 **Options**: ssp1, ssp2, ssp3, ssp4, ssp5, SDP, SDP_EI, SDP_MC, SDP_RC, constant
 
-**Effect**: Selects feed basket trajectory from preprocessed regression models reflecting different intensification storylines.
+**Effect**: `preloop.gms:13-23` uses `c70_feed_scen` to select the `feed_scen70` slice of **three** input tables, not just the feed baskets — the historical period (≤ `sm_fix_SSP2`) always uses `"ssp2"` for all three; the future period uses whichever scenario `c70_feed_scen` selects, for all three, in the same loop:
+
+1. `f70_feed_baskets` → `im_feed_baskets` — feed basket composition (tDM feed per tDM product)
+2. `f70_livestock_productivity` → `i70_livestock_productivity` — productivity indicator (t FM per animal per yr)
+3. `f70_slaughter_feed_share` → `im_slaughter_feed_share` — share of feed incorporated in animal biomass
+
+**Downstream propagation beyond feed composition**: `i70_livestock_productivity` also feeds two paths that do not run through feed baskets at all:
+- **Livestock factor costs**: `i70_livestock_productivity` → `i70_fac_req_livst` (`preloop.gms:88`) → `vm_cost_prod_livst` via `q70_cost_prod_liv_labor` / `q70_cost_prod_liv_capital` (`equations.gms:59-66`) — part of the objective function.
+- **Module 14 pasture yields**: `i70_livestock_productivity` → `p70_cattle_stock_proxy` / `p70_milk_cow_proxy` (`presolve.gms:32,35`) → `p70_incr_cattle` (`presolve.gms:53`) → `pm_past_mngmnt_factor` (`presolve.gms:63-68`) → pasture yield scaling in `modules/14_yields/managementcalib_aug19/equations.gms:38` and `nl_fix.gms:11`.
+
+A user who flips `c70_feed_scen` expecting only a feed-basket-composition change and then observes different livestock factor costs or Module 14 pasture yields would misattribute the cause without tracing this switch here.
 
 ### SCP Substitution Scenarios
 
@@ -1279,7 +1293,7 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 
 **Potential Circular Dependency**: Module 70 (feed demand) → Module 16 (demand aggregation) → Module 21 (trade) → Module 17 (production) → Module 70 (feed demand)
 
-**Resolution**: `vm_prod_reg(i,kap)` treated as exogenous target in feed demand calculation (inequality constraint ≥ allows feed demand to exceed minimum without forcing it). Solver finds equilibrium where production satisfies both feed demand and final demand simultaneously.
+**Resolution**: `vm_prod_reg(i,kap)` is **endogenous**, not exogenous — it is a decision variable declared at `modules/17_production/flexreg_apr16/declarations.gms:10` and set by `q17_prod_reg` (`vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k));`, `equations.gms:11`) within the same solve as `q70_feed`, `q16_supply_*`, and `q21_trade_glo`. It is never `.fx`-ed anywhere in the model — an attribute-form grep (`vm_prod_reg.`) across `modules/` and `core/` finds only `.lo` bounds set in `modules/71_disagg_lvst/foragebased_jul23/preloop.gms:17` (and the prior `foragebased_aug18` realization), plus postsolve output writes. The inequality (`=g=`) in `q70_feed` (`equations.gms:17-20`) lets feed demand exceed the production × feed-basket minimum without forcing equality, so the solver finds a joint equilibrium across `q70_feed`, `q16_supply_*`, `q21_trade_glo`, and `q17_prod_reg` **simultaneously within one timestep** — there is no presolve fixing at this seam. Contrast this with the genuinely *lagged* M70→M14 `pm_past_mngmnt_factor` channel (`presolve.gms:63-68`), which IS a presolve-computed parameter, not a decision variable.
 
 ---
 
