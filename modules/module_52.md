@@ -419,8 +419,9 @@ Module 52 uses interface variables declared in **Module 56 (GHG Policy)**.
   - `j`: Simulation cells
   - `land`: Land types
   - `c_pools`: Carbon pools (vegc, litc, soilc)
-  - `stockType`: Stock type ("actual")
-- **Usage**: Equation q52_emis_co2_actual (equations.gms:16)
+  - `stockType`: `actual`, `actualNoAcEst` (`modules/56_ghg_policy/price_aug22/sets.gms:212-213`)
+- **Usage**: Equation q52_emis_co2_actual reads only the `"actual"` slice — both `pcm_carbon_stock` and `vm_carbon_stock` are indexed on `"actual"` (equations.gms:16-19).
+  > ⚠️ **The other member, `actualNoAcEst`, is not read anywhere in Module 52** — it is read by Module 56's pricing equation (`modules/56_ghg_policy/price_aug22/equations.gms:22`) via `%c56_carbon_stock_pricing%`, which **defaults to `actualNoAcEst`** (`modules/56_ghg_policy/price_aug22/input.gms:90`). So in a default run, the CO2 emissions Module 52 *reports* (`"actual"` stock difference) and the CO2 emissions Module 56 *prices* (`"actualNoAcEst"` stock difference) are computed from different slices of the same interface variable.
 - **Provider**: Modules 29 (Cropland, crop pool), 31 (Pasture), 32 (Forestry), 34 (Urban, fixed to 0), 35 (Natural Vegetation), and 59 (SOM, soilc pool for all land types) populate `vm_carbon_stock` by land type. Module 30 populates the separate `vm_carbon_stock_croparea`, which Module 29 folds in; Module 58 (peatland) does NOT populate it.
 
 **2. pcm_carbon_stock** (Module 56 declarations.gms)
@@ -901,8 +902,10 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 - Implicitly assumes linear emission rate within timestep
 
 **Actual stock type only** (equations.gms:19):
-- Uses `stockType = "actual"` only
-- Ignores other potential stock types (planned, potential)
+- Uses `stockType = "actual"` only — both `pcm_carbon_stock` and `vm_carbon_stock` are indexed on `"actual"` (equations.gms:16-19)
+- `stockType` has exactly two members, `actual` and `actualNoAcEst` (`modules/56_ghg_policy/price_aug22/sets.gms:212-213`) — there is no `planned` or `potential` member
+- Does not read the `actualNoAcEst` slice, which Module 56 uses **by default** to compute *priced* CO2 emissions (`$setglobal c56_carbon_stock_pricing  actualNoAcEst`, `modules/56_ghg_policy/price_aug22/input.gms:90`; consumed at `modules/56_ghg_policy/price_aug22/equations.gms:22`) — so the emissions Module 52 *reports* and the emissions Module 56 *prices* are, by default, stock-difference calculations over different `stockType` slices
+  > ⚠️ **Do not cite `config/default.cfg:1835` as the source of this default.** That line reads `c56_carbon_stock_pricing <- "actualNoAcEst"` **without** the `cfg$gms$` prefix every sibling line carries, so it creates an ordinary R variable and is never passed to GAMS — the switch is currently **unreachable from config**, and the effective default comes from `input.gms:90`. The two values agree today, so no run miscomputes; this bites whoever first tries to change it. (Upstream MAgPIE issue, found R59, not fixed here.)
 - No accounting for future commitment emissions
 
 **No fire emissions** (equations.gms:16-19):
