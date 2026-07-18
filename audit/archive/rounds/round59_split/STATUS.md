@@ -15,11 +15,11 @@ Do not reconstruct from conversation.
 | 0. Pre-flight (§8) | ✅ DONE | see below |
 | 1. Design 12 probes | ✅ DONE | `QUESTIONS.md` |
 | 2. Answer (12 × Sonnet) | ✅ DONE | `answers/{ID}.md` — all 12, committed `8a09d78` |
-| 3. Audit (12 × Opus) | 🔄 RUNNING | `audits/{ID}.md` |
-| 4. Synthesize per-arm | ⬜ PENDING | `REPORT.md` |
-| 5. Fix (Sonnet, worktree) | ⬜ PENDING | commits |
-| 6. Gate + record 5b + ledger 5c | ⬜ PENDING | `validation_rounds.json` |
-| 7. Report to Mike (NO PUSH) | ⬜ PENDING | — |
+| 3. Audit (12 × Opus) | ✅ DONE | `audits/{ID}.md` — all 12 |
+| 4. Synthesize per-arm | ✅ DONE | `REPORT.md`, `collect_scores.py` |
+| 5. Fix (Sonnet, worktree) | ✅ DONE | 24 findings → 11 interventions; gate 47/0 PASS |
+| 6. Gate + record 5b + ledger 5c | ✅ DONE | R59 recorded per-arm; R58 corrected; ledger advanced Arm-B-only |
+| 7. Report to Mike (NO PUSH) | ✅ DONE — **NOT PUSHED**, awaiting Mike (§0.1/§9) |
 
 ---
 

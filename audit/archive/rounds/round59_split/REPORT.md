@@ -1,7 +1,7 @@
 # R59 — REPORT (split QA round)
 
-**Status**: SKELETON — committed early so a session loss cannot cost the framing.
-Numbers marked `<TBD>` are filled at Phase 4 from `collect_scores.py`. Do not quote a `<TBD>`.
+**Status**: COMPLETE. All 12 probes answered, audited, synthesized; 11 fix interventions applied;
+gate green; R59 recorded; ledger advanced. **Not pushed** — awaiting Mike (§0.1, §9).
 
 **Run**: 2026-07-18, autonomous (Mike away). Branch `r57-rolemap-guard`.
 magpie-agent at start `3496a53` · parent MAgPIE `develop @ 0d7ebeb90` (unchanged through the run).
@@ -152,6 +152,55 @@ Full detail in `STATUS.md`. Summary:
   rewritten hours earlier. Does not change what Arm A scores MEAN (§3).
 - **G3 auditor read `project/version_pins.json` directly at audit time** as the rubric requires;
   no hardcoded version was scored against.
+
+## 4b. FIXES APPLIED — 24 findings → 11 root interventions
+
+Grouped by shared root cause rather than one patch per finding. Files touched: `module_28.md`,
+`module_29.md`, `module_35.md`, `module_50.md`, `module_51.md`, `module_52.md`, `module_70.md`,
+`module_70_notes.md`, `cross_module/{carbon_balance,land_balance,nitrogen_food_balance}`.
+
+**Gate: 47 checks / 45 passed / 2 warnings / 0 errors / PASS** — identical to the pre-flight
+baseline, and run *after* the last edit (including the JSON writes), not before.
+
+Two defects the fixes themselves introduced were caught only because the gate ran last:
+- an **error** — a bare-basename `.gms` citation in a non-module doc (Check 25);
+- a **new warning** — the I7a scope note put `Module 14` and `im_slaughter_feed_share` in one block,
+  reading as an attribution the code does not support (Check 33). Both fixed.
+
+The two surviving warnings are pre-existing. One of them (dependent counts) fires on
+`module_17.md:899` and `module_56.md:1138/:1150` — **exactly the findings §0.6 holds for Mike**.
+It ships by explicit instruction, not by silent deferral.
+
+### The verify-before-fixing protocol earned its keep twice
+
+No auditor **root-cause tag** was wrong this round (`auditor_root_cause_corrections = 0`). But two
+auditor-proposed **fixes** would have introduced new errors (`auditor_fix_suggestion_corrections = 2`):
+
+1. The `module_52.md` fix cited `config/default.cfg:1835` as the authority for the `actualNoAcEst`
+   default — that is the **dead line** from F-7. Value right, provenance wrong; shipping it would
+   have taught readers that editing that line controls the priced slice, which is the exact trap
+   F-7 documents. Corrected to `price_aug22/input.gms:90`.
+2. The `module_28.md` audit proposed changing "`acx` ≥150 years" to "~145+", inferred from the
+   `ac_gfad_to_ac` mapping. The explicit GAMS source comment
+   (`28_ageclass/oct24/preloop.gms:12`) says "150 years or older", so the agent kept the number and
+   fixed only the real bug (initialization-vs-dynamics conflation).
+
+**An auditor's ready-made "Fix:" text is a hypothesis like the rest of the finding.**
+
+### Goal-condition sweep (`goal_sweep.sh`)
+
+Delegation narrows verification to each agent's assigned files, so the corrected claims were swept
+corpus-wide. **Positive-controlled before being trusted** (run while `module_28.md` and
+`module_70_notes.md` still held their bugs; the relevant probes fired), so "clean" is meaningful
+rather than ambiguous between *clean corpus* and *broken checker*.
+
+- **Caught one real miss no agent owned**: `cross_module/carbon_balance_conservation.md:101` still
+  cited the dead `config/default.cfg:1835`. Fixed.
+- **Prevented one false fix**: it flagged `module_28.md:609`, which was verified **correct**
+  (`{ac0, ac5, ac10, ac15}` is right for a 20-year timestep).
+- A second near-miss was avoided by reading context: `module_70.md:1213` looked like the same
+  `t`-vs-`t_all` bug, but sits **inside a `CORRECTED (R58)` block as a verbatim quotation** of the
+  superseded text. Editing it would have falsified the record of what was corrected.
 
 ## 5. WHAT WAS NOT DONE (deliberate)
 
