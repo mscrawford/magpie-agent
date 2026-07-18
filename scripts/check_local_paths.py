@@ -44,6 +44,21 @@ ALLOWLIST = AGENT_DIR / "audit" / "local_path_allowlist.json"
 
 SCAN_SUFFIXES = {".md", ".sh", ".py", ".json", ".txt", ".yml", ".yaml"}
 
+# SELF-EXCLUSION. These two files DEFINE the rule, so they necessarily contain
+# the very strings it forbids: the allowlist quotes each exempted path verbatim,
+# and this checker's self-test carries synthetic bad paths as its positive
+# control. Scanning them makes the checker fail on its own definition.
+#
+# Found the hard way (2026-07-18): the gate was verified GREEN before these two
+# files were committed, so `git ls-files` did not yet return them; committing
+# added them to the scan set and turned the gate red on the very next run.
+# Lesson: when a check's scope is "tracked files", validate AFTER committing —
+# the pre-commit tree is a different tree. See feedback_run_gates_after_last_edit.
+SELF_EXCLUDE = {
+    "scripts/check_local_paths.py",
+    "audit/local_path_allowlist.json",
+}
+
 # A concrete local path: the component after the prefix must NOT be an
 # angle-bracketed placeholder. `(?!<)` is what keeps `/Users/<you>` legal.
 PATTERNS = [
@@ -167,9 +182,12 @@ def main() -> int:
         print("ERROR: no tracked files matched - refusing to report 'clean'", file=sys.stderr)
         return 2
 
-    findings, skipped = [], 0
+    findings, skipped, self_excluded = [], 0, 0
     for p in files:
         rel = str(p.relative_to(AGENT_DIR))
+        if rel in SELF_EXCLUDE:
+            self_excluded += 1
+            continue
         try:
             text = p.read_text(errors="replace")
         except OSError:
@@ -180,8 +198,9 @@ def main() -> int:
             else:
                 findings.append(hit)
 
-    print(f"check_local_paths: coverage = {len(files)} tracked files scanned, "
-          f"{len(findings)} finding(s), {skipped} allowlisted")
+    print(f"check_local_paths: coverage = {len(files) - self_excluded} tracked files scanned, "
+          f"{len(findings)} finding(s), {skipped} allowlisted, "
+          f"{self_excluded} self-excluded (rule-defining files)")
     if findings and args.verbose:
         for f in findings:
             print(f"  {f['file']}:{f['line']} [{f['kind']}] {f['match']}")
@@ -191,7 +210,8 @@ def main() -> int:
             print(f"  {f['file']}:{f['line']} [{f['kind']}] {f['match']}")
 
     print(f"check_local_paths: SUMMARY findings={len(findings)} "
-          f"files={len(files)} allowlisted={skipped}")
+          f"files={len(files) - self_excluded} allowlisted={skipped} "
+          f"self_excluded={self_excluded}")
     return 1 if findings else 0
 
 
