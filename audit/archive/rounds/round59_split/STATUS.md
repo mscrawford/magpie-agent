@@ -168,6 +168,28 @@ file ownership plus a no-git-mutation rule addresses it. Worktrees add isolation
 
 ---
 
+**F-9 — LEAD (not verified, not fixed): six more "No feedback loops" absolutes in the corpus.**
+I4 established that `module_51.md:472`'s "No feedback loops: Emissions do NOT affect ... management
+decisions" was **false** — emissions reach the M11 objective via
+`vm_emissions_reg → q56_emission_costs → vm_emission_costs`, with a non-zero default GHG price.
+The goal sweep found the same absolute phrasing in six other docs:
+
+| Doc | Claim |
+|---|---|
+| `module_09.md:881` | M09 a "terminal source" |
+| `module_11.md:1199` | M11 a "terminal sink" |
+| `module_55.md:525` | manure mgmt does NOT affect feed choices or livestock production |
+| `module_37.md:1260` | M37 provides labor productivity to M38 only |
+| `module_36.md:590` | employment doesn't affect wages or costs in same timestep |
+| `module_57.md:664` | no feedback during optimization (MACC in preloop) |
+
+Several are plausibly TRUE (M09 as a pure source and M11 as the objective sink are structural).
+**None was verified this round** and none was touched. Flagged because the class just produced one
+confirmed Critical-adjacent falsehood, and a blanket-negative claim is the shape that hides a real
+edge. Candidate lens for a future round; do NOT treat this table as a defect list.
+
+---
+
 ## PHASE 5 PROTOCOL (binding — from [[magpie_agent_lens_bridge_diagnostic]], R44/R48 lessons)
 
 The doc-error rule AUTO-mandates a fix keyed on the **auditor's root_cause classification**. That
