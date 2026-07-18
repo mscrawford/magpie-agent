@@ -108,6 +108,28 @@ it (F-6). Add a short note recording the source-prose ambiguity.
 (b) `land_balance_conservation.md:207` on primforest→secdforest / other→secdforest being "handled
 internally by Module 35".
 
+### I10 — `module_28.md` age-class set errors (ROOT: B2-L1 Major latent, B2-L3 Minor latent)
+(a) `:158` states `ac_est = {ac0, ac5, ac10}` for a 10-year timestep; correct is **`{ac0, ac5}`**.
+It contradicts its own `ord(ac) <= 2` derivation one line above AND the MAgPIE source comment at
+`35_natveg/pot_forest_may24/equations.gms:226`. Load-bearing: `ac_est` gates
+`v32_hvarea_forestry.fx`, the `actualNoAcEst` carbon branch, and the `card(ac_est2)` divisor.
+(b) `:26` describes `acx` as ">=150 years" without the initialization-vs-dynamics distinction.
+
+Also in this cluster (**B2-B1 Major**, `module_35.md:133`): the answer attributed the `ac` set to
+Module 28, but it is declared in `core/sets.gms:269-279` — M28 only populates `ac_est`/`ac_sub`.
+`module_35.md:133` says "Module 28 defines structure", contradicting `:134` which prints the correct
+site. Fix `:133` to match `:134`.
+
+**Note on the `ac` count**: the answer's "62 members" is **correct** — hand-enumerated from
+`core/sets.gms:269-275` (11+10+9+10+10+10+2 = 62). The R16 truncation anchor passes cleanly. Do not
+"fix" this number.
+
+### I11 — macro discoverability (ROOT: B2 Coverage note, F-4)
+Split finding, verify before acting: `m_carbon_stock_ac`'s body **is** documented — but only in
+`module_29.md:249-261`, off the routing path for a Module-35 question. `m_carbon_stock`'s body
+appears in **no** primary doc. Lowest-touch fix: add a pointer from the natveg/carbon docs to the
+canonical macro definitions in `core/macros.gms:99-106`. **Link, don't duplicate** (AGENT.md policy).
+
 ---
 
 ## DEFERRED (not fixed this round, with reason)
