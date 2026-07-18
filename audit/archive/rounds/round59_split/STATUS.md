@@ -14,8 +14,8 @@ Do not reconstruct from conversation.
 |---|---|---|
 | 0. Pre-flight (§8) | ✅ DONE | see below |
 | 1. Design 12 probes | ✅ DONE | `QUESTIONS.md` |
-| 2. Answer (12 × Sonnet) | ⬜ PENDING | `answers/{ID}.md` |
-| 3. Audit (12 × Opus) | ⬜ PENDING | `audits/{ID}.md` |
+| 2. Answer (12 × Sonnet) | ✅ DONE | `answers/{ID}.md` — all 12, committed `8a09d78` |
+| 3. Audit (12 × Opus) | 🔄 RUNNING | `audits/{ID}.md` |
 | 4. Synthesize per-arm | ⬜ PENDING | `REPORT.md` |
 | 5. Fix (Sonnet, worktree) | ⬜ PENDING | commits |
 | 6. Gate + record 5b + ledger 5c | ⬜ PENDING | `validation_rounds.json` |
@@ -92,6 +92,21 @@ re-derive. Arm B does not depend on M70's degree (§6b), so this was not chased 
 elsewhere, which matters because the role map feeds both round-design centrality *and*
 `check_attribution_omissions.py`. A producer/consumer set is exactly the R20 Critical anchor class.
 **For Mike — not fixed here** (out of §9 scope).
+
+**F-4 — partial blinding leak on probe B2.**
+All 12 answerers were blinded from `round59_split/` (PLAN/QUESTIONS/STATUS/answers/audits) and from
+`validation_rounds.json`, so no probe could see which regions R58 rewrote or which arm it was in.
+B2's answerer, however, reported recovering the `m_carbon_stock` / `m_carbon_stock_ac` macro bodies
+by grepping **archived round answers** (`audit/archive/rounds/round*` other than round59). That is
+outside the blind but still prior-round material, so B2's score carries a small
+recognition-vs-capability caveat. Its auditor was asked to check the underlying cause — whether
+those macros are genuinely absent from all primary docs, which would be a real discoverability gap.
+Not a re-run trigger; recorded so the score is read with the caveat attached.
+
+**METHOD NOTE (applies to every Arm A/B score): auditors were blinded to arm membership.**
+No auditor was told whether it was auditing a just-rewritten doc (Arm A) or a never-audited one
+(Arm B). This keeps severity judgments from being biased by knowing R58 had touched the text hours
+earlier. It does not change what Arm A scores MEAN (§3: "did the fix hold", not capability).
 
 ---
 
