@@ -190,7 +190,7 @@ p29_avl_cropland(t,j) = f29_avl_cropland(j,"%c29_marginal_land%") * (1 - p29_snv
 
 **Marginal Land Options** (`input.gms:8`, `sets.gms:10-11`):
 - `all_marginal` - Include all marginal land
-- `q33_marginal` - Use marginal land definition from Module 33
+- `q33_marginal` (**default**) - Bottom tertile of marginal land (by suitability index) is excluded from available cropland; the top two-thirds of marginal land remains usable (`config/default.cfg:818,822`). **Not a cross-module reference** — `q33` is a percentile label and a member of the `marginal_land29` set (`sets.gms:11`); MAgPIE has no Module 33
 - `no_marginal` - Exclude marginal land
 
 **Source**: `equations.gms:22-23`, `presolve.gms`
@@ -794,12 +794,12 @@ p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac_uncalib
 > ```
 > Verified against the arrays themselves, not just the comment:
 > 1. **Same asymptote symbol.** Both curves pass `fm_carbon_density(t_all,j,"secdforest","vegc")` as the
->    `A` argument of `m_growth_vegc` (`modules/52_carbon/normal_dec17/start.gms:17` plantation, `:27`
+>    `A` argument of `m_growth_vegc` (`modules/52_carbon/normal_dec17/start.gms:17` plantation, `:28`
 >    secdforest). The macro is `S + (A-S)*(1-exp(-k*(ac*5)))**m` (`core/macros.gms:18`), so for any
 >    finite `k,m > 0` both converge to **exactly `A`**. **There is no "plantation carbon density"
 >    asymptote in the model — the phrase names a quantity that does not exist.**
 > 2. **`litc` is bit-identical.** The two `litc` assignments (`modules/52_carbon/normal_dec17/start.gms:20`
->    plantation vs `:30` secdforest) are the same
+>    plantation vs `:31` secdforest) are the same
 >    expression character-for-character (no `k`/`m`), so plantation `litc` ≡ secdforest `litc` at every
 >    age class.
 > 3. **The `vegc` inequality runs the *opposite* way.** `modules/52_carbon/input/f52_growth_par.csv`

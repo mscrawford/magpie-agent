@@ -469,7 +469,8 @@ Emissions = (N_input / (1 - 0.5)) × (1 - vm_nr_eff) × EF
 Module 51 is a **terminal calculation node**:
 - Receives nitrogen flows from 5 upstream modules (50, 18, 55, 59, 57)
 - Provides emissions (via vm_emissions_reg) to 2 downstream modules: 56 (GHG pricing) and 57 (MACC cost calculation)
-- **No feedback loops**: Emissions do NOT affect nitrogen budgets or management decisions in current implementation
+- **No feedback into Module 50's nitrogen budget**: Module 50 reads no emissions variable, and `im_maccs_mitigation` is computed exogenously from MACC input curves (`modules/57_maccs/on_aug22/preloop.gms:46-64`), not derived from `vm_emissions_reg` — so there is no M51→M50 back-edge
+- **Emissions DO influence crop/livestock decisions under the default configuration**: `vm_emissions_reg` → `q56_emission_costs` (`modules/56_ghg_policy/price_aug22/equations.gms:56-58`) → `vm_emission_costs` → Module 11 objective (`modules/11_costs/default/equations.gms:26`). The default GHG price scenario is non-zero (`cfg$gms$c56_pollutant_prices <- "R34M410-SSP2-NPi2025"`, `config/default.cfg:1731`), so under default settings priced emissions enter the cost-minimization objective and do feed back into land-use/livestock choices
 - **Potential extension**: Endogenous emission reduction (e.g., NUE response to GHG prices) would require Module 56 → Module 50 feedback
 
 ---

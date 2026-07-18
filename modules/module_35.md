@@ -86,8 +86,8 @@
 
 **Primary Forest** (`vm_land(j,"primforest")`):
 - **Definition**: Undisturbed forest, highest carbon density
-- **Dynamics**: Can only decrease (one-way) (`presolve.gms:143-145`)
-- **Harvest**: Converts to secondary forest youngest age class (`equations.gms:208`)
+- **Dynamics**: Can only decrease (one-way) — enforced by `vm_land.up(j,"primforest") = pcm_land(j,"primforest")` (`presolve.gms:163`), reinforced by Module 10's transition restrictions (`modules/10_land/landmatrix_dec18/presolve.gms:20-21`: no transition creates primforest, except the primforest→primforest diagonal)
+- **Harvest**: Converts to secondary forest youngest age class via `q35_secdforest_regeneration` (`equations.gms:208-214`) — but **only for the logged share**: this equation is fed by `v35_hvarea_primforest`, which `q35_hvarea_primforest` (`equations.gms:181-184`) bounds at ≤ `v35_primforest_reduction`. `primforest→crop/past/urban` are unrestricted `vm_lu_transitions` flows (Module 10) that bypass secdforest entirely — do not read "harvested primforest becomes secdforest" as "all primforest loss becomes secdforest"
 - **Age class**: Not tracked (assumed mature "acx")
 - **Conservation**: Highest protection level
 
@@ -130,7 +130,7 @@ p35_maturesecdf(t,j,ac)$(not sameas(ac,"acx")) =
 
 ### 3. Age-Class System
 
-**Age Classes** (Module 28 defines structure):
+**Age Classes** (declared in `core/sets.gms:269-275`; Module 28 populates the dynamic subsets `ac_est`/`ac_sub`):
 - `ac0`, `ac5`, `ac10`, ..., `ac295`, `ac300`, `acx` (62 age classes; `acx` is the mature/absorbing class, >300 years). Defined in `core/sets.gms:269-275`.
 - **Interval**: 5 years
 - **Used for**: Secondary forest and other land (both othertype35)
@@ -451,6 +451,8 @@ vm_carbon_stock(j2,"other",ag_pools,stockType) =e=
 **Purpose**: Other land carbon stock = sum over othertype35 and age classes of area × carbon density. Uses the age-class macro `m_carbon_stock_ac` because other land tracks age classes, and iterates over both other land subtypes (othernat, youngsecdf).
 **Key variables**: `vm_land_other(j,othertype35,ac)` (area by subtype and age class), `p35_carbon_density_other` (age-class-specific carbon density)
 
+**Macro definitions**: `q35_carbon_primforest` uses `m_carbon_stock` (`core/macros.gms:99-101`); `q35_carbon_secdforest`/`q35_carbon_other` use `m_carbon_stock_ac` (`core/macros.gms:104-106`), a mutually-exclusive dispatch on `stockType` (`"actual"` vs `"actualNoAcEst"`), not an additive double-sum. Neither macro body is reproduced here — see `core/macros.gms` for the canonical definitions.
+
 #### 6.4 Biodiversity Value (BII)
 
 **q35_bv_secdforest** (`equations.gms:63-66`):
@@ -749,6 +751,8 @@ vm_land.lo(j,"primforest") = (1-s35_natveg_harvest_shr) * pcm_land(j,"primforest
 
 **Purpose**: Limit maximum harvest to a fraction of available forest (e.g., 0.2 = 20% max harvest)
 
+**Ordered bound stack on `vm_land.lo/.up(j,"primforest")`**: the harvest-share floor set here (`:157/159`) is raised to the Module 22 conservation target if higher (`presolve.gms:162`, §8.1 item 1), and the whole pool is capped from above at its previous-period area (`presolve.gms:163`: `vm_land.up(j,"primforest") = pcm_land(j,"primforest");`) — the direct local enforcement of "primforest can only decrease" (§2.1), reinforced model-wide by Module 10's transition restrictions (`modules/10_land/landmatrix_dec18/presolve.gms:20-21`).
+
 #### 7.4 Age-Class Harvest Restrictions
 
 **VERIFIED** (`presolve.gms:268-272`):
@@ -774,10 +778,27 @@ v35_other_reduction.fx(j,othertype35,ac_est) = 0;
 - `"protect"`: Protected areas (no conversion allowed)
 - `"restore"`: Restoration targets (minimum expansion)
 
-**Applied in presolve** (`presolve.gms:140-234`):
-- Sets lower bounds on land areas
-- Distributes protection across age classes proportionally
-- Ensures restoration targets are met
+**Applied in presolve** (`presolve.gms:140-234`): Module 22's `pm_land_conservation` binds Module 35 through (at least) four distinct `vm_land.lo` mechanisms, not a single blanket floor:
+
+1. **Primary forest — aggregate floor** (`presolve.gms:162`):
+   ```gams
+   vm_land.lo(j,"primforest")$(vm_land.lo(j,"primforest") < pm_land_conservation(t,j,"primforest","protect")) = pm_land_conservation(t,j,"primforest","protect");
+   ```
+   Raises the harvest-share floor set at `presolve.gms:157/159` (§7.3) up to the M22 protection target whenever the target is higher. This is the *only* per-pool M22 restriction on primforest; see the ordered bound stack noted in §7.3.
+
+2. **Secondary forest — per-age-class floor** (`presolve.gms:172-180`, quoted in §8.3): protection is distributed proportionally across `ac_sub` age classes via `p35_protection_dist`.
+
+3. **Secondary forest — aggregate floor, protect + restore** (`presolve.gms:201`):
+   ```gams
+   vm_land.lo(j,"secdforest") = pm_land_conservation(t,j,"secdforest","protect") + p35_land_restoration(j,"secdforest");
+   ```
+   This is **in addition to** the per-age-class bound in (2) — restoration targets are hard-wired directly into the `vm_land.lo` floor as an addend, not enforced solely through the `q35_secdforest_restoration` transition equation (§6.2).
+
+4. **Other land — aggregate floor, protect + restore** (`presolve.gms:231`):
+   ```gams
+   vm_land.lo(j,"other") = pm_land_conservation(t,j,"other","protect") + p35_land_restoration(j,"other");
+   ```
+   This is the **only** per-pool M22 restriction on `other` land — there is no per-age-class equivalent of (2) for other land. Like (3), restoration is an addend on the `vm_land.lo` floor, not enforced solely through `q35_other_restoration` (§6.2).
 
 #### 8.2 NPI/NDC Policies (Country-Specific)
 

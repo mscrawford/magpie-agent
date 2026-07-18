@@ -101,8 +101,9 @@ Harvest + N2O + NH3 + Leaching + NOx + N_surplus_residual
 - Reality: EFs vary 0.3-3% depending on conditions
 - Implication: Emissions may be under/overestimated regionally
 
-**3. No N Limitation on Yields**: MAgPIE has no N-limitation-on-yield feedback. Nitrogen demand (vm_nr_inorg_fert_reg, a free variable in Module 50) adjusts to meet crop withdrawals at the given nutrient-use efficiency (vm_nr_eff); yields are set independently (Modules 14/13 tau), so fertilizer follows yields rather than constraining them.
+**3. No N Limitation on Yields**: MAgPIE has no N-limitation-on-yield feedback. Nitrogen demand (vm_nr_inorg_fert_reg, a decision variable in Module 50, declared `positive` — `modules/50_nr_soil_budget/macceff_aug22/declarations.gms:9-10`, no `.lo`/`.fx` relaxation anywhere) adjusts to meet crop withdrawals at the given nutrient-use efficiency (vm_nr_eff); yields are set independently (Modules 14/13 tau), so fertilizer follows yields rather than constraining them.
 - Implication: Cannot model N-limited systems where insufficient fertilizer depresses yields
+- ⚠️ **Note on "free" terminology**: MAgPIE's own source comment at `modules/50_nr_soil_budget/macceff_aug22/equations.gms:20` describes `vm_nr_inorg_fert_reg` colloquially as "a free variable that allow[s] to balance the nutrient inputs with requirements" — meaning *free to adjust*, not the GAMS `free variable` declaration type (which would permit negative values). The variable is declared under `positive variables` (`declarations.gms:9`), i.e. bounded `[0, +inf)`. Any doc written from that source-code comment risks reintroducing this ambiguity — cite `declarations.gms`, not the equation comment, when describing the variable's GAMS type.
 
 ---
 

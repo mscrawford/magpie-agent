@@ -204,7 +204,7 @@ q10_transition_to(j2,land_to) ..
    vm_lu_transitions.fx(j,"secdforest","other") = 0;
    ```
    **Rationale**: Direct transitions between natural vegetation types via vm_lu_transitions are restricted
-   **Note**: primforest → secdforest and other → secdforest transitions are handled internally by Module 35 (via harvest and recovery mechanisms), not through Module 10's transition matrix
+   **Note**: primforest → secdforest and other → secdforest are **not** among the flows fixed to zero above — they remain live, un-fixed `vm_lu_transitions` entries and must still satisfy `q10_transition_to`/`q10_transition_from` (§4.2) like every other cell in the matrix. Their *magnitude* is driven by Module 35's own equations (`q35_secdforest_restoration`, `q35_other_restoration`, and the harvest bounds in `modules/35_natveg/pot_forest_may24/equations.gms:181-214`) rather than by an independent Module 10 restriction, but the resulting area movement is still carried by, and must balance within, `vm_lu_transitions`. This reconciles with the M35 legend entry at §4.1 above ("area change captured in vm_lu_transitions").
 
 ---
 

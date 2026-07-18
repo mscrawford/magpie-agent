@@ -96,15 +96,16 @@ q50_nr_inputs(i2) ..
       + v50_nr_deposition(i2,"crop");
 ```
 
-**Components**:
+**Components** (9 terms — `equations.gms:24-32`):
 1. **vm_res_recycling**: Crop residues left on field (above + below ground)
 2. **Biological N fixation (area-based)**: `crop_area × fixation_rate` for legumes
-3. **vm_manure_recycling**: Manure applied to croplands
-4. **stubble_grazing manure**: Manure from animals grazing crop residues
-5. **vm_nr_inorg_fert_reg**: **INORGANIC FERTILIZER** (optimization variable)
-6. **vm_nr_som_fertilizer**: Soil organic matter mining for nutrients
-7. **f50_nitrogen_balanceflow**: Correction term for unrealistic efficiencies
-8. **v50_nr_deposition**: Atmospheric deposition (wet + dry)
+3. **Biological N fixation (fallow land)**: `vm_fallow × fixation_rate("tece")` — distinct from item 2's crop-area fixation; applies to land left fallow (`equations.gms:26`)
+4. **vm_manure_recycling**: Manure applied to croplands
+5. **stubble_grazing manure**: Manure from animals grazing crop residues
+6. **vm_nr_inorg_fert_reg**: **INORGANIC FERTILIZER** (optimization variable)
+7. **vm_nr_som_fertilizer**: Soil organic matter mining for nutrients
+8. **f50_nitrogen_balanceflow**: Correction term for unrealistic efficiencies
+9. **v50_nr_deposition**: Atmospheric deposition (wet + dry)
 
 ### 3.2 Pasture Inputs
 
@@ -452,7 +453,7 @@ Based on actual code verification with file:line references:
 
 8. **Calculates nitrogen surplus** - `equations.gms:46-49, 62-66`
    - Surplus = inputs - withdrawals
-   - This surplus feeds into Module 51 for emission calculations
+   - `v50_nr_surplus_cropland`/`v50_nr_surplus_pasture` are module-internal (`v50_` prefix) and are never read by Module 51 — all 14 repo occurrences are inside Module 50 (declarations, the two surplus equations, and `postsolve.gms` reporting writes). Module 51 does **not** consume this surplus directly; it reconstructs a per-source surplus conceptually, via NUE rescaling of `vm_nr_eff`/`vm_nr_eff_pasture`/`vm_nr_inorg_fert_reg` — see §6.2 for the actual M50→M51 interface variables
 
 9. **Computes atmospheric deposition** - `equations.gms:88-90`
    - Area-weighted deposition rates from external data
