@@ -110,6 +110,29 @@ earlier. It does not change what Arm A scores MEAN (§3: "did the fix hold", not
 
 ---
 
+## PHASE 5 PROTOCOL (binding — from [[magpie_agent_lens_bridge_diagnostic]], R44/R48 lessons)
+
+The doc-error rule AUTO-mandates a fix keyed on the **auditor's root_cause classification**. That
+turns a mis-classification into a silent wrong edit. Two failure modes, both observed historically:
+
+1. **R44**: auditors (even Opus) mis-tag. A `doc_error` tag was wrong twice in one round — the DOC
+   was right and the ANSWERER conflated things. Blindly trusting tags would have edited two correct
+   docs.
+2. **R48**: the doc WAS wrong, but the auditor's recommended FIX would have INTRODUCED a new error.
+
+**Therefore, before any fix agent edits anything:**
+- Open the actual doc file and verify the classification's PREMISE, not just its conclusion.
+- Verify the proposed FIX against code (`rg`, both `NAME(` and `NAME.` forms) — not just that a bug
+  exists.
+- Record `auditor_root_cause_corrections` in the round entry (R44 logged 1).
+
+**Instrumentation gap I did NOT close this round (honest limitation)**: `verifier_gap` tagging —
+labelling each `answerer_confabulation` bug with the `verifiers.md` MANDATE that should have caught
+it — was not built into the auditor prompts. That is the designed escalation signal for
+"machinery problem vs local gap". Not fabricated after the fact; noted as missing.
+
+---
+
 ## BINDING CONSTRAINTS IN FORCE (from PLAN §0)
 
 1. No push to `pik-piam/*` or `magpiemodel/*`; **ask Mike before any push at all**.
