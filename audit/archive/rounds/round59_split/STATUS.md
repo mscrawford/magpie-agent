@@ -62,6 +62,37 @@ pair) · G2 last R52, G4 last R50 (recent, correctly skipped).
 
 **F-2 — AGENT.md hub list** (PLAN §6): flag only, not touched this round per §0.4.
 
+**F-3 — §6b's M11 discrepancy is RESOLVED: R58 was right, and the role-map extractor has a
+`.scale` false-positive bug.**
+PLAN §6b left two deltas open ("one of the two derivations is wrong and it is not yet known
+which"). I re-derived the role map cold this session with §6b's stated definition and reproduced
+the parameterization session's table **exactly** (M11 33/#1 as 2 produces + 31 reads; M35 22/#3;
+M50 18/#7; M52 15/#9; M29 19/#5; M59 18/#6; M14 18/#8; M70 19/#4). That agreement is **not**
+corroboration — it is the same method run twice, so it inherits the same bug. Chasing the
+disagreement instead:
+
+- The role map lists `vm_cost_transp` as `populated_by: ["11"]`.
+- Code truth: `vm_cost_transp` is DECLARED in Module 40 (`40_transport/off/declarations.gms:10`,
+  `gtap_nov12/declarations.gms:13`) and POPULATED by Module 40 (`gtap_nov12/equations.gms:12` as
+  equation LHS; `off/presolve.gms:9` fixes it to 0). Module 11 only READS it
+  (`11_costs/default/equations.gms:21`, inside a `sum`).
+- M11's **only** write-form occurrence is `vm_cost_transp.scale(j,k) = 1e3;`
+  (`11_costs/default/scaling.gms:10`) — a **solver-scaling** statement, not population.
+
+⇒ The extractor treats `NAME.scale(...) =` as population. **R58's M11 figure (1 produces + 32
+reads) is correct; the plan's 2+31 is inflated by this bug.** Total degree 33 is unaffected (the
+variable is counted either way), so **no Arm B selection changes** and PLAN §4 stands.
+
+The **M70 19-vs-16 delta remains OPEN** — M70's `.scale`/`.fx` writes
+(`fbask_jan16/scaling.gms:9-10`, `presolve.gms:9-11`) are all on variables M70 genuinely declares,
+so this mechanism does not explain it; the M70 delta must sit on the read side, which I did not
+re-derive. Arm B does not depend on M70's degree (§6b), so this was not chased further.
+
+**Impact beyond this round**: the same `.scale` false positive likely inflates `populated_by`
+elsewhere, which matters because the role map feeds both round-design centrality *and*
+`check_attribution_omissions.py`. A producer/consumer set is exactly the R20 Critical anchor class.
+**For Mike — not fixed here** (out of §9 scope).
+
 ---
 
 ## BINDING CONSTRAINTS IN FORCE (from PLAN §0)
