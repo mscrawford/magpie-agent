@@ -139,6 +139,35 @@ independently here with a positive control.)
 
 ---
 
+**F-8 — PLAN §0.5 (`isolation: "worktree"`) and PLAN §7 (the gate) are IN TENSION. Resolved
+procedurally; the plan should be amended.**
+
+The harness creates the agent worktree **inside the repo** at
+`magpie-agent/.claude/worktrees/agent-<id>/`, and it contains a **full 61-doc copy** of the corpus.
+`scripts/validate_consistency.sh` globs recursively, so with a worktree present the gate reported
+**53 checks / 7 errors / FAIL** — every error citing a worktree path, none citing the actual edit.
+Removing the worktree restored **47 checks / 0 errors / PASS**.
+
+Two further worktree limitations found in the pilot:
+- The worktree checks out **only the magpie-agent repo, not the GAMS parent**, so `../modules`,
+  `../config`, `../core` are absent. Checks 17-20 FATAL and 32-36 skip. **The gate can never run
+  clean inside a worktree**, independent of any edit.
+- Fix agents therefore have to reach *outside* the worktree to read GAMS ground truth anyway, which
+  blunts the isolation the constraint was buying. (Reads are safe — nobody edits the parent.)
+
+**Working protocol adopted** (honours §0.5's intent — no concurrent clobber — and §7's gate):
+1. fix agent edits in its worktree (disjoint file set per agent);
+2. merge its file(s) into the main tree;
+3. `git worktree remove --force <path>` **and** delete the branch;
+4. run the gate in the **main** tree only.
+
+This is the R58 lesson's real shape: the hazard was *concurrent agents in one tree*, and disjoint
+file ownership plus a no-git-mutation rule addresses it. Worktrees add isolation but cost the gate.
+**Recommend amending §0.5** to "worktree isolation + mandatory teardown before gating", or to
+"disjoint file ownership, no git mutations, sequential merge".
+
+---
+
 ## PHASE 5 PROTOCOL (binding — from [[magpie_agent_lens_bridge_diagnostic]], R44/R48 lessons)
 
 The doc-error rule AUTO-mandates a fix keyed on the **auditor's root_cause classification**. That
