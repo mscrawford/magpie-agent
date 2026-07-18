@@ -23,7 +23,7 @@ The module loads forest age data from the **Global Forest Age Dataset (GFAD) v1.
 > MAgPIE uses **62 five-year age-classes** spanning the full range:
 > `ac0, ac5, ac10, ac15, ..., ac295, ac300, acx`
 > - `ac0` through `ac300`: 61 regular classes in 5-year increments (0–300 years)
-> - `acx`: catch-all for mature/primary forests (≥150 years from GFAD class15)
+> - `acx`: catch-all age-class, but its meaning differs by context — **at initialization**, GFAD `class15` (≥150 years, including primary forest; `preloop.gms:12`) is loaded directly into `acx`; **during the model run**, `acx` also absorbs any area that ages past `ac300` as the age-class distribution shifts each timestep (`modules/35_natveg/pot_forest_may24/presolve.gms:96-97`), so in a running model `acx` functions as the effective >300-year catch-all, not strictly "≥150 years"
 > - Total: **62 elements** in the `ac` set (not fewer — do NOT truncate this range)
 
 ---
@@ -155,7 +155,9 @@ ac_est(ac) = yes$(ord(ac) <= (m_yeardiff_forestry(t)/5))
 - If timestep length = 10 years (e.g., 2020→2030)
 - m_yeardiff_forestry(t) = 10
 - ord(ac) ≤ 10/5 = 2
-- ac_est = {ac0, ac5, ac10} (forests 0-10 years old)
+- ac_est = {ac0, ac5} (forests 0-10 years old; `ord(ac0)=1`, `ord(ac5)=2`, `ord(ac10)=3` — `ac10` does NOT qualify)
+
+  Confirmed by the MAgPIE source comment: "distribute additions to secdforest and other land over ac_est, which depends on the time step length (e.g. ac0 and ac5 for a 10 year time step)" (`modules/35_natveg/pot_forest_may24/equations.gms:226`).
 
 **Usage in Module 32**: Establishment age-classes **cannot be harvested or reduced** (modules/32_forestry/dynamic_may24/presolve.gms:9-10):
 ```gams
