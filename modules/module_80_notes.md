@@ -10,7 +10,7 @@
 
 2. **modelstat=7 is TOLERATED**: MAgPIE does NOT abort on intermediate infeasible (modelstat=7). The solution exists but may not be fully optimal. Check results carefully when this occurs.
 
-3. **13 slack variables** exist across MAgPIE with penalty costs from $100 to $1M per unit. CRITICAL GAP: food, feed, and bioenergy have NO slack variables — these constraints are hard and any violation causes true infeasibility.
+3. **13 penalty variables** exist across MAgPIE with penalty costs from $100 to $1M per unit. CRITICAL GAP: food, feed, and bioenergy have NO penalty variables — these constraints are hard and any violation causes true infeasibility.
 
 ## 💡 Tips
 

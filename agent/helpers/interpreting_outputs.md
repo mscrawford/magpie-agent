@@ -51,7 +51,7 @@ Every module writes outputs in its `postsolve.gms` using an auto-generated `R SE
 
 **The four attributes:**
 - **`level`** = The optimal solution value. This is what you almost always want.
-- **`marginal`** = Shadow price / dual value. Shows cost of relaxing a constraint by one unit.
+- **`marginal`** = Shadow price / marginal. Shows cost of relaxing a constraint by one unit.
 - **`upper`** = Upper bound on the variable.
 - **`lower`** = Lower bound on the variable.
 
@@ -197,4 +197,4 @@ Rscript output.R output=comparison_validation outputdir=output/run1,output/run2
 
 ## Lessons Learned
 <!-- APPEND-ONLY -->
-- 2026-03-06: modelstat=7 (intermediate infeasible) is TOLERATED by MAgPIE — the model does not abort on this status. Module 80 retries up to 30 times cycling through CONOPT4 (3 configurations) → CONOPT3. Results with modelstat=7 exist but may not be fully optimal — always check if key slack variables activated. (source: module 80 retry pipeline analysis)
+- 2026-03-06: modelstat=7 (intermediate infeasible) is TOLERATED by MAgPIE — the model does not abort on this status. Module 80 retries up to 30 times cycling through CONOPT4 (3 configurations) → CONOPT3. Results with modelstat=7 exist but may not be fully optimal — always check if key penalty variables activated. (source: module 80 retry pipeline analysis)

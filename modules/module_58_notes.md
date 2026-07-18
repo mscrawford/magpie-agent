@@ -19,5 +19,5 @@
 ## 💡 Tips
 
 - All 5 cost parameters are safe to modify (pure cost coefficients, no feasibility impact).
-- `s58_balance_penalty` default is $1M — setting to 0 allows solver to exploit free slack.
+- `s58_balance_penalty` default is $1M — setting to 0 allows solver to exploit free relaxation.
 - `s58_rewetting_exo_noselect` has NO practical effect by default — policy_countries58 includes all 249 ISO countries.

@@ -10,7 +10,7 @@
 1. [How Infeasibility Is Detected](#1-how-infeasibility-is-detected)
 2. [The Infeasibility Handling Pipeline](#2-the-infeasibility-handling-pipeline)
 3. [Constraint Risk Ranking](#3-constraint-risk-ranking)
-4. [Slack Variables — Built-In Safety Valves](#4-slack-variables--built-in-safety-valves)
+4. [Penalty Variables — Built-In Safety Valves](#4-penalty-variables--built-in-safety-valves)
 5. [Configuration Switches That Affect Feasibility](#5-configuration-switches-that-affect-feasibility)
 6. [Dangerous Cross-Module Combinations](#6-dangerous-cross-module-combinations)
 7. [Diagnostic Approaches](#7-diagnostic-approaches)
@@ -152,7 +152,7 @@ modules/15_food/anthro_iso_jun22/intersolve.gms:54-69
 
 ## 3. Constraint Risk Ranking
 
-### 🔴 CRITICAL — No Slack Variables (Top Infeasibility Sources)
+### 🔴 CRITICAL — No Penalty Variables (Top Infeasibility Sources)
 
 #### Rank 1: `q10_land_area` — Total Land Conservation
 ```gams
@@ -164,7 +164,7 @@ q10_land_area(j2) ..
 ```
 Σ vm_land.lo(j, all_land_types) > Σ pcm_land(j, all_land_types)
 ```
-**No slack variable. No escape.**
+**No penalty variable. No escape.**
 
 #### Rank 2: `q43_water` — Water Balance
 ```gams
@@ -191,7 +191,7 @@ q21_notrade(h2,k_notrade) ..
   sum(supreg(h2,i2), vm_prod_reg(i2,k_notrade)) =g=
   sum(supreg(h2,i2), vm_supply(i2,k_notrade));
 ```
-**Why critical**: Non-tradable commodities (foddr, pasture, oilpalm, begr, betr, res_*) must be produced locally within each superregion. **No slack.**
+**Why critical**: Non-tradable commodities (foddr, pasture, oilpalm, begr, betr, res_*) must be produced locally within each superregion. **No penalty variable.**
 
 #### Rank 5: `q35_natveg_conservation` — Natural Vegetation Floor
 ```gams
@@ -200,7 +200,7 @@ q35_natveg_conservation(j2) ..
   sum(land_natveg, vm_land(j2,land_natveg)) =g=
   sum((ct,land_natveg), pm_land_conservation(ct,j2,land_natveg,"protect"));
 ```
-**Why critical**: Enforces total natural vegetation ≥ protection target. **No slack.** Conservation targets propagate from module 22.
+**Why critical**: Enforces total natural vegetation ≥ protection target. **No penalty variable.** Conservation targets propagate from module 22.
 
 #### Rank 6: `q21_trade_reg` — Self-Sufficiency Band
 ```gams
@@ -210,21 +210,21 @@ q21_trade_reg(h2,k_trade) ..
   m21_baseline_production(...) * sum(ct, i21_trade_bal_reduction(ct,k_trade))
   - v21_import_for_feasibility(h2,k_trade);
 ```
-**Note**: `v21_import_for_feasibility` exists BUT is **fixed to 0 for ALL commodities except wood and woodfuel** (`modules/21_trade/selfsuff_reduced/preloop.gms:36-38`). For food crops and livestock: effectively **no slack**.
+**Note**: `v21_import_for_feasibility` exists BUT is **fixed to 0 for ALL commodities except wood and woodfuel** (`modules/21_trade/selfsuff_reduced/preloop.gms:36-38`). For food crops and livestock: effectively **no penalty variable**.
 
-### 🟡 MODERATE — Have Slacks or Are Conditional
+### 🟡 MODERATE — Have Penalty Variables or Are Conditional
 
 #### `q32_establishment_hvarea` — Replanting ≥ Harvest (Module 32)
 ```gams
 # modules/32_forestry/dynamic_may24/equations.gms:213-217
 ```
-Active when `s32_hvarea = 2` (default). **No slack.** But conditional on establishment dynamics switch.
+Active when `s32_hvarea = 2` (default). **No penalty variable.** But conditional on establishment dynamics switch.
 
 #### `q35_secdforest_restoration` — Mandatory Restoration (Module 35)
 ```gams
 # modules/35_natveg/pot_forest_may24/equations.gms:24-28
 ```
-Requires agricultural/forestry land → secondary forest. **No slack.**
+Requires agricultural/forestry land → secondary forest. **No penalty variable.**
 
 #### `q35_min_forest` — NPI/NDC Forest Minimum (Module 35)
 ```gams
@@ -235,21 +235,21 @@ Requires agricultural/forestry land → secondary forest. **No slack.**
 ```gams
 # modules/32_forestry/dynamic_may24/equations.gms:74-75
 ```
-**Has slack**: `v32_ndc_area_missing(j)` at $1,000,000/ha.
+**Has penalty variable**: `v32_ndc_area_missing(j)` at $1,000,000/ha.
 
 #### `q44_bii_target` — Biodiversity Target (Module 44)
 ```gams
 # modules/44_biodiversity/bii_target/equations.gms:22-23
 ```
-**Has slack**: `v44_bii_missing(i,biome44)` at $1,000,000/unit. **OFF by default** (`s44_bii_target = 0`).
+**Has penalty variable**: `v44_bii_missing(i,biome44)` at $1,000,000/unit. **OFF by default** (`s44_bii_target = 0`).
 
 ### 🟢 LOW RISK — Cannot Directly Cause Infeasibility
 
-**Module 56 (GHG Policy)**: All 7 equations are `=e=` equalities with no inequalities or slack variables. Drives infeasibility **indirectly** through high carbon prices that make deforestation/land-conversion prohibitively expensive.
+**Module 56 (GHG Policy)**: All 7 equations are `=e=` equalities with no inequalities or penalty variables. Drives infeasibility **indirectly** through high carbon prices that make deforestation/land-conversion prohibitively expensive.
 
 ---
 
-## 4. Slack Variables — Built-In Safety Valves
+## 4. Penalty Variables — Built-In Safety Valves
 
 ### Complete Inventory
 
@@ -284,9 +284,9 @@ vm_cost_glo
        └── vm_cost_timber(i2)         ← v73_prod_heaven_timber
 ```
 
-### Diagnostic Value of Slack Variables
+### Diagnostic Value of Penalty Variables
 
-**If a slack variable has a nonzero `.l` value in `fulldata.gdx`, it means the corresponding constraint was binding.** This is one of the most valuable diagnostic signals:
+**If a penalty variable has a nonzero `.l` value in `fulldata.gdx`, it means the corresponding constraint was binding.** This is one of the most valuable diagnostic signals:
 
 ```r
 # In R, after loading fulldata.gdx:
@@ -425,7 +425,7 @@ library(gdx)
 # 1. Check model status per timestep
 readGDX("fulldata.gdx", "p80_modelstat")
 
-# 2. Check slack variables (nonzero = constraint was binding)
+# 2. Check penalty variables (nonzero = constraint was binding)
 readGDX("fulldata.gdx", "ov32_land_missing", field = "level")
 readGDX("fulldata.gdx", "ov44_bii_missing", field = "level")
 readGDX("fulldata.gdx", "ov21_import_for_feasibility", field = "level")
@@ -500,9 +500,9 @@ print(p80)  # Find which timestep(s) have modelstat > 2
 Look for `magpie_problem_YYYY.zip` (or `magpie_problem_H_YYYY.zip` for `nlp_par`).
 Unzip and examine solver logs for constraint violation details.
 
-#### Step 3: Check Slack Variables
+#### Step 3: Check Penalty Variables
 ```r
-# Any nonzero slack = that constraint was under pressure
+# Any nonzero penalty-variable level = that constraint was under pressure
 # Even if the model ultimately solved, slacks warn of future infeasibility
 ```
 
@@ -594,8 +594,8 @@ The first relaxation that makes the model feasible identifies the binding constr
 | `q21_trade_reg` | 21_trade | `c21_trade_liberalization` | Use more liberal trade scenario |
 | `q35_natveg_conservation` | 35_natveg | `pm_land_conservation` from mod 22 | Relax `c22_protect_scenario` |
 | `q35_min_forest` | 35_natveg | `c35_ad_policy` | Set to `"none"` |
-| `q32_aff_pol` | 32_forestry | `c32_aff_policy` | Set to `"none"`, has slack `v32_ndc_area_missing` |
-| `q44_bii_target` | 44_biodiversity | `s44_bii_target` | Set to `0`, has slack `v44_bii_missing` |
+| `q32_aff_pol` | 32_forestry | `c32_aff_policy` | Set to `"none"`, has penalty variable `v32_ndc_area_missing` |
+| `q44_bii_target` | 44_biodiversity | `s44_bii_target` | Set to `0`, has penalty variable `v44_bii_missing` |
 
 ### 9.4 The Classic Infeasibility Cascade
 
@@ -612,7 +612,7 @@ All lower bounds exceed total available land in some cluster j
     ↓
 q10_land_area(j): Σ vm_land.lo(j, land) > Σ pcm_land(j, land)
     ↓
-INFEASIBLE — no slack variable anywhere in the chain
+INFEASIBLE — no penalty variable anywhere in the chain
 ```
 
 ### 9.5 Defense Layers Summary
@@ -624,7 +624,7 @@ Layer 1: PREVENTION (presolve bounds)
   ├── Water hack — expand groundwater when demand > supply
   └── Bioenergy selective release — prevents demand for non-existent crops
 
-Layer 2: ELASTIC CONSTRAINTS (13 slack variables)
+Layer 2: ELASTIC CONSTRAINTS (13 penalty variables)
   ├── High-penalty positive variables in constraint equations
   ├── Cost $123–$1,000,000/unit → zero in feasible solutions
   ├── Nonzero values = diagnostic signal of binding constraint

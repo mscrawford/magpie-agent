@@ -1012,7 +1012,7 @@ vm_problematic_var.fx(j) = baseline_value(j);
          - Pass equations to solver (CONOPT/IPOPT/CPLEX)
          - Solver iterates to find optimal solution
          - All vm_* variables optimized SIMULTANEOUSLY
-         - Returns: vm_*.l (optimal level), vm_*.m (marginal/dual)
+         - Returns: vm_*.l (optimal level), vm_*.m (marginal / shadow price)
 
       iii. POSTSOLVE
          - Update lagged variables: pcm_* ← vm_*.l

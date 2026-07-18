@@ -277,7 +277,7 @@ Enforces `labor_costs ≥ p38_min_labor_share × (labor_costs + capital_costs)` 
 These are POSITIVE VARIABLES in `sticky_labor` (`modules/38_factor_costs/sticky_labor/declarations.gms`), bounded `0.1× ... 10×` of the historical calibration:
 - `v38_capital_need(j,kcr,mobil38)` — capital per ton output, endogenous after 2025
 - `v38_laborhours_need(j,kcr)` — labor hours per ton output, endogenous after 2025
-- `v38_relax_CES_lp(j,kcr)` — slack variable for the CES equation in the LP-approximation pre-solve phase; fixed to 0 in the non-linear solve
+- `v38_relax_CES_lp(j,kcr)` — penalty variable for the CES equation in the LP-approximation pre-solve phase; fixed to 0 in the non-linear solve
 
 In `sticky_feb18`, these are NOT variables at all — the per-ton requirements are parameters (`p38_labor_need`, `p38_capital_need`) fixed by presolve.
 
