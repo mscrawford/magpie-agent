@@ -114,3 +114,87 @@ fixture and assert on its RETURN VALUE, not merely that it ran:
   `MUTATION_RESULT` line every time.
 - Full-battery re-measure at the end for the honest headline, since a single-checker
   delta says nothing about the suite.
+
+---
+
+# RESULTS — executed 2026-07-19, same night
+
+All four target functions retrofitted. Four commits, one per function, each
+independently revertible. **Test code only; no checker logic changed.**
+
+## The numbers, absolute and with the intervention size
+
+| Scope | Before | After | Delta |
+|---|---|---|---|
+| `check_consumer_attribution` survivors | 80 / 107 (74.8%) | **28 / 107 (26.2%)** | −52 |
+| Full battery survivors | 507 / 987 (51.4%) | **455 / 987 (46.1%)** | −52 (−5.3 pp) |
+| Checkers touched | — | **1 of 23** | — |
+| Functions retrofitted | — | **4** | — |
+
+Per function: `scan_prose_omissions` 24→1, `scan_table_rows` 12→0,
+`scan_prose_attribution` 12→0, `expected_consumer_count` 4→0, and
+`line_listed_nums` 1→0 fell out with the label-length case. **52 of the 52
+zero-coverage survivors killed**, one of which is unkillable (below).
+
+**The denominator did not move**: 107 mutants before and after in the checker,
+987 before and after in the battery. No new helpers were added, so the rate
+improvement is not the covered-by-construction inflation that took the function
+count 164 → 231 last time. Per-checker diff confirms exactly 1 of 23 changed.
+
+The full-battery baseline was **measured, not derived** — a detached worktree at
+`c04094a` re-run through the harness — and came back 507, matching the derived
+455 + 52 exactly. Both instruments agree.
+
+## Finding 1 — equivalent mutant at `check_consumer_attribution.py:549`
+
+RECORDED, NOT FIXED (this was test-only work by design).
+
+The single surviving mutant in `scan_prose_omissions` is unkillable. The
+walk-back guard is dead code:
+
+```
+for j in range(lineno - 2, max(-1, lineno - 10), -1):
+    if j < 0 or j >= len(lines):
+```
+
+Both disjuncts are always False. The range stop is `max(-1, ...)`, so with step
+−1 the lowest `j` yielded is `stop + 1 >= 0`; and `j <= lineno - 2 <= len(lines) - 2`,
+so `j` is always in bounds. Swapping `or` for `and` cannot change behaviour.
+
+Two independent confirmations: the bounds argument, and an instrumented run over
+the real corpus where the branch fired **0 times** and an
+`assert 0 <= j < len(lines)` never tripped.
+
+*The first attempt at that empirical run was a FALSE NEGATIVE* — executing the
+patched copy from `/tmp` made `MAGPIE_DIR` resolve to `/private/tmp`, so the
+checker skipped the corpus silently and reported zero firings for the wrong
+reason. The rerun was done in place and carries a positive control showing real
+findings were emitted. This is the standing measurement hazard exactly: an
+instrument that cannot see the thing it counts, failing toward the flattering
+answer.
+
+Harmless dead defensive code, not a bug. Removing it is a logic change and
+belongs in a separate reviewable commit.
+
+## Method note for the next session
+
+The four target functions all share the shape `(text, rel_path, producers,
+consumers) -> findings`, so they are testable directly against synthetic maps —
+no `MAGPIE_DIR` subprocess needed. That is why this was cheap (the harness runs
+in 9s on one checker) and why the same approach should work on the remaining
+survivors: `main` (21), `scan_populator_claims` (5), `scan_critical_consumers` (1).
+
+Two fixture details turned out to be load-bearing rather than cosmetic, and are
+worth reusing:
+
+1. **`vm_declonly`** — a variable whose producer is ABSENT from its own read set.
+   That is the only shape in which the producer-skip rule is observable; with a
+   normal variable, skipping the producer and not skipping it give the same
+   answer, so the rule could be deleted with every test still green.
+2. **The hedged far bullet** in the double-blank cases — it emits nothing of its
+   own and exists purely to be wrongly unioned if the walk overruns, which keeps
+   the expectation down to the findings the boundary actually governs.
+
+Expected values were derived by hand from the loop bounds BEFORE running, and the
+implementation agreed on all eight omission cases including the asymmetric
+one-blank/two-blank behaviour.
