@@ -203,8 +203,15 @@ Before answering code-specific questions, verify documentation is current:
 
 ```bash
 # Run this to see which modules have >1 realization (currently 22 of 46):
+# Parses module.gms DISPATCH lines, not `ls -d`. A realization directory can sit
+# on disk without GAMS ever dispatching on it -- an untracked local leftover from
+# an older checkout or a rename. Two exist today (44_biodiversity/bii_target_apr24,
+# 59_som/cellpool_aug16): both are undispatched AND untracked in git, so `ls -d`
+# reports 3 realizations for M44 and M59 where the truth is 2. That over-count
+# nearly caused a bug to be filed against a CORRECT doc.
 for m in ../modules/*/; do
-  count=$(ls -d ${m}*/ 2>/dev/null | grep -v '/input/$' | wc -l)
+  [ -f "$m/module.gms" ] || continue
+  count=$(grep -cE '^\$Ifi.*\$include.*realization\.gms' "$m/module.gms")
   [ "$count" -gt 1 ] && basename "$m" | cut -d_ -f1
 done | tr '\n' ', '
 ```

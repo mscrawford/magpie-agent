@@ -522,7 +522,9 @@ Module 55 is a **central processing node** in the livestock-nutrient-emission ch
 - Receives feed data from Module 70 (1 upstream)
 - Provides manure flows to 3 downstream modules (50, 51, 53)
 - **No optimization**: Pure accounting module (no decision variables beyond manure distribution)
-- **No feedback loops**: Manure management does NOT affect feed choices or livestock production in current implementation
+- **No direct back-edge to Module 70**: no M55 equation reads a livestock decision variable back from a downstream module, and no downstream module writes into M55's manure accounting — the module-level data flow M70 → M55 → {50, 51, 53} is one-way
+- **⚠️ But manure DOES feed back into livestock production under the default configuration**, indirectly, through the priced-emissions channel: `vm_manure_confinement` → `q51_emissionbal_awms` (`modules/51_nitrogen/rescaled_jan21/equations.gms:65-70`) → `vm_emissions_reg(i2,"awms",n_pollutants_direct)` → M56 pricing. `awms` is a member of `emis_source` (`core/sets.gms:303`, and of `emis_annual` at `:321`), and `q56_emission_costs` sums over the **whole** set — `vm_emission_costs(i2) =e= sum(emis_source, v56_emission_cost(i2,emis_source))` (`modules/56_ghg_policy/price_aug22/equations.gms:56-58`) — so the slice is **not** disjoint from what gets priced. Those costs enter the Module 11 objective, and the default price scenario is non-zero (`cfg$gms$c56_pollutant_prices <- "R34M410-SSP2-NPi2025"`, `config/default.cfg:1731`). Under default settings, manure-management emissions are therefore costed and do influence livestock decisions.
+- **Same class as the Module 51 correction** — see `modules/module_51.md` § Circular Dependencies, which documents the identical priced-emissions channel. A blanket "no feedback loops" claim is unsafe for any module whose output reaches `vm_emissions_reg`.
 
 ---
 
