@@ -70,6 +70,21 @@ SEP_RE = re.compile(r"^\s*\|(?:\s*:?-+:?\s*\|)+\s*$")
 # Module number inside col-1: `**10_land**`, `10_land`, or "Module 10" / "M10".
 MODNUM_RE = re.compile(r"\b(\d{1,2})_[a-z]", re.IGNORECASE)
 MODNUM_WORD_RE = re.compile(r"\b(?:module|m)\s*(\d{1,2})\b", re.IGNORECASE)
+# House convention the other two patterns could not read: a col-1 label of the
+# form `**70** (Livestock)` / `**09** (Drivers)` -- a BARE module number with no
+# "Module"/"M" prefix and no NN_name form. Found 2026-07-19: this single gap was
+# suppressing 52 rows across 4 docs (module_11/51/55/57), i.e. more coverage than
+# the entire P0 LLM regularization pilot produced, at zero risk.
+#
+# Precision guards (cf. [[header_gated_markdown_tables]] -- row format alone is
+# ambiguous across table types):
+#   1. row scanning is ALREADY gated on the section heading (SECTION_RE), so a
+#      bare number only counts inside a Provides-To / Receives-From section;
+#   2. the number must be at cell START and be FOLLOWED BY A PARENTHESISED NAME,
+#      which is what makes it a module label rather than a count, year, or index.
+#      "2020 (baseline)" does not match: \d{1,2} takes "20", then a paren is
+#      required immediately and "20 " intervenes.
+MODNUM_LABEL_RE = re.compile(r"^\W*(\d{1,2})\W*\(")
 # Interface-var token in col-2 (base prefixes; dims/slices stripped downstream).
 VARTOK_RE = re.compile(r"\b((?:vm|pm|pcm|fm|sm|im|v|p|s|i|f|q)\d*_[a-z][a-zA-Z0-9_]*)")
 # Header row whose col-1 is a label, not a module.
@@ -95,6 +110,7 @@ def load_allowlist() -> set[tuple[str, str]]:
 def _mods_in_cell(cell: str) -> list[int]:
     nums = {int(m.group(1)) for m in MODNUM_RE.finditer(cell)}
     nums |= {int(m.group(1)) for m in MODNUM_WORD_RE.finditer(cell)}
+    nums |= {int(m.group(1)) for m in MODNUM_LABEL_RE.finditer(cell)}
     return sorted(nums)
 
 
@@ -270,6 +286,34 @@ def self_test() -> int:
     if len(findings) != 1:
         print(f"SELF-TEST FAIL: expected exactly 1 finding, got {len(findings)}: {findings}")
         ok = False
+    # ---- BARE-NUMBER LABEL form: `**58** (Peatland)` (added 2026-07-19) -------
+    # This house convention was unreadable before MODNUM_LABEL_RE, silently
+    # costing 51 rows / 4 docs. Pin BOTH arms: it must now be read, and the
+    # precision guard (parenthesised name required) must still reject a bare
+    # count / year / decimal, which would otherwise be misread as a module.
+    bare_doc = (
+        "#### 8.1 Provides To (Outputs)\n"
+        "| Module | Variable | Desc |\n"
+        "| --- | --- | --- |\n"
+        "| **10** (land) | vm_land_forestry | wrong: only M58 reads it |\n"   # PHANTOM
+        "| **58** (Peatland) | vm_land_forestry | correct |\n"                # OK
+        "| 2020 (baseline) | vm_cost_fore | year, not a module |\n"           # must not read
+    )
+    bare_findings = scan_doc(bare_doc, "modules/module_TEST.md", ref)
+    bare_keys = {(f["claimed_module"], tuple(f["vars"])) for f in bare_findings}
+    if (10, ("vm_land_forestry",)) in bare_keys:
+        print("  SELF-TEST PASS [bare-label]: `**10** (land)` read as module 10")
+    else:
+        print("  SELF-TEST FAIL [bare-label]: `**NN** (Name)` form not read")
+        ok = False
+    if (58, ("vm_land_forestry",)) in bare_keys or any(
+            f["claimed_module"] == 2020 or f["claimed_module"] == 20
+            for f in bare_findings):
+        print("  SELF-TEST FAIL [bare-label]: correct row or a YEAR was misread")
+        ok = False
+    else:
+        print("  SELF-TEST PASS [bare-label]: correct row clean, `2020 (baseline)` not a module")
+
     # ---- GROUND-TRUTH: _ref_map_from_consumers normalization ------------------
     # Pre-R58 this wrapper was dead to the test -- both self-tests inject a ref-map
     # ("no parent repo", per their own docstrings), so the function that BUILDS the
