@@ -486,6 +486,16 @@ FENCE_RE = re.compile(r"^\s*(```|~~~)")
 # A continuation line that is a list item / bare NN_name list (used to gather the
 # following list under a var-anchored header).
 LIST_CONT_RE = re.compile(r"^\s*(?:[-*]\s|\d+\.\s|\d{1,2}_[a-z])")
+# An ORDERED list item, capturing its indentation. Consecutive ordered items at the
+# same depth are SIBLINGS in a sequence -- never a header-and-its-members relation.
+# Without this, a numbered PROCEDURE absorbs its own following steps as if they
+# enumerated the anchor var's consumers. Real case, cross_module/
+# modification_safety_guide.md:92-95 -- step 2 names `vm_land` and matches
+# COMPLETENESS_RE ("...consumers of other Module 10 interface variables"), so it
+# anchors; steps 4 and 5 name Module 52 and Module 11 while being the next
+# instructions of the same procedure, not consumers of vm_land. Deeper-indented
+# ordered items are still absorbed: those are genuine nesting, not siblings.
+ORDERED_ITEM_RE = re.compile(r"^(\s*)\d+\.\s")
 # An explicit COMPLETENESS claim — the line asserts the FULL set for the var, so
 # an omission is a genuine bug. Merely naming "Module N" is NOT completeness
 # (that would bypass the ownership gate and reintroduce the shared-var FP).
@@ -570,6 +580,7 @@ def parse_doc_triples(text: str) -> list[dict]:
         # Var-anchored header: gather the following contiguous list (no new var).
         anchor = bool(line.rstrip().endswith(":") or COMPLETENESS_RE.search(deb))
         if anchor:
+            anchor_ord = ORDERED_ITEM_RE.match(line)
             for j in range(i + 1, min(len(lines), i + 8)):
                 nxt = lines[j]
                 if not nxt.strip():
@@ -578,6 +589,13 @@ def parse_doc_triples(text: str) -> list[dict]:
                     break  # a new var starts a different binding
                 if not LIST_CONT_RE.match(nxt):
                     break
+                # Sibling-step guard: an ordered item cannot head the ordered items
+                # that follow it at the same-or-shallower depth -- they are the next
+                # steps of one procedure, not members of its list. See ORDERED_ITEM_RE.
+                if anchor_ord:
+                    nxt_ord = ORDERED_ITEM_RE.match(nxt)
+                    if nxt_ord and len(nxt_ord.group(1)) <= len(anchor_ord.group(1)):
+                        break
                 listed |= _mod_nums(_debacktick(nxt))
         if not listed:
             continue
@@ -1225,6 +1243,49 @@ def self_test() -> int:
         "**Some Unrelated Section**\n"
         "- **Consumers**: Module 32\n",
         {"omit": set(), "phantom": set()},
+    ))
+
+    # NEGATIVE 12 — SIBLING-STEP guard. Verbatim shape of cross_module/
+    # modification_safety_guide.md:91-95: a numbered remediation PROCEDURE whose
+    # step 2 names vm_land and matches COMPLETENESS_RE ("consumers of other Module
+    # 10 interface variables"), so it anchors. Steps 4/5 name Module 52 and Module
+    # 11 -- next instructions, NOT consumers of vm_land. On the REAL doc, absorbing
+    # them reports 2 phantoms (M52 + M11); in THIS hermetic world only M52 can
+    # surface, because the fixture deliberately puts M11 in ref_any (comment-only
+    # reference, see the `ref_any["vm_land"] |= {"11"}` line above). One sentinel
+    # is enough to detect guard failure -- do not "fix" the missing M11.
+    # This case is the reason ORDERED_ITEM_RE exists; it must stay clean whether or
+    # not the backtick requirement on the anchor is relaxed.
+    cases.append((
+        "neg-sibling-ordered-steps",
+        "**FIX**: Update land type across ALL modules\n"
+        "1. Update `core/sets.gms` (global land set)\n"
+        "2. Update ALL consumer modules to handle new type (10 direct `vm_land`"
+        " consumers; 18 total when including consumers of other Module 10"
+        " interface variables)\n"
+        "3. Update land balance conservation constraint\n"
+        "4. Update carbon pools (Module 52) if new type stores carbon\n"
+        "5. Update cost accounting (Module 11) for new land costs\n",
+        {"omit": set(), "phantom": set()},
+    ))
+    # POSITIVE 9 — the guard must NOT eat genuine NESTING. Same ordered-anchor
+    # shape as NEGATIVE 12, but the members are INDENTED sub-items: a real
+    # header-and-its-members relation, so they MUST still be gathered. M36
+    # (employment) references vm_land nowhere in the GAMS code (verified against
+    # the live role map + ref-any), so it can only surface as a phantom if the
+    # nested list was actually read -- if the guard over-fired, `listed` would be
+    # empty, no triple would be emitted, and this case would silently pass as a
+    # false negative. Anchored by the trailing ':'; "among others" hedges it, which
+    # suppresses OMISSION reporting (checked at :851) while leaving the phantom arm
+    # live (computed at :830, before the hedge gate) -- so this case pins the one
+    # property under test without also pinning the full vm_land reader set, which
+    # would make it brittle against unrelated GAMS changes.
+    cases.append((
+        "pos-nested-ordered-still-gathered",
+        "1. Modules that read `vm_land`, among others:\n"
+        "   1. Module 30 (croparea)\n"
+        "   2. Module 36 (employment)\n",
+        {"omit": set(), "phantom": {("vm_land", "36")}},
     ))
 
     # POSITIVE 8 / MANDATORY slice-suppression controls (the real M52/M57 case,
