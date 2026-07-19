@@ -50,6 +50,27 @@ This is the coverage-denominator analogue of the rule the checkers already print
 
 Open question worth the same treatment: the bare-label gap went unnoticed across ~59 rounds. Other checks in the 48-check suite report their own coverage denominators, and no one has asked which of those are reader-limited rather than corpus-limited.
 
+## Tier 2 — the same treatment applied to the prose checkers
+
+**Shipped: `check_attribution_prose` no longer requires backticks.** Its var extractor scanned only inside backticks, so recall was hostage to a cosmetic convention — `**Module 52 (Carbon)** - directly reads im_forest_ageclass` was unchecked purely because the identifier was unwrapped.
+
+```
+pairs  211 -> 305      docs  37/46 -> 41/46      findings 0
+```
+
+Safe because precision never depended on the backticks: candidates still pass `CROSS_IFACE_RE` **and** `is_interface_var()` against real code. Newly covered: `module_28`, `module_34`, `module_41`, `module_50`, spot-verified as genuine and code-consistent.
+
+**NOT shipped: the same widening on `check_attribution_omissions`.** It raises coverage (155 -> 178 triples, 33 -> 38 docs) and surfaces 10 findings where there were 0 — but 2 are **false positives my own change introduced**. Bare extraction pulled this counts-heavy line into scope:
+
+```
+2. Update ALL consumer modules to handle new type (10 direct vm_land consumers;
+   18 total when including consumers of other Module 10 interface variables ...)
+```
+
+`10` and `18` are counts. This checker's multi-module *list* logic reads numerals as module numbers, so a prose line full of counts becomes a phantom attribution claim. `check_attribution_prose` is immune because it requires a trigger verb and handles single-module lines; the list-parsing checker is not. **Prerequisite before widening it: make multi-module list parsing require the `Module NN` / `M NN` / `NN_name` forms rather than bare digits.**
+
+**Excluded by design: `check_role_attribution`.** Its `BACKTICK_VAR_RE` matches any `[a-zA-Z][a-zA-Z0-9_]*`, with no `is_interface_var` gate — the backticks *are* its precision mechanism. Widening it would match ordinary English. The lesson: this dialect fix is safe only where a ground-truth filter sits behind the backticks. `check_attribution_omissions` and `check_consumer_attribution` have that filter; `check_role_attribution` does not.
+
 ## Provenance note
 
 The 2026-07-15 coverage-control work that first surfaced "4/46" was correct in its *observation* and correct in its method (instrument the real scan function, never a re-implementation). Its *diagnosis* — that the uncovered docs expressed attribution as prose, hence "the next build is a prose parser" — is what this document corrects, and that inference is what the P0 pilot was designed on. The global memory recording it has been updated in place rather than duplicated here, with the correction and the falsely-large-denominator extension folded in.
