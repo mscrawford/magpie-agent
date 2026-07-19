@@ -60,14 +60,25 @@ pairs  211 -> 305      docs  37/46 -> 41/46      findings 0
 
 Safe because precision never depended on the backticks: candidates still pass `CROSS_IFACE_RE` **and** `is_interface_var()` against real code. Newly covered: `module_28`, `module_34`, `module_41`, `module_50`, spot-verified as genuine and code-consistent.
 
-**NOT shipped: the same widening on `check_attribution_omissions`.** It raises coverage (155 -> 178 triples, 33 -> 38 docs) and surfaces 10 findings where there were 0 — but 2 are **false positives my own change introduced**. Bare extraction pulled this counts-heavy line into scope:
+**NOT shipped: the same widening on `check_attribution_omissions`.** It raises coverage (155 -> 178 triples, 33 -> 38 docs) and surfaces 10 findings where there were 0 — but 2 are **false positives my own change introduced**.
+
+> **Mechanism corrected 2026-07-19.** This section first claimed the cause was "counts read as module numbers" (`10 direct`, `18 total`). **That was wrong and was asserted without verifying it.** `_mod_nums` requires an explicit marker — `Module NN`, `NN_name`, or `Modules N, M` — and on the offending line returns exactly `['10']`, from the literal "Module 10". No count is ever misread. The real mechanism is below.
+
+The anchor line, in `cross_module/modification_safety_guide.md`, is step 2 of a numbered **remediation procedure**:
 
 ```
-2. Update ALL consumer modules to handle new type (10 direct vm_land consumers;
-   18 total when including consumers of other Module 10 interface variables ...)
+1. Update `core/sets.gms` (global land set)
+2. Update ALL consumer modules to handle new type (10 direct vm_land consumers; ...)
+3. Update land balance conservation constraint
+4. Update carbon pools (Module 52) if new type stores carbon
+5. Update cost accounting (Module 11) for new land costs
 ```
 
-`10` and `18` are counts. This checker's multi-module *list* logic reads numerals as module numbers, so a prose line full of counts becomes a phantom attribution claim. `check_attribution_prose` is immune because it requires a trigger verb and handles single-module lines; the list-parsing checker is not. **Prerequisite before widening it: make multi-module list parsing require the `Module NN` / `M NN` / `NN_name` forms rather than bare digits.**
+Dropping the backtick requirement makes the bare `vm_land` on line 2 visible, which turns that line into a **var anchor**. `LIST_CONT_RE` matches `\d+\.\s`, so steps 3/4/5 are read as continuation *members* of that anchor — and steps 4 and 5 name Module 52 and Module 11. The checker therefore reports `vm_land` as "listing" M52 and M11, which reference it nowhere. They are sequential instructions, not a membership enumeration.
+
+`check_attribution_prose` is immune because it does no multi-line list continuation at all — it evaluates single lines carrying a trigger verb.
+
+**Prerequisite before widening this checker:** var-anchored list continuation must not absorb an ordered procedure. Candidate guards — require continuation members to be unordered bullets when the anchor is prose, require each member line to carry its own attribution trigger, or terminate continuation at a line that names neither a variable nor an attribution verb. Requiring explicit `Module NN` forms would NOT help: every line here already uses that form.
 
 **Excluded by design: `check_role_attribution`.** Its `BACKTICK_VAR_RE` matches any `[a-zA-Z][a-zA-Z0-9_]*`, with no `is_interface_var` gate — the backticks *are* its precision mechanism. Widening it would match ordinary English. The lesson: this dialect fix is safe only where a ground-truth filter sits behind the backticks. `check_attribution_omissions` and `check_consumer_attribution` have that filter; `check_role_attribution` does not.
 
