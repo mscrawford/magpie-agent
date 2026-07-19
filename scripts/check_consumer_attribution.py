@@ -884,6 +884,49 @@ def _self_test() -> int:
         if got != want:
             failures.append(f"scan_table_rows [{label}]: got {got}, want {want}")
 
+    # ---- scan_prose_attribution: PHANTOM consumer detection (Pattern D) -----
+    # Flags a line that credits module NN with consuming `var` when NN does not
+    # actually reference it. `vm_declonly` is deliberately shaped so its
+    # producer is ABSENT from its own read set -- that is the only shape in
+    # which the producer-skip rule is observable, and without it the rule can
+    # be deleted with every test still green.
+    pa_prod = {"vm_known": "10_land", "vm_declonly": "10_land"}
+    pa_cons = {
+        "vm_known": {"10_land", "29_cropland", "31_past"},
+        "vm_declonly": {"29_cropland"},
+        "vm_other": {"52_carbon"},  # makes "52" a KNOWN module dir
+    }
+    pa_cases = [
+        # (label, line, expected [(lineno, var, module_num)])
+        ("phantom flagged",
+         "`vm_known` is consumed by cropland (29) and carbon (52).",
+         [(1, "vm_known", "52")]),
+        ("all-real attribution passes",
+         "`vm_known` is consumed by cropland (29) and pasture (31).",
+         []),
+        # Producer named in its own attribution list is correct, not a phantom.
+        ("producer in its own list passes",
+         "`vm_declonly` is consumed by land (10) and cropland (29).",
+         []),
+        # A number with no module dir behind it is not an attribution claim.
+        ("unknown module number ignored",
+         "`vm_known` is consumed by cropland (29) and mystery (99).",
+         []),
+        # No consumer-direction verb -> not an attribution sentence at all.
+        ("no trigger verb ignored",
+         "`vm_known` relates to carbon (52) in the model.",
+         []),
+        # The bare "Module NN" form feeds the same listed set as "Name (NN)".
+        ("bare Module NN form flagged",
+         "`vm_known` is consumed by Module 52 downstream.",
+         [(1, "vm_known", "52")]),
+    ]
+    for label, line, want in pa_cases:
+        got = [(ln, var, num)
+               for _f, ln, var, _lbl, num in scan_prose_attribution(line, "p.md", pa_prod, pa_cons)]
+        if sorted(got) != sorted(want):
+            failures.append(f"scan_prose_attribution [{label}]: got {sorted(got)}, want {sorted(want)}")
+
     # ---- GROUND-TRUTH half: drive the REAL extractors over a real tree -------
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
