@@ -143,6 +143,7 @@ from check_consumer_attribution import (  # noqa: E402
 )
 from check_attribution_prose import (  # noqa: E402
     BACKTICK_TOKEN_RE,
+    CITE_PATH_RE,
     HISTORICAL_RE,
     MODNAME_RE,
     MODULE_WORD_RE,
@@ -537,9 +538,50 @@ def _debacktick(s: str) -> str:
 
 
 def _cross_vars_backticked(line: str) -> list[str]:
-    """Cross-iface var bases that appear INSIDE backticks on the line (dedup, ordered)."""
+    """Cross-iface var bases that appear INSIDE backticks on the line (dedup, ordered).
+
+    NARROW form. Kept EXACTLY as-is because three other checkers import it --
+    check_dependent_direction, check_bindability, check_dependent_counts. Widening
+    this function would silently widen all three, none of which has been measured.
+    Widen a checker only after measuring it; see _cross_vars_on_line below.
+    """
     out: list[str] = []
     for span in BACKTICK_TOKEN_RE.findall(line):
+        for tok in GAMS_INTERFACE_RE.findall(span):
+            base = strip_dims(tok)
+            if (CROSS_IFACE_RE.match(base) and is_interface_var(base)
+                    and not _is_glob_stem(base, span) and base not in out):
+                out.append(base)
+    return out
+
+
+def _cross_vars_on_line(line: str) -> list[str]:
+    """Cross-iface var bases on the line, BACKTICKED OR BARE (dedup, ordered).
+
+    WIDE form -- used ONLY by parse_doc_triples in this module. Requiring backticks
+    made recall hostage to a cosmetic convention: an author who wrote
+    `... 10 direct vm_land consumers ...` unwrapped had the whole claim skipped.
+    Precision does NOT depend on the backticks: every candidate must still pass
+    CROSS_IFACE_RE (vm_/pm_/im_/pcm_/fm_ prefix) AND is_interface_var() against the
+    real GAMS interface set, so ordinary English cannot match. Same widening
+    already shipped in check_attribution_prose. check_role_attribution deliberately
+    does NOT get it -- its var regex has no is_interface_var gate, so there the
+    backticks ARE the precision mechanism.
+
+    PREREQUISITE: the ORDERED_ITEM_RE sibling-step guard. Without it this widening
+    makes a numbered procedure's step visible as a var anchor, and the procedure's
+    own following steps get absorbed as if they enumerated that var's consumers.
+
+    CITE_PATH_RE masking is mandatory, not cosmetic: a citation like
+    modules/10_land/landmatrix_dec18/equations.gms:20 is a FILE LOCATION, not an
+    attribution claim, and reading identifiers out of one inflates the coverage
+    denominator with rows that were never claims. 36 such rows reached a shipped
+    change in module_11 before this masking was added; every one was
+    code-consistent, so they produced ZERO findings and stayed invisible.
+    """
+    out: list[str] = []
+    bare = CITE_PATH_RE.sub(" ", line)
+    for span in BACKTICK_TOKEN_RE.findall(line) + [bare]:
         for tok in GAMS_INTERFACE_RE.findall(span):
             base = strip_dims(tok)
             if (CROSS_IFACE_RE.match(base) and is_interface_var(base)
@@ -565,7 +607,7 @@ def parse_doc_triples(text: str) -> list[dict]:
             continue
         if in_fence or HISTORICAL_RE.search(line):
             continue
-        vars_here = [v for v in _cross_vars_backticked(line)]
+        vars_here = [v for v in _cross_vars_on_line(line)]
         if len(vars_here) != 1:
             continue  # 0 or >1 vars on the line -> ambiguous binding -> skip
         deb = _debacktick(line)
@@ -585,7 +627,7 @@ def parse_doc_triples(text: str) -> list[dict]:
                 nxt = lines[j]
                 if not nxt.strip():
                     break
-                if _cross_vars_backticked(nxt):
+                if _cross_vars_on_line(nxt):
                     break  # a new var starts a different binding
                 if not LIST_CONT_RE.match(nxt):
                     break
