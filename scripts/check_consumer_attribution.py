@@ -837,6 +837,53 @@ def _self_test() -> int:
     if expected_consumer_count("vm_nowhere", ec_prod, ec_cons) is not None:
         failures.append("expected_consumer_count: var absent from both maps must give None")
 
+    # ---- scan_table_rows: the table state machine --------------------------
+    # Pattern A only counts rows inside a table whose 2nd column header says
+    # "Consumers". Everything protecting that scope was untested: the initial
+    # state, the separator/header handshake, and the exit condition. Each case
+    # below is a state-machine transition, with negatives so a weakened guard
+    # has somewhere to show up as a FALSE POSITIVE rather than a silent miss.
+    tr_header = "| Variable | Consumers | Note |\n|---|---|---|\n"
+    tr_cases = [
+        # (label, text, expected [(lineno, var, claimed, expected_count)])
+        ("consumer table scanned",
+         tr_header + "| `vm_known` | 3 | ok |\n",
+         [(3, "vm_known", 3, 2)]),
+        # col2 is a default VALUE, not a consumer count -> table is out of scope.
+        ("non-consumer header ignored",
+         "| Scalar | Default | Note |\n|---|---|---|\n| `vm_known` | 3 | ok |\n",
+         []),
+        # Separator whose preceding line is not a table header at all.
+        ("unparseable header ignored",
+         "Some prose heading\n|---|---|---|\n| `vm_known` | 3 | ok |\n",
+         []),
+        # A row with no table above it must not inherit an active state.
+        ("bare row before any table ignored",
+         "| `vm_known` | 3 | ok |\n",
+         []),
+        # Prose ends the table; the later row must NOT still be counted.
+        ("table exits on a prose line",
+         tr_header + "| `vm_known` | 3 | ok |\n"
+         "Prose interrupts the table here.\n"
+         "| `vm_ambig2` | 9 | must not be scanned |\n",
+         [(3, "vm_known", 3, 2)]),
+        # Blank line ends the table too (the other arm of the exit disjunction).
+        ("table exits on a blank line",
+         tr_header + "| `vm_known` | 3 | ok |\n"
+         "\n"
+         "| `vm_ambig2` | 9 | must not be scanned |\n",
+         [(3, "vm_known", 3, 2)]),
+        # col1 is not an interface identifier -> not a variable claim.
+        ("non-interface identifier ignored",
+         tr_header + "| `foo_bar` | 3 | not an interface var |\n",
+         []),
+    ]
+    for label, text, want in tr_cases:
+        got = [(ln, var, claimed, exp)
+               for _f, ln, var, claimed, exp in scan_table_rows(text, "t.md", ec_prod, ec_cons)]
+        if got != want:
+            failures.append(f"scan_table_rows [{label}]: got {got}, want {want}")
+
     # ---- GROUND-TRUTH half: drive the REAL extractors over a real tree -------
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
