@@ -810,6 +810,33 @@ def _self_test() -> int:
     if scan_populator_claims(good, "x.md", producers, consumers):
         failures.append("flagged a correct populator list (false positive)")
 
+    # ---- expected_consumer_count: the count arithmetic ----------------------
+    # Every finding this checker emits compares a doc's claimed number against
+    # THIS function's return value, so a silent shift here mis-scores the whole
+    # corpus while the battery stays green. Cases below pin: producer exclusion,
+    # dim-stripping before lookup, the ambiguous-producer ("" sentinel) branch,
+    # and the unknown-var guard -- including that the guard is a DISJUNCTION
+    # (weakened to `and`, the orphan case indexes a missing key and crashes).
+    ec_prod = {"vm_known": "10_land", "vm_ambig2": ""}
+    ec_cons = {
+        "vm_known": {"10_land", "29_cropland", "31_past"},
+        "vm_ambig2": {"32_forestry", "35_natveg"},
+        "vm_orphan": {"52_carbon"},  # in consumers, ABSENT from producers
+    }
+    got = expected_consumer_count("vm_known", ec_prod, ec_cons)
+    if got != 2:
+        failures.append(f"expected_consumer_count(vm_known) = {got}, want 2 (3 dirs minus producer)")
+    got = expected_consumer_count("vm_known(j,land)", ec_prod, ec_cons)
+    if got != 2:
+        failures.append(f"expected_consumer_count: dims not stripped before lookup (got {got}, want 2)")
+    got = expected_consumer_count("vm_ambig2", ec_prod, ec_cons)
+    if got != 2:
+        failures.append(f"expected_consumer_count(vm_ambig2) = {got}, want 2 (ambiguous -> no exclusion)")
+    if expected_consumer_count("vm_orphan", ec_prod, ec_cons) is not None:
+        failures.append("expected_consumer_count: var absent from producers must give None")
+    if expected_consumer_count("vm_nowhere", ec_prod, ec_cons) is not None:
+        failures.append("expected_consumer_count: var absent from both maps must give None")
+
     # ---- GROUND-TRUTH half: drive the REAL extractors over a real tree -------
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
