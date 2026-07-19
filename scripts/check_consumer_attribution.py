@@ -927,6 +927,84 @@ def _self_test() -> int:
         if sorted(got) != sorted(want):
             failures.append(f"scan_prose_attribution [{label}]: got {sorted(got)}, want {sorted(want)}")
 
+    # ---- scan_prose_omissions: NEGATIVE-evidence detection (Pattern D2) -----
+    # The inverse question: a line enumerates consumers of `var` and LEAVES ONE
+    # OUT. The hard part is bullet-list aggregation -- consecutive sibling
+    # bullets about the same variable are one logical enumeration, so their
+    # listed sets are unioned before asking what is missing. Without that,
+    # every bullet in an N-bullet list falsely "omits" the other N-1.
+    #
+    # The blank-line rule is where the walk loops earn their keep: ONE blank
+    # line is a gap inside the enumeration and is crossed; TWO consecutive
+    # blanks end it. Cases 7 and 8 pin that boundary in both directions, and
+    # they are the only cases that reach the `lines[j-1]` / `lines[j+1]`
+    # lookahead at all.
+    po_prod = {"vm_known": "10_land", "vm_pair": "10_land", "vm_trio": "10_land"}
+    po_cons = {
+        "vm_known": {"10_land", "29_cropland", "31_past", "52_carbon"},
+        "vm_pair": {"10_land", "29_cropland", "31_past"},
+        "vm_trio": {"10_land", "29_cropland", "31_past", "52_carbon"},
+        "vm_other": {"58_peatland"},  # makes "58" a known dir
+    }
+    po_cases = [
+        # (label, rel_path, text, expected [(lineno, var, num, module_label)])
+        ("omissions flagged",
+         "p.md",
+         "`vm_known` is consumed by cropland (29).\n",
+         [(1, "vm_known", "31", "past"), (1, "vm_known", "52", "carbon")]),
+        ("complete list passes",
+         "p.md",
+         "`vm_known` is consumed by cropland (29), pasture (31) and carbon (52).\n",
+         []),
+        # A hedge means the doc is deliberately listing a subset.
+        ("hedged partial list suppressed",
+         "p.md",
+         "`vm_known` is consumed by primary modules such as cropland (29).\n",
+         []),
+        # A module doc does not list itself as a consumer of what it reads.
+        ("current doc excluded",
+         "module_31.md",
+         "`vm_known` is consumed by cropland (29).\n",
+         [(1, "vm_known", "52", "carbon")]),
+        # Three sibling bullets are ONE enumeration, not three partial ones.
+        ("sibling bullets aggregate",
+         "p.md",
+         "- Module 29 (Cropland) reads `vm_trio` here.\n"
+         "- Module 31 (Pasture) reads `vm_trio` here.\n"
+         "- Module 52 (Carbon) reads `vm_trio` here.\n",
+         []),
+        # ONE blank line is a gap inside the list -- cross it, both directions.
+        ("single blank gap crossed",
+         "p.md",
+         "- Module 29 (Cropland) reads `vm_pair` here.\n"
+         "\n"
+         "- Module 31 (Pasture) reads `vm_pair` here.\n",
+         []),
+        # TWO blanks end the list. The far bullet is hedged so it emits nothing
+        # of its own; it exists only to be WRONGLY unioned if the walk overruns.
+        ("double blank stops walk-back",
+         "p.md",
+         "- Module 52 (Carbon) reads `vm_trio`, among others.\n"
+         "\n"
+         "\n"
+         "- Module 29 (Cropland) reads `vm_trio` here.\n"
+         "- Module 31 (Pasture) reads `vm_trio` here.\n",
+         [(4, "vm_trio", "52", "carbon"), (5, "vm_trio", "52", "carbon")]),
+        ("double blank stops walk-forward",
+         "p.md",
+         "- Module 29 (Cropland) reads `vm_trio` here.\n"
+         "- Module 31 (Pasture) reads `vm_trio` here.\n"
+         "\n"
+         "\n"
+         "- Module 52 (Carbon) reads `vm_trio`, among others.\n",
+         [(1, "vm_trio", "52", "carbon"), (2, "vm_trio", "52", "carbon")]),
+    ]
+    for label, rel, text, want in po_cases:
+        got = [(ln, var, num, lbl)
+               for _f, ln, var, num, lbl, _dir in scan_prose_omissions(text, rel, po_prod, po_cons)]
+        if sorted(got) != sorted(want):
+            failures.append(f"scan_prose_omissions [{label}]: got {sorted(got)}, want {sorted(want)}")
+
     # ---- GROUND-TRUTH half: drive the REAL extractors over a real tree -------
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
