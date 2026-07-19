@@ -100,6 +100,12 @@ ID_TOKEN_RE = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
 #                                            path ("modules/58_peatland/...") — the
 #                                            negative lookbehind rejects a preceding
 #                                            word char or '/'.
+# A .gms citation path. Masked before BARE (unbackticked) identifier extraction so
+# an identifier-shaped path segment cannot be read as a claimed variable. Defined
+# locally rather than imported from check_attribution_tables: these two checkers
+# are deliberately independent, and a shared regex would couple their precision.
+CITE_PATH_RE = re.compile(r"(?:modules/)?\d{1,2}_[a-z][\w]*/[\w/.-]*")
+
 MODULE_WORD_RE = re.compile(r"\bModule\s+(\d{1,2})\b")
 MODNAME_RE = re.compile(r"(?<![\w/])(\d{1,2})_[a-z]")
 
@@ -165,9 +171,24 @@ def _mods_on_line(line: str) -> set[int]:
 
 
 def _cross_iface_vars_on_line(line: str) -> list[str]:
-    """Distinct backticked cross-module interface var bases on the line."""
+    """Distinct cross-module interface var bases on the line.
+
+    Backticked AND bare. Requiring backticks (the original behaviour) made recall
+    hostage to a purely cosmetic convention: a real claim like
+        2. **Module 52 (Carbon)** - directly reads im_forest_ageclass to ...
+    was silently unchecked because the author did not wrap the identifier. 25 such
+    lines sat in the 9 zero-coverage docs alone (2026-07-19; see
+    audit/reader_blind_spots.md).
+
+    Precision is unchanged and does not depend on the backticks: every candidate
+    still has to pass CROSS_IFACE_RE (vm_/pm_/im_/pcm_/fm_ prefix) AND
+    is_interface_var() against the real code, so an ordinary English word cannot
+    qualify. Citation paths are masked first so an identifier-shaped path segment
+    cannot enter; fenced code is already skipped by the caller.
+    """
     out: list[str] = []
-    for span in BACKTICK_TOKEN_RE.findall(line):
+    bare = CITE_PATH_RE.sub(" ", line)
+    for span in BACKTICK_TOKEN_RE.findall(line) + [bare]:
         for tok in ID_TOKEN_RE.findall(span):
             base = strip_dims(tok)
             if CROSS_IFACE_RE.match(base) and is_interface_var(base) and base not in out:
