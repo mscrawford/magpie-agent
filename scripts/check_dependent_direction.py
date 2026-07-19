@@ -159,7 +159,20 @@ HANDOFF_FROM_RE = re.compile(
 # doc_own-INDEPENDENT (both ends named directly; order is the arrow itself, no
 # heuristic needed).
 ARROW_RE = re.compile(
-    r"\bModule\s*(\d{1,2})\b\s*(?:->|-->|=>|→)\s*\bModule\s*(\d{1,2})\b", re.IGNORECASE)
+    r"(?<![\w])(?:Module\s*|M)(\d{1,2})(?![\w])\s*(?:->|-->|=>|→)\s*"
+    r"(?<![\w])(?:Module\s*|M)(\d{1,2})(?![\w])", re.IGNORECASE)
+# 2026-07-19: the `M70 → M14` short form was previously unreadable (the pattern
+# required the literal word "Module" on BOTH ends), leaving 7 genuine bindable
+# hand-off claims in module_70.md unbound -- in the very bug class this check
+# exists for (data_flow_direction, source of both R55 Majors). Same reader-dialect
+# gap as the `**NN** (Name)` one in check_attribution_tables; see
+# audit/reader_blind_spots.md.
+#
+# Deliberately NOT widened to the `NN_name` form (`56_ghg_policy → 32_forestry`):
+# the only corpus instances are var-less topology chains, so they carry no claim
+# this check can bind, and admitting them would add surface area for zero gain.
+# Negations and historical refs are already filtered downstream by NEGATION_RE /
+# HISTORICAL_RE, which is what keeps this widening precision-safe.
 
 # A bullet whose OWN bold span is the var itself (module_56.md's real shape):
 # "- **vm_emissions_reg(i,emis_annual,pollutants)**: Actual regional emissions
