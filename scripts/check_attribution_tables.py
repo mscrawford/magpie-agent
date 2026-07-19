@@ -85,6 +85,9 @@ MODNUM_WORD_RE = re.compile(r"\b(?:module|m)\s*(\d{1,2})\b", re.IGNORECASE)
 #      "2020 (baseline)" does not match: \d{1,2} takes "20", then a paren is
 #      required immediately and "20 " intervenes.
 MODNUM_LABEL_RE = re.compile(r"^\W*(\d{1,2})\W*\(")
+# A .gms citation path. The module number inside it is a FILE LOCATION, not an
+# attribution claim; used to mask col-2 before reading it as a module cell.
+CITE_PATH_RE = re.compile(r"(?:modules/)?\d{1,2}_[a-z][\w]*/[\w/.-]*")
 # Interface-var token in col-2 (base prefixes; dims/slices stripped downstream).
 VARTOK_RE = re.compile(r"\b((?:vm|pm|pcm|fm|sm|im|v|p|s|i|f|q)\d*_[a-z][a-zA-Z0-9_]*)")
 # Header row whose col-1 is a label, not a module.
@@ -164,6 +167,30 @@ def scan_doc(text: str, rel_path: str, ref_map: dict[str, set[int]],
         col1, col2 = cells[0], cells[1]
         mods = _mods_in_cell(col1)
         vars = _vars_in_cell(col2)
+        # REVERSED layout (added 2026-07-19): many docs write
+        # `| Variable | Provider |` rather than `| Module | Variable |`.
+        # Reading it is semantically safe because this check's membership test is
+        # DIRECTION-AGNOSTIC (see the SECTION_RE comment above): it only asks
+        # whether the claimed module references the variable at all, so which
+        # column holds which does not change the question being asked.
+        # Guard is tight -- swap only when col-1 has NO module, col-2 HAS one,
+        # and col-1 carries the variable. Worth +28 rows / +3 docs, 0 findings.
+        # (A wider heading vocabulary was also tested and gained exactly ZERO
+        # rows: those tables were double-blocked, reversed as well as oddly
+        # headed. Not added -- it would have been pure surface area.)
+        if not mods:
+            # Mask citation PATHS before reading col-2 as a module cell. Without
+            # this, a declaration-reference table
+            #   | `vm_cost_transp` | `modules/40_transport/gtap_nov12/decl...` |
+            # reads as an M40 attribution row. The claim happens to be
+            # code-consistent (M40 does declare it) so it yields no finding, but
+            # it is a CITATION, not an attribution claim, and counting it inflates
+            # the coverage denominator with rows that were never in scope --
+            # 36 such rows in module_11 alone.
+            rev_mods = _mods_in_cell(CITE_PATH_RE.sub(" ", col2))
+            rev_vars = _vars_in_cell(col1)
+            if rev_mods and rev_vars:
+                mods, vars = rev_mods, rev_vars
         if not mods or not vars:
             continue
         # vars that our ground truth actually knows about (skip unknown -> avoid FP)
@@ -313,6 +340,22 @@ def self_test() -> int:
         ok = False
     else:
         print("  SELF-TEST PASS [bare-label]: correct row clean, `2020 (baseline)` not a module")
+
+    # ---- REVERSED layout: `| Variable | Provider |` (added 2026-07-19) --------
+    rev_doc = (
+        "#### 8.2 Receives From\n"
+        "| Variable | Provider | Desc |\n"
+        "| --- | --- | --- |\n"
+        "| vm_land_forestry | **10** (land) | wrong: only M58 reads it |\n"   # PHANTOM
+        "| vm_land_forestry | **58** (Peatland) | correct |\n"                # OK
+    )
+    rev_findings = scan_doc(rev_doc, "modules/module_TEST.md", ref)
+    rev_keys = {(f["claimed_module"], tuple(f["vars"])) for f in rev_findings}
+    if (10, ("vm_land_forestry",)) in rev_keys and (58, ("vm_land_forestry",)) not in rev_keys:
+        print("  SELF-TEST PASS [reversed]: var-first layout read; phantom flagged, correct row clean")
+    else:
+        print(f"  SELF-TEST FAIL [reversed]: var-first layout mis-read: {rev_keys}")
+        ok = False
 
     # ---- GROUND-TRUTH: _ref_map_from_consumers normalization ------------------
     # Pre-R58 this wrapper was dead to the test -- both self-tests inject a ref-map
