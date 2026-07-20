@@ -198,6 +198,22 @@ REL_OP_RE = re.compile(r"=[elgnELGN]=")
 _MASK_OPS_RE = re.compile(r"=[elgnELGN]=|==|>=|<=|=>|=<|<>")
 # Leading identifier of an LHS (skip a leading sign / open paren).
 _LEAD_ID_RE = re.compile(r"\s*[-+(]*\s*([A-Za-z][A-Za-z0-9_]*)")
+# GAMS variable-attribute suffix on an LHS write, e.g. `vm_land.lo(j,land) = 0`.
+# Longest-first alternation so `lo`/`l` and `stage`/`scale` cannot mis-bind.
+_ATTR_SUFFIX_RE = re.compile(r"\s*\.\s*(scale|prior|stage|lo|up|fx|l|m)\b", re.I)
+# Which attribute writes count as POPULATE. The test is whether the write
+# DETERMINES THE VALUE A READER SEES:
+#   .fx  -> yes. The solver cannot move a fixed variable, so a reader sees
+#           exactly what was fixed -- whether a computed slice
+#           (`vm_carbon_stock.fx(j,"past",..) = pcm_land*fm_carbon_density`)
+#           or a constant zero from an `off` realization.
+#   .lo/.up -> no. They bound a range; the solver still picks within it.
+#   .l   -> no. A starting point the solve overwrites.
+#   .scale/.m/.prior/.stage -> no. Solver numerics or outputs, not values.
+# Non-populating attribute writes fall through to READ via the existing
+# `read = _cross_vars(lhs) | ... - pop` fallback, matching this module's
+# standing principle that ambiguity contributes READs, never a false POPULATE.
+_POPULATING_ATTRS = frozenset({"fx"})
 
 
 def _strip_comments(text: str) -> str:
@@ -269,9 +285,30 @@ def _classify_statement(stmt: str) -> tuple[set[str], set[str]]:
     lead = _LEAD_ID_RE.match(lhs)
     if lead:
         base = strip_dims(lead.group(1))
-        if CROSS_IFACE_RE.match(base) and is_interface_var(base):
+        # B4: an attribute-form write (`vm_x.lo(...) = 0`) is NOT population
+        # unless it fixes the value. Without this the leading identifier alone
+        # decided, so every bound/scale/level write manufactured a POPULATE
+        # edge -- which more than DOUBLED the cross-module map (31 real edges
+        # vs 34 spurious ones).
+        attr_m = _ATTR_SUFFIX_RE.match(lhs[lead.end():])
+        attr = attr_m.group(1).lower() if attr_m else None
+        determines_value = attr is None or attr in _POPULATING_ATTRS
+        if determines_value and CROSS_IFACE_RE.match(base) and is_interface_var(base):
             pop.add(base)
     read = (_cross_vars(lhs) | _cross_vars(rest)) - pop
+    if lead and attr is not None and attr not in _POPULATING_ATTRS:
+        # A pure bound/scale/level write is neither role: it does not determine
+        # the value (that is why it is not POPULATE) and it does not consume the
+        # value either, so calling it a READ would be equally wrong. Letting it
+        # fall into READ is not neutral -- it inflates the DECLARER's
+        # provides-to in exactly the backwards direction the "Provides To"
+        # definition rejects (M51/M53/M58 bound vm_emissions_reg, and as READs
+        # they made M56 appear to provide to them: truth 5 -> 8).
+        # Only drop it when the var appears NOWHERE else in the statement, so
+        # `vm_tech_cost.l(i) = vm_tech_cost.up(i)` keeps its genuine RHS read.
+        bound_base = strip_dims(lead.group(1))
+        if bound_base in read and bound_base not in _cross_vars(rest):
+            read = read - {bound_base}
     return pop, read
 
 
@@ -1090,6 +1127,68 @@ def self_test() -> int:
     listing only {32} must flag 58 as an OMISSION.
     """
     ok = True
+
+    # ---- _classify_statement: POPULATE vs attribute-form writes (B4) --------
+    # This extractor had NO direct test; the role map was always injected below.
+    # The rule: POPULATE means the write DETERMINES THE VALUE A READER SEES.
+    #   .fx   -> POPULATE. The solver cannot move a fixed variable, so a reader
+    #            sees exactly what was fixed (whether computed or constant 0).
+    #   .lo/.up -> NOT. Bounds a range; the solver still picks within it.
+    #   .l    -> NOT. An initial point the solve overwrites.
+    #   .scale/.m/.prior/.stage -> NOT. Solver numerics / outputs.
+    # Every case is a real corpus statement, cited, so this is a replay control
+    # rather than a fixture: getting these wrong is what inflated cross-module
+    # POPULATE edges from 31 to 65.
+    classify_cases = [
+        # (label, statement, expect_populate, expect_read_contains)
+        ("equation populate",
+         'q29_x(j) .. vm_prod(j,kcr) =e= vm_area(j,kcr,w) * vm_yld(j,kcr,w)',
+         {"vm_prod"}, {"vm_area", "vm_yld"}),
+        ("plain assignment populate",
+         'vm_land(j,land) = pcm_land(j,land)',
+         {"vm_land"}, set()),
+        # 31_past/static/presolve.gms — computes the pasture slice. REAL provision.
+        (".fx computed slice is POPULATE",
+         'vm_carbon_stock.fx(j,"past",ag_pools) = pcm_land(j,"past")*fm_carbon_density(t,j,"past",ag_pools)',
+         {"vm_carbon_stock"}, set()),
+        # 51_nitrogen/off/preloop.gms — an `off` realization pinning zero is still
+        # what the reader sees, so it is still provision.
+        (".fx zeroing is POPULATE",
+         'vm_emissions_reg.fx(i,emis_source,n_pollutants) = 0',
+         {"vm_emissions_reg"}, set()),
+        # 71_disagg_lvst/foragebased_jul23/preloop.gms — the live B4 instance.
+        (".lo bound is neither POPULATE nor READ",
+         'vm_prod_reg.lo(i,kall) = 0',
+         set(), set()),
+        # 14_yields/managementcalib_aug19 — bounds, not values.
+        (".up bound is neither POPULATE nor READ",
+         'vm_yld.up(j,kve,w) = Inf',
+         set(), set()),
+        # 10_land/landmatrix_dec18/presolve.gms — a starting point, overwritten.
+        (".l initial value is neither (RHS read still kept)",
+         'vm_land.l(j,land) = pcm_land(j,land)',
+         set(), set()),
+        # Same var on BOTH sides: the RHS read is genuine and must survive.
+        (".l write keeps a genuine RHS read of itself",
+         'vm_tech_cost.l(i) = vm_tech_cost.up(i)',
+         set(), {"vm_tech_cost"}),
+        # 11_costs — pure solver numerics.
+        (".scale is neither POPULATE nor READ",
+         'vm_cost_glo.scale = 1e7',
+         set(), set()),
+    ]
+    for label, stmt, want_pop, want_read in classify_cases:
+        got_pop, got_read = _classify_statement(stmt)
+        if got_pop != want_pop:
+            print(f"SELF-TEST FAIL [_classify_statement/{label}]: "
+                  f"POPULATE={sorted(got_pop)}, want {sorted(want_pop)}")
+            ok = False
+        missing = want_read - got_read
+        if missing:
+            print(f"SELF-TEST FAIL [_classify_statement/{label}]: "
+                  f"READ missing {sorted(missing)} (got {sorted(got_read)})")
+            ok = False
+
     # var -> modnum -> roles
     role = {
         "vm_land": {"10": {"POPULATE"}, "29": {"READ"}, "30": {"READ"}, "32": {"READ"},
