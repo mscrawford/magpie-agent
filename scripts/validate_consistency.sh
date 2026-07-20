@@ -114,7 +114,7 @@ check_error() {
 # 2026-07-16 (later): +1 advisory check (36 hand-off DIRECTION claims vs
 # slice-resolved code truth, check_dependent_direction.py) -> 36.
 SECTION_NUM=0
-SECTION_TOTAL=37
+SECTION_TOTAL=38
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1342,6 +1342,36 @@ if [ -f "$LOCALPATH_SCRIPT" ]; then
     fi
 else
     check_warning "Local-path checker not found: $LOCALPATH_SCRIPT"
+fi
+
+# Check 41: exhaustive module-SET claims vs the role map (advisory)
+# Added 2026-07-20. Closes the largest measured blind spot in the seeded-bug
+# benchmark (attribution_set, 0/5): claims like "**Depends on**: Modules 10,
+# 29, 30" name NO interface var, so every var-anchored check had nothing to
+# bind. DEFINITION-ROBUST -- reports only defects holding under all three
+# readings of Provides-To (see audit/interface_role_definitions.md, REOPENED),
+# so the pending ruling cannot invalidate a finding. Positive control in
+# --self-test (2 positive, 4 negative incl. an ambiguous-band silence case).
+# ===============================================
+print_section "" "Checking exhaustive module-set claims against the role map (advisory)..."
+
+SETCLAIM_SCRIPT="$AGENT_DIR/scripts/check_module_set_claims.py"
+if [ -f "$SETCLAIM_SCRIPT" ]; then
+    if SETCLAIM_OUTPUT=$(python3 "$SETCLAIM_SCRIPT" --summary-only 2>&1); then SETCLAIM_EXIT=0; else SETCLAIM_EXIT=$?; fi
+    SETCLAIM_LINE=$(echo "$SETCLAIM_OUTPUT" | grep -m1 "ADVISORY:" | sed 's/^[[:space:]]*//')
+    SETCLAIM_OM=$(echo "$SETCLAIM_LINE" | grep -oE "ADVISORY: [0-9]+" | grep -oE "[0-9]+")
+    if [ "$SETCLAIM_EXIT" -eq 2 ]; then
+        check_error "Module-set-claim checker failed to run (exit 2) - a crash must NOT read as clean"
+        echo "$SETCLAIM_OUTPUT" | head -5 | while read -r line; do log "    $line"; done
+    elif [ -z "$SETCLAIM_LINE" ]; then
+        check_error "Module-set-claim checker printed no ADVISORY line (silent skip reads as clean)"
+    elif [ "${SETCLAIM_OM:-0}" = "0" ]; then
+        check_pass "${SETCLAIM_LINE}"
+    else
+        check_warning "${SETCLAIM_LINE} (advisory; run scripts/check_module_set_claims.py)"
+    fi
+else
+    check_warning "Module-set-claim checker not found: $SETCLAIM_SCRIPT"
 fi
 
 # ============

@@ -343,6 +343,9 @@ def self_test() -> int:
         return 2
     print(f"{CHECK_NAME} SELF-TEST: PASS "
           f"(2 positive, 4 negative incl. ambiguous-band + vacuity controls)")
+    # Sentinel required by scripts/selftest_validator.sh: exit 0 alone would be
+    # minted by a script that silently ignores --self-test and does a corpus run.
+    print(f"SELFTEST_OK {CHECK_NAME}")
     return 0
 
 
