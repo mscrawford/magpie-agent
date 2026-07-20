@@ -70,6 +70,7 @@ CHECKERS = [
     "check_fenced_identifiers",
     "check_doc_var_existence",
     "check_gams_variables",
+    "check_module_set_claims",   # Check 41 — added 2026-07-20 to close attribution_set
 ]
 
 # Curated REAL doc-bug fixes. Each entry is a commit whose diff to modules/*.md
@@ -133,7 +134,15 @@ def findings(worktree: Path, env: dict) -> dict[str, set[str]]:
     for chk in CHECKERS:
         script = worktree / "scripts" / f"{chk}.py"
         if not script.is_file():
-            continue
+            # VACUITY GUARD. The worktree is built from HEAD, so an UNCOMMITTED
+            # checker does not exist in it. Skipping silently reported a brand
+            # new checker as "never fired on any seeded bug" — indistinguishable
+            # from a real blind spot, and flattering in the wrong direction.
+            raise SystemExit(
+                f"FATAL: checker {chk!r} is listed in CHECKERS but absent from the "
+                f"worktree at HEAD. Commit it before benchmarking, or remove it "
+                f"from the list. Refusing to report a silently-skipped checker as "
+                f"a blind spot.")
         r = run([sys.executable, str(script)], env=env)
         lines = set()
         for ln in (r.stdout + r.stderr).splitlines():
