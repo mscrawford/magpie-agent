@@ -43,7 +43,55 @@ D3  ProvidesTo_blast(M)  = { X != M : ∃v, M ∈ writers(v) ∪ {owner(v)} ∧ 
 
 `DependsOn` is the mirror of each, swapping the roles of `M` and `X`.
 
-## DECISION: §1.2 and the per-module docs report **D2 (interface ownership)**
+## ⚠️ THE D2 DECISION BELOW IS WRONG — REOPENED 2026-07-20, SAME DAY
+
+**D2 has a semantic hole, found while applying it to the docs and verified in
+code.** It is preserved below rather than deleted, because the reasoning that
+produced it shows exactly how a confident wrong definition gets adopted.
+
+**The case that breaks it.** `vm_emissions_reg` is DECLARED by M56, POPULATED by
+{51, 52, 53, 58}, and READ by {56, 57}. M56's own `q56_emission_costs` sums it.
+So M56's cost equation genuinely **depends on** 51/53/58 filling their slices —
+but D2's `DependsOn(M)` only looks at the OWNER of symbols M reads, and here M56
+owns the symbol itself. **The contributor -> declarer edge vanishes.**
+
+This matters concretely: `module_56.md:1139` says
+`**Depends on**: Modules 52 (carbon stocks), 53 (methane), 51 (N₂O), 58 (peatland)`,
+which is **correct**, and D2 would have replaced it with {09, 10, 12, 32}. That
+is a right claim being overwritten by a mechanically-derived wrong one — the
+precise failure the R55/R56 arc exists to prevent. The edit was reverted before
+being committed.
+
+**Reason 5 below ("best fit on the evidence: 5 of 10 rows") was the bad
+criterion** and is what tipped the choice. Fitting a table that is itself
+internally inconsistent is not evidence of correctness; it selects for agreeing
+with whatever produced the existing numbers.
+
+**D3 is the only candidate without a known hole** — it captures all three real
+edge types in MAgPIE's shared-variable idiom:
+
+| Edge | Meaning | D1 | D2 | D3 |
+|---|---|---|---|---|
+| owner -> readers | who owns the interface you read | ✗ | ✓ | ✓ |
+| writer -> readers | whose slice value flows to you | ✓ | ✗ | ✓ |
+| writer -> owner | who fills the variable you aggregate | ✗ | ✗ | ✓ |
+
+D3 numbers for the §1.2 rows (Total / Provides / Depends): M11 28/1/27,
+M10 23/18/5, M56 18/5/13, M32 28/17/11, M30 26/17/9, M70 15/7/8, M17 19/12/7,
+M09 14/14/0, M29 24/15/9, M35 26/17/9.
+
+**D3's own weakness, stated rather than hidden:** it is coarse. Because every
+land module populates slices of shared variables, M32/M30/M35/M29 all land in
+24-28 and the metric stops discriminating. A single integer is compressing a
+multi-relation graph, and no compression is free.
+
+**Open question for Mike, not decided unilaterally:** adopt D3 for §1.2 (complete
+but coarse), or report the three edge counts separately instead of one Total.
+Nothing has been written into any doc. See the session record for the reasoning.
+
+---
+
+## SUPERSEDED — DECISION: §1.2 and the per-module docs report **D2 (interface ownership)**
 
 Reasons, in order of weight:
 
