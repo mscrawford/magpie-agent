@@ -52,12 +52,22 @@ KNOWN LIMITS — stated, not hidden
    variables, not GAMS SETS. Module 28 (age class) provides the `ac` set to
    32/29 without any shared interface var, so those read as phantoms. This is
    why PHANTOM findings are reported at lower confidence than OMISSIONs.
-2. OWNER-LESS VARS. 13 of 139 interface vars have no recorded owner because
-   they are declared as `table` in a realization's `input.gms` rather than in
-   `declarations.gms` (e.g. `fm_carbon_density` -> 52_carbon/*/input.gms:16,
-   `pm_climate_class` -> 45_climate/*/input.gms:10). They are absent from D2,
-   so a real dependency through one of them cannot reach the D1&D2 lower bound.
-   This is a ground-truth gap, recorded in BACKLOG, NOT worked around here.
+2. OWNER-LESS VARS — ✅ FIXED 2026-07-31, no longer a limit. Previously 13 of
+   144 referenced interface vars had no recorded owner, because they are
+   declared as `table`/`parameter` in a realization's `input.gms` rather than
+   in `declarations.gms` (e.g. `fm_carbon_density` -> 52_carbon/*/input.gms,
+   `pm_climate_class` -> 45_climate/*/input.gms). They were absent from D2, so
+   a real dependency through one of them could not reach the D1&D2 lower bound
+   and surfaced here as a PHANTOM. `build_producer_map` in
+   check_consumer_attribution.py now scans both declaration sites (positive
+   controls in its --self-test cover the `table` and `parameter` spellings).
+   MEASURED EFFECT on this check: PHANTOM findings 12 claims / 18 modules ->
+   8 claims / 10 modules; OMISSION coverage 33 -> 37 modules. The whole
+   module_45.md:448 row (4-of-4 phantom, all four explained by
+   `pm_climate_class` having no owner) disappeared. Owner-less is now 5, and
+   all 5 are correct: `fm_croprea` is a typo appearing only in GAMS comments
+   and is never declared, and 4 `sm_` scalars live in core/calculations.gms
+   rather than in any module.
 3. REALIZATION-BLIND. The role map unions all realizations, so a read that only
    exists in a NON-default realization still counts. That is a scope
    difference, not a false positive, but it explains findings a

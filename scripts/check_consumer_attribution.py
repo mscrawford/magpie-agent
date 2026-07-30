@@ -130,6 +130,13 @@ PROSE_TRIGGER_RE = re.compile(
 DECL_LINE_RE = re.compile(
     r"^\s*(?P<name>[a-z][a-zA-Z0-9_]+)\s*(?:\([^)]+\))?\s+\S+"
 )
+# `table pm_climate_class(j,clcl) description` / `parameter fm_tau1995(h) desc`
+# as written in a realization's input.gms. Anchored to the two keywords on
+# purpose -- see build_producer_map site 2 for why a looser shape is unsafe here.
+INPUT_DECL_RE = re.compile(
+    r"^\s*(?:table|parameter)s?\s+(?P<name>[a-zA-Z][a-zA-Z0-9_]+)\s*(?:\([^)]*\))?",
+    re.IGNORECASE,
+)
 DECL_SECTION_KEYWORDS = {
     "parameters", "parameter", "variables", "variable",
     "positive", "negative", "free", "binary", "integer",
@@ -151,9 +158,24 @@ def is_interface_var(name: str) -> bool:
 def build_producer_map() -> dict[str, str]:
     """Map interface var name → module dir (e.g. '10_land') that declares it.
 
-    Scans `<MAGPIE_DIR>/modules/<module_dir>/<realization>/declarations.gms`.
-    If a var is declared in more than one module_dir, returns None for that
-    var (ambiguous; caller skips).
+    Scans two declaration sites, because MAgPIE uses both:
+      1. `<module_dir>/<realization>/declarations.gms` — the common case.
+      2. `<module_dir>/<realization>/input.gms` — `table NAME(...)` /
+         `parameter NAME(...)` headers for data read from CSV.
+
+    Site 2 was added 2026-07-31 and is NOT cosmetic. Scanning declarations.gms
+    alone left **13 of 144** referenced interface vars with no owner at all --
+    `pm_climate_class`, `fm_carbon_density`, `fm_croparea`, `fm_attributes`,
+    `fm_tau1995`, `fm_land_iso`, … Everything keyed on ownership was blind to
+    them: Check 41 could not reach its D1&D2 lower bound through such a var, so
+    a REAL dependency surfaced as a PHANTOM. `modules/module_45.md:448` was
+    flagged 4-of-4 phantom purely from this gap, and Check 41's own docstring
+    recorded it as KNOWN LIMIT 2 ("a ground-truth gap, recorded in BACKLOG, NOT
+    worked around here"). This closes it at the source instead of allowlisting
+    the symptom.
+
+    If a var is declared in more than one module_dir, returns '' for that var
+    (ambiguous sentinel; caller skips).
     """
     modules_root = MAGPIE_DIR / "modules"
     if not modules_root.is_dir():
@@ -171,6 +193,26 @@ def build_producer_map() -> dict[str, str]:
                 continue
             for line in text.splitlines():
                 m = DECL_LINE_RE.match(line)
+                if not m:
+                    continue
+                name = m.group("name")
+                if name in DECL_SECTION_KEYWORDS:
+                    continue
+                if not is_interface_var(name):
+                    continue
+                producers[name].add(module_name)
+
+        # Site 2: `table`/`parameter` headers in input.gms. Deliberately anchored
+        # to those two keywords rather than reusing DECL_LINE_RE -- input.gms is
+        # full of $include/$ondelim lines and raw CSV-ish rows, and the loose
+        # "identifier followed by anything" shape would harvest data rows as
+        # declarations. is_interface_var() still gates the prefix.
+        for path in module_dir.rglob("input.gms"):
+            text = read_text_or_empty(path)
+            if not text:
+                continue
+            for line in text.splitlines():
+                m = INPUT_DECL_RE.match(line)
                 if not m:
                     continue
                 name = m.group("name")
@@ -751,6 +793,26 @@ def _write_selftest_fixture(root: Path) -> None:
     w("modules/52_carbon/normal_dec17/presolve.gms",
       " p52_tmp(j) = vm_land.l(j);\n")
 
+    # 45_climate declares pm_clim via `table` in INPUT.GMS, not declarations.gms.
+    # This is the OWNER-LESS class: 13 real interface vars are declared this way
+    # (pm_climate_class, fm_carbon_density, fm_croparea, ...), and before the
+    # 2026-07-31 fix build_producer_map scanned declarations.gms ONLY, so every
+    # one of them had NO owner. Consequence: Check 41 could not reach its D1&D2
+    # lower bound through them and reported the dependency as a PHANTOM --
+    # module_45.md:448 was flagged 4-of-4 phantom entirely because of this.
+    # 09_drivers uses the `parameter` spelling, which is equally common.
+    w("modules/45_climate/static/input.gms",
+      "table pm_clim(j,clcl) Koeppen-Geiger climate classification\n"
+      "$ondelim\n"
+      "$include \"./modules/45_climate/static/input/pm_clim.csv\"\n"
+      "$offdelim\n;\n")
+    w("modules/09_drivers/aug17/input.gms",
+      "parameter fm_deflator(t_all) GDP deflator (1)\n"
+      "/\n$ondelim\n$include \"./x.csv\"\n$offdelim\n/\n;\n")
+    # 14_yields READS pm_clim -> with an owner, this becomes a real D2 edge.
+    w("modules/14_yields/managementcalib_aug19/presolve.gms",
+      " p14_t(j) = pm_clim(j,\"cfa\") * fm_deflator(\"y1995\");\n")
+
 
 def _scan_only() -> int:
     """Internal: drive the REAL extractors over MAGPIE_DIR and emit JSON.
@@ -1034,6 +1096,13 @@ def _self_test() -> int:
             # a future narrowing of VAR_NAME_RE cannot silently drop them.
             if prod.get("v10_local") != "10_land":
                 failures.append(f"build_producer_map: v10_local -> {prod.get('v10_local')!r}, want '10_land' (numbered locals are in scope by VAR_NAME_RE)")
+            # OWNER-LESS class (fixed 2026-07-31): vars declared as `table` or
+            # `parameter` in a realization's input.gms instead of declarations.gms.
+            # These are POSITIVE CONTROLS -- they fail against the pre-fix scanner.
+            if prod.get("pm_clim") != "45_climate":
+                failures.append(f"build_producer_map: pm_clim -> {prod.get('pm_clim')!r}, want '45_climate' (declared as `table` in input.gms)")
+            if prod.get("fm_deflator") != "09_drivers":
+                failures.append(f"build_producer_map: fm_deflator -> {prod.get('fm_deflator')!r}, want '09_drivers' (declared as `parameter` in input.gms)")
 
             # build_consumer_map
             if "29_cropland" not in cons.get("vm_land", set()):
