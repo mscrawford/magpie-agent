@@ -1,6 +1,7 @@
 # Module 14: Yields (managementcalib_aug19)
 
-**Realization:** `managementcalib_aug19`
+**Realization:** `managementcalib_aug19` — the **default** (`config/default.cfg:357`), and what this document describes throughout unless a passage says otherwise.
+**Alternative realization:** `dynRegPastrTau_apr26` (added 2026-07, PRs #882/#919) — NOT active by default. It is `managementcalib_aug19` with exactly one change: the pasture-yield spillover from crop-sector TC becomes regional and time-varying. See §18.
 **Date:** August 2019
 **Total Lines of Code:** 586
 **Equation Count:** 2
@@ -1181,7 +1182,7 @@ grep "^[ ]*q14_" modules/14_yields/managementcalib_aug19/declarations.gms | wc -
 
 **Likely Cause:** `pm_past_mngmnt_factor` is pinned to 1. In **both** Module-70 realizations (`fbask_jan16`, `fbask_jan16_sticky` — the code is identical here), `modules/70_livestock/fbask_jan16/presolve.gms:63-68` sets `pm_past_mngmnt_factor(t,i) = 1` for every year `m_year(t) <= s70_past_mngmnt_factor_fix` (**default 2005**, `70_livestock/fbask_jan16/input.gms:26`; `config/default.cfg:2173`) and only then applies the cattle-driven formula.
 
-**Solution:** Check `s70_past_mngmnt_factor_fix`, **not** the Module-70 realization — switching realization changes nothing here. Also check `s14_yld_past_switch` (default 0.25) for the crop-tau spillover term.
+**Solution:** Check `s70_past_mngmnt_factor_fix`, **not** the Module-70 realization — switching realization changes nothing here. Also check the crop-tau spillover term — but **which parameter that is depends on the active M14 realization**: under the default `managementcalib_aug19` it is the global scalar `s14_yld_past_switch` (default `0.25`, `config/default.cfg:369`); under `dynRegPastrTau_apr26` that scalar **does not exist** and the term is the regional, time-varying table `f14_yld_past_switch(t_all,i)` instead (see §18).
 
 ---
 
@@ -1280,7 +1281,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 
 ## 18. Version History and Module Evolution
 
-**Current Realization:** `managementcalib_aug19` (August 2019)
+**Current DEFAULT Realization:** `managementcalib_aug19` (August 2019) — `config/default.cfg:357`. A second realization, `dynRegPastrTau_apr26`, exists but is not active by default; see the Realizations table below.
 
 **Key Features of This Realization:**
 1. Limited calibration (λ-based blending) — introduced to address yield overestimation
@@ -1289,7 +1290,29 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 4. Timber yield calculation — supports forestry and natural vegetation harvest
 5. Degradation effects (soil loss, pollination) — optional NCP accounting
 
-**Realizations:** `managementcalib_aug19` is the **only** realization. `module.gms` contains a single `$Ifi "%yields%" == "managementcalib_aug19"` branch. An earlier `biocorrect` realization was removed in 2021 (commit `cc84ae5e1`, "Update to new revision and clean up old realizations"). There is no `input` realization; `modules/14_yields/input/` is the input-data directory, not a realization.
+**Realizations:** M14 has **two** realizations as of 2026-07 (`modules/14_yields/module.gms:31,32` — two `$Ifi "%yields%"` branches).
+
+> ⚠️ **CORRECTED (sync 2026-07-31).** This section previously stated `managementcalib_aug19` is the **only** realization and that `module.gms` contains a single branch. That was true until PR #882 (merged `cc3c3e1c9`) and PR #919 (merged `2c02843ec`) added `dynRegPastrTau_apr26`. M14 is therefore now a **Step-1c module**: check the active realization before answering about it.
+
+| Realization | Status | Difference |
+|---|---|---|
+| `managementcalib_aug19` | **DEFAULT** (`config/default.cfg:357`) | The baseline described throughout this document. |
+| `dynRegPastrTau_apr26` | Alternative, opt-in | Identical to `managementcalib_aug19` in every respect **except** the pasture-yield spillover term. |
+
+**The single difference, precisely.** Both realizations compute `q14_yield_past` with the same structure; only the spillover coefficient differs:
+
+- `managementcalib_aug19` (`modules/14_yields/managementcalib_aug19/equations.gms:39`) uses the **global scalar** `s14_yld_past_switch` — one value for all regions and all time steps (default `0.25`, `modules/14_yields/managementcalib_aug19/input.gms:20`, confirmed operative at `config/default.cfg:369`).
+- `dynRegPastrTau_apr26` (`modules/14_yields/dynRegPastrTau_apr26/equations.gms:39`) replaces it with the **table** `f14_yld_past_switch(t_all,i)` (`modules/14_yields/dynRegPastrTau_apr26/input.gms:49-54`), read from a CSV and filled across years by `m_fillmissingyears`. The coefficient therefore varies by MAgPIE region **and** time step. Semantics are unchanged: 0 = no spillover, 1 = full spillover equal to the crop-sector intensification rate.
+
+`q14_yield_crop` is **byte-identical** between the two realizations.
+
+**Cross-module interfaces are unchanged.** Both realizations reference exactly the same 21 `vm_`/`pm_`/`im_`/`fm_`/`pcm_`/`sm_` identifiers (verified by diffing the extracted sets 2026-07-31), so M14's Provides-To / Depends-On sets do **not** change when switching realization. `f14_yld_past_switch` is a module-local input parameter (`f14_` prefix), not an interface.
+
+> 📊 **Values NOT verified — data-derived, deferred.** The actual numbers in `f14_yld_past_switch` come from `dynRegPastrTau_apr26/input/f14_yld_past_switch.csv`, which is **not in the repository** (only the `input/files` manifest is tracked) and **not in the local rev4.131 input tree**. It requires input data `rev4.132`, which `config/default.cfg` now pins but which was not yet published to the public data store at the time of this sync. The realization's own `modules/14_yields/dynRegPastrTau_apr26/realization.gms:21-22` states the default file is parameterised to *reproduce* `managementcalib_aug19` behaviour — that is the **author's stated intent, quoted, not a verified claim**. Do not assert what values the file contains until rev4.132 is available.
+
+> ⚠️ **Citation ambiguity introduced by this sync — applies to the whole of this document.** M14's existing bare-basename citations (`preloop.gms:NNN`, `input.gms:NNN`, `equations.gms:NNN`, …, ~80 of them) were unambiguous while M14 had one realization: per MANDATE 16 the citation checker resolves a bare cite to the module's **default** realization. Now that M14 has two, every such cite silently means "`managementcalib_aug19`" — correct for the passages describing the default, but a latent trap for any future text about `dynRegPastrTau_apr26`. **New citations in this document must carry the full realization-qualified path.** The pre-existing bare cites were NOT bulk-rewritten in this sync (out of scope, and a mechanical sweep is how citation drift gets introduced); they are flagged here instead.
+
+An earlier `biocorrect` realization was removed in 2021 (commit `cc84ae5e1`, "Update to new revision and clean up old realizations"). There is no `input` realization; `modules/14_yields/input/` is the input-data directory, not a realization.
 
 ---
 
@@ -1567,7 +1590,7 @@ The only simultaneity is the within-timestep co-solve of `vm_tau` (Module 13, en
 
 ---
 
-**Last Verified**: 2026-07-14 (sync `0d7ebeb90` — new interface parameter `im_growing_stock_ysf`; see §4.2)
-**Verified Against**: `../modules/14_yields/managementcalib_aug19/*.gms` (develop branch)
+**Last Verified**: 2026-07-31 (sync `0d7ebeb90..2c02843ec`, 23 commits — M14 gained a **second realization** `dynRegPastrTau_apr26`; see §18)
+**Verified Against**: `../modules/14_yields/managementcalib_aug19/*.gms` **and** `../modules/14_yields/dynRegPastrTau_apr26/*.gms` (develop branch)
 **Verification Method**: Equations cross-referenced with source code
-**Changes Since Last Verification**: 2026-05-16 sync to commit `2fa7b8bea9` (2026-04-28): `p14_pyield_corr` computation rewritten (Section 3.2) — now applies the historical/LPJmL ratio for every year `f14_pyld_hist` is available (y1965–y2020) and freezes at the last available value, replacing the old `t_past`-conditional that froze at y2015. No new/renamed parameters. (An earlier attempt in `c7731e234`, 2026-04-20, used three helper parameters *p14_corr_last*/*p14_corr_prev*/*p14_corr_trend*; superseded by `2fa7b8bea9`, which removed them.) Prior: f_btc2 update — `vm_tau`/`pcm_tau` at cluster level (j) in `q14_yield_crop`/`q14_yield_past`.
+**Changes Since Last Verification**: 2026-07-31 sync `0d7ebeb90..2c02843ec` (23 commits, PRs #882 + #919, author alexkoberle). M14 gained the realization `dynRegPastrTau_apr26` and is now a **two-realization / Step-1c module**; `managementcalib_aug19` remains the default (`config/default.cfg:357`). The sole functional difference is the pasture-yield spillover coefficient: global scalar `s14_yld_past_switch` → regional/time-varying table `f14_yld_past_switch(t_all,i)`. `q14_yield_crop` is byte-identical between realizations, and the cross-module interface set is unchanged (same 21 identifiers, verified by set-diff), so no attribution table moves. `cfg$input` also bumped rev4.131 → rev4.132; the new realization's input CSV is NOT in the local tree, so its values are **unverified and deferred**. Prior: 2026-05-16 sync to commit `2fa7b8bea9` (2026-04-28): `p14_pyield_corr` computation rewritten (Section 3.2) — now applies the historical/LPJmL ratio for every year `f14_pyld_hist` is available (y1965–y2020) and freezes at the last available value, replacing the old `t_past`-conditional that froze at y2015. No new/renamed parameters. (An earlier attempt in `c7731e234`, 2026-04-20, used three helper parameters *p14_corr_last*/*p14_corr_prev*/*p14_corr_trend*; superseded by `2fa7b8bea9`, which removed them.) Prior: f_btc2 update — `vm_tau`/`pcm_tau` at cluster level (j) in `q14_yield_crop`/`q14_yield_past`.
