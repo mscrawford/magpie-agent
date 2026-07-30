@@ -114,7 +114,7 @@ check_error() {
 # 2026-07-16 (later): +1 advisory check (36 hand-off DIRECTION claims vs
 # slice-resolved code truth, check_dependent_direction.py) -> 36.
 SECTION_NUM=0
-SECTION_TOTAL=38
+SECTION_TOTAL=39
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1372,6 +1372,57 @@ if [ -f "$SETCLAIM_SCRIPT" ]; then
     fi
 else
     check_warning "Module-set-claim checker not found: $SETCLAIM_SCRIPT"
+fi
+
+# Check 42: role-map COMPLETENESS -- the control on the ground-truth anchor
+# (2026-07-30, GATING). build_role_map() in check_attribution_omissions.py is
+# the code-derived ground truth under Checks 34/35/36/41. R57/W0a measured that
+# it had ZERO self-test coverage: replace its body with `raise` and the whole
+# battery still reported green, so a silent regression in the map builder would
+# surface as "0 findings" -- indistinguishable from a clean corpus. This guard
+# is that missing control; it re-derives the interface references with a
+# DELIBERATELY DIFFERENT reader (own comment-stripper, own tokenizer, no shared
+# regex) so it cannot inherit the bug it exists to catch. It found a real defect
+# on its first run: vm_AEI was absent from the role map entirely because
+# CROSS_IFACE_RE required a lowercase letter after the prefix.
+#
+# GATING, unlike Checks 31-41, and deliberately so: this is a CONTROL on an
+# invariant, not a detector of doc-quality defects. If it fires, four other
+# checks are silently blind and their "0 findings" means nothing -- the line
+# should stop. Same rationale as Check 40. To downgrade, change the two
+# check_error calls below to check_warning.
+#
+# --strict is REQUIRED: the checker returns 0 even when incomplete unless it is
+# passed (scripts/check_rolemap_completeness.py:321-323).
+#
+# VACUITY GUARD (scanned_vars=0): the checker has NO internal guard for an
+# absent ../modules/ tree -- scan_interface_refs would return nothing, giving
+# dropped=0/missing_pairs=0 and a "complete" verdict. A vacuous clean in the
+# anti-vacuous-clean checker is exactly the failure mode it exists to prevent,
+# so a zero scan is an ERROR here, not a pass.
+# ===============================================
+print_section "" "Checking role-map completeness against an independent scan (ground-truth control)..."
+
+ROLEMAP_SCRIPT="$AGENT_DIR/scripts/check_rolemap_completeness.py"
+if [ -f "$ROLEMAP_SCRIPT" ]; then
+    if ROLEMAP_OUTPUT=$(python3 "$ROLEMAP_SCRIPT" --strict 2>&1); then ROLEMAP_EXIT=0; else ROLEMAP_EXIT=$?; fi
+    ROLEMAP_LINE=$(echo "$ROLEMAP_OUTPUT" | grep -m1 "SUMMARY scanned_vars=" | sed 's/^[[:space:]]*//')
+    ROLEMAP_SCANNED=$(echo "$ROLEMAP_LINE" | grep -oE "scanned_vars=[0-9]+" | grep -oE "[0-9]+")
+    if [ "$ROLEMAP_EXIT" -ge 2 ]; then
+        check_error "Role-map completeness checker failed to run (exit $ROLEMAP_EXIT) - a crash must NOT read as clean"
+        echo "$ROLEMAP_OUTPUT" | head -5 | while read -r line; do log "    $line"; done
+    elif [ -z "$ROLEMAP_LINE" ]; then
+        check_error "Role-map completeness checker printed no SUMMARY line (silent skip reads as clean)"
+    elif [ "${ROLEMAP_SCANNED:-0}" = "0" ]; then
+        check_error "Role-map completeness scanned 0 variables - vacuous run (parent modules/ absent?), NOT a clean result"
+    elif [ "$ROLEMAP_EXIT" -eq 1 ]; then
+        check_error "Role map is INCOMPLETE - Checks 34/35/36/41 are silently blind. ${ROLEMAP_LINE}"
+        echo "$ROLEMAP_OUTPUT" | grep -E "^(DROPPED|MISSING)" | head -10 | while read -r line; do log "    $line"; done
+    else
+        check_pass "${ROLEMAP_LINE}"
+    fi
+else
+    check_warning "Role-map completeness checker not found: $ROLEMAP_SCRIPT"
 fi
 
 # ============

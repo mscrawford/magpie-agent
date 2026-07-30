@@ -1,0 +1,42 @@
+{
+  "pilot_docs": {
+    "modules/module_13.md": {
+      "table_rows": 0,
+      "table_findings": 0,
+      "prose_pairs": 12,
+      "prose_findings": 0,
+      "known_iface_vars_in_doc": 35,
+      "lines": 508
+    },
+    "modules/module_14.md": {
+      "table_rows": 0,
+      "table_findings": 0,
+      "prose_pairs": 16,
+      "prose_findings": 0,
+      "known_iface_vars_in_doc": 57,
+      "lines": 1573
+    },
+    "modules/module_16.md": {
+      "table_rows": 0,
+      "table_findings": 0,
+      "prose_pairs": 14,
+      "prose_findings": 0,
+      "known_iface_vars_in_doc": 15,
+      "lines": 758
+    }
+  },
+  "corpus": {
+    "table_coverage_docs": 4,
+    "table_coverage_rows": 62,
+    "prose_coverage_docs": 37,
+    "prose_coverage_pairs": 211
+  },
+  "gate": {
+    "checks": 48,
+    "passed": 46,
+    "warnings": 2,
+    "errors": 0,
+    "verdict": "PASS"
+  },
+  "base_commit": "da8e19889b1b4311b51736885818809318606026"
+}
