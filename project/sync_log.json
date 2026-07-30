@@ -2,11 +2,11 @@
   "_comment": "Tracks synchronization between MAgPIE codebase and agent documentation",
   "_instructions": "Update this file whenever syncing with MAgPIE develop branch",
   "sync_status": {
-    "last_sync_date": "2026-07-14",
-    "last_sync_commit": "0d7ebeb90",
-    "last_sync_commit_date": "2026-07-02",
-    "last_sync_commit_message": "Merge pull request #913 from mishkos/f_prisma",
-    "synced_by": "AI agent (Claude, Opus 4.8)",
+    "last_sync_date": "2026-07-31",
+    "last_sync_commit": "2c02843ec",
+    "last_sync_commit_date": "2026-07-30",
+    "last_sync_commit_message": "Merge pull request #919 from alexkoberle/dyn_reg_tau",
+    "synced_by": "AI agent (Claude, Opus 5) - autonomous overnight run, PENDING REVIEW",
     "magpie_branch": "develop"
   },
   "pending_review": {
@@ -14,6 +14,31 @@
     "commits": []
   },
   "recent_syncs": [
+    {
+      "date": "2026-07-31",
+      "commit_range": "0d7ebeb90..2c02843ec",
+      "summary": "AUTONOMOUS OVERNIGHT SYNC - PENDING REVIEW, NOT PUSHED. 23 commits (the runplan assumed 18; origin/develop moved again overnight with PR #919 and follow-ups, so the range was re-derived at run time rather than taken from the plan). GAMS impact is confined to ONE module: M14 gains a second realization, dynRegPastrTau_apr26 (PRs #882 + #919, author alexkoberle; 13 files, +598/-1). module.gms:31,32 now carries two $Ifi \"%yields%\" branches, so M14 becomes a TWO-realization / Step-1c module. managementcalib_aug19 REMAINS THE DEFAULT (config/default.cfg:357, re-verified post-sync). The sole functional difference, read from both equations.gms: the pasture-yield spillover coefficient in q14_yield_past goes from the global scalar s14_yld_past_switch (default 0.25, managementcalib_aug19/input.gms:20) to the regional and time-varying table f14_yld_past_switch(t_all,i) (dynRegPastrTau_apr26/input.gms:49-54). q14_yield_crop is byte-identical between the two realizations. CROSS-MODULE INTERFACES ARE UNCHANGED: both realizations reference exactly the same 21 vm_/pm_/im_/fm_/pcm_/sm_ identifiers, verified by extracting and diffing the sets, so no attribution table moves. Confirmed empirically: Check 41's finding set did NOT change (19 omissions / 12 phantoms / 38 exhaustive claims, identical pre- and post-sync) - the runplan had PREDICTED the role map would gain edges and that prediction was wrong, because the new realization adds only module-local parameters. NOT ASSERTED, deliberately: the VALUES of f14_yld_past_switch. Its CSV is absent from the repo (only input/files is tracked) and from the local rev4.131 tree; it needs rev4.132, which config/default.cfg now pins but which was NOT yet on the public data store (4 of 5 archives 404 at pre-check, so download_data was forbidden for this run - it deletes input/ before fetching and would have left the model unrunnable). realization.gms:21-22 claims the default file reproduces managementcalib_aug19 behaviour; recorded as the author's stated intent, quoted, not verified.",
+      "changes_reviewed": [
+        {
+          "commits": "fcf6e51c6..cc3c3e1c9 (PR #882) + ead9e697f..2c02843ec (PR #919)",
+          "modules_affected": ["14_yields"],
+          "doc_update_needed": true,
+          "doc_update_status": "DONE",
+          "notes": "New realization dynRegPastrTau_apr26. module_14.md: header now leads with the default and names the alternative; section 18 rewritten (it had asserted managementcalib_aug19 was the ONLY realization and that module.gms had a single branch - both false after this sync); the s14_yld_past_switch troubleshooting note now states which realization it assumes; footer and Changes-Since updated. module_14_notes.md item 3 carried the same 'only realization' claim and was corrected in place with history retained - that file is read on EVERY M14 question per AGENT.md, so it was the higher-risk of the two."
+        },
+        {
+          "commits": "c923b737f, d9fb0adcb",
+          "modules_affected": [],
+          "doc_update_needed": false,
+          "doc_update_status": "DEFERRED - data not obtainable",
+          "notes": "cfg$input bumped rev4.131 -> rev4.132 plus new input files for the new realization. Documented as a cfg-level fact only. No data-derived magnitude was updated: rev4.132 is internal/HPC-first and 404 on the public store, so the local tree remains rev4.131."
+        }
+      ],
+      "modules_updated": ["14_yields"],
+      "modules_no_op": ["all others - the 23 commits touch no other module's GAMS"],
+      "change_impact": "MEDIUM. No interface change, no attribution change, no default change. The risk is answer-routing: M14 must now be treated as Step-1c (check the active realization first), and the doc's ~80 pre-existing bare-basename citations silently resolve to the DEFAULT realization under MANDATE 16 - correct today, a trap for future text about dynRegPastrTau_apr26. Flagged in both docs rather than bulk-rewritten, since a mechanical citation sweep is itself a known source of drift.",
+      "validation_results": "Gate 50 checks / 46 passed / 4 warnings / 0 errors / PASS, with the four warnings byte-identical to the preflight baseline (no NEW warning). check_local_paths clean over 781 files. Self-tests 34 assertions + exit-99 guard at preflight. Two defects self-caught during the edit and fixed before commit: (1) module.gms:11,12 was cited for the dispatch branches WITHOUT having been read - the true lines are 31,32; (2) several citations carried partial realization-relative paths instead of repo-relative ones. Both were surfaced by running check_semantic_invariance, which flagged unresolvable citation paths. NOTE on that tool: it REJECTED this diff with 32 violations, and that is the tool working correctly while the runplan misapplied it - it is a REGULARIZATION gate ('form may move, meaning may not') and a sync deliberately changes meaning, so it must reject by construction. Its citation-resolution output was still valuable as a review aid. The runplan instruction to gate sync edits with it was an error and is recorded as such."
+    },
     {
       "date": "2026-07-14",
       "commit_range": "6304d830b..0d7ebeb90",
