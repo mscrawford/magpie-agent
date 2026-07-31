@@ -190,3 +190,51 @@ Modules 51 (nitrogen), 53 (methane), 55 (awms), 58 (peatland) each have `off` re
 ## Lessons Learned
 <!-- APPEND-ONLY -->
 - 2026-03-06: Module 70 (livestock) has two realizations: fbask_jan16 (default, flexible baskets) and fbask_jan16_sticky (investment-based capital). The sticky realization adds path-dependent costs with depreciation. When switching from fbask_jan16 to fbask_jan16_sticky, ensure Module 15 food demand settings are compatible — sticky assumes slower structural transitions. (source: deep validation of module 70)
+
+---
+
+## Detecting the active realization (hoisted from AGENT.md Step 1c, 2026-07-31)
+
+The *rule* stays in AGENT.md — check the active realization before answering about any
+multi-realization module, and lead with the DEFAULT. The mechanics live here.
+
+**1. Which realization is active**
+
+```bash
+grep "cfg\$gms\$<module_name>" ../config/default.cfg
+```
+
+Example: `cfg$gms$water_demand <- "all_sectors_aug13"` vs `"agr_sector_aug13"`.
+
+**2. Key scenario switches** that change module behaviour:
+
+```bash
+grep "cfg\$gms\$c<module_num>" ../config/default.cfg | head -5
+```
+
+Example: `s15_exo_diet = 1` completely changes food-demand behaviour. If a non-default
+switch is active, say so.
+
+**3. Which modules have more than one realization**
+
+23 of 46 as of 2026-07-31 (M14 gained a second in the develop sync). **Re-run rather than
+trust that number** — it has been stale twice.
+
+```bash
+for m in ../modules/*/; do
+  [ -f "$m/module.gms" ] || continue
+  count=$(grep -cE '^\$Ifi.*\$include.*realization\.gms' "$m/module.gms")
+  [ "$count" -gt 1 ] && basename "$m" | cut -d_ -f1
+done | tr '\n' ', '
+```
+
+> ⚠️ **Parse `module.gms` DISPATCH lines, not `ls -d`.** A realization directory can sit on
+> disk without GAMS ever dispatching on it — an untracked leftover from an older checkout
+> or a rename. Two exist today (`44_biodiversity/bii_target_apr24`,
+> `59_som/cellpool_aug16`): both undispatched AND untracked, so `ls -d` reports 3
+> realizations for M44 and M59 where the truth is 2. That over-count **nearly caused a bug
+> to be filed against a CORRECT doc.**
+
+**Why this matters beyond realization choice**: a bare `file.gms:N` citation inside a
+module doc is ambiguous across realizations — M80 has four, each with its own `solve.gms`.
+See `audit/seeded_bug_benchmark_2026-07-31.md`.

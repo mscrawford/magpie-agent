@@ -290,6 +290,15 @@ plant_inline_defect() {  # $1 = check id; mutates the freshly built clean fixtur
               > "$FIXTURE/agent/helpers/session_startup.md" ;;
       12) printf 'Run `%sscripts/foo.sh` to start.\n' "$STALE_PREFIX" \
               > "$FIXTURE/core_docs/StalePrefix.md" ;;
+      43) # Push AGENT.md past the 40 KiB always-loaded budget. Only the source
+          # copy is grown: the clean fixture ships no deployed copies, so Check 10
+          # stays at warnings and this case isolates Check 43.
+          python3 -c "
+import sys
+p = sys.argv[1]
+with open(p, 'a') as f:
+    f.write('\\n<!-- padding -->\\n' + ('x' * 41000))
+" "$FIXTURE/AGENT.md" ;;
       *)  echo "        (no plant defined for check $1)"; return 1 ;;
     esac
 }
@@ -314,6 +323,7 @@ INLINE_CASES=(
   "10|error|AGENT.md differs from ../AGENT.md"
   "11|warn|files contain hardcoded commit hashes (may become stale)"
   "12|error|backtick-quoted paths use stale '${STALE_PREFIX}' prefix"
+  "43|error|over the 40960 B budget"
 )
 
 for case_spec in "${INLINE_CASES[@]}"; do

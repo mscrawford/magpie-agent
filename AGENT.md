@@ -23,30 +23,14 @@ When loading `PREPROC_AGENT.md`, follow its session startup instructions (check 
 
 ## ⚠️ Twin-agent disambiguation (READ FIRST when terms below appear)
 
-Two independent agents share this workspace, each with its own flywheel and validation_rounds.json (magpie-agent: `audit/validation_rounds.json`; preproc-agent: `feedback/validation_rounds.json`). This file (magpie-agent's AGENT.md / CLAUDE.md) auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT. Counter that asymmetric prior.
+Two agents share this workspace. **This file auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT** — counter that asymmetric prior.
 
 **Ambiguous terms** — `flywheel`, `round`, `round N`, `validation round`, `verification round`, `validation_rounds.json`, generic `validate` / `validation` without "consistency" or a specific module:
-→ **ASK which agent before acting**. Cost of a wrong run is ~1 hour of compute and a polluted validation_rounds.json.
+→ **ASK which agent before acting.** A wrong run costs ~1 hour of compute and pollutes a validation_rounds.json.
 
-**Quick recency check** (run before assuming):
-```bash
-python3 -c "import json,os
-for label,path in [('magpie','magpie-agent/audit/validation_rounds.json'),('preproc','magpie-preproc-agent/feedback/validation_rounds.json')]:
-  if os.path.exists(path):
-    d=json.load(open(path)); r=d.get('rounds',[])
-    print(f'{label}: {len(r)} rounds, latest R{r[-1].get(\"round\")} on {r[-1].get(\"date\")}' if r else f'{label}: 0 rounds')"
-```
+**Cues**: GAMS modules / `module_XX.md` / `vm_*` / `q*` / `equations.gms` → magpie-agent · R packages / `calcOutput` / `readSource` / `pik-piam` / `.cs3` / `.mz` → preproc-agent · both or neither → ASK, even in auto mode.
 
-**Cues**:
-- GAMS modules / `module_XX.md` / `vm_*` / `q*` / `equations.gms` → magpie-agent
-- R packages / `calcOutput` / `readSource` / `pik-piam` / `.cs3` / `.mz` → preproc-agent
-- Both or neither match → ASK explicitly, even in auto mode.
-
-**Sentinels** — when confirming, use agent-prefixed labels: `magpie R3` / `preproc R3`, never bare `R3`. Round numbers do NOT compare across agents.
-
-**Discipline** — never edit the OTHER agent's files as collateral; never append to the wrong validation_rounds.json.
-
-(Origin: 2026-05-08 misroute incident — "round three" interpreted as magpie-agent re-test when user meant preproc-agent R3.)
+📋 **Full procedure** — recency check, sentinels (`magpie R3`, never bare `R3`), cross-agent discipline: **`agent/helpers/twin_agent_disambiguation.md`**. Load it before acting on any term above.
 
 ---
 
@@ -181,43 +165,20 @@ Before answering code-specific questions, verify documentation is current:
 
 ### Step 1c: Check Active Realization & Configuration
 
-**Before answering about any module with multiple realizations** (20+ modules have them):
+**Before answering about any module with multiple realizations** (23 of 46 — re-run the
+detection, do not trust a remembered list):
 
-1. **Check the active realization**:
-   ```bash
-   grep "cfg\$gms\$<module_name>" ../config/default.cfg
-   ```
-   Example: `cfg$gms$water_demand <- "all_sectors_aug13"` vs `"agr_sector_aug13"`
+1. **Check the active realization** in `../config/default.cfg`.
+2. **⚠️ ALWAYS LEAD WITH THE DEFAULT REALIZATION.** Describe the default first and most
+   prominently; mark others clearly as alternatives. Semantic validation found that
+   describing a non-default realization as if it were active caused **Critical-severity**
+   cascading errors — wrong variable names, wrong equations, wrong mechanisms.
+3. **Verify your docs match.** Module docs state which realization they cover. If the user
+   runs a different one, say so: "My documentation covers `X`, but your config uses `Y`."
+4. **Check key scenario switches** that change module behaviour (e.g. `s15_exo_diet = 1`).
 
-2. **⚠️ ALWAYS LEAD WITH THE DEFAULT REALIZATION**: When a module has multiple realizations, describe the **default** one first and most prominently. Non-default realizations should be clearly marked as alternatives. Semantic validation found that describing non-default realizations as if they were active caused **Critical-severity** cascading errors (wrong variable names, wrong equations, wrong mechanisms).
-
-3. **Verify your docs match**: Module docs state which realization they cover (e.g., "Realization: `fbask_jan16`"). If the user is running a different realization, **say so**: "My documentation covers `X` realization, but your config uses `Y`. The behavior may differ."
-
-4. **Check key scenario switches** when they change module behavior:
-   ```bash
-   grep "cfg\$gms\$c<module_num>" ../config/default.cfg | head -5
-   ```
-   Example: `s15_exo_diet = 1` completely changes food demand behavior. If a non-default switch is active, mention it.
-
-**Modules with multiple realizations** (check before answering — dynamic, since the previous static list omitted half the cases including hubs M10/M14/M52/M56):
-
-```bash
-# Run this to see which modules have >1 realization (23 of 46 as of 2026-07-31 —
-# M14 gained a second realization in the develop sync; re-run rather than trust this):
-# Parses module.gms DISPATCH lines, not `ls -d`. A realization directory can sit
-# on disk without GAMS ever dispatching on it -- an untracked local leftover from
-# an older checkout or a rename. Two exist today (44_biodiversity/bii_target_apr24,
-# 59_som/cellpool_aug16): both are undispatched AND untracked in git, so `ls -d`
-# reports 3 realizations for M44 and M59 where the truth is 2. That over-count
-# nearly caused a bug to be filed against a CORRECT doc.
-for m in ../modules/*/; do
-  [ -f "$m/module.gms" ] || continue
-  count=$(grep -cE '^\$Ifi.*\$include.*realization\.gms' "$m/module.gms")
-  [ "$count" -gt 1 ] && basename "$m" | cut -d_ -f1
-done | tr '\n' ', '
-```
-
-If the user's module appears in that list, run Step 1c. If not (single realization), skip 1c.
+📋 **Commands + the `ls -d` over-count trap**: `agent/helpers/realization_selection.md`
+§ *Detecting the active realization*. If the module has a single realization, skip 1c.
 
 ### Step 1d: Anti-Confabulation Rules — see `agent/helpers/verifiers.md`
 
@@ -312,6 +273,7 @@ When the user's question matches a trigger pattern, **silently read the helper f
 | Documentation maintenance | `agent/helpers/maintenance_protocol.md` | "maintenance", "keep docs current", "docs outdated", "documentation drift", "update docs", "stale documentation", "doc maintenance" |
 | End-of-session / committing learnings | `agent/helpers/session_cleanup.md` | "goodbye", "wrapping up", "done for now", "close session", "session over", "ending session", "commit learnings" |
 | Editing or creating documentation | `agent/helpers/link_dont_duplicate.md` | "update doc", "edit module_XX.md", "add to documentation", "doc edit", "duplicate this", "where does this belong", "linking vs duplicating", "writing docs" |
+| **Ambiguous agent term (which of the two agents?)** | `agent/helpers/twin_agent_disambiguation.md` | "flywheel", "round N", "validation round", "verification round", "validation_rounds.json", "preproc agent", "which agent", "twin agent" |
 | Path confusion / where files live | `agent/helpers/directory_structure.md` | "where is", "which directory", "AGENT.md path", "directory structure", "where does this live", "path confusion" |
 
 ### Sync freshness badges
@@ -374,9 +336,7 @@ The knowledge base spans four locations: `modules/` (all 46 modules — `module_
 **Environment**: 22 (conservation), 44 (biodiversity), 45 (climate), 54 (phosphorus)
 **Other**: 28 (age class), 36 (employment), 37 (labor productivity), 80 (optimization)
 
-**Adjacent layers (NOT GAMS modules)**:
-- **Upstream (R preprocessing)** — `madrat` / `mrcommons` / `mrmagpie` / `mrland` / `mrwater` / `mrdrivers` / `mrlandcore` / `mrdownscale`. These produce the `input.tgz` MAgPIE consumes. Route input-data questions to `PREPROC_AGENT.md`.
-- **Downstream (R reporting)** — `magpie4`. Produces `report.mif` / IAMC variables from the GDX output. Route report.mif / output-interpretation questions to `agent/helpers/magpie4_reference.md`.
+**Adjacent layers (NOT GAMS modules)** — **upstream** R preprocessing (`madrat`, `mrcommons`, `mrmagpie`, `mrland`, `mrwater`, `mrdrivers`, `mrlandcore`, `mrdownscale`) produces the `input.tgz` MAgPIE consumes → route to `PREPROC_AGENT.md`; **downstream** `magpie4` produces `report.mif` / IAMC variables from the GDX → route to `agent/helpers/magpie4_reference.md`.
 
 *Full list with descriptions in Core_Architecture.md Section 4.2*
 
@@ -462,10 +422,10 @@ The where-errors-occur table, high-vs-low-risk content stratification, the macOS
 
 - **"MAgPIE accounts for..." / "The model considers..." / "MAgPIE models X..."** → ⚠️ **CRITICAL CHECK**: Is this CALCULATED or from INPUT DATA? Is this MECHANISTIC or PARAMETERIZED? See `core_docs/Query_Patterns_Reference.md` Pattern 4 + Appendix; apply the three-check verification (equation structure, parameter source, dynamic feedback).
 
-- **🔒 PUBLIC repo — secret & PII hygiene**: `mscrawford/magpie-agent` and `mscrawford/magpie-preproc-agent` are **public**, and the parent magpie repo's `origin`/`upstream` is the **public** `magpiemodel/magpie`. So everything committed here — including git *history* — is world-readable. **NEVER** commit secrets (API keys, tokens, private keys, passwords), credential files (`.env`, `*.pem`, `id_rsa`), or pasted private data; do not echo a secret into a doc/log/transcript even transiently. **Avoid hard-coding local absolute paths** (`/Users/<you>`, `/p/projects/...`) into docs, audit logs, or example commands — use `<magpie-root>`, `~`, or a relative path (these accumulate: a prior audit found `/Users/<user>` baked into thousands of history blobs). Before any push, run the **pre-push secret/PII gate** in `agent/helpers/session_cleanup.md` §2a. A stray `git add -A` from the **parent** repo would publish agent files to public MAgPIE — the agent surface is kept out of the parent index via `.git/info/exclude`; do not remove those entries.
-
-  - **⚠️ DISPATCHING SUBAGENTS — this is where the leak actually starts (R59, 2026-07-18).** Do **NOT** paste an absolute working directory into a subagent prompt (`WORKING DIR: /Users/<you>/…`). Agents **echo their environment into their output**: they quote tool results containing the path, cite it in findings, and bake it into scripts they write. R59 leaked 8 local paths into this public repo that way — every one traceable to the absolute path *I* put in 24 agent prompts, not to agent carelessness. Instead: give the agent a **repo-relative brief** ("you are in the `magpie-agent` repo; the MAgPIE GAMS code is its parent at `../modules/`"), and let it resolve paths itself. Scrubbing before push is the last line, **not** the fix — and it cannot clean history.
-  - **Enforcement**: `scripts/check_local_paths.py` (Check 40) fails the gate on any local absolute path in a tracked file. Pre-existing occurrences are pinned in `audit/local_path_allowlist.json` (ratchet — new leaks fail, archived history is left alone). Placeholders (`/Users/<you>`, `/Users/<user>`, `/Users/name`) and the rule quoting itself (`/Users/...`) are exempt by design. Verify the checker with `--self-test` before trusting a clean result.
+- **🔒 PUBLIC repo — secret & PII hygiene.** `mscrawford/magpie-agent`, `mscrawford/magpie-preproc-agent` and the parent's upstream `magpiemodel/magpie` are all **public**, git *history* included. **NEVER** commit secrets (API keys, tokens, private keys, passwords), credential files (`.env`, `*.pem`, `id_rsa`), or pasted private data — not even transiently into a doc, log or transcript. **Never hard-code a local absolute path** (`/Users/<you>`, `/p/projects/...`); use `<magpie-root>`, `~`, or a relative path.
+  - **⚠️ When DISPATCHING SUBAGENTS, never paste an absolute working directory into the prompt.** Agents echo their environment into their output. R59 leaked 8 local paths into this public repo that way — traceable to the path put *into* the prompts, not to agent carelessness. Give a repo-relative brief and let the agent resolve paths itself.
+  - **Commit messages are NOT scanned** by Check 40 (it reads tracked files only) and publish on push. Scan both.
+  - 📋 Rationale, the R59 post-mortem, enforcement + allowlist mechanics: `agent/helpers/session_cleanup.md` § *Public-repo secret & PII hygiene*.
 
 **After writing or editing module documentation**: run `bash scripts/validate_consistency.sh` (the run's summary prints the live check count). See `core_docs/Response_Guidelines.md` for the full response checklist.
 

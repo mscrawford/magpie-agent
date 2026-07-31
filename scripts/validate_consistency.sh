@@ -152,7 +152,7 @@ check_finding() {
 # 2026-07-16 (later): +1 advisory check (36 hand-off DIRECTION claims vs
 # slice-resolved code truth, check_dependent_direction.py) -> 36.
 SECTION_NUM=0
-SECTION_TOTAL=39
+SECTION_TOTAL=40
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -660,6 +660,40 @@ fi
 
 if [ "$DEPLOY_FAIL" -eq 0 ]; then
     check_pass "All deployment copies in sync (AGENT.md + CLAUDE.md)"
+fi
+
+# =============================================
+# Check 43: AGENT.md size budget (2026-07-31)
+#
+# AGENT.md is ALWAYS loaded, so its size is a per-session cost on every question.
+# The project has had a "<40 KB" rule for months and it was enforced BY MEMORY
+# ALONE -- which is exactly how the file drifted back to 42.2 KiB without anyone
+# noticing (audit/BACKLOG.md: "no mechanical check measures AGENT.md's size").
+# A rule nobody measures is a rule nobody keeps, so it is measured here now.
+#
+# ERROR at 40 KiB (the stated threshold, hard). WARN 1 KiB earlier, so the
+# budget is visible while there is still room to act rather than at the moment
+# an edit is blocked. Relief when it fires: hoist a SITUATIONAL block to a
+# helper in agent/helpers/ and leave the trigger inline -- see the 2026-07-31
+# hoists of the Twin-agent block, Step 1c mechanics and the PII rationale.
+# =============================================
+print_section "" "Checking AGENT.md size budget (always-loaded context cost)..."
+
+AGENT_MD_ERROR_AT=40960   # 40 KiB — the stated threshold
+AGENT_MD_WARN_AT=39936    # 39 KiB — early signal, 1 KiB of headroom
+
+if [ -f "AGENT.md" ]; then
+    AGENT_MD_BYTES=$(wc -c < AGENT.md | tr -d ' ')
+    AGENT_MD_KIB=$(python3 -c "print(f'{$AGENT_MD_BYTES/1024:.2f}')" 2>/dev/null || echo "?")
+    if [ "$AGENT_MD_BYTES" -ge "$AGENT_MD_ERROR_AT" ]; then
+        check_error "AGENT.md is ${AGENT_MD_BYTES} B (${AGENT_MD_KIB} KiB), over the ${AGENT_MD_ERROR_AT} B budget — hoist a situational block to agent/helpers/ and leave the trigger inline"
+    elif [ "$AGENT_MD_BYTES" -ge "$AGENT_MD_WARN_AT" ]; then
+        check_warning "AGENT.md is ${AGENT_MD_BYTES} B (${AGENT_MD_KIB} KiB), within 1 KiB of the ${AGENT_MD_ERROR_AT} B budget"
+    else
+        check_pass "AGENT.md size ${AGENT_MD_BYTES} B (${AGENT_MD_KIB} KiB), under the ${AGENT_MD_ERROR_AT} B budget"
+    fi
+else
+    check_error "AGENT.md not found — cannot measure the always-loaded context budget"
 fi
 
 # =============================================

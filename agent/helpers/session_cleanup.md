@@ -96,3 +96,47 @@ cp AGENT.md ../AGENT.md && cp AGENT.md ../CLAUDE.md
 
 <!-- APPEND-ONLY: Add new entries at the bottom. Never remove old ones. -->
 <!-- Format: - YYYY-MM-DD: [lesson] (source: [user feedback | session experience]) -->
+
+---
+
+## Public-repo secret & PII hygiene — full detail (hoisted from AGENT.md, 2026-07-31)
+
+The **binding rules** stay in AGENT.md, because a rule that only loads after you have
+already leaked is worthless. This is the rationale and the enforcement detail.
+
+**Why the exposure is total**: `mscrawford/magpie-agent` and
+`mscrawford/magpie-preproc-agent` are public, and the parent magpie repo's
+`origin`/`upstream` is the public `magpiemodel/magpie`. Everything committed — **including
+git history** — is world-readable. History cannot be scrubbed after the fact.
+
+**Local absolute paths accumulate.** A prior audit found `/Users/<user>` baked into
+thousands of history blobs. Use `<magpie-root>`, `~`, or a relative path.
+
+### Dispatching subagents — where the leak actually starts (R59, 2026-07-18)
+
+Do **NOT** paste an absolute working directory into a subagent prompt
+(`WORKING DIR: /Users/<you>/…`). Agents **echo their environment into their output**: they
+quote tool results containing the path, cite it in findings, and bake it into scripts they
+write.
+
+R59 leaked 8 local paths into this public repo that way — **every one traceable to the
+absolute path put into 24 agent prompts, not to agent carelessness.** Instead give a
+repo-relative brief: *"you are in the `magpie-agent` repo; the MAgPIE GAMS code is its
+parent at `../modules/`"* — and let the agent resolve paths itself.
+
+Scrubbing before push is the last line, **not** the fix, and it cannot clean history.
+
+### Enforcement
+
+`scripts/check_local_paths.py` (Check 40) fails the gate on any local absolute path in a
+tracked file. Pre-existing occurrences are pinned in `audit/local_path_allowlist.json` — a
+ratchet: new leaks fail, archived history is left alone. Placeholders (`/Users/<you>`,
+`/Users/<user>`, `/Users/name`) and the rule quoting itself are exempt by design. Verify
+the checker with `--self-test` before trusting a clean result.
+
+**Commit messages are NOT scanned by Check 40** — it reads tracked files only, and a
+message publishes on push. Scan both.
+
+**A stray `git add -A` from the PARENT repo** would publish agent files to public MAgPIE.
+The agent surface is kept out of the parent index via `.git/info/exclude`; do not remove
+those entries.
