@@ -12,11 +12,13 @@
 
 3. **⚠️ M14 now has TWO realizations — this note said "only" and was CORRECTED on 2026-07-31.** As of the sync to `2c02843ec` (PRs #882 + #919), `modules/14_yields/module.gms:31,32` carries two `$Ifi "%yields%"` branches:
    - `managementcalib_aug19` — **the default** (`config/default.cfg:357`), and what nearly all of `module_14.md` describes.
-   - `dynRegPastrTau_apr26` — opt-in. Identical except that the pasture-yield spillover coefficient becomes regional and time-varying (`f14_yld_past_switch(t_all,i)` replaces the global scalar `s14_yld_past_switch`).
+   - `dynRegPastrTau_apr26` — opt-in (`cfg$gms$yields <- "dynRegPastrTau_apr26"`). **One functional change**, implemented at **two** sites (`equations.gms:39` and `nl_fix.gms:11`) plus an input-path re-plumb: the pasture-yield spillover coefficient becomes regional and time-varying, `f14_yld_past_switch(t_all,i)` replacing the global scalar `s14_yld_past_switch`.
 
-   **So M14 is now a Step-1c module: check the active realization before answering.** Two consequences worth knowing. (a) The scalar `s14_yld_past_switch` **does not exist** under `dynRegPastrTau_apr26` — any answer naming it must say which realization it assumes. (b) This document's bare-basename citations (`preloop.gms:NNN` etc.) now resolve implicitly to the *default* realization under MANDATE 16; that is right for the default but a trap for text about the new one, so qualify new citations with the full path.
+   **⚠️ But with default data the two are behaviourally IDENTICAL.** The shipped `f14_yld_past_switch.csv` is a uniform-0.25 dummy — 456 cells, 38 years × 12 regions, every one 0.25, which is exactly `managementcalib_aug19`'s scalar default. Verified against rev4.132 on 2026-07-31; the file's own header calls itself a "Dummy file". The realization buys the *capability* to vary spillover regionally, not a different result out of the box.
 
-   Cross-module interfaces are **unchanged** between the two (same 21 `vm_`/`pm_`/`im_`/`fm_`/`pcm_`/`sm_` identifiers, verified by set-diff 2026-07-31), so no attribution table moves.
+   **So M14 is now a Step-1c module: check the active realization before answering.** Two consequences worth knowing. (a) The scalar `s14_yld_past_switch` **does not exist** under `dynRegPastrTau_apr26` — any answer naming it must say which realization it assumes, and setting it there is a **silent no-op** that still gets written into the run's `config.yml`, so the run record looks as if it applied. (b) `module_14.md`'s ~85 bare-basename citations (`preloop.gms:NNN` etc.) now resolve implicitly to the *default* realization; that is right for the default but a trap for text about the new one, so qualify new citations with the full path.
+
+   Cross-module interfaces are **unchanged** between the two (**20** real `vm_`/`pm_`/`im_`/`fm_`/`pcm_`/`sm_` identifiers, verified by set-diff 2026-07-31 — a raw grep says 21 only because `fm_croprea`, a typo for `fm_croparea`, sits in a `*'` comment at `preloop.gms:62` in both and is declared nowhere), so no attribution table moves.
 
    *History, retained:* an earlier `biocorrect` realization was removed in 2021 (commit `cc84ae5e1`); there is no `input` realization (`modules/14_yields/input/` is the input-data directory). Section 18 of `module_14.md` was corrected on 2026-05-17 (it had listed `biocorrect` and `input` as alternative realizations) — that correction remains valid; only the "only realization" half is superseded.
 
@@ -24,9 +26,9 @@
 
 ## 💡 Tips
 
-- Always check which yield realization is active: `managementcalib_aug19` (default, recommended) applies both tau-based growth and calibration corrections.
+- Always check which yield realization is active — there are now **two** (see note 3). `managementcalib_aug19` (default) applies both tau-based growth and calibration corrections; `dynRegPastrTau_apr26` does the same but takes the pasture spillover coefficient from a regional/time-varying input table instead of a scalar.
 - Yield data comes from LPJmL crop model output — if using different climate scenarios, yields change through `f14_yields` input.
 
 ## 📝 Lessons from Usage
 
-- Module 14 Last Verified: 2026-05-17 (LPJmL-yields audit: corrected dead realization list and drifted `input.gms` citations)
+- Module 14 Last Verified: **2026-07-31** (sync `0d7ebeb90..2c02843ec`: second realization `dynRegPastrTau_apr26` documented; `f14_yld_past_switch` values verified against rev4.132 as a uniform-0.25 dummy). Prior: 2026-05-17 (LPJmL-yields audit: corrected dead realization list and drifted `input.gms` citations)
