@@ -100,6 +100,44 @@ check_error() {
     log_color "${RED}❌ $1${NC}" "❌ $1"
 }
 
+# --- Advisory -> gating promotion (2026-07-31) -------------------------------
+# Most sections routed real DOC BUGS to check_warning and reserved check_error
+# for "the checker crashed". A warning cannot fail the build, so a genuine
+# defect in those classes printed and was ignored. The blocker on promoting them
+# was always the unmeasured false-positive burden.
+#
+# It is now measured. Every checker below reports ZERO findings against the
+# current corpus -- verified by reading each SUMMARY line and its denominator,
+# not by trusting an aggregate -- so promoting them costs nothing today and
+# makes the next regression in those classes fail CI instead of scrolling past.
+#
+# The measurement that earned the caution: check_attribution_omissions sat at
+# "8 real doc bugs" for weeks and the true number was 0 -- two parser bugs. So
+# zero findings only means something for a checker with a PROVEN positive
+# control, which is why promotion is gated on a registered --self-test with a
+# pinned assertion count (audit/selftest_assertion_counts.json).
+#
+# To demote one, delete its line. That is the whole dial.
+GATING_CHECKERS="
+check_attribution_omissions
+check_attribution_prose
+check_attribution_tables
+check_consumer_attribution
+check_dependent_counts
+check_role_attribution
+check_set_members
+"
+
+# check_finding <checker_name> <message>
+# Routes a real FINDING (not a crash) to error or warning by the list above.
+check_finding() {
+    if grep -qx "$1" <<<"$GATING_CHECKERS"; then
+        check_error "$2"
+    else
+        check_warning "$2"
+    fi
+}
+
 # Section labels auto-number from SECTION_NUM; SECTION_TOTAL is the SINGLE place
 # the denominator lives (R7: replaced the 28 hardcoded "/28" literals, which had
 # no self-check and drifted). The legacy first arg ("N/M") is now ignored.
@@ -920,7 +958,7 @@ if [ -f "$CONSUMER_CHECK_SCRIPT" ]; then
         check_pass "Consumer-count attribution: ${SCANNED:-?} claims verified"
     elif [ $CONSUMER_EXIT -eq 0 ]; then
         MISMATCH_COUNT=$(echo "$CONSUMER_OUTPUT" | grep -oE "Found [0-9]+ consumer-count" | grep -oE "[0-9]+" | head -1)
-        check_warning "Consumer-count attribution: ${MISMATCH_COUNT:-?} mismatch(es)"
+        check_finding check_consumer_attribution "Consumer-count attribution: ${MISMATCH_COUNT:-?} mismatch(es)"
         echo "$CONSUMER_OUTPUT" | grep "^  " | head -10 | while read -r line; do
             log "    $line"
         done
@@ -1070,7 +1108,7 @@ if [ -f "$SET_MEMBERS_SCRIPT" ]; then
     if echo "$SETMEM_OUTPUT" | head -1 | grep -q "0 mismatches"; then
         check_pass "$SETMEM_SUMMARY"
     elif [ $SETMEM_EXIT -eq 0 ]; then
-        check_warning "$SETMEM_SUMMARY"
+        check_finding check_set_members "$SETMEM_SUMMARY"
         echo "$SETMEM_OUTPUT" | grep "^    " | head -10 | while read -r line; do
             log "    $line"
         done
@@ -1131,7 +1169,7 @@ if [ -f "$ROLE_ATTR_SCRIPT" ]; then
     if echo "$ROLEATTR_OUTPUT" | head -1 | grep -q "0 mismatches"; then
         check_pass "$ROLEATTR_SUMMARY"
     elif [ $ROLEATTR_EXIT -eq 0 ]; then
-        check_warning "$ROLEATTR_SUMMARY"
+        check_finding check_role_attribution "$ROLEATTR_SUMMARY"
         echo "$ROLEATTR_OUTPUT" | grep "^    " | head -10 | while read -r line; do
             log "    $line"
         done
@@ -1164,7 +1202,7 @@ if [ -f "$ATTR_TABLES_SCRIPT" ]; then
         check_pass "${ATTRTAB_COVERAGE:-Attribution tables: 0 phantom findings}"
     elif [ $ATTRTAB_EXIT -eq 0 ]; then
         ATTRTAB_N=$(echo "$ATTRTAB_OUTPUT" | grep -oE "[0-9]+ advisory phantom" | grep -oE "^[0-9]+")
-        check_warning "Attribution tables: ${ATTRTAB_N:-some} phantom finding(s) (advisory; run scripts/check_attribution_tables.py)"
+        check_finding check_attribution_tables "Attribution tables: ${ATTRTAB_N:-some} phantom finding(s) (run scripts/check_attribution_tables.py)"
         echo "$ATTRTAB_OUTPUT" | grep "attribution-table" | head -10 | while read -r line; do
             log "    $line"
         done
@@ -1196,7 +1234,7 @@ if [ -f "$ATTR_PROSE_SCRIPT" ]; then
         check_pass "${ATTRPROSE_COVERAGE:-Attribution prose: 0 phantom findings}"
     elif [ $ATTRPROSE_EXIT -eq 0 ]; then
         ATTRPROSE_N=$(echo "$ATTRPROSE_OUTPUT" | grep -oE "[0-9]+ advisory phantom" | grep -oE "^[0-9]+")
-        check_warning "Attribution prose: ${ATTRPROSE_N:-some} phantom finding(s) (advisory; run scripts/check_attribution_prose.py)"
+        check_finding check_attribution_prose "Attribution prose: ${ATTRPROSE_N:-some} phantom finding(s) (run scripts/check_attribution_prose.py)"
         echo "$ATTRPROSE_OUTPUT" | grep "attribution-prose" | head -10 | while read -r line; do
             log "    $line"
         done
@@ -1230,7 +1268,7 @@ if [ -f "$ATTR_OMIT_SCRIPT" ]; then
     elif [ "${ATTROMIT_NPH:-0}" = "0" ] && [ "${ATTROMIT_NOM:-0}" = "0" ]; then
         check_pass "${ATTROMIT_COVERAGE:-Attribution omissions: 0 findings}"
     elif [ $ATTROMIT_EXIT -eq 0 ]; then
-        check_warning "Attribution omissions: ${ATTROMIT_NPH:-?} phantom / ${ATTROMIT_NOM:-?} omission (advisory; run scripts/check_attribution_omissions.py)"
+        check_finding check_attribution_omissions "Attribution omissions: ${ATTROMIT_NPH:-?} phantom / ${ATTROMIT_NOM:-?} omission (run scripts/check_attribution_omissions.py)"
         echo "$ATTROMIT_OUTPUT" | grep -E "omits M[0-9]|references the var nowhere" | head -10 | while read -r line; do
             log "    $line"
         done
@@ -1262,7 +1300,7 @@ if [ -f "$DEPCOUNT_SCRIPT" ]; then
     elif [ "${DEPCOUNT_N:-0}" = "0" ]; then
         check_pass "${DEPCOUNT_COVERAGE:-Dependent counts: 0 mismatches}"
     elif [ $DEPCOUNT_EXIT -eq 0 ]; then
-        check_warning "Dependent counts: ${DEPCOUNT_N:-?} stale count claim(s) (advisory; run scripts/check_dependent_counts.py)"
+        check_finding check_dependent_counts "Dependent counts: ${DEPCOUNT_N:-?} stale count claim(s) (run scripts/check_dependent_counts.py)"
         echo "$DEPCOUNT_OUTPUT" | grep -E "claims [0-9]+|vs truth|mismatch" | head -8 | while read -r line; do
             log "    $line"
         done
