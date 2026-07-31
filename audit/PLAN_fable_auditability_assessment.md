@@ -87,20 +87,45 @@ the tool usable for only one of them. 32 assertions under the self-test ratchet.
 Running it supersedes the hand-measured table this section used to carry (Rule 4 — the
 tool is the persisted artifact; the hand count was not re-derivable). Measured output:
 
-| file | class | hunks | avoid-term hits |
-|---|---|---:|---:|
-| `modules/module_10.md` | data_source | 1 | 1 |
-| `modules/module_10_notes.md` | data_source | 1 | 0 |
-| `modules/module_29_notes.md` | mechanism | 1 | 0 |
-| `modules/module_40.md` | attribution_role | 1 | 1 |
-| `modules/module_80.md` | citation | 2 | 1 |
-| `modules/module_32.md` | mechanism | — | *hunk no longer applies; SKIPPED* |
-| **`modules/module_58.md`** | **attribution_role** | 1 | **held back** |
+| file | class | status | avoid-term hits |
+|---|---|---|---:|
+| `modules/module_80.md` | citation | 2 hunks, answerable | 1 |
+| `modules/module_29_notes.md` | mechanism | 1 hunk, answerable | 0 |
+| `modules/module_40.md` | attribution_role | 1 hunk, answerable | 1 |
+| `modules/module_10.md` | data_source | 1 hunk, **not answerable from the arena** | 1 |
+| `modules/module_10_notes.md` | data_source | **SKIPPED** — pure addition (+4/-0) | 0 |
+| `modules/module_32.md` | mechanism | **SKIPPED** — hunk no longer applies | — |
+| **`modules/module_58.md`** | **attribution_role** | **held back** for the probe | 15 |
 
-So the default arena carries **6 injected hunks across 5 files**, none of them
-nitrogen-loaded, plus 6 clean controls. `module_58` is held back by default and runs
-alone via `--only-hunk modules/module_58.md`, as a calibration probe on where the
-safeguard threshold sits. If it bails, that is a datum, not a failure, and the six stand.
+### The class is smaller than it looked, and this is the finding
+
+The blind classes were sized at **8 hunks**. Building the arena and checking each hunk for
+findability leaves **4 answerable ones**, plus `module_58` held back. Three fell out, each
+for a different reason, and none of them for a reason visible from the class counts:
+
+- `module_32.md` — the hunk no longer applies to today's text. Known.
+- `module_10_notes.md` — the fix was a **pure addition** (+4/-0), so reverse-applying it
+  *deletes* a warning section rather than injecting a wrong claim. The defect is missing
+  content, which the brief puts out of scope. Unfindable by construction.
+- `module_10.md` — the LUH2 → LUH3 fix, whose own text cites
+  `mrlandcore::calcLanduseInitialisation`. **That ground truth lives in the R preprocessing
+  packages, and the arena mirrors GAMS.** The auditor would be asked for something it was
+  never given the material to check.
+
+**The `module_10.md` case is the substantive one, because it changes the diagnosis.** The
+plan's premise is that these four classes are blind because their claims name no interface
+variable, so a var-anchored checker has nothing to bind. That holds for `attribution_role`
+and `citation`. For `data_source` it may be the wrong explanation entirely: the gate cannot
+see the defect because **the truth is in a repo the gate does not read**, and no amount of
+binding fixes that. Phase 3's pre-registered verdict for `data_source` was class 2, "a
+corpus convention". It should now be tested against the rival hypothesis that the class is
+answerable only with the preproc corpus in the arena — which is a different build, and
+arguably a job for the preproc agent rather than a convention here.
+
+**n = 4 is small.** The per-class split (2 citation, 1 mechanism, 1 attribution_role) is
+what this can support; an aggregate percentage over four items should not be quoted.
+`module_58` runs alone via `--only-hunk modules/module_58.md`, as a calibration probe on
+where the safeguard threshold sits. If it bails, that is a datum, not a failure.
 
 ### Protocol
 
@@ -118,7 +143,7 @@ safeguard threshold sits. If it bails, that is a datum, not a failure, and the s
 5. **Run an Opus arm on the identical protocol.** Without it there is no tier comparison and
    the session answers a different question than the one asked. One arena serves both arms.
 
-### Three things the first build got wrong, now closed
+### Five things the first build got wrong, now closed
 
 Recorded because each failed **silently** — every one of them produces output identical to
 a correct run, and all three would have yielded a clean-looking Phase 2 number that meant
@@ -138,6 +163,19 @@ nothing.
 3. **The control picker optimised length alone** and chose `module_50` (nr_soil_budget) and
    `module_55` (awms) — so the Fable arm would have failed on the *controls* while every
    seeded file ran fine. Controls are now held to the same term bar as the seeds.
+4. **Pure-addition hunks were injected as though they were defects.** Reverse-applying one
+   deletes content; the resulting defect is missing content, which the brief puts out of
+   scope. Now skipped by default, with the reason printed.
+5. **Injections whose ground truth is outside the arena were counted in the denominator**,
+   so a class could be reported as a BLIND SPOT of the auditor when the arena had simply
+   never supplied the material. `score` now separates `missed` from `missed, UNANSWERABLE`,
+   excludes the latter from the rate, and refuses to print BLIND for a class with no
+   answerable injections.
+
+A note on how these were found, since it generalises: the first four came from *using* the
+tool and reading what it printed. The fifth came from asking a different question — not
+"does the harness run?" but "is each injected bug actually findable from what the auditor
+is given?" A harness can be working perfectly and still be asking an unanswerable question.
 
 ### Prompt hygiene — non-negotiable, and it is a repo rule
 
@@ -179,10 +217,10 @@ Recorded **before** the session runs:
 |---|---|---|
 | `citation` | **class 1** | The mechanism is already known: Check 25 exempts module docs, and that exemption is unsafe for the 23 multi-realization modules. M80 has four realizations each with its own `solve.gms`. |
 | `attribution_role` | class 2 | Var-anchored checkers exist (Check 31) but the claims do not name variables. |
-| `data_source` | class 2 | "comes from LUH2/LUH3" names a dataset, not an identifier. |
+| ~~`data_source`~~ | ~~class 2~~ → **withdrawn** | Superseded before the session ran, by the arena build: the one `data_source` hunk is anchored in R preprocessing, so this class cannot be adjudicated from a GAMS-only arena at all. Recorded as withdrawn rather than deleted — the original prediction was wrong for a reason worth keeping. |
 | `mechanism` | **class 3** | "MAgPIE models X" vs "applies a historical rate" is a semantic distinction; the three-check protocol is judgment. |
 
-**If all four come back class 2, I was wrong and that is the finding.**
+**If the remaining three all come back class 2, I was wrong and that is the finding.**
 
 ---
 

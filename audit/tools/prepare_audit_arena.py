@@ -64,6 +64,22 @@ CONTROLS
                    not certified clean, so some of those may be real bugs the
                    auditor found. Calling them FPs would score the auditor down
                    for being right. They need triage; the tool says so.
+  findability      Two ways a hunk can be unfindable BY CONSTRUCTION, both of
+                   which would score as a miss and mean nothing:
+                   (1) a PURE-ADDITION hunk. Reverse-applying it deletes content
+                       rather than injecting a wrong claim, so the defect is
+                       missing content — which the brief puts out of scope.
+                       Measured: `module_10_notes.md#0` is +4/-0.
+                   (2) GROUND TRUTH OUTSIDE THE ARENA. `module_10.md#0` is the
+                       LUH2->LUH3 data-source fix, and its own text cites
+                       `mrlandcore::calcLanduseInitialisation`. That truth lives
+                       in the R preprocessing packages; the arena mirrors GAMS.
+                       The auditor is being asked for something it was never
+                       given the material to check.
+                   (1) is skipped by default. (2) is flagged, not skipped —
+                   whether to supply the preproc corpus is the operator's call —
+                   and recorded in the key so `score` can separate "missed" from
+                   "could not have been found".
 
 PATH HYGIENE (this repo is PUBLIC)
 ----------------------------------
@@ -149,6 +165,12 @@ LEAK_MIN_LEN = 40
 # identifier in a table is not.
 LEAK_MIN_LEN_SPECIFIC = 18
 SPECIFIC_RE = re.compile(r"\.gms:\d")
+
+# A hunk whose fix cites one of these is anchored in the R preprocessing layer,
+# not in the GAMS source the arena mirrors. See the `findability` control.
+NON_GAMS_TRUTH_RE = re.compile(
+    r"\bmr[a-z]+::|\bmadrat\b|calcOutput|readSource|calcLUH|input\.tgz"
+    r"|\.mz\b|\.cs3\b|preproc", re.I)
 
 # Absolute-path shapes that must never reach a tracked artifact.
 ABS_PATH_RE = re.compile(
@@ -245,6 +267,19 @@ def build_gams_mirror(root: Path) -> int:
     if (MAGPIE_DIR / "main.gms").is_file():
         shutil.copy2(MAGPIE_DIR / "main.gms", root / "main.gms")
     return n
+
+
+def hunk_shape(diff: str) -> tuple[int, int]:
+    """(added, removed) content lines — file headers excluded, markers respected.
+
+    Written this way because the obvious `grep '^-[^-]'` undercounts: a removed
+    markdown bullet appears as `-- \\`vm_prod...\\``, whose second character is
+    the bullet's own hyphen, and the heuristic drops it. That misreading called
+    `module_40.md#0` a pure addition when it replaces a claim.
+    """
+    add = sum(1 for l in diff.splitlines() if l.startswith("+") and not l.startswith("+++"))
+    rem = sum(1 for l in diff.splitlines() if l.startswith("-") and not l.startswith("---"))
+    return add, rem
 
 
 def leak_tokens(injected: list[dict], hunks_by_key: dict[str, str]) -> dict[str, str]:
@@ -471,6 +506,14 @@ def cmd_prepare(args) -> int:
             skipped.append({**{k: c[k] for k in ("commit", "file", "hunk", "class")},
                             "why": "file absent from today's corpus"})
             continue
+        add, rem = hunk_shape(c["diff"])
+        if rem == 0 and not args.allow_deletions:
+            skipped.append({**{k: c[k] for k in ("commit", "file", "hunk", "class")},
+                            "why": f"pure addition (+{add}/-0): reverse-apply deletes "
+                                   f"content, so the defect is MISSING CONTENT, which "
+                                   f"the brief puts out of scope — unfindable by "
+                                   f"construction"})
+            continue
         before = target.read_text()
         r = subprocess.run(["git", "apply", "-R", "--recount", "--unsafe-paths",
                             "--directory=.", "-"],
@@ -489,7 +532,10 @@ def cmd_prepare(args) -> int:
             continue
         injected.append({"commit": c["commit"], "file": c["file"], "hunk": c["hunk"],
                          "class": c["class"], "desc": c["desc"],
-                         "ranges": changed_ranges(before, after)})
+                         "ranges": changed_ranges(before, after),
+                         "ground_truth": ("outside the arena (R preprocessing)"
+                                          if NON_GAMS_TRUTH_RE.search(c["diff"])
+                                          else "GAMS source in the arena")})
         hunks_by_key[f"{c['file']}#{c['hunk']}"] = c["diff"]
 
     if not injected:
@@ -544,7 +590,15 @@ def cmd_prepare(args) -> int:
     print(f"injected : {len(injected)}")
     for i in injected:
         rng = ",".join(f"{a}-{b}" for a, b in i["ranges"])
-        print(f"  + {i['file']}#{i['hunk']} [{i['class']}] lines {rng}")
+        off = "  !! ground truth OUTSIDE the arena" if i["ground_truth"].startswith("outside") else ""
+        print(f"  + {i['file']}#{i['hunk']} [{i['class']}] lines {rng}{off}")
+    unverifiable = [i for i in injected if i["ground_truth"].startswith("outside")]
+    if unverifiable:
+        print(f"\n  !! {len(unverifiable)} injection(s) cite R-preprocessing ground truth")
+        print("  !! (mr* packages / madrat), which the arena does NOT mirror — it mirrors")
+        print("  !! GAMS. The auditor cannot check these from what it was given, so a MISS")
+        print("  !! on them is uninformative. Either supply the preproc corpus or read")
+        print("  !! their result as 'not asked answerably', never as a blind spot.")
     if skipped:
         print(f"skipped  : {len(skipped)}")
         for s in skipped:
@@ -639,20 +693,35 @@ def score_findings(key: dict, found: list[dict], window: int) -> dict:
     caught_file = [k for k, v in hits.items()
                    if k not in caught_line and v]
     missed = [k for k, v in hits.items() if not v]
+    # A miss on an injection whose ground truth was never put in the arena says
+    # nothing about the auditor, so it is reported apart from the real misses.
+    outside = {f"{i['file']}#{i['hunk']}" for i in injected
+               if str(i.get("ground_truth", "")).startswith("outside")}
+    missed_unanswerable = sorted(k for k in missed if k in outside)
+    missed = sorted(k for k in missed if k not in outside)
 
+    # [caught, answerable, unanswerable]. The denominator excludes injections the
+    # arena never made checkable — otherwise a class whose ground truth lives in
+    # another repo is reported as a BLIND SPOT of the auditor, which is a claim
+    # about the arena wearing the auditor's name.
     by_class: dict[str, list[int]] = {}
     for i in injected:
         k = f"{i['file']}#{i['hunk']}"
-        b = by_class.setdefault(i["class"], [0, 0])
+        b = by_class.setdefault(i["class"], [0, 0, 0])
+        if k in outside:
+            b[2] += 1
+            continue
         b[1] += 1
         if k in caught_line:
             b[0] += 1
 
     return {
         "n_injected": len(injected),
+        "n_answerable": len(injected) - len(outside),
         "caught_line": sorted(caught_line),
         "caught_file_only": sorted(caught_file),
-        "missed": sorted(missed),
+        "missed": missed,
+        "missed_unanswerable": missed_unanswerable,
         "by_class": by_class,
         "flags_without_injection": [p for p in per_finding
                                     if p["verdict"] == "FLAG_NO_INJECTION"],
@@ -680,12 +749,21 @@ def cmd_score(args) -> int:
     print(f"caught (line match) : {len(res['caught_line'])}")
     print(f"caught (file only)  : {len(res['caught_file_only'])}   <- weak, needs triage")
     print(f"missed              : {len(res['missed'])}")
-    if n:
-        print(f"DETECTION RATE      : {100*len(res['caught_line'])/n:.1f}% "
-              f"({len(res['caught_line'])}/{n}) by line match")
-    print("\nBY BUG CLASS (caught/total):")
-    for k, (c, t) in sorted(res["by_class"].items(), key=lambda kv: -kv[1][1]):
-        print(f"  {k:22s} {c:3d}/{t:<3d}  {'BLIND' if c == 0 else ''}")
+    if res["missed_unanswerable"]:
+        print(f"missed, UNANSWERABLE: {len(res['missed_unanswerable'])}   <- ground truth "
+              f"was never in the arena; excluded from the rate")
+    ans = res["n_answerable"]
+    if ans:
+        print(f"DETECTION RATE      : {100*len(res['caught_line'])/ans:.1f}% "
+              f"({len(res['caught_line'])}/{ans}) by line match, over ANSWERABLE injections")
+    if ans != n:
+        print(f"                      ({n} injected, {n - ans} not checkable from the arena)")
+    print("\nBY BUG CLASS (caught/answerable):")
+    for k, (c, t, u) in sorted(res["by_class"].items(), key=lambda kv: -kv[1][1]):
+        note = "BLIND" if (t > 0 and c == 0) else ""
+        if u:
+            note += f"  [{u} not checkable from the arena — no verdict]"
+        print(f"  {k:22s} {c:3d}/{t:<3d}  {note}")
     print(f"\nflags on files with NO injection: {len(res['flags_without_injection'])}")
     print("  These are NOT automatically false positives. The corpus is not certified")
     print("  clean, so some may be real bugs the auditor found. Triage before scoring.")
@@ -779,9 +857,26 @@ def self_test() -> int:
           and res["flags_without_injection"][0]["file"] == "modules/module_99.md")
     check("scorer routes an unlisted file to OFF_LIST", len(res["off_list"]) == 1)
     check("scorer reports the blind class as 0 caught",
-          res["by_class"]["data_source"] == [0, 1])
+          res["by_class"]["data_source"] == [0, 1, 0])
     check("scorer reports the seen class as 1 caught",
-          res["by_class"]["attribution_role"] == [1, 1])
+          res["by_class"]["attribution_role"] == [1, 1, 0])
+
+    # A miss on an injection the arena never made checkable must not be scored
+    # as a blind spot — that is the module_10 LUH2->LUH3 case.
+    key_out = {"injected": [{"file": "modules/module_10.md", "hunk": 0,
+                             "class": "data_source", "ranges": [(50, 50)],
+                             "ground_truth": "outside the arena (R preprocessing)"},
+                            {"file": "modules/module_40.md", "hunk": 0,
+                             "class": "attribution_role", "ranges": [(10, 12)],
+                             "ground_truth": "GAMS source in the arena"}],
+               "controls": [], "filelist": ["modules/module_10.md", "modules/module_40.md"]}
+    ro = score_findings(key_out, [{"file": "modules/module_40.md", "line": 11}], window=5)
+    check("an unanswerable miss is separated from a real miss",
+          ro["missed"] == [] and ro["missed_unanswerable"] == ["modules/module_10.md#0"])
+    check("the rate denominator excludes unanswerable injections",
+          ro["n_answerable"] == 1 and ro["n_injected"] == 2)
+    check("an unanswerable class is NOT labelled a blind spot of the auditor",
+          ro["by_class"]["data_source"] == [0, 0, 1])
 
     # --- a scorer that catches nothing must not look clean ---
     res0 = score_findings(key, [], window=5)
@@ -845,6 +940,22 @@ def self_test() -> int:
               "modules/module_50.md" in pick_controls(c, {"modules/module_40.md"}, 2, None))
     check("avoid regex counts the terms Fable bails on",
           avoid_hits("nitrogen N2O fertiliser manure") == 4 and avoid_hits("land carbon") == 0)
+
+    # --- findability preconditions, on the real hunks that motivated them ---
+    hdr = "--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n"
+    check("hunk_shape sees a replaced markdown bullet as +1/-1, not a pure addition",
+          hunk_shape(hdr + "-- `vm_prod`: old text\n+- `vm_prod`: new text\n") == (1, 1))
+    check("hunk_shape sees a genuine pure addition as -0",
+          hunk_shape(hdr + "+### a new warning section\n+with a body line\n")[1] == 0)
+    check("a pure-addition hunk is identified as unfindable",
+          hunk_shape(hdr + "+only added\n")[1] == 0)
+    check("R-preprocessing ground truth is detected in a hunk",
+          bool(NON_GAMS_TRUTH_RE.search("via `mrlandcore::calcLanduseInitialisation`")))
+    check("madrat and .mz also count as outside-the-arena ground truth",
+          bool(NON_GAMS_TRUTH_RE.search("read.magpie of a .mz file"))
+          and bool(NON_GAMS_TRUTH_RE.search("the madrat cache")))
+    check("a plain GAMS citation is NOT flagged as outside the arena",
+          not NON_GAMS_TRUTH_RE.search("`modules/29_cropland/detail_apr24/equations.gms:12`"))
     check("the meta layer that holds the answer key is stripped by default",
           set(META_DIRS) == {"audit", "project"})
 
@@ -884,6 +995,10 @@ def main() -> int:
     p.add_argument("--keep-meta", action="store_true",
                    help="do NOT strip audit/ and project/ (debugging only — they "
                         "contain the answer key and the build will then abort)")
+    p.add_argument("--allow-deletions", action="store_true",
+                   help="inject pure-addition hunks too. Reverse-applying one deletes "
+                        "content, so the defect is missing content — out of scope for "
+                        "the brief and unfindable by construction.")
     p.add_argument("--allow-leaks", action="store_true",
                    help="build even if the blindness scan finds the answer in the "
                         "corpus. The resulting number is not a measurement.")
