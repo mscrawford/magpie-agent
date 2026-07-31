@@ -85,6 +85,52 @@ land module populates slices of shared variables, M32/M30/M35/M29 all land in
 24-28 and the metric stops discriminating. A single integer is compressing a
 multi-relation graph, and no compression is free.
 
+## RESOLVED 2026-07-31 (second pass): SUBJECT vs FACTOR, not `=e=` vs `=l=`/`=g=`
+
+The open question was framed as a binary: should the equation-LHS POPULATE rule
+credit inequality constraints, or be restricted to `=e=`? **Both answers were
+wrong, and the operator turned out to be the wrong discriminator entirely.**
+
+Re-derived from the seven contested edges rather than from the argument. Six of
+them are canonical MAgPIE constraints that bind at the optimum and genuinely
+co-determine their variable:
+
+| module | variable | equation | what it does |
+|---|---|---|---|
+| M21 | `vm_prod_reg` | `q21_notrade` | production must cover supply + trade balance |
+| M29 | `vm_lu_transitions` | `q29_land_snv_trans` | floor on cropland -> semi-natural transition |
+| M35 | `vm_landexpansion` | `q35_max_forest_establishment` | cap on forest establishment |
+| M35 | `vm_lu_transitions` | `q35_*_restoration` | restoration floors |
+| M41 | `vm_area` | `q41_area_irrig` | irrigated area <= area equipped for irrigation |
+| M43 | `vm_watdem` | `q43_water` | withdrawals <= available water |
+
+Restricting to `=e=` would delete all six. The seventh is different in kind:
+
+- M38 / `vm_prod` (`q38_labor_share_target`) — `sum(kcr, vm_prod * v38_laborhours_need
+  * pm_hourly_costs) =g= ...`. **`v38_laborhours_need` is a VARIABLE**, so this is a
+  bilinear product, and `vm_prod` appears on **both sides**. The constraint fixes a
+  labor-share ratio; production is determined by M30 and M17. Crediting M38 was wrong.
+
+**The rule that separates them**: credit the candidate when the constraint treats it as
+its **subject**, not when it is one **factor** in a product of variables. Being scaled by
+a *parameter* is still subject — `sum(ct,p32_aff_pol_timestep(ct,j2)) *
+vm_natforest_reduction(j2) =e= 0` pins the variable to zero, so M32 really does determine
+it. That case is the negative control against over-correcting into "anything multiplied
+is excluded".
+
+**Measured before it was written, on the whole population**: of the **33** distinct LHS
+forms this rule credits across the corpus, exactly **one** is bilinear — the M38 case.
+So the refinement drops one wrong edge and no right ones. POPULATE 161 -> 160.
+
+Implemented as `_is_bilinear_factor` in `scripts/check_attribution_omissions.py`, with a
+positive and a negative real-corpus case in `classify_cases`; the negative was shown to
+FAIL before the fix. It also removes a false finding downstream: `module_17.md`'s
+attribution omissions drop 9 -> 8, because "vm_prod omits M38" was never a real omission.
+
+> The honest caveat: **the anchors cannot settle this.** `compute_module_centrality.py`'s
+> self-test passes under `=e=`-only too. It is a judgement about GAMS semantics, decided on
+> reading seven equations, not something the instrument can adjudicate.
+
 ## RULED 2026-07-31 (Mike): report TWO columns — **Owns** and **Reaches**
 
 `Owns` = D2 (owner -> readers). `Reaches` = the D3 union. The single `Total` goes

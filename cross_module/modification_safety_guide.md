@@ -1057,7 +1057,7 @@ library(magpie4)
 
 | Rank | Module | Owns | Reaches | gap | Depends On | Risk Level |
 |-----:|--------|-----:|--------:|----:|-----------:|------------|
-| 1 | 31_past | 1 | 21 | +20 | 14 | 🔴 CRITICAL ⚠ |
+| 1 | 31_past | 1 | 21 | +20 | 13 | 🔴 CRITICAL ⚠ |
 | 2 | 10_land | 18 | 18 | 0 | 5 | 🔴 CRITICAL |
 | 3 | 35_natveg | 5 | 18 | +13 | 10 | 🔴 CRITICAL ⚠ |
 | 4 | 32_forestry | 6 | 17 | +11 | 13 | 🟠 HIGH ⚠ |
@@ -1065,10 +1065,9 @@ library(magpie4)
 | 6 | 34_urban | 1 | 16 | +15 | 6 | 🟠 HIGH ⚠ |
 | 7 | 29_cropland | 7 | 15 | +8 | 11 | 🟠 HIGH |
 | 8 | 09_drivers | 14 | 14 | 0 | 0 | 🟠 HIGH |
-| 9 | 17_production | 12 | 12 | 0 | 9 | 🟠 HIGH |
-| 10 | 18_residues | 4 | 11 | +7 | 11 | 🟡 MEDIUM |
-| 11 | 38_factor_costs | 4 | 11 | +7 | 12 | 🟡 MEDIUM |
-| 12 | 20_processing | 2 | 11 | +9 | 4 | 🟡 MEDIUM |
+| 9 | 17_production | 12 | 12 | 0 | 8 | 🟠 HIGH |
+| 10 | 18_residues | 4 | 11 | +7 | 10 | 🟡 MEDIUM |
+| 11 | 20_processing | 2 | 11 | +9 | 4 | 🟡 MEDIUM |
 
 **Risk bands are a stated rule, not an inherited judgement**: 🔴 CRITICAL at
 `Reaches` ≥ 18, 🟠 HIGH at ≥ 12, 🟡 MEDIUM below. The ⚠ marks `gap` ≥ +10 — a module

@@ -193,6 +193,63 @@ CROSS_IFACE_RE = re.compile(r"^(?:vm|pm|im|pcm|fm)_[a-zA-Z]")
 # be a coefficient, never something the constraint determines.
 ENDOGENOUS_IFACE_RE = re.compile(r"^vm_[a-zA-Z]")
 
+# Any GAMS VARIABLE in MAgPIE naming: interface `vm_` or module-local `vNN_`.
+# Used to tell a constraint's SUBJECT from a mere FACTOR in a product -- see
+# `_is_bilinear_factor`.
+ANY_VAR_RE = re.compile(r"\b(v[a-z]*\d*_[A-Za-z0-9_]+)\b")
+
+
+def _split_terms(expr: str) -> list[str]:
+    """Split an expression on top-level `+`/`-` (not inside parentheses)."""
+    terms, depth, start = [], 0, 0
+    for i, ch in enumerate(expr):
+        if ch in "([":
+            depth += 1
+        elif ch in ")]":
+            depth -= 1
+        elif ch in "+-" and depth == 0:
+            terms.append(expr[start:i])
+            start = i + 1
+    terms.append(expr[start:])
+    return [t for t in terms if t.strip()]
+
+
+def _is_bilinear_factor(lhs: str, cand: str) -> bool:
+    """True if `cand` only ever appears MULTIPLIED BY ANOTHER VARIABLE on `lhs`.
+
+    The equation-LHS rule credits a variable the constraint DETERMINES. That
+    holds when the variable is the constraint's subject, including when it is
+    scaled by a parameter -- `sum(ct,p32_aff_pol_timestep(ct,j2)) *
+    vm_natforest_reduction(j2) =e= 0` pins the variable to zero, so M32 really
+    does determine it.
+
+    It does NOT hold when the variable is one factor of a product of VARIABLES.
+    `sum(kcr, vm_prod(j2,kcr) * v38_laborhours_need(j2,kcr) * ...) =g= ...`
+    (`q38_labor_share_target`) constrains a labor-share RATIO; `vm_prod` is an
+    input to it and even appears on both sides. Crediting M38 as a populator of
+    `vm_prod` is simply wrong -- production is determined by M30 and M17.
+
+    Measured on the full population before being written: of the 33 distinct LHS
+    forms this rule credits across the corpus, exactly ONE is bilinear, and it is
+    that M38 case. So this drops one wrong edge and no right ones.
+
+    Note this is a strictly narrower question than the operator (`=e=` vs
+    `=l=`/`=g=`). Restricting by operator instead would drop six CORRECT edges --
+    the trade balance, the SNV relocation floor, the forest-establishment cap,
+    the restoration floors, the irrigation-infrastructure cap and the water
+    availability constraint -- all canonical MAgPIE constraints that bind at the
+    optimum and genuinely co-determine their variable.
+    """
+    saw = False
+    for term in _split_terms(lhs):
+        if cand not in term:
+            continue
+        saw = True
+        others = {v for v in ANY_VAR_RE.findall(term)} - {cand}
+        if not ("*" in term and others):
+            return False  # at least one term has it as the subject
+    return saw
+
 # ---------------------------------------------------------------------------
 # CODE SIDE — the role-resolved reference map
 # ---------------------------------------------------------------------------
@@ -321,9 +378,13 @@ def _classify_statement(stmt: str) -> tuple[set[str], set[str]]:
     #
     # Only fires when the lead contributed nothing, so every statement the old
     # rule already classified keeps its exact previous answer.
+    # Refined 2026-07-31 (second pass): `_is_bilinear_factor` excludes a
+    # candidate that only ever appears multiplied by ANOTHER VARIABLE, which is a
+    # factor in a product rather than the subject the constraint determines.
     if is_equation and not pop:
         for cand in _cross_vars(lhs):
-            if ENDOGENOUS_IFACE_RE.match(cand) and is_interface_var(cand):
+            if (ENDOGENOUS_IFACE_RE.match(cand) and is_interface_var(cand)
+                    and not _is_bilinear_factor(lhs, cand)):
                 pop.add(cand)
     read = (_cross_vars(lhs) | _cross_vars(rest)) - pop
     if lead and attr is not None and attr not in _POPULATING_ATTRS:
@@ -1268,6 +1329,29 @@ def self_test() -> int:
          'fm_attributes("nr",oilcake_substitutes20) ) =g= sum(kpr, '
          'v20_secondary_substitutes(i2,"oilcakes",kpr) * fm_attributes("nr",kpr))',
          set(), {"fm_attributes"}),
+        # --- SUBJECT vs FACTOR (2026-07-31, second pass) -----------------------
+        # The pair that fixes the operator framing. The question is NOT `=e=` vs
+        # `=l=`/`=g=`; it is whether the constraint's LHS treats the variable as
+        # its SUBJECT or as one FACTOR of a product of variables.
+        #
+        # 38_factor_costs/sticky_labor/equations.gms — q38_labor_share_target.
+        # `v38_laborhours_need` is a VARIABLE, so this is a bilinear product, and
+        # `vm_prod` appears on BOTH sides. The constraint fixes a labor-share
+        # ratio; production is determined by M30 and M17, never by M38.
+        ("vm_ multiplied by another VARIABLE is a factor, not POPULATE",
+         'q38_labor_share_target(j2) .. sum(kcr, vm_prod(j2,kcr) * '
+         'v38_laborhours_need(j2,kcr) * sum((ct, cell(i2,j2)), '
+         'pm_hourly_costs(ct,i2,"scenario"))) =g= sum(ct, p38_min_labor_share(ct,j2)) '
+         '* sum(kcr, vm_prod(j2,kcr) * v38_laborhours_need(j2,kcr))',
+         set(), {"vm_prod"}),
+        # 32_forestry/dynamic_may24/equations.gms — scaled by a PARAMETER only,
+        # which pins the variable to zero. Still the subject, so still POPULATE.
+        # This is the control that stops the fix above from over-correcting into
+        # "anything multiplied is excluded".
+        ("vm_ scaled by a PARAMETER is still the subject, so POPULATE",
+         'q32_natforest_reduction(j2) .. sum(ct, p32_aff_pol_timestep(ct,j2)) '
+         '* vm_natforest_reduction(j2) =e= 0',
+         {"vm_natforest_reduction"}, set()),
     ]
     for label, stmt, want_pop, want_read in classify_cases:
         got_pop, got_read = _classify_statement(stmt)

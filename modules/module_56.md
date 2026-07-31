@@ -1133,7 +1133,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 ### Dependency Chains
 
-**Centrality**: Rank 24 of 46 by `Reaches` — but see the caveat below
+**Centrality**: Rank 23 of 46 by `Reaches` — but see the caveat below
 **Hub Type**: GHG Policy & Carbon Pricing Hub
 **Interface degree**: Owns 5 / Reaches 5 (gap 0) / depends on 13
 **Provides to**: 5 modules — 11 (costs), 15 (food), 52 (carbon), 57 (MACC), 59 (som)

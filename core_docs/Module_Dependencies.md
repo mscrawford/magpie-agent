@@ -28,7 +28,7 @@ MAgPIE modules communicate through three types of interface variables:
 
 | Rank | Module | Owns | Reaches | gap | Depends On | Primary Role |
 |-----:|--------|-----:|--------:|----:|-----------:|--------------|
-| 1 | **31_past** | 1 | 21 | +20 | 14 | Pasture area and production |
+| 1 | **31_past** | 1 | 21 | +20 | 13 | Pasture area and production |
 | 2 | **10_land** | 18 | 18 | 0 | 5 | Core land allocation |
 | 3 | **35_natveg** | 5 | 18 | +13 | 10 | Natural vegetation |
 | 4 | **32_forestry** | 6 | 17 | +11 | 13 | Forestry plantations |
@@ -36,14 +36,12 @@ MAgPIE modules communicate through three types of interface variables:
 | 6 | **34_urban** | 1 | 16 | +15 | 6 | Urban land |
 | 7 | **29_cropland** | 7 | 15 | +8 | 11 | Cropland management |
 | 8 | **09_drivers** | 14 | 14 | 0 | 0 | Socioeconomic drivers |
-| 9 | **17_production** | 12 | 12 | 0 | 9 | Production hub |
-| 10 | **18_residues** | 4 | 11 | +7 | 11 | Crop residues |
-| 11 | **38_factor_costs** | 4 | 11 | +7 | 12 | Factor costs |
-| 12 | **20_processing** | 2 | 11 | +9 | 4 | Commodity processing |
+| 9 | **17_production** | 12 | 12 | 0 | 8 | Production hub |
+| 10 | **18_residues** | 4 | 11 | +7 | 10 | Crop residues |
+| 11 | **20_processing** | 2 | 11 | +9 | 4 | Commodity processing |
 
-Ranks 10-12 are a three-way tie at `Reaches` 11. All three are shown rather than
-cut, because a "top 10" that drops two of three tied modules misreports its own
-coverage.
+Ranks 10-11 are a two-way tie at `Reaches` 11. Both are shown rather than cut,
+because a "top 10" that drops one of two tied modules misreports its own coverage.
 
 **`11_costs` is deliberately not a row.** It owns 1 and reaches 1, but **depends on
 27** — every cost-producing module feeds its objective-function aggregation. It is

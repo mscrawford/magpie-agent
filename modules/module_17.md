@@ -793,7 +793,7 @@ where vm_supply (declared in M16) carries the demand side. (vm_import, vm_export
 
 **Centrality Analysis** (from Module_Dependencies.md):
 - **Centrality Rank**: 9th of 46 modules (ranked by `Reaches`)
-- **Interface degree**: Owns 12 / Reaches 12 (gap 0) / depends on 9
+- **Interface degree**: Owns 12 / Reaches 12 (gap 0) / depends on 8
 - **Hub Type**: **Aggregation Hub** (receives spatial, provides regional)
 - **Role**: **Production aggregator** - connects cell-level to regional supply
 
