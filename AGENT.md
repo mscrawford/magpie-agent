@@ -202,7 +202,8 @@ Before answering code-specific questions, verify documentation is current:
 **Modules with multiple realizations** (check before answering — dynamic, since the previous static list omitted half the cases including hubs M10/M14/M52/M56):
 
 ```bash
-# Run this to see which modules have >1 realization (currently 22 of 46):
+# Run this to see which modules have >1 realization (23 of 46 as of 2026-07-31 —
+# M14 gained a second realization in the develop sync; re-run rather than trust this):
 # Parses module.gms DISPATCH lines, not `ls -d`. A realization directory can sit
 # on disk without GAMS ever dispatching on it -- an untracked local leftover from
 # an older checkout or a rename. Two exist today (44_biodiversity/bii_target_apr24,

@@ -87,8 +87,10 @@ module_80.md is four-way ambiguous.
 
 This is the same failure class that made CI red on 2026-07-31 (a bare cite resolving by
 filesystem walk order), one level in: *inside* a module doc, where the checker deliberately
-does not look. 22 of 46 modules have more than one realization, so the exposed surface is
-about half the corpus.
+does not look. **23 of 46** modules have more than one realization — counted from
+`module.gms` dispatch lines, and note this is one more than the 22 recorded in `AGENT.md`,
+because the develop sync gave M14 a second realization — so the exposed surface is exactly
+half the corpus. M80 is the worst case at four.
 
 **Actionable**: narrow Check 25's module-doc exemption to SINGLE-realization modules. That
 is the one mechanical fix this benchmark run identified.
