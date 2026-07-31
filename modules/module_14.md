@@ -794,7 +794,7 @@ Module 14 reads 9 input data files:
 
 **From Module 10 (Land):**
 
-- **pm_land_start(j,"past")**: initial (1995) pasture area — declared `modules/10_land/landmatrix_dec18/declarations.gms:9`, populated `start.gms:8`. Weight for the regional LPJmL pasture-yield average (`preloop.gms:15-16`).
+- **pm_land_start(j,"past")**: initial (1995) pasture area — declared `modules/10_land/landmatrix_dec18/declarations.gms:9`, populated `modules/10_land/landmatrix_dec18/start.gms:8`. Weight for the regional LPJmL pasture-yield average (`preloop.gms:15-16`).
 
 ---
 
@@ -1268,7 +1268,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 ### 16.5 Coordination with Calibration Modules
 
 - **Module 30 (Croparea):** Provides `fm_croparea(t_all,j,w,kcr)` (historical crop-area patterns; declared `modules/30_croparea/simple_apr24/input.gms:71`, default realization) for calibration weighting (`preloop.gms:60,68-73,127,138-143`)
-- **Module 10 (Land):** Provides `pm_land_start(j,"past")` (`modules/10_land/landmatrix_dec18/declarations.gms:9`, populated `start.gms:8`) — the weight for the regional LPJmL pasture-yield average (`preloop.gms:15-16`)
+- **Module 10 (Land):** Provides `pm_land_start(j,"past")` (`modules/10_land/landmatrix_dec18/declarations.gms:9`, populated `modules/10_land/landmatrix_dec18/start.gms:8`) — the weight for the regional LPJmL pasture-yield average (`preloop.gms:15-16`)
 - **External FAO/AQUASTAT Data:** Provide calibration targets for yield levels and irrigated/rainfed ratios
 
 ---

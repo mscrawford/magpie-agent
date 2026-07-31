@@ -325,7 +325,7 @@ synced, future Claude instances receive NONE of the documented lessons.
 
 ## Bug Distribution & Risk Stratification
 
-*(Hoisted from AGENT.md QUALITY GUARD to keep the always-loaded router lean. These are maintainer-facing flywheel stats; the binding "Three Rules" and the citation-cascade insight remain inline in AGENT.md.)*
+*(Hoisted from AGENT.md QUALITY GUARD to keep the always-loaded router lean. These are maintainer-facing flywheel stats; the binding "Four Rules" and the citation-cascade insight remain inline in AGENT.md.)*
 
 ### Bug Distribution (where errors actually occur)
 

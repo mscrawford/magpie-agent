@@ -431,11 +431,14 @@ The knowledge base spans four locations: `modules/` (all 46 modules — `module_
 > These rules come from systematic cross-verification of all documentation against
 > the GAMS codebase. **Every rule here prevented real bugs. Follow them.**
 
-### The Three Rules
+### The Four Rules
 
 1. **NEVER FABRICATE** — Copy variable names, equation names, realization names, and line numbers directly from code. Never construct them from context. (`ls ../modules/XX_name/` to verify realization directories)
 2. **RUN THE VALIDATOR** — After any doc edit: `bash scripts/validate_consistency.sh` (the run's summary prints the live check count). It catches wrong names, stale citations, and convention violations automatically.
 3. **VERIFY BEFORE CITING** — If you haven't read a file THIS session, don't cite its line numbers. Line numbers drift as code evolves.
+4. **NO FIGURE WITHOUT AN ARTIFACT** — Any quality/coverage/score number you write into a doc, commit message, or audit record must have a **persisted, re-runnable artifact** behind it: a script, a result file, or a logged command. A number computed in a throwaway shell and then written down is an **anecdote** — quote it as one ("reported", "not reproducible"), never as a measurement. When citing a figure you did not compute this session, name where it can be re-derived; if you cannot, say so in the same sentence.
+
+   > **Why this rule exists (the "9.52").** A quality score entered this corpus **once**, as a single prose sentence, with no computation behind it. It was then cited **35 times across 14 files** — every citation reading as corroboration, when all of them traced to that one unmeasured sentence. Provenance collapses to the weakest link, and a chain that cites itself is one source restated. The same failure recurred on 2026-07-31 in miniature: a "4 `=e=` / 4 `=l=` / 4 `=g=`" split in a commit message summed to 12 against a measured 11, and a "only 2 module lines carry a hard number" estimate undercounted the real surface (7 module docs) by 3.5x. Both were caught only by re-measuring.
 
 ### Cascade Effect (stays inline — gates citation accuracy)
 

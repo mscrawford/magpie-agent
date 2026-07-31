@@ -869,12 +869,12 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 - Smooths out inter-annual variability in carbon accumulation
 - Cannot capture annual disturbances (fires, storms) or year-to-year growth fluctuations
 
-**Chapman-Richards universality** (macros.gms:18):
+**Chapman-Richards universality** (`core/macros.gms:18`):
 - Single growth curve functional form for all forest types
 - k and m parameters vary by climate and plantation vs. natveg
 - May not capture complex growth dynamics (multiple cohorts, understory, disturbances)
 
-**Litter equilibrium assumption** (macros.gms:20):
+**Litter equilibrium assumption** (`core/macros.gms:20`):
 - 20-year linear approach to equilibrium (IPCC assumption)
 - Ignores litter decomposition rate variability (climate, soil type, litter quality)
 - After 20 years, assumes constant litter (no disturbances, management changes)
@@ -935,7 +935,7 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 - Assumes linear averaging of growth rates (may not reflect nonlinear interactions)
 - Sub-cell heterogeneity averaged out (no spatial variation within cell)
 
-**Asymptotic carbon density** (macros.gms:18):
+**Asymptotic carbon density** (`core/macros.gms:18`):
 - Chapman-Richards equation assumes single asymptote (A)
 - Uses secondary forest mature carbon as target for all forest types (plantations, other land)
 - Ignores potential for higher carbon in old-growth primary forests
@@ -1125,8 +1125,8 @@ vm_emissions_reg(i2,emis_oneoff,"co2_c") =e=
 - fm_carbon_density: Loaded in input.gms:16
 
 **Growth equations**: Confirmed ✅
-- m_growth_vegc: Chapman-Richards equation (macros.gms:18)
-- m_growth_litc_soilc: Linear 20-year equilibrium (macros.gms:20)
+- m_growth_vegc: Chapman-Richards equation (`core/macros.gms:18`)
+- m_growth_litc_soilc: Linear 20-year equilibrium (`core/macros.gms:20`)
 
 **Data inputs**: Confirmed ✅
 - lpj_carbon_stocks.cs3: LPJmL carbon densities (input.gms:18)
