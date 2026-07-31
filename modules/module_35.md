@@ -959,8 +959,14 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 
 #### Dependency Chains
 
-**Centrality**: **Rank 10 of 46** modules (HIGH centrality)
-**Total Connections**: **12** (provides to 5, depends on 7)
+**Centrality**: **Rank 3 of 46** modules (ranked by `Reaches`; HIGH centrality)
+**Interface degree**: Owns 5 / **Reaches 18** (gap +13) / depends on 10
+
+> ⚠️ **CORRECTED (2026-07-31)**: previously "Rank 10 of 46, 12 total connections". M35 rose
+> seven places because the retired `Total` metric counted only the 5 modules reading variables
+> M35 *declares*. It writes slices of `vm_land`, `vm_carbon_stock`, `vm_bv`, `vm_landexpansion`
+> and `vm_lu_transitions` — none of which it owns — and 18 modules read those. The old rank
+> understated its blast radius by more than a factor of three.
 **Hub Type**: Central Hub (land residual + carbon dynamics + conservation)
 
 **Provides To**: Module 10 (Land), Module 11 (Costs), Module 22 (Conservation - eligible restoration area), Module 32 (Forestry - max forest establishment potential), Module 52 (Carbon - natural vegetation carbon stocks), Module 56 (GHG policy - avoided deforestation potential), Module 73 (Timber - harvest production)
@@ -995,7 +1001,7 @@ v35_secdforest.lo(j,ac_sub) = max((1-s35_natveg_harvest_shr) * pc35_secdforest(j
 
 **Risk Level**: 🔴 **EXTREME RISK**
 
-**Justification**: Rank 10 of 46, 12 connections, 3+ circular cycles, CRITICAL for land balance (residual allocator), CRITICAL for carbon balance (largest natural carbon pool), CRITICAL for conservation policies, affects 7+ downstream modules including core modules 10, 52, 56
+**Justification**: Rank 3 of 46, reaches 18 modules (only 5 via variables it declares), 3+ circular cycles, CRITICAL for land balance (residual allocator), CRITICAL for carbon balance (largest natural carbon pool), CRITICAL for conservation policies, including core modules 10, 52, 56
 
 **Safe**: Adjusting disturbance rates, changing age-class progression logic, modifying BII coefficients, updating harvest rules
 **Dangerous**: Removing residual land allocation (breaks land balance), hardcoding natural vegetation area (prevents land use change), changing age-class dynamics (affects carbon growth), modifying conservation enforcement (violates NPI/NDC targets)

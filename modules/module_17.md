@@ -792,8 +792,8 @@ where vm_supply (declared in M16) carries the demand side. (vm_import, vm_export
 ### 16.2 Dependency Chains
 
 **Centrality Analysis** (from Module_Dependencies.md):
-- **Centrality Rank**: 7th of 46 modules
-- **Total Connections**: 14 (provides to 13 modules, depends on 1)
+- **Centrality Rank**: 9th of 46 modules (ranked by `Reaches`)
+- **Interface degree**: Owns 12 / Reaches 12 (gap 0) / depends on 9
 - **Hub Type**: **Aggregation Hub** (receives spatial, provides regional)
 - **Role**: **Production aggregator** - connects cell-level to regional supply
 
@@ -896,7 +896,7 @@ Production affects demand via prices (if endogenous demand) → **BACK TO START*
 
 **Why Medium-High Risk**:
 1. **Food balance dependency**: Wrong aggregation → food shortage/surplus
-2. **13 downstream modules**: Any change affects many modules
+2. **12 downstream modules**: Any change affects many modules
 3. **Part of 2 circular cycles**: Could destabilize feedback loops
 4. **Market clearing constraint**: Production must match demand via trade
 5. **Minimal code**: Only 1 equation, but errors have large impact

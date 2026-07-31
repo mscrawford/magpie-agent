@@ -758,8 +758,8 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 #### Dependency Chains
 
-**Centrality**: **Rank 4 of 46** modules (EXTREME centrality)
-**Total Connections**: **16** (provides to 5, depends on 11)
+**Centrality**: **Rank 4 of 46** modules (ranked by `Reaches`; EXTREME centrality)
+**Interface degree**: Owns 6 / **Reaches 17** (gap +11) / depends on 13
 **Hub Type**: Central Hub (three plantation types + carbon-price feedback)
 
 **Provides To**: Module 10 (Land), Module 11 (Costs + CDR rewards), Module 52 (Carbon), Module 56 (GHG policy), Module 73 (Timber)
@@ -794,7 +794,7 @@ pc32_land(j,"aff",ac_sub) = pc32_land(j,"aff",ac_sub) - p32_disturbance_loss_fty
 
 **Risk Level**: 🔴 **EXTREME RISK**
 
-**Justification**: Rank 4 of 46, 16 connections, participates in 2 major cycles (including most complex cycle), CRITICAL for carbon policy effectiveness
+**Justification**: Rank 4 of 46, reaches 17 modules (only 6 of them via variables it declares — the other 11 through slices it writes into `vm_land` and `vm_carbon_stock`), participates in 2 major cycles (including most complex cycle), CRITICAL for carbon policy effectiveness
 
 **Safe**: Adjusting rotation lengths, changing afforestation cost parameters, modifying NPI/NDC targets
 **Dangerous**: Removing CDR linkage to Module 56 (breaks carbon pricing mechanism), hardcoding afforestation area (prevents price response), changing max forest establishment logic (can make model infeasible)

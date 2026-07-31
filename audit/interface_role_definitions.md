@@ -128,16 +128,46 @@ The gap column separates two kinds of module cleanly: gap-zero modules own what 
 provide, while the large-gap ones (M35, M32, M29, M30, and M31 at +20) are land modules
 whose blast radius comes entirely from writing slices of variables they do not own.
 
-**STILL TO DO — the doc pass is NOT done.** Nothing above has been written into any
-doc yet. Deliberately deferred to its own reviewed commit with the before/after diff
-visible. Surface, now that it has been measured rather than guessed at: §1.2 in
-`core_docs/Module_Dependencies.md:25`; Appendix A in
-`cross_module/modification_safety_guide.md:1056`; **only 2** module lines carry a hard
-number (the other 14 enumerate module names, which are unaffected); and
-`modules/module_29.md:1079` quotes the old `| Rank | Module | Total | Provides To |
-Depends On |` column format, which the two-column ruling changes. The 3 frozen
-dependent-count findings (`module_56.md:1138`/`:1150`, `module_17.md:899`) unfreeze
-with that pass.
+**DONE 2026-07-31 — the doc pass landed.** Written into `core_docs/Module_Dependencies.md`
+§ 1.2, `cross_module/modification_safety_guide.md` Appendix A, and seven module docs. The
+three frozen dependent-count findings (`module_56.md`, `module_17.md`) are resolved, and
+`module_29.md`'s standing R58 caveat — "the cited source does not say that", held for
+human adjudication — is closed with doc and code agreeing.
+
+**The numbers now have a persisted source.** `audit/tools/compute_module_centrality.py`
+regenerates the table from `build_role_map()`, the same ground truth the validator uses.
+Written because item R6 forbids citing a figure that has no artifact behind it, and the
+ruling's own table had been computed in a throwaway heredoc. Regenerate; do not hand-edit.
+
+> **The surface measurement in the previous version of this section was WRONG, in the
+> direction that matters.** It claimed **"only 2"** module lines carried a hard number. The
+> real count is **seven module docs** — 09, 11, 17, 29, 30, 32, 35 — three of which restate
+> the rank a second time in a risk-justification line. A 3.5x undercount of the surface, and
+> it would have shipped a corpus where half the module docs contradicted the core table.
+
+**Two findings that only appeared once the numbers were computed:**
+
+1. **Retiring `Total` also retired the row SELECTION.** §1.2 was the top 10 *by `Total`*, so
+   the membership had no surviving justification. Under `Reaches` the old list was wrong in
+   both directions: it omitted `31_past`, which ranks **first** at 21, and `34_urban` at 16,
+   while seating `11_costs` at rank 1 on a reach of 1. Ruled 2026-07-31 (Mike): re-rank by
+   `Reaches` and fix membership; `11_costs` becomes a footnote. Ranks 10-12 tie at 11 and are
+   all shown, because cutting two of three tied rows misreports coverage.
+
+2. **The M10 positive control is BLIND to the distinction it was cited for.** This section
+   originally offered "M10 Owns = 18, matching the hand-derivation at `modules/module_10.md:793`"
+   as the control licensing the ruling. M10 is a **gap-zero** module, so D2 and D3 return the
+   same answer for it: the mutation swapping `Owns` to read D3 was run, and it **survived**.
+   The anchor validates the role map; it never validated the choice of definition. The
+   self-test now also pins `31_past` (Owns 1 / Reaches 21, gap +20), independently grounded in
+   `../modules/31_past/*/declarations.gms` declaring exactly one interface variable, plus an
+   assertion that the two definitions have not collapsed. Both mutation directions now die.
+
+**A third, independent corroboration of `Reaches`** surfaced during the pass: the R58
+hand-derivation in `modules/module_29.md` enumerated 14 downstream modules for M29. Computed
+`Reaches` is 15 and `Owns` is 7 — so that hand-derivation was reaching for the union
+definition all along, and its one omission (M58, which reads a `vm_land` slice M29 writes) is
+explained rather than hand-waved.
 
 ---
 

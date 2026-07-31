@@ -1325,8 +1325,8 @@ Module 30 provides **crop area** that Module 50 uses for nitrogen fertilizer dem
 
 ### Dependency Chains
 
-**Centrality Rank**: **5 of 46 modules** (one of the highest-centrality modules)
-**Total Connections**: **15** (provides to 9 modules, depends on 6)
+**Centrality Rank**: **5 of 46 modules** (ranked by `Reaches`; one of the highest-centrality modules)
+**Interface degree**: Owns 10 / **Reaches 16** (gap +6) / depends on 10
 **Hub Type**: **Central Production Hub** (crop allocation + production calculation)
 
 **Provides To** (9 modules):
@@ -1418,7 +1418,7 @@ Module 30 ──→ vm_area ──→ Module 29 ──→ vm_land("crop") ──
 **Justification**:
 - **Rank 5 of 46** modules (one of highest-centrality)
 - Participates in **ALL FIVE conservation laws**
-- **15 total connections** (9 downstream modules affected)
+- **Reaches 16 modules** (10 of them via variables it declares)
 - **3+ circular dependency cycles**
 - Core module for food security, water allocation, land use
 
@@ -1444,15 +1444,18 @@ Module 30 ──→ vm_area ──→ Module 29 ──→ vm_land("crop") ──
    - Food: Verify production meets demand (via Modules 17, 21, 16)
    - Nitrogen: Verify N demand scales correctly with crop area
 
-2. **Dependency Chain Validation** (test ALL 9 downstream modules):
-   - Module 17: Production aggregates correctly
-   - Module 18: Residue biomass calculated
-   - Module 38: Factor costs reasonable
-   - Module 41: Irrigation area consistent
-   - Module 42: Water demand calculated
-   - Module 50: N demand realistic
-   - Module 52: Carbon stocks updated
-   - Module 73: Bioenergy tree production tracked
+2. **Dependency Chain Validation** — test all 16 modules M30 reaches:
+   - **Direct** (10, reading variables M30 declares): 11 (costs), 14 (yields),
+     17 (production), 18 (residues), 29 (cropland), 32 (forestry), 42 (water demand),
+     50 (N soil budget), 53 (methane), 59 (som)
+   - **Slice-mediated** (6, reading variables M30 writes into but does not own):
+     31 (past), 38 (factor costs), 40 (transport), 44 (biodiversity), 71 (livestock
+     disaggregation), 73 (timber)
+
+   > ⚠️ **CORRECTED (2026-07-31)**: this list previously said "ALL 9" and then named
+   > **eight** modules, two of which (41 irrigation, 52 carbon) M30 does not reach at
+   > all, while omitting twelve that it does. Regenerate with
+   > `python3 audit/tools/compute_module_centrality.py --members 30`.
 
 3. **Circular Dependency Check**:
    - Run model to convergence (verify no oscillations)

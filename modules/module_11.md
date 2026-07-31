@@ -1143,8 +1143,16 @@ Module 11 does **not directly participate** in any conservation laws:
 ### 17.2 Dependency Chains
 
 **Centrality Analysis** (from Module_Dependencies.md):
-- **Centrality Rank**: **1st of 46 modules (HIGHEST CENTRALITY)**
-- **Total Connections**: 28 (provides to 1 [GAMS solver], depends on 27 modules)
+- **Centrality Rank**: **1st of 46 by inbound degree; 39th of 46 by `Reaches`**
+- **Interface degree**: Owns 1 / Reaches 1 (gap 0) / **depends on 27**
+
+> ⚠️ **CORRECTED (2026-07-31)**: this previously read "**1st of 46 (HIGHEST CENTRALITY)**,
+> 28 total connections". The rank was computed from `Total = ProvidesTo + DependsOn`, an
+> identity retired when the provides-to definition was split into two columns. M11 is 1st
+> only on the *inbound* half of that sum. By blast radius it is 39th of 46: changing
+> `11_costs` breaks almost nothing downstream, because the only thing reading its output is
+> the objective function. The centrality is real but points the other way, and conflating
+> the two directions is exactly what the retired metric did.
 - **Hub Type**: **Pure Sink Hub** (receives from many, provides only to solver)
 - **Role**: **Global aggregator** - all costs flow through Module 11
 

@@ -1069,20 +1069,21 @@ Module 29 does NOT directly participate in water balance (no water equations), b
 
 ### Dependency Chains
 
-**Centrality Rank**: 9 of 46 modules
-**Total Connections**: 13 (provides to 6, depends on 7) — *per the cited source; see caveat below*
+**Centrality Rank**: 7 of 46 modules (ranked by `Reaches`)
+**Interface degree**: Owns 7 / **Reaches 15** (gap +8) / depends on 11
 **Hub Type**: **Aggregation Hub** (aggregates cropland components: area + fallow + tree cover)
 
-> ⚠️ **CORRECTED (R58, 2026-07-17)**: this line previously read "**12** (provides to 6 modules, depends
-> on **6**)", attributed to `core_docs/Module_Dependencies.md`. **The cited source does not say that.**
-> `core_docs/Module_Dependencies.md:39` says `| 9 | 29_cropland | 13 | 6 | 7 |` under the header
-> `| Rank | Module | Total | Provides To | Depends On |` — i.e. **13 / 6 / 7**. Only "Rank 9" matched.
+> ✅ **RESOLVED (2026-07-31)** — this block carried an R58 caveat that the cited source
+> disagreed with the code and was "under human-adjudication hold". The hold is lifted:
+> `core_docs/Module_Dependencies.md` § 1.2 now reports Owns/Reaches generated from the role
+> map, and doc and code agree.
 >
-> ⚠️ **Both numbers understate the code.** Per the per-variable derivation below, M29's outward degree
-> alone is **14 modules** (10, 11, 13, 22, 30, 31, 32, 34, 35, 44, 50, 52, 56, 59). Treat the 13/6/7
-> figure as *what the cited doc records*, not as a verified count — `Module_Dependencies.md` is under
-> human-adjudication hold this round and was not updated. Use the per-variable table below for blast
-> radius.
+> The R58 hand-derivation was **very nearly right**: it enumerated 14 modules
+> (10, 11, 13, 22, 30, 31, 32, 34, 35, 44, 50, 52, 56, 59) where the computed `Reaches` is 15.
+> The single missing module is **58 (peatland)**, which reads `vm_land` — a variable M29
+> writes a slice of but does not own. That it landed on `Reaches` rather than `Owns` (7) is
+> independent corroboration that blast-radius derivations in this corpus have always meant
+> the union definition, which is part of why the 2026-07-31 ruling reports both columns.
 
 > ⚠️ **CORRECTED (R58, 2026-07-17).** The previous list named 6 modules, omitted
 > `pm_avl_cropland_iso`, `vm_carbon_stock` and `vm_bv` entirely, and hid four real consumers behind
@@ -1121,7 +1122,7 @@ source, in either the `name(` (equation) or `name.` (solution-level) form.
 
 **Reference**: `core_docs/Module_Dependencies.md` (**Section 1.2**, Module Centrality Rankings —
 `core_docs/Module_Dependencies.md:25`; the previous pointer to §3.1 was wrong — §3.1 is "Architectural
-Layers" at `:89`)
+Layers" at `:127`)
 
 ---
 

@@ -1133,10 +1133,22 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 ### Dependency Chains
 
-**Centrality**: HIGH (Rank #3 - policy hub)
+**Centrality**: Rank 24 of 46 by `Reaches` — but see the caveat below
 **Hub Type**: GHG Policy & Carbon Pricing Hub
-**Provides to**: 13 modules (carbon price signal affects many decisions)
+**Interface degree**: Owns 5 / Reaches 5 (gap 0) / depends on 13
+**Provides to**: 5 modules — 11 (costs), 15 (food), 52 (carbon), 57 (MACC), 59 (som)
 **Depends on**: Modules 52 (carbon stocks), 53 (methane), 51 (N₂O), 58 (peatland)
+
+> ⚠️ **CORRECTED (2026-07-31)**: previously "HIGH (Rank #3 - policy hub), provides to 13
+> modules (carbon price signal affects many decisions)". Both figures were wrong, and the
+> parenthetical explains how: **13 counted the modules that populate M56's declared variables,
+> which is the arrow reversed** — those are contributors, not recipients.
+>
+> The word "affects" was doing the rest of the work. M56's carbon price does influence many
+> modules' decisions, but it travels as a **cost term into `11_costs`'s objective function**,
+> not as an interface-variable edge. That is economic influence, not interface topology, and
+> this table measures the latter. Read the low rank as *"few modules read what M56 declares"*,
+> not as *"M56 does not matter"* — a distinction the retired single-number metric erased.
 
 ### Circular Dependencies
 
@@ -1147,7 +1159,7 @@ Module 56 is the **critical policy interface** that internalizes climate externa
 
 ### Modification Safety
 
-**Risk Level**: ⚠️ **MEDIUM-HIGH RISK** (Affects 13 modules)
+**Risk Level**: ⚠️ **MEDIUM-HIGH RISK** (directly reaches 5 modules; wide indirect reach via the cost objective)
 **Testing**: Verify carbon price impacts are economically reasonable
 
 ---

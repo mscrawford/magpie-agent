@@ -687,7 +687,9 @@ Module 16 (Demand) ──→ vm_supply(i,k) ──→ Module 21 (Trade)
 **Dangerous Modifications**:
 - ⚠️ Removing global production constraint → violates food balance
 - ⚠️ Hardcoding trade flows → can make model infeasible
-- ⚠️ Changing trade balance equations → affects 8 downstream modules
+- ⚠️ Changing trade balance equations → reaches 9 modules: `11_costs` reads M21's three
+  declared cost variables, and 8 more (16, 17, 18, 20, 38, 50, 70, 71) read `vm_prod_reg`,
+  which M21 writes into but `17_production` owns
 - ⚠️ Modifying feasibility import mechanism → can break emergency food supply
 
 **Required Testing** (for ANY modification):

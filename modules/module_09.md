@@ -848,8 +848,8 @@ Module 09 does **not directly participate** in any conservation laws:
 ### 12.2 Dependency Chains
 
 **Centrality Analysis** (from Module_Dependencies.md):
-- **Centrality Rank**: 8th of 46 modules
-- **Total Connections**: 14 (provides to 14 modules, depends on 0)
+- **Centrality Rank**: 8th of 46 modules (ranked by `Reaches`)
+- **Interface degree**: Owns 14 / Reaches 14 (gap 0) / depends on 0
 - **Hub Type**: **Pure Source Hub** (no dependencies, only provides data)
 - **Dependents**: 14 modules depend on Module 09 variables
 
