@@ -186,6 +186,12 @@ def load_allowlist() -> set[tuple[str, str]]:
 # GAMS_INTERFACE_RE and returned True for the same name. Guarded by
 # scripts/check_rolemap_completeness.py.
 CROSS_IFACE_RE = re.compile(r"^(?:vm|pm|im|pcm|fm)_[a-zA-Z]")
+# The ENDOGENOUS subset of the cross-interface prefixes. `vm_` is a GAMS
+# variable the solver determines; pm_/im_/pcm_/fm_ are parameters, i.e. data.
+# The distinction is what makes the balance-equation rule in
+# `_classify_statement` safe: inside an equation LHS a parameter can only ever
+# be a coefficient, never something the constraint determines.
+ENDOGENOUS_IFACE_RE = re.compile(r"^vm_[a-zA-Z]")
 
 # ---------------------------------------------------------------------------
 # CODE SIDE — the role-resolved reference map
@@ -267,7 +273,9 @@ def _classify_statement(stmt: str) -> tuple[set[str], set[str]]:
     """
     idx_dd = stmt.find("..")
     relm = REL_OP_RE.search(stmt)
+    is_equation = False
     if idx_dd != -1 and relm and relm.start() > idx_dd:
+        is_equation = True
         header = stmt[:idx_dd]
         body = stmt[idx_dd + 2:]
         rel2 = REL_OP_RE.search(body)
@@ -295,6 +303,28 @@ def _classify_statement(stmt: str) -> tuple[set[str], set[str]]:
         determines_value = attr is None or attr in _POPULATING_ATTRS
         if determines_value and CROSS_IFACE_RE.match(base) and is_interface_var(base):
             pop.add(base)
+    # Balance / aggregation equations (2026-07-31). When an EQUATION's LHS lead
+    # token is not itself an interface var -- `sum(land, vm_land(j2,land)) =e= ...`
+    # leads with `sum` -- the old rule found no populator, so a variable
+    # determined by a constraint rather than by an assignment had NO writer at
+    # all. That is the hole under the "Provides To" definition: M31 writes slices
+    # of vm_land read by 21 modules, yet vm_land's own defining equation credited
+    # nobody.
+    #
+    # Restricted to `vm_` deliberately, and this is the whole safety argument:
+    # on an equation LHS a parameter can only be a coefficient. Verified against
+    # ALL 26 real corpus pairs in this population -- 21 vm_ (genuine) and 5
+    # pm_/im_/fm_ (coefficients: im_demography M15, fm_attributes M20,
+    # pm_labor_prod / pm_productivity_gain_from_wages / pm_hourly_costs M38).
+    # Crediting those 5 would introduce a NEW error, which is why a naive "credit
+    # anything on the LHS" fix would be worse than the gap it closes.
+    #
+    # Only fires when the lead contributed nothing, so every statement the old
+    # rule already classified keeps its exact previous answer.
+    if is_equation and not pop:
+        for cand in _cross_vars(lhs):
+            if ENDOGENOUS_IFACE_RE.match(cand) and is_interface_var(cand):
+                pop.add(cand)
     read = (_cross_vars(lhs) | _cross_vars(rest)) - pop
     if lead and attr is not None and attr not in _POPULATING_ATTRS:
         # A pure bound/scale/level write is neither role: it does not determine
@@ -1202,6 +1232,42 @@ def self_test() -> int:
         (".scale is neither POPULATE nor READ",
          'vm_cost_glo.scale = 1e7',
          set(), set()),
+        # ---- Balance/aggregation equations (2026-07-31) -------------------
+        # The variable is the SUMMAND, not the lead token, so before this fix
+        # a constraint-determined variable had no populator at all — the hole
+        # under the "Provides To" definition. The discriminator is
+        # endogenous-vs-parameter, verified against ALL 26 real corpus pairs:
+        # 21 are vm_ (genuinely constrained by the equation) and 5 are
+        # pm_/im_/fm_ coefficients. Crediting the coefficients would be a NEW
+        # error, so the last two cases below are negative controls that must
+        # keep passing.
+        # 10_land/landmatrix_dec18/equations.gms
+        ("summed vm_ on an equation LHS is POPULATE",
+         'q10_land_area(j2) .. sum(land, vm_land(j2,land)) =e= sum(land, pcm_land(j2,land))',
+         {"vm_land"}, {"pcm_land"}),
+        # 21_trade/selfsuff_reduced/equations.gms
+        ("summed vm_ with =g= is POPULATE",
+         'q21_trade_glo(k_trade).. sum(i2 ,vm_prod_reg(i2,k_trade)) =g= '
+         'sum(i2, vm_supply(i2,k_trade)) + sum(ct, f21_trade_balanceflow(ct,k_trade))',
+         {"vm_prod_reg"}, {"vm_supply"}),
+        # 41_area_equipped_for_irrigation/endo_apr13/equations.gms
+        ("summed vm_ with =l= is POPULATE",
+         'q41_area_irrig(j2) .. sum(kcr, vm_area(j2,kcr,"irrigated")) =l= vm_AEI(j2)',
+         {"vm_area"}, {"vm_AEI"}),
+        # 15_food/anthro_iso_jun22/equations.gms — lead is a module-LOCAL v15_
+        # variable; im_demography is a coefficient inside the LHS sum.
+        ("im_ coefficient on an equation LHS stays READ, never POPULATE",
+         'q15_intake(iso).. v15_kcal_intake_total_regr(iso) * '
+         'sum((sex,age,ct), im_demography(ct,iso,sex,age)) =e= sum(ct,i15_kcal_pregnancy(ct,iso))',
+         set(), {"im_demography"}),
+        # 20_processing/substitution_may21/equations.gms — lead is `sum`, and the
+        # only cross-iface symbol on the LHS is a parameter inside a product.
+        ("fm_ coefficient inside a summed product stays READ, never POPULATE",
+         'q20_processing_substitution_protein(i2) .. sum(oilcake_substitutes20, '
+         'v20_dem_processing(i2,"substitutes",oilcake_substitutes20) * '
+         'fm_attributes("nr",oilcake_substitutes20) ) =g= sum(kpr, '
+         'v20_secondary_substitutes(i2,"oilcakes",kpr) * fm_attributes("nr",kpr))',
+         set(), {"fm_attributes"}),
     ]
     for label, stmt, want_pop, want_read in classify_cases:
         got_pop, got_read = _classify_statement(stmt)
