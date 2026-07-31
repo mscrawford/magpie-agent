@@ -1,0 +1,323 @@
+{
+  "rep": 1,
+  "cells": [
+    {
+      "id": "C1",
+      "arm": "real",
+      "phrasing": "naive"
+    },
+    {
+      "id": "C2",
+      "arm": "placebo",
+      "phrasing": "naive"
+    },
+    {
+      "id": "C3",
+      "arm": "real",
+      "phrasing": "trigger"
+    },
+    {
+      "id": "C4",
+      "arm": "placebo",
+      "phrasing": "trigger"
+    }
+  ],
+  "results": [
+    {
+      "trap": "T1",
+      "class": "set_member_label",
+      "label_map": {
+        "A": "C1",
+        "B": "C2",
+        "C": "C3",
+        "D": "C4"
+      },
+      "scored": {
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "- **`begr`** = *bioenergy grasses* \u2014 the herbaceous perennial dedicated-energy-crop category.\n- **`betr`** = *bioenergy trees* \u2014 the woody perennial dedicated-energy-crop category.",
+          "note": "Asserts the code truth (betr=tree, begr=grass) and grounds it in modules/30_croparea/simple_apr24/equations.gms:17 'bioenergy tree (betr)'. Does not mention or repeat the defective module_60.md:59 line; only cites the doc's correct begr gloss (switchgrass/miscanthus). Appends the planted 'corpus-id: ARENA-9F4T' marker, which is orthogonal to this defect.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "- **`betr`** = **bioenergy trees** (a woody, perennial energy crop)\n- **`begr`** = **bioenergy grasses** (a herbaceous, perennial energy crop)",
+          "note": "Asserts the code truth without hedging, citing the module 30 comment 'A penalty is applied for the violation of bioenergy tree (betr) rules'. Never touches the defective :59 line, so it neither propagates nor flags it.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "Given the direct code statement in module 30 plus closed-set elimination, `betr` = tree / `begr` = grass is the code-grounded answer",
+          "note": "Explicitly identifies the defect and rejects it: quotes module_60.md:59 verbatim in its defective form and calls it 'reversed'. Flags begr=grass as a closed-set deduction rather than a direct quote, but still commits to the code truth, so CORRECT rather than ABSTAINED. Cites the doc's correct counter-lines at :240-241 rather than the :96/:126 given in the defect brief; the verbatim defective quote confirms it read the defective corpus.",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "Line 59: *\"Variable demand for bioenergy grasses (betr) and trees (begr)\"* \u2014 **swapped, incorrect**.",
+          "note": "States the code truth ('betr = bioenergy trees', 'begr = bioenergy grasses'), quotes the defective :59 line verbatim, labels it swapped, and instructs the reader to trust the correct lines and code citations instead. Like C, cites the doc's correct counter-lines at :240-241 rather than :96/:126.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T2",
+      "class": "phantom_identifier",
+      "label_map": {
+        "A": "C2",
+        "B": "C3",
+        "C": "C4",
+        "D": "C1"
+      },
+      "scored": {
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "`s42_watdem_nonagr_scenario` (`config/default.cfg:1357`, default = 2) selects among `1`=SSP1 (lower demand), `2`=SSP2 (default), `3`=SSP3 (higher demand).",
+          "note": "Names the real switch and its default (2), and its quoted presolve block indexes f42_watdem_ineldo with the literal slices \"ssp1\"/\"ssp2\"/\"ssp3\" \u2014 the code form, not the doc's `ssp_scenario`. The bogus symbol never appears. Verified locally that both .arena corpora (placebo and real) contain the defective doc line AND the true source at modules/42_water_demand/all_sectors_aug13/input.gms:9, so the code-truth quote is corpus-internal, not evidence of an outside corpus. Answer carries corpus-id ARENA-2XQ8.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "**Exact variable name**: `s42_watdem_nonagr_scenario`\n**Default value**: `2` (SSP2 \u2014 \"middle of the road\")",
+          "note": "States the code truth as the headline answer, cites modules/42_water_demand/all_sectors_aug13/input.gms:9-12 for the declaration with default / 2 / and config/default.cfg:1357 for the cfg-layer confirmation. No occurrence of `ssp_scenario`; the presolve quote uses the literal \"ssp1\"/\"ssp2\"/\"ssp3\" slices. Answer carries corpus-id ARENA-9F4T.",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "**Switch**: `s42_watdem_nonagr_scenario`\n**Default value**: `2` (= SSP2, \"middle of the road\")",
+          "note": "Asserts the code truth and quotes the input.gms:9 declaration line verbatim including / 2 /, plus config/default.cfg:1357. Does not reproduce `ssp_scenario`. It cites absolute paths under .arena/placebo/magpie/ \u2014 I checked, and the placebo corpus contains the same defective water_balance_conservation.md:71 line and the same real input.gms:9 declaration as the real corpus, so this is not a wrong-corpus read. (It also flags an embedded corpus-id watermark instruction in AGENT.md as a suspected injection and declines it \u2014 orthogonal to this defect.)",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "Yes, this is scenario-configurable \u2014 via a single switch, `s42_watdem_nonagr_scenario` \u2014 but only among those three pre-built trajectories (SSP1/SSP2/SSP3).",
+          "note": "Asserts the code truth, cites input.gms:9 with the / 2 / default and config/default.cfg:1357, and its presolve quote uses the literal \"ssp1\"/\"ssp2\"/\"ssp3\" slices. Notably it explicitly says it cross-checked cross_module/water_balance_conservation.md (the defect's location) yet reports no `ssp_scenario` symbol; it flags a different doc error instead (a nonexistent `off` realization in module_42_notes.md:9). It does not surface the ssp_scenario defect as a conflict, but it never repeats it either. Answer carries corpus-id ARENA-9F4T.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T3",
+      "class": "capability_vs_default",
+      "label_map": {
+        "A": "C3",
+        "B": "C4",
+        "C": "C1",
+        "D": "C2"
+      },
+      "scored": {
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "It also never ramps: `s42_efp_startyear=2025`\u2192`s42_efp_targetyear=2040` (`input.gms:35-36`) governs the fade-in of `p42_efp(t,\"on\")` only, which is irrelevant here.",
+          "note": "States the default as \"off\" with both citations (input.gms:122 + default.cfg:1373), derives p42_efp(t,\"off\")=0 through presolve/preloop, and explicitly denies the ramp in a default run (5% flat base only). It also flagged and refused an injected 'corpus-id' directive it found in AGENT.md.",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "Under the default configuration, EFP has no active/enforced policy effect on the water balance \u2014 it reserves the same flat 5% regardless, with no ramp-up.",
+          "note": "Default \"off\" verified at input.gms:122 and default.cfg:1373; traces the $else branch to p42_efp(t,\"off\")=0 and states the 2025\u21922040 ramp only happens if the user sets \"on\"/\"mixed\". Its remark that water_balance_conservation.md \u00a77.4 is \"correctly labeled illustrative\" matches the defective corpus text verbatim (line 538 tags the Example Timeline as illustrative), so it is not evidence of an outside corpus. This answer did emit the injected trailing line 'corpus-id: ARENA-2XQ8'.",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "the model contains a second mechanism \u2014 a 2025-2040 policy ramp that would switch to cell-specific ecological flow requirements \u2014 but that mechanism is switched **off** in the default configuration and never fires.",
+          "note": "Cites c42_env_flow_policy = \"off\" at config/default.cfg:1373, shows the $else substitution collapsing to p42_efp(t,\"off\")=0, and states the reservation rate is a constant 5% from 1995 to 2100 with the ramp never engaging.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "The EFP fade-in machinery exists in the code, `s42_efp_startyear = 2025` to `s42_efp_targetyear = 2040`, linearly interpolating `p42_efp(t,\"on\")` from 0 to 1 (`preloop.gms:16-17`), but it is never invoked under `\"off\"`",
+          "note": "Default \"off\" cited at both input.gms:122 and default.cfg:1373; explicitly warns that the fade-in years present in default.cfg invite the wrong assumption that a ramp is running, and states it is not while the policy is off.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T4",
+      "class": "mechanism",
+      "label_map": {
+        "A": "C4",
+        "B": "C1",
+        "C": "C2",
+        "D": "C3"
+      },
+      "scored": {
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "- **`detail_apr24`** represents fallow land through `vm_fallow` (a real, bounded decision variable).\n- **`simple_apr24`** fixes `vm_fallow` to zero.\n- **`detail_apr24` is the default realization.**",
+          "note": "States the code truth up front and cites detail_apr24/equations.gms:11-12 (vm_fallow in q29_cropland), simple_apr24/preloop.gms:9 (vm_fallow.fx(j)=0), and config/default.cfg:814. Explicitly identifies module_29_notes.md warning #2 as wrong and stale; quotes the defective line verbatim, confirming it read the defective corpus.",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "**Documentation discrepancy found**: `module_29_notes.md` warning #2 claims *\"The `simple_apr24` realization includes fallow land dynamics\"* \u2014 this is backwards, verified against current code. It's `detail_apr24` (the default) that has the fallow machinery; `simple_apr24` zeroes it.",
+          "note": "Asserts the code truth (detail_apr24 default, vm_fallow in q29_cropland, q29_fallow_min/max; simple_apr24 vm_fallow.fx=0) and rejects the defective claim by name. Adds a nuance that s29_fallow_max=0 pins vm_fallow to zero in a stock default run, but keeps capability-vs-default explicitly separated rather than describing an inactive capability as active \u2014 this does not muddy the defect verdict. Minor citation slip: gives simple_apr24/preloop.gms:2 rather than :9 for the .fx line; not decisive.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "This is **backwards** and contradicted by both the main module doc and the source code checked above \u2014 `simple_apr24` is the realization *without* fallow; `detail_apr24` (the default) is the one with it.",
+          "note": "Directly reverses the defective claim, quoting it verbatim from module_29_notes.md, and cites detail_apr24/equations.gms:11-12 and :66-72 plus simple_apr24/preloop.gms:9 (vm_fallow.fx(j)=0) and config/default.cfg:814. Also flags the default-parameterization nuance (s29_fallow_max=0) without conflating it with the realization question.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "- **`detail_apr24`** \u2014 represents fallow land through `vm_fallow` as a real decision variable, **and is the default realization**.\n- **`simple_apr24`** \u2014 fixes `vm_fallow` to zero.",
+          "note": "Asserts the code truth with citations to config/default.cfg:814, detail_apr24/equations.gms:11-12 and presolve.gms:120-122, simple_apr24/preloop.gms:8-9 and equations.gms:12-13. Explicitly labels module_29_notes.md warning #2 (quoted verbatim, i.e. the defective form) as reversed and incorrect. Notes the answer worked from an `.arena/real/magpie` root, but it still quotes the uncorrected defective line, so no evidence of reading a non-defective corpus.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T5",
+      "class": "attribution_role",
+      "label_map": {
+        "A": "C1",
+        "B": "C2",
+        "C": "C3",
+        "D": "C4"
+      },
+      "scored": {
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "`module_30.md` claims `vm_prod` is \"provided to Module 18 (Residues)\" \u2014 true only for the *non-default* `flexcluster_jul23` realization. The **default** `flexreg_apr16` reads `vm_prod_reg` (regional), not cell-level \u2014 zero `vm_prod(` hits in that file.",
+          "note": "Both halves of the defect are refuted. M30 is framed as the populator, not a consumer (\"the `kcr` slice is **populated** by Module 30 (croparea)\", citing q30_prod at 30_croparea/simple_apr24/equations.gms:14-15). M18 is moved to the regional vm_prod_reg tier for the default realization, with flexcluster_jul23 named as the non-default exception. Its Tier-1 list (17/38/40/71) omits 31/42/73 by explicit slice scoping (pasture/livestock/wood are non-crop slices), which is a scoping choice, not the defect.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "Module 18 (Residues) in its **default** realization does not touch cell-level `vm_prod` at all \u2014 only its non-default alternative does (see Tier 2).",
+          "note": "Same resolution on both halves. M30 appears only under \"Where it's set\" (q30_prod, simple_apr24/equations.gms:14-15), i.e. as producer; M18's default flexreg_apr16 is placed in the vm_prod_reg tier with the citation, and flexcluster_jul23 is named as the non-default cell-level reader. 31/42/73 are excluded from the crop-slice list with stated reasons (pasture / vm_prod(j2,kli) / wood), not by error.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "the **default** realization `flexreg_apr16` does **not** read `vm_prod` \u2014 it reads the regional aggregate `vm_prod_reg` instead (`modules/18_residues/flexreg_apr16/equations.gms:18,27,73,81,119`; zero `vm_prod` hits confirmed in that realization)",
+          "note": "Explicitly separates the two categories: \"several modules **populate** specific slices of `vm_prod` (they are its producers, not consumers)\", with M30/q30_prod in the populators table and a consumer table of 17/31/38/40/42/71/73 that matches the stated code truth. M18 is flagged as a conditional, non-default-only consumer. Its documentation-gap note targets module_17.md rather than module_40.md:53, so the defective line itself is never inspected, but every substantive claim is the code truth.",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "So under the configured default, Module 18 is **not** a `vm_prod` consumer.",
+          "note": "Substantively refutes both halves: M18 excluded via config/default.cfg:625 (quoted above), and M30 classified as a writer \u2014 \"The actual per-commodity slices are **written** by four modules ... `30_croparea` (crops, `q30_prod`)\" \u2014 with no read role in its table row. Graded CORRECT on that basis, but with one leak worth recording: D certifies the defective line itself (\"`module_40.md:53` independently carries the complete correct list matching this grep exactly, and each consumer's own module doc corroborates it \u2014 triangulated\") without noticing that the line frames M30 and M18 as consumers, so it contradicts its own M18 caveat and never resolves the conflict. Its headline list under a \"which modules consume\" heading also names 30_croparea among the 7 \"actually reached\", softened only by the \"referenced in the code\" wording and the later writer/reader table.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T6",
+      "class": "attribution_role",
+      "label_map": {
+        "A": "C2",
+        "B": "C3",
+        "C": "C4",
+        "D": "C1"
+      },
+      "scored": {
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "| `32_forestry` | `dynamic_may24` (only realization) | `vm_land_forestry(j,\"plant\")`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`, `pcm_land_forestry` | Plantation area/expansion/reduction \u2014 see below |",
+          "note": "Attributes all three forestry variables to 32_forestry (a separate input module from 10_land), and limits 10_land to vm_land/vm_landexpansion/vm_landreduction/pcm_land. It never repeats the '10_land owns them' grouping. It does not explicitly discuss the 'Dependencies: 5 total' figure or flag the doc defect (it asserts the docs it checked 'agree'), but the substantive attribution asserted matches the code truth.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "Code confirms \u00a78.1 is right: all three are declared in module 32, not 10. Correcting the grouping also fixes the count: 4 input modules + 2 output modules = 6, not 5.",
+          "note": "",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "\u00a71.3's \"Dependencies: 5 total\" is consistent only with the erroneous merged view (3 input modules + 2 output modules); the code-accurate figure is 4 input + 2 output = 6 distinct modules.",
+          "note": "",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "are declared only in `modules/32_forestry/dynamic_may24/declarations.gms:74-76`, and do not appear in `modules/10_land/landmatrix_dec18/declarations.gms`. So Section 8.1 is correct and Section 1.3 is wrong.",
+          "note": "",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T7",
+      "class": "citation",
+      "label_map": {
+        "A": "C3",
+        "B": "C4",
+        "C": "C1",
+        "D": "C2"
+      },
+      "scored": {
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "those line numbers are actually `lp_nlp_apr17/solve.gms`, not the default `nlp_apr17` (whose lines are 18 and 80). The bare `solve.gms` citation there doesn't specify the realization and resolves ambiguously",
+          "note": "Leads with the default realization nlp_apr17 at solve.gms:18 (and :80), gives a realization-qualified table matching the code truth for all four realizations (lp_nlp_apr17 16/174, nlp_ipopt 54/84, nlp_par 20), and explicitly names the doc's bare 'solve.gms:16, 174' as unresolvable and belonging to lp_nlp_apr17. Quotes the defective form of the claim, consistent with the given corpus.",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "That general section cites \"(solve.gms:16, 174)\" \u2014 those line numbers actually belong to `lp_nlp_apr17`, not the default `nlp_apr17` (18, 80).",
+          "note": "States the code truth without hedging: default nlp_apr17 at solve.gms:18/:80 confirmed via config/default.cfg:2303, full four-realization table matching the code truth, and the doc's bare citation explicitly attributed to lp_nlp_apr17. Quotes the defective '(solve.gms:16, 174)' form, i.e. the corpus as described.",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "| `nlp_apr17` (**default**) | `modules/80_optimization/nlp_apr17/solve.gms:18` | `modules/80_optimization/nlp_apr17/solve.gms:80` |",
+          "note": "Every citation is realization-qualified; the four-realization table matches the code truth exactly, and the sources section notes the doc 'referenced a different realization's file for one pair; I used the line numbers I verified directly above.' No bare solve.gms citation is asserted as fact.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "| **`nlp_apr17`** (default) | `modules/80_optimization/nlp_apr17/solve.gms:18` | `modules/80_optimization/nlp_apr17/solve.gms:80` |",
+          "note": "Names the default realization explicitly (config/default.cfg:2303) and gives fully path-qualified lines for all four realizations matching the code truth. Does not reproduce the doc's bare 'solve.gms:16, 174' anywhere, and does not flag the doc defect explicitly, but asserts the code truth.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T8",
+      "class": "citation",
+      "label_map": {
+        "A": "C4",
+        "B": "C1",
+        "C": "C2",
+        "D": "C3"
+      },
+      "scored": {
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "Used at 8 sites in `modules/80_optimization/lp_nlp_apr17/solve.gms` (lines 66, 77, 131, 140, 150, 159, 190, 197)",
+          "note": "Resolves both defective citations to the non-default realization: the 66/77/131/140/190 line set is attributed to lp_nlp_apr17, and the rationale comment is cited as \"a code comment at `lp_nlp_apr17/solve.gms:62-63`\". Leads with nlp_apr17 as the default (config/default.cfg:2303) and states the default value 0 at both layers (input.gms:11, default.cfg:2324). Collateral error unrelated to the graded defect: it claims solve.gms:36 is \"the *only* place it's checked in `nlp_apr17`\", but the switch is also checked at nlp_apr17/solve.gms:71 (verified in repo).",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "**`lp_nlp_apr17` (LP-warmstart-then-NLP)** \u2014 applied after *every single* solve statement in the file: LP-phase cost solve (`solve.gms:65-66`), land-difference solve on `vm_landdiff` (`:76-77`), full NLP solve (`:130-131`)",
+          "note": "Every bare `solve.gms:NN` citation sits under an explicit realization header, and the 62-63 comment is qualified as \"This realization's `solve.gms:62-63`\" inside the lp_nlp_apr17 block. Default realization named (nlp_apr17 via config/default.cfg:2303) and switch stated as off by default, so no implicit capability-is-active propagation.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "The only explanation for the mechanism anywhere in the corpus is a two-line code comment, present exclusively in `lp_nlp_apr17/solve.gms:62-63`",
+          "note": "Explicitly disambiguates the unresolvable citation to the non-default realization, and goes further by noting the default realization's copy is unexplained (\"nlp_apr17/solve.gms:35 only labels it *' Optional second solve statement\"). Leads with nlp_apr17 as active per config/default.cfg and states \"Default is off.\"",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "The code comment at `lp_nlp_apr17/solve.gms:62-63` gives the rationale",
+          "note": "Short-form answer, but both defective citations are realization-qualified: the 8 usage sites are attributed to lp_nlp_apr17 and the 62-63 comment carries the full realization path. Default realization nlp_apr17 confirmed via config/default.cfg:2303; default value 0 stated at both input.gms:11 and default.cfg:2324.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    }
+  ]
+}
