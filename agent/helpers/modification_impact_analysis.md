@@ -80,7 +80,7 @@ demand <- demand(gdx)
 production <- production(gdx)
 # Global production ≥ global demand (trade adjusts)
 
-# 4. No extreme slack variable activation
+# 4. No extreme penalty variable activation
 readGDX(gdx, "v44_bii_missing")  # Should be ~0
 readGDX(gdx, "v32_land_missing") # Should be ~0
 ```

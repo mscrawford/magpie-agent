@@ -807,7 +807,7 @@ Every variable has **five attributes** (database fields):
 | Attribute | Name | Meaning | Set When |
 |-----------|------|---------|----------|
 | `.l` | **Level** | Variable's value | After solve (solution) |
-| `.m` | **Marginal** | Shadow price (dual value) | After solve (solution) |
+| `.m` | **Marginal** | Shadow price | After solve (solution) |
 | `.lo` | **Lower bound** | Minimum allowed value | Before solve (bounds) |
 | `.up` | **Upper bound** | Maximum allowed value | Before solve (bounds) |
 | `.fx` | **Fixed value** | Fix to specific value | Before solve (set .lo = .up) |
@@ -1474,7 +1474,7 @@ parameter p_land_result(t,j,land);
 p_land_result(t,j,land) = vm_land.l(j,land);
 ```
 
-**Marginal** (.m): Shadow price (dual value)
+**Marginal** (.m): Shadow price
 ```gams
 * Display marginals (sensitivity to bound changes):
 display vm_land.m;

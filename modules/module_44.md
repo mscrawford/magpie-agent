@@ -70,7 +70,7 @@ v44_bii_missing(i2,biome44) ≥ p44_bii_target(ct,i2,biome44) - v44_bii(i2,biome
 
 **Components**:
 - `p44_bii_target(t,i,biome44)`: Time-interpolated BII target for each biome (calculated in `presolve.gms:22-42`)
-- `v44_bii_missing(i,biome44)`: Technical slack variable representing BII shortfall (dimensionless)
+- `v44_bii_missing(i,biome44)`: Technical penalty variable representing BII shortfall (dimensionless)
 
 **Behavior**:
 - If BII meets target: `v44_bii_missing = 0` (no shortfall)

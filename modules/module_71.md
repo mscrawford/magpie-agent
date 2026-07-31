@@ -162,13 +162,13 @@ vm_prod(j2,kli_mon) ≤ i71_urban_area_share(j2) × s71_scale_mon × vm_prod_reg
 - `i71_urban_area_share(j)`: Cell's share of regional urban area (fraction, calculated in preloop.gms:8-10)
 - `s71_scale_mon`: Flexibility scalar (default: 1.10 = 110%, allows 10% overcapacity)
 - `vm_prod_reg(i,kli_mon)`: Regional monogastric production (declared in Module 17 as sum(cell, vm_prod); its level is driven by Module 70 demand/feed constraints) (mio. tDM/yr)
-- `v71_additional_mon(j,kli_mon)`: Slack variable for excess production beyond urban constraint (mio. tDM/yr)
+- `v71_additional_mon(j,kli_mon)`: Penalty variable for excess production beyond urban constraint (mio. tDM/yr)
 
 **Behavior**:
 - Upper bound constraint (≤): Limits monogastric production to cells with urban area
 - Urban area proxy for population density (intensive livestock near demand centers)
 - 10% relaxation (`s71_scale_mon = 1.10`) accommodates peri-urban production
-- Slack variable prevents infeasibility but incurs high penalty costs
+- Penalty variable prevents infeasibility but incurs high penalty costs
 
 **Rationale**: Monogastric systems are intensive operations located near population centers for:
 - Feed logistics (concentrate feeds are transportable, sourced globally)
