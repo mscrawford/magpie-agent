@@ -148,19 +148,28 @@ def self_test() -> int:
     good = ("see /Users/<you>/Documents/thing and `<magpie-root>` and ~/rel\n"
             "and the rule quoting itself: avoid /Users/... or /p/projects/...\n")
 
+    # `asserts` is emitted on the SELFTEST_OK line and pinned in
+    # audit/selftest_assertion_counts.json. It exists because the sentinel alone
+    # proves only that this function RAN: gut the body and it still prints
+    # SELFTEST_OK and exits 0. Increment it whenever you add a control.
+    asserts = 0
+
     pos = scan_text(bad, "SYNTHETIC")
     if len(pos) < 2:
         print(f"SELF-TEST FAIL: positive control found {len(pos)} hits, expected >= 2")
         return 1
+    asserts += 1
     neg = scan_text(good, "SYNTHETIC")
     if neg:
         print(f"SELF-TEST FAIL: negative control produced {len(neg)} false positive(s): {neg}")
         return 1
+    asserts += 1
 
     # vacuity control: the scanner must actually be looking at the text
     if scan_text("nothing here at all\n", "SYNTHETIC"):
         print("SELF-TEST FAIL: matched a line with no paths")
         return 1
+    asserts += 1
 
     # ---- allowlisted(): branch controls, added 2026-07-31 --------------------
     # WHY: mutation testing measured this checker at 84.2% survival -- the WORST
@@ -193,6 +202,7 @@ def self_test() -> int:
         if got != want:
             print(f"SELF-TEST FAIL: allowlisted({label}) -> {got}, want {want}")
             return 1
+        asserts += 1
 
     # load_allowlist: absent file must degrade to an EMPTY allowlist, never to
     # something that exempts everything.
@@ -202,12 +212,13 @@ def self_test() -> int:
         if load_allowlist() != {"entries": []}:
             print("SELF-TEST FAIL: load_allowlist() on a missing file did not return an empty allowlist")
             return 1
+        asserts += 1
     finally:
         globals()["ALLOWLIST"] = real
 
     print("SELF-TEST OK - positive (2 hits), negative (0 FPs), vacuity, "
           "8 allowlist-branch and 1 load-allowlist control all pass.")
-    print("SELFTEST_OK check_local_paths")
+    print(f"SELFTEST_OK check_local_paths {asserts}")
     return 0
 
 

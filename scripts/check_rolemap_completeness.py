@@ -290,7 +290,11 @@ def self_test() -> int:
         print(f"self-test: FAIL ({len(failed)}/{len(checks)})")
         return 1
     print(f"self-test: PASS ({len(checks)} assertions)")
-    print(f"SELFTEST_OK {CHECK_NAME}")
+    # The count travels on the sentinel so the HARNESS can enforce it too, not
+    # just this file. EXPECTED_ASSERTIONS above catches an inert appended case
+    # inside the process; audit/selftest_assertion_counts.json catches the whole
+    # guard being deleted, which the internal check by construction cannot.
+    print(f"SELFTEST_OK {CHECK_NAME} {len(checks)}")
     return 0
 
 

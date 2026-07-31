@@ -132,24 +132,89 @@ SELFTEST_SCRIPTS=(check_gams_citations_impl check_default_realizations check_gam
                   check_rolemap_completeness check_cfg_gams_wiring \
                   check_fenced_identifiers check_module_set_claims \
                   check_local_paths check_semantic_invariance)
+# ASSERTION COUNTS (2026-07-31). The sentinel above proves a --self-test RAN.
+# It cannot prove the self-test ASSERTED anything: a self_test() whose body was
+# gutted still prints its sentinel and exits 0. Measured case from the session
+# that added this: a positive control passed while being structurally blind to
+# the distinction it was cited for, because the anchor module happened to give
+# the same answer under both definitions.
+#
+# So the sentinel MAY carry a trailing count -- "SELFTEST_OK <name> <n>" -- and
+# when it does, the harness enforces:
+#   n > 0                  a self-test that asserts nothing cannot pass
+#   n >= registered count  assertions cannot be quietly deleted (a ratchet)
+# The registry is audit/selftest_assertion_counts.json. Checkers not yet
+# migrated print the bare sentinel and are counted as LEGACY and reported, so
+# the size of the unmigrated set stays visible instead of being assumed small.
+#
+# The registry is read ONCE, here, and a malformed or unreadable-but-present
+# file is a hard FAIL rather than an empty lookup: silently degrading to "no
+# pins" would turn the ratchet off without telling anyone, which is the same
+# silent-green failure the counts exist to prevent.
+COUNT_REGISTRY="$SCRIPT_DIR/../audit/selftest_assertion_counts.json"
+COUNT_PINS="$BASE/selftest_count_pins.txt"
+if [ -f "$COUNT_REGISTRY" ]; then
+    if ! python3 -c "
+import json,sys
+d = json.load(open(sys.argv[1]))
+for k, v in sorted(d.get('counts', {}).items()):
+    if not isinstance(v, int) or v < 1:
+        raise SystemExit(f'bad pin for {k}: {v!r} (want a positive integer)')
+    print(f'{k} {v}')
+" "$COUNT_REGISTRY" > "$COUNT_PINS" 2>"$BASE/count_pin_err.txt"; then
+        fail "assertion-count registry unreadable: $(cat "$BASE/count_pin_err.txt" | tail -1)"
+        : > "$COUNT_PINS"
+    fi
+else
+    : > "$COUNT_PINS"
+fi
+st_counted=0; st_legacy=0; st_legacy_names=""
 for s in "${SELFTEST_SCRIPTS[@]}"; do
     if [ ! -f "$SCRIPT_DIR/$s.py" ]; then
         fail "$s.py missing (expected a --self-test)"
         continue
     fi
     st_out="$(python3 "$SCRIPT_DIR/$s.py" --self-test 2>&1)"; st_rc=$?
-    # -qx: the sentinel must be its OWN exact line, so "SELFTEST_OK foo" cannot
-    # be satisfied by a substring of "SELFTEST_OK foo_bar" (prefix-name collision).
-    if [ "$st_rc" -eq 0 ] && grep -qx "SELFTEST_OK $s" <<<"$st_out"; then
-        pass "$s --self-test"
-    elif [ "$st_rc" -eq 0 ]; then
-        fail "$s --self-test exited 0 but printed no 'SELFTEST_OK $s' sentinel (check may be ignoring --self-test)"
-        printf '%s\n' "$st_out" | sed 's/^/          | /'
-    else
+    # The sentinel must be its OWN line so "SELFTEST_OK foo" cannot be satisfied
+    # by a substring of "SELFTEST_OK foo_bar" (prefix-name collision). The count,
+    # when present, is a single trailing integer.
+    st_line="$(grep -E "^SELFTEST_OK $s( [0-9]+)?$" <<<"$st_out" | head -1)"
+    if [ "$st_rc" -ne 0 ]; then
         fail "$s --self-test FAILED (exit $st_rc; positive control did not hold)"
         printf '%s\n' "$st_out" | sed 's/^/          | /'
+        continue
     fi
+    if [ -z "$st_line" ]; then
+        fail "$s --self-test exited 0 but printed no 'SELFTEST_OK $s' sentinel (check may be ignoring --self-test)"
+        printf '%s\n' "$st_out" | sed 's/^/          | /'
+        continue
+    fi
+
+    st_n="$(awk '{print ($3 == "" ? "" : $3)}' <<<"$st_line")"
+    st_want="$(awk -v k="$s" '$1 == k {print $2}' "$COUNT_PINS")"
+
+    if [ -z "$st_n" ]; then
+        if [ -n "$st_want" ]; then
+            fail "$s --self-test dropped its assertion count (registry expects >= $st_want; a migrated check must not regress to the bare sentinel)"
+            continue
+        fi
+        st_legacy=$((st_legacy + 1)); st_legacy_names="$st_legacy_names $s"
+        pass "$s --self-test (legacy sentinel, no assertion count)"
+        continue
+    fi
+
+    if [ "$st_n" -le 0 ]; then
+        fail "$s --self-test reported 0 assertions -- it ran but asserted nothing"
+        continue
+    fi
+    if [ -n "$st_want" ] && [ "$st_n" -lt "$st_want" ]; then
+        fail "$s --self-test asserts $st_n but the registry pins >= $st_want (assertions were removed)"
+        continue
+    fi
+    st_counted=$((st_counted + 1))
+    pass "$s --self-test ($st_n assertions)"
 done
+echo "      assertion counts: $st_counted/$((st_counted + st_legacy)) checkers report a count; $st_legacy legacy —$st_legacy_names"
 
 # ---- 5: a silently-skipped section must ABORT (exit 99) ----
 # Regression test for the "completed=1 proves REACHED, not RAN" gap (R8 I2): make

@@ -1,0 +1,26 @@
+{
+  "_what": "Ratchet pins for per-checker --self-test assertion counts.",
+  "_why": [
+    "The SELFTEST_OK sentinel proves a --self-test RAN. It cannot prove the",
+    "self-test ASSERTED anything: gut the body of self_test() and it still",
+    "prints its sentinel and exits 0. A checker listed here must emit",
+    "'SELFTEST_OK <name> <n>' with n >= the pinned value, so assertions cannot",
+    "be deleted without the harness noticing.",
+    "",
+    "Raising a pin is routine: add assertions, then raise the number in the",
+    "same commit. LOWERING a pin is the reviewable act -- it means a positive",
+    "control was removed, and the commit message must say which and why."
+  ],
+  "_how_to_migrate": [
+    "1. Have the checker's self_test() count its assertions (pass or fail).",
+    "2. Print 'SELFTEST_OK <name> <n>' on success instead of the bare form.",
+    "3. Add the pin here.",
+    "4. Prove it: delete one assertion, confirm selftest_validator.sh FAILS,",
+    "   restore it. A pin never shown to fail is decoration."
+  ],
+  "_unmigrated_are_visible": "selftest_validator.sh prints a coverage line naming every checker still on the bare sentinel, so the unmigrated set stays measured rather than assumed.",
+  "counts": {
+    "check_local_paths": 12,
+    "check_rolemap_completeness": 18
+  }
+}
