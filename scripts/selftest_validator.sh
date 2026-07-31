@@ -175,7 +175,15 @@ fi
 # compute_module_centrality.py. Nothing else re-runs it, so without this the
 # published table could go stale silently whenever the role map moves.
 # Paths are relative to the repo root; the sentinel name is the file stem.
-SELFTEST_TOOLS=(audit/tools/compute_module_centrality.py)
+#
+# prepare_audit_arena.py is here for a different reason: nothing it produces is
+# published, but every one of its controls fails SILENTLY. A blindness scan that
+# matches nothing, a control picker that filters nothing and a scorer that
+# classifies nothing all report exactly what a correct run reports. Its arena
+# leaked the answer key on first build (audit/ ships the round archives), so the
+# controls are the tool.
+SELFTEST_TOOLS=(audit/tools/compute_module_centrality.py
+                audit/tools/prepare_audit_arena.py)
 
 st_counted=0; st_legacy=0; st_legacy_names=""
 for spec in "${SELFTEST_SCRIPTS[@]}" "${SELFTEST_TOOLS[@]}"; do

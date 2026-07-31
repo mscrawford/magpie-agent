@@ -3,8 +3,10 @@
 **Written 2026-07-31 for a subsequent session.** Self-contained: a fresh context should be
 able to run this without the conversation that produced it.
 
-**Status: NOT STARTED.** Phase 0 is a gate — if it fails, everything after it is void and
-the session should stop rather than adapt.
+**Status: Phase 2 tooling BUILT (2026-07-31), nothing run.** Phase 0 is a gate — if it
+fails, everything after it is void and the session should stop rather than adapt. The
+arena tool was built ahead of the gate because it is the one piece Phase 2 cannot run
+without, and because building it is independent of the gate's outcome.
 
 ---
 
@@ -77,35 +79,65 @@ ground truth that already exists.
 doc bugs**, reverse-applied one at a time into today's corpus. For the four blind classes
 there are **8 hunks** with known file, known class, and known content.
 
-**Measured 2026-07-31 — nitrogen-term density in exactly those files:**
+**Built 2026-07-31: `audit/tools/prepare_audit_arena.py`** — `prepare` an arena, `score` an
+auditor's findings. Deliberately not an agent runner, because the Fable arm is opened by
+hand and the Opus arm may be a subagent; baking one dispatch mechanism in would have made
+the tool usable for only one of them. 32 assertions under the self-test ratchet.
 
-| file | class | nitrogen-term hits |
-|---|---|---:|
-| `modules/module_80.md` (×2 hunks) | citation | 1 |
-| `modules/module_10.md` | data_source | 1 |
-| `modules/module_10_notes.md` | data_source | 0 |
-| `modules/module_29_notes.md` | mechanism | 0 |
-| `modules/module_40.md` | attribution_role | 0 |
-| `modules/module_32.md` | mechanism | 1 *(hunk currently SKIPPED — no longer applies)* |
-| **`modules/module_58.md`** | **attribution_role** | **15 (13 × N₂O)** |
+Running it supersedes the hand-measured table this section used to carry (Rule 4 — the
+tool is the persisted artifact; the hand count was not re-derivable). Measured output:
 
-So **7 of 8 hunks sit in essentially nitrogen-free docs.** Run those seven first.
-`module_58` is the one loaded file — run it **last, deliberately**, as a calibration probe
-on where the safeguard threshold actually sits. If it bails, that is a datum, not a
-failure, and the other seven still stand.
+| file | class | hunks | avoid-term hits |
+|---|---|---:|---:|
+| `modules/module_10.md` | data_source | 1 | 1 |
+| `modules/module_10_notes.md` | data_source | 1 | 0 |
+| `modules/module_29_notes.md` | mechanism | 1 | 0 |
+| `modules/module_40.md` | attribution_role | 1 | 1 |
+| `modules/module_80.md` | citation | 2 | 1 |
+| `modules/module_32.md` | mechanism | — | *hunk no longer applies; SKIPPED* |
+| **`modules/module_58.md`** | **attribution_role** | 1 | **held back** |
+
+So the default arena carries **6 injected hunks across 5 files**, none of them
+nitrogen-loaded, plus 6 clean controls. `module_58` is held back by default and runs
+alone via `--only-hunk modules/module_58.md`, as a calibration probe on where the
+safeguard threshold sits. If it bails, that is a datum, not a failure, and the six stand.
 
 ### Protocol
 
-1. Build a scratch worktree at HEAD. Inject the 7 hunks **one at a time**, as
-   `seed_known_bugs.py` already does (reverse-apply eliminates code drift by construction).
-2. Add **clean controls** — unmodified files from the same modules — in the same batch, so
-   false positives are measurable. Without these, "found 7 bugs" and "flags everything" are
+1. `prepare` builds the arena: a `git archive` extract of HEAD (**not** a worktree — a
+   worktree hands over the answer key via one `git diff`), a lean 606-file `*.gms` mirror
+   of the model source at `../modules/` so citations resolve, and the hunks reverse-applied
+   in place. Reverse-apply eliminates code drift by construction.
+2. **Clean controls** are selected automatically — unmodified docs of comparable length —
+   so a flag rate is measurable. Without them, "found 6 bugs" and "flags everything" are
    the same observation.
-3. The auditor gets the corpus and the GAMS source and is asked for findings. **It must not
-   see the answer key**, the class labels, or which files were touched.
-4. Score afterward against the known ground truth: caught / missed / false positive.
+3. The auditor gets the corpus, the GAMS source, and the brief. It must not see the answer
+   key, the class labels, or which files were touched.
+4. `score` classifies against ground truth: line-match catch, file-only catch (weak, needs
+   triage), miss, and flag-on-a-file-with-no-injection.
 5. **Run an Opus arm on the identical protocol.** Without it there is no tier comparison and
-   the session answers a different question than the one asked.
+   the session answers a different question than the one asked. One arena serves both arms.
+
+### Three things the first build got wrong, now closed
+
+Recorded because each failed **silently** — every one of them produces output identical to
+a correct run, and all three would have yielded a clean-looking Phase 2 number that meant
+nothing.
+
+1. **The arena was not blind.** It is the whole repo at HEAD, and this project documents its
+   own auditing: `audit/` ships the round archives, the benchmark write-ups and
+   `seed_known_bugs.py` itself, which name these exact bugs. An auditor that grepped `audit/`
+   had the answer key. Now `audit/` and `project/` are stripped, and — because "strip the
+   directories someone thought of" is the reasoning that let it in — a leak scan then greps
+   every surviving file for the seed commit SHAs and for verbatim hunk lines, and **aborts
+   the build** on a hit. Verified end-to-end: building with `--keep-meta` aborts on real
+   data, naming three files.
+2. **`ls -lt` sorted the seeded files to the top.** `git archive` stamps everything with the
+   commit time; injection then set today's mtime on exactly the touched files. All arena
+   mtimes are now normalised after injection.
+3. **The control picker optimised length alone** and chose `module_50` (nr_soil_budget) and
+   `module_55` (awms) — so the Fable arm would have failed on the *controls* while every
+   seeded file ran fine. Controls are now held to the same term bar as the seeds.
 
 ### Prompt hygiene — non-negotiable, and it is a repo rule
 
@@ -114,6 +146,12 @@ environment into their output: R59 leaked 8 local paths into this public repo th
 every one traceable to the path put *into* 24 prompts. Give a repo-relative brief and let
 the agent resolve paths itself. (`AGENT.md` § PUBLIC repo; detail in
 `agent/helpers/session_cleanup.md`.)
+
+The arena tool takes this one step further, because a convention that depends on an
+agent's discipline is not a control: the generated brief carries an `<ARENA>` token rather
+than a literal path, and `score` mechanically scrubs absolute paths out of every artifact
+it writes. The scrubber is a self-test assertion, and it was verified to fail when
+neutered.
 
 ---
 
