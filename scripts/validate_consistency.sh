@@ -1416,7 +1416,22 @@ if [ -f "$ROLEMAP_SCRIPT" ]; then
     elif [ "${ROLEMAP_SCANNED:-0}" = "0" ]; then
         check_error "Role-map completeness scanned 0 variables - vacuous run (parent modules/ absent?), NOT a clean result"
     elif [ "$ROLEMAP_EXIT" -eq 1 ]; then
-        check_error "Role map is INCOMPLETE - Checks 34/35/36/41 are silently blind. ${ROLEMAP_LINE}"
+        # NARROWED 2026-07-31 from check_error to check_warning, after review.
+        # The two ERROR conditions above (crash, vacuous scan) are the ones worth
+        # gating: they mean the control itself is blind, and a blind control that
+        # reads as green is exactly what this check exists to prevent.
+        # An INCOMPLETE verdict is different -- it rests on IFACE_RE, which is a
+        # strict SUPERSET of what the role map is designed to hold. The role map
+        # deliberately assigns NEITHER role to bound/scale/level writes
+        # (`vm_x.lo(...) = 0`, see check_attribution_omissions.py B4), so a module
+        # whose ONLY contact with a var is a bound write appears in the scanner's
+        # set and legitimately not in the map -> a missing_pair that is not a
+        # defect. Zero today, but ~40 (module,var) pairs already do bound writes
+        # and are only "rescued" by having some other contact; one refactor of any
+        # of them turns the gate red over a non-defect. Gating on a predicate
+        # broader than the thing it checks is a foot-gun, and a gate that reddens
+        # spuriously trains people to ignore it.
+        check_warning "Role map may be INCOMPLETE - Checks 34/35/36/41 could be blind here. ${ROLEMAP_LINE} (advisory: verify each pair is not a bound/scale-only contact before treating it as a defect)"
         echo "$ROLEMAP_OUTPUT" | grep -E "^(DROPPED|MISSING)" | head -10 | while read -r line; do log "    $line"; done
     else
         check_pass "${ROLEMAP_LINE}"

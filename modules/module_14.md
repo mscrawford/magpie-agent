@@ -942,7 +942,17 @@ vm_yld.fx(j,kcr,w) = sum(ct,i14_yields_calib(ct,j,kcr,w)) * sum((cell(i,j), supr
 vm_yld.fx(j,"pasture",w) = sum(ct,(i14_yields_calib(ct,j,"pasture",w)) * sum(cell(i,j), pm_past_mngmnt_factor(ct,i))) * (1 + s14_yld_past_switch * (sum((cell(i,j), supreg(h,i)), pcm_tau(h, "crop") / fm_tau1995(h)) - 1));
 ```
 
-**What This Does:** Fixes vm_yld to the level values (`.l`) from equations q14_yield_crop and q14_yield_past, using **previous solve's vm_tau.l** instead of the variable vm_tau.
+**What This Does:** Fixes `vm_yld` for the non-linear solve phase, using the **previous solve's `vm_tau.l`** instead of the variable `vm_tau`.
+
+> ⚠️ **It does NOT reproduce `q14_yield_crop` / `q14_yield_past` — corrected 2026-07-31.** This passage previously said it fixes `vm_yld` "to the level values (`.l`) from equations q14_yield_crop and q14_yield_past". Two verified differences, in **both** realizations:
+>
+> | | `nl_fix.gms` | `equations.gms` |
+> |---|---|---|
+> | τ index (crop) | `vm_tau.l(h,"crop")` — **super-region** (`:10`) | `vm_tau(j2,"crop")` — **cluster** (`:16`) |
+> | τ index (pasture) | `pcm_tau(h,"crop")` — **super-region** (`:11`) | `pcm_tau(j2,"crop")` — **cluster** (`:39`) |
+> | structure (crop) | `sum((cell,supreg), vm_tau.l(h)/fm_tau1995(h))` — sum of ratios | `vm_tau(j2)/sum(…fm_tau1995(h))` — ratio of sums |
+>
+> This also qualifies §2's statement that the f_btc2 change moved `vm_tau`/`pcm_tau` to cluster level: **`nl_fix.gms` was never updated to match**, in either realization. Whether that is a deliberate NL-phase approximation or a missed update is **NOT established here** — it is recorded as an unverified lead, not asserted as a model defect.
 
 **Purpose:** In iterative solution methods, some modules may need yields to be temporarily fixed (not variables) to simplify the optimization problem.
 
