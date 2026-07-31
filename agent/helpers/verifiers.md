@@ -249,7 +249,15 @@ python3 scripts/check_gams_variables.py  # confirm zero stale references
 
 **Trigger**: any `file:line` citation in an answer or doc.
 
-**Rule**: For file:line citations, ALWAYS use the FULL relative path (`modules/XX_name/realization_dir/file.gms:NN`). The citation checker resolves bare filenames by "first match within module number" — if a module has both `simple_apr24/preloop.gms` and `detail_apr24/preloop.gms`, the first is picked even if you meant the second.
+**Rule**: For file:line citations, ALWAYS use the FULL relative path (`modules/XX_name/realization_dir/file.gms:NN`).
+
+A bare basename resolves to the module's **DEFAULT realization**, read from `config/default.cfg` — deterministically, and with **no warning at all** (`scripts/check_gams_citations_impl.py:760-783`). So a bare cite that means a NON-default realization is silently measured against the wrong file, and any line-range verdict on it is worthless. Example: module 29's default is `detail_apr24`, so a bare `preloop.gms:NN` in `module_29.md` resolves there even when you meant `simple_apr24` — the checker never says so.
+
+The walk-order fallback, and the `AMBIG` warning that names the rival candidates, fires ONLY when no usable default mapping exists: a composite/multi-token `cfg$gms$` value, or a realization directory that is not on disk. Do not rely on that warning — the common case is the silent one.
+
+*(Corrected 2026-07-31. This paragraph previously said bare filenames resolve by "first match within module number", which describes only the fallback. That was wrong on its own example: `detail_apr24` wins in module 29 because it is the default, not because it is first.)*
+
+**Live since 2026-07-31**: module 14 gained a second realization (`dynRegPastrTau_apr26`; the default remains `managementcalib_aug19`), so M14 bare cites are now subject to exactly this silent resolution.
 
 **Also**: draft line numbers from the FINAL merged code (post `git pull`), NOT from diff output during triage.
 
