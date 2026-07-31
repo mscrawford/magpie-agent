@@ -193,6 +193,12 @@ CROSS_IFACE_RE = re.compile(r"^(?:vm|pm|im|pcm|fm)_[a-zA-Z]")
 # be a coefficient, never something the constraint determines.
 ENDOGENOUS_IFACE_RE = re.compile(r"^vm_[a-zA-Z]")
 
+# How far past a var-anchored header to gather list items. A bound, not the
+# terminator: the loop stops on a blank line, a different var, a non-list line or
+# the sibling-step guard. Sized off the longest real attribution list in the
+# corpus (module_17.md's 8-bullet `vm_prod_reg` consumers) with headroom.
+LIST_LOOKAHEAD = 30
+
 # Any GAMS VARIABLE in MAgPIE naming: interface `vm_` or module-local `vNN_`.
 # Used to tell a constraint's SUBJECT from a mere FACTOR in a product -- see
 # `_is_bilinear_factor`.
@@ -760,12 +766,26 @@ def parse_doc_triples(text: str) -> list[dict]:
         anchor = bool(line.rstrip().endswith(":") or COMPLETENESS_RE.search(deb))
         if anchor:
             anchor_ord = ORDERED_ITEM_RE.match(line)
-            for j in range(i + 1, min(len(lines), i + 8)):
+            # Window is a SAFETY NET, not the terminator -- blank line, a different
+            # var, a non-list line and the sibling-step guard below do the real
+            # work. It was 8, which silently truncated real lists: module_17.md's
+            # `vm_prod_reg` consumer list is 8 bullets, so the last one (M71) fell
+            # outside the window and was reported as an omission it had declared.
+            for j in range(i + 1, min(len(lines), i + LIST_LOOKAHEAD)):
                 nxt = lines[j]
                 if not nxt.strip():
                     break
-                if _cross_vars_on_line(nxt):
-                    break  # a new var starts a different binding
+                # Break on a DIFFERENT var only. A bullet that RE-STATES the
+                # anchor's own var is part of its list, not a new binding --
+                # `- **Module 30 (croparea)**: `vm_prod(j,kcr)` -- ...` under a
+                # `... populate vm_prod`: header. Breaking on it collected ZERO
+                # bullets and left `listed` holding only the module number in the
+                # header SENTENCE SUBJECT ("Modules that Module 17 depends on"),
+                # which is the consumer -- the exact opposite of a populator. That
+                # produced 8 false omissions on one file.
+                nxt_vars = set(_cross_vars_on_line(nxt))
+                if nxt_vars and nxt_vars != {var}:
+                    break
                 if not LIST_CONT_RE.match(nxt):
                     break
                 # Sibling-step guard: an ordered item cannot head the ordered items
@@ -1602,6 +1622,46 @@ def self_test() -> int:
         "1. Modules that read `vm_land`, among others:\n"
         "   1. Module 30 (croparea)\n"
         "   2. Module 36 (employment)\n",
+        {"omit": set(), "phantom": {("vm_land", "36")}},
+    ))
+
+    # POSITIVE 10 — a bullet that RE-STATES THE ANCHOR'S OWN VAR is part of the
+    # list. The lookahead used to break on ANY var in a following line, so a list
+    # written in the very common `- **Module NN (name)**: `var(dims)` -- gloss`
+    # style collected ZERO items; `listed` kept only the module number in the
+    # header's sentence SUBJECT, and every real member was reported as an
+    # omission. That shape produced 8 false omissions in module_17.md alone.
+    # M36 (employment) references vm_land NOWHERE, so it can surface as a phantom
+    # only if the bullets were actually read -- if the break fires, no triple is
+    # emitted at all and this silently passes as a false negative. "among others"
+    # hedges the omission arm so the case pins only the property under test.
+    cases.append((
+        "pos-bullet-restating-anchor-var-is-gathered",
+        "Modules that populate `vm_land`, among others:\n"
+        "- **Module 30 (croparea)**: `vm_land(j,\"crop\")` -- cropland slice\n"
+        "- **Module 36 (employment)**: `vm_land(j,land)` -- references it nowhere\n",
+        {"omit": set(), "phantom": {("vm_land", "36")}},
+    ))
+
+    # POSITIVE 11 — the lookahead window must outlast a real list. It was 8, which
+    # gathered only the first SEVEN items after a header; module_17.md's
+    # `vm_prod_reg` consumer list is 8 bullets, so its final member fell outside
+    # and was reported as an omission the doc had in fact declared.
+    # The seven fillers are exactly the modules the FIXTURE role map above has for
+    # vm_land (plus M11, which is ref_any-only), so none of them can surface. M36
+    # sits at position EIGHT -- one past the old window -- and references vm_land
+    # nowhere, so it can appear as a phantom only if the window now reaches it.
+    cases.append((
+        "pos-list-longer-than-the-old-window",
+        "Modules that read `vm_land`, among others:\n"
+        "- Module 29 (cropland)\n"
+        "- Module 30 (croparea)\n"
+        "- Module 32 (forestry)\n"
+        "- Module 35 (natveg)\n"
+        "- Module 58 (peatland)\n"
+        "- Module 10 (land)\n"
+        "- Module 11 (costs)\n"
+        "- Module 36 (employment)\n",
         {"omit": set(), "phantom": {("vm_land", "36")}},
     ))
 
