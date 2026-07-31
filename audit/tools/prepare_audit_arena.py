@@ -19,8 +19,8 @@ ground truth that already exists, controls that make a false positive
 measurable, and an auditor that cannot see the answer key. That is this tool.
 
 It is deliberately NOT an agent runner. It does two things — `prepare` an arena
-and `score` an auditor's output — because the dispatch step is a human decision
-(the Fable arm is opened by hand; the Opus arm may be a subagent) and baking one
+and `score` an auditor's output — because dispatch is a human decision (a session
+opened by hand, or a subagent with an explicit model parameter) and baking one
 mechanism in would have made the tool usable for only one of them.
 
 WHAT THE AUDITOR MUST NOT BE ABLE TO SEE, AND HOW EACH IS CLOSED
@@ -121,13 +121,13 @@ MAGPIE_DIR = AGENT_DIR.parent
 # measurement with bugs we know a checker catches.
 BLIND_CLASSES = ("attribution_role", "citation", "data_source", "mechanism")
 
-# Measured 2026-07-31: nitrogen-term density in the blind-class seed files.
-# module_58.md carries 15 hits (13 x N2O); every other blind-class file carries
-# 0 or 1. This workspace's Fable tier bails on nitrogen content, so module_58 is
-# excluded BY DEFAULT and run last, on its own, as a deliberate calibration
-# probe on where the threshold sits (Mike's call, per the plan). Re-include with
-#   --include-file modules/module_58.md
-DEFAULT_EXCLUDED_FILES = ("modules/module_58.md",)
+# No file is excluded by default. `modules/module_58.md` was, until 2026-07-31,
+# because its nitrogen density tripped a tier-specific safeguard; that tier is
+# out of the design and the exclusion cost real coverage — module_58 carries the
+# SECOND `attribution_role` hunk, and attribution_role was the thinnest and most
+# decision-relevant class in the first ladder (1 answerable item, caught once in
+# four deep runs). Dropping the exclusion doubles it.
+DEFAULT_EXCLUDED_FILES: tuple[str, ...] = ()
 
 DOC_PREFIXES = ("modules/", "core_docs/", "cross_module/")
 UNIFORM_MTIME = 1_600_000_000  # 2020-09-13, well before any of this work
@@ -145,16 +145,11 @@ MIRROR_MAX_BYTES = 512 * 1024
 # MAgPIE's documentation gets audited, which is where every answer key lives.
 META_DIRS = ("audit", "project")
 
-# Terms this workspace's Fable tier bails on. The seeded files were chosen to
-# avoid them, but CONTROLS are chosen automatically and the first version of the
-# picker optimised length alone — it selected `module_50` (nr_soil_budget) and
-# `module_55` (awms), which would have failed the Fable arm on the control files
-# while every seeded file ran fine. Controls are held to the same bar as seeds
-# so that ONE arena serves both the Fable and the Opus arm; a per-tier arena
-# would make the two results incomparable, which is the question being asked.
-AVOID_RE = re.compile(
-    r"nitrogen|nitrous|N2O|N₂O|NH3|NH₃|ammonia|nitrate|nitrif|denitrif"
-    r"|fertilis|fertiliz|manure|\bnr_|\bvm_nr|urea", re.I)
+# (A content-term filter on control selection lived here until 2026-07-31. It
+# existed only to keep a tier-specific safeguard from firing, that tier is out of
+# the design, and it was constraining control selection for no remaining reason.
+# Removed rather than left inert — an unused filter that silently shapes which
+# files an auditor sees is worse than no filter.)
 
 # Shortest hunk line worth searching for. Below ~40 chars a generic prose line
 # is things like "| Variable | Module |" and every table in the corpus matches.
@@ -365,18 +360,12 @@ def normalize_mtimes(root: Path) -> None:
     os.utime(root, (UNIFORM_MTIME, UNIFORM_MTIME))
 
 
-def avoid_hits(text: str) -> int:
-    return len(AVOID_RE.findall(text))
-
-
-def pick_controls(corpus: Path, seeded: set[str], n: int, max_avoid: int | None) -> list[str]:
-    """Clean docs of comparable length and comparable term profile.
+def pick_controls(corpus: Path, seeded: set[str], n: int) -> list[str]:
+    """Clean docs of comparable length, chosen deterministically.
 
     Comparable length matters: a flag rate is per-file only if the files offer
     similar surface area to flag. Nearest-by-line-count to the seeded median,
     ties broken by path, so a re-run reproduces the same arena.
-
-    `max_avoid` is None to disable the term filter.
     """
     if n <= 0:
         return []
@@ -392,8 +381,6 @@ def pick_controls(corpus: Path, seeded: set[str], n: int, max_avoid: int | None)
             if rel in seeded:
                 continue
             text = p.read_text()
-            if max_avoid is not None and avoid_hits(text) > max_avoid:
-                continue
             cands.append((abs(len(text.splitlines()) - median), rel))
     cands.sort()
     return sorted(rel for _d, rel in cands[:n])
@@ -590,10 +577,8 @@ def cmd_prepare(args) -> int:
         shutil.rmtree(arena_root, ignore_errors=True)
         return 2
 
-    max_avoid = None if args.no_avoid else args.max_avoid_hits
-    controls = pick_controls(corpus, seeded_files, args.controls, max_avoid)
+    controls = pick_controls(corpus, seeded_files, args.controls)
     filelist = sorted(seeded_files | set(controls))
-    density = {f: avoid_hits((corpus / f).read_text()) for f in filelist}
 
     normalize_mtimes(arena_root)
 
@@ -609,8 +594,6 @@ def cmd_prepare(args) -> int:
         "gms_files_mirrored": n_gms,
         "stripped_dirs": stripped,
         "leaks_found": [{"file": f, "why": w} for f, w in leaks],
-        "avoid_term_hits": density,
-        "avoid_max_allowed": max_avoid,
     }
     (key_root / "ANSWER_KEY.json").write_text(json.dumps(key, indent=2))
     (key_root / "auditor_brief.md").write_text(brief)
@@ -638,10 +621,6 @@ def cmd_prepare(args) -> int:
     print(f"stripped : {', '.join(stripped) if stripped else '(nothing — --keep-meta)'}")
     print(f"blindness: leak scan clean ({len(leaks)} hits)" if not leaks
           else f"blindness: {len(leaks)} LEAK(S) TOLERATED via --allow-leaks")
-    worst = sorted(density.items(), key=lambda kv: -kv[1])[:3]
-    worst_str = ", ".join("%s=%d" % (Path(f).name, n) for f, n in worst)
-    print(f"avoid-terms: max {max(density.values()) if density else 0} hits in any "
-          f"presented file (cap {max_avoid}) — worst: {worst_str}")
     print(f"\narena  -> {arena_root}")
     print(f"key    -> {key_root}/ANSWER_KEY.json")
     print(f"brief  -> {key_root}/auditor_brief.md")
@@ -950,25 +929,20 @@ def self_test() -> int:
     check("the specific-line floor is well below the generic one",
           LEAK_MIN_LEN_SPECIFIC < LEAK_MIN_LEN and LEAK_MIN_LEN >= 40)
 
-    # --- control selection must hold controls to the seeds' term bar ---
+    # --- control selection is deterministic and excludes the seeds ---
     with tempfile.TemporaryDirectory() as td:
         c = Path(td)
         for pref in DOC_PREFIXES:
             (c / pref).mkdir(parents=True, exist_ok=True)
         body = "\n".join(f"line {i}" for i in range(60))
-        (c / "modules" / "module_40.md").write_text(body)               # the seed
-        (c / "modules" / "module_12.md").write_text(body)               # clean control
-        (c / "modules" / "module_50.md").write_text(
-            body + "\nnitrogen and N2O and fertiliser\n")               # loaded control
-        picked = pick_controls(c, {"modules/module_40.md"}, 2, 0)
-        check("control picker rejects a nitrogen-loaded doc",
-              "modules/module_50.md" not in picked)
-        check("control picker still returns a clean doc of comparable length",
-              "modules/module_12.md" in picked)
-        check("control picker accepts the loaded doc when the filter is disabled",
-              "modules/module_50.md" in pick_controls(c, {"modules/module_40.md"}, 2, None))
-    check("avoid regex counts the terms Fable bails on",
-          avoid_hits("nitrogen N2O fertiliser manure") == 4 and avoid_hits("land carbon") == 0)
+        for name in ("module_40.md", "module_12.md", "module_50.md"):
+            (c / "modules" / name).write_text(body)
+        picked = pick_controls(c, {"modules/module_40.md"}, 2)
+        check("control picker never returns a seeded file",
+              "modules/module_40.md" not in picked)
+        check("control picker returns the requested number of controls", len(picked) == 2)
+        check("control selection is deterministic across calls",
+              picked == pick_controls(c, {"modules/module_40.md"}, 2))
 
     # --- mirror fidelity: the docs cite non-.gms siblings, so they must survive ---
     # Regression control for the *.gms-only mirror that made two auditors report
@@ -1008,7 +982,7 @@ def self_test() -> int:
           set(META_DIRS) == {"audit", "project"})
 
     # --- selection honours the class filter and the default exclusion ---
-    check("module_58 is excluded by default", "modules/module_58.md" in DEFAULT_EXCLUDED_FILES)
+    check("no file is excluded by default", DEFAULT_EXCLUDED_FILES == ())
     check("the blind-class list is exactly the four unscored classes",
           set(BLIND_CLASSES) == {"attribution_role", "citation", "data_source", "mechanism"})
     check("every blind class exists in the seed corpus",
@@ -1031,12 +1005,8 @@ def main() -> int:
     p.add_argument("--exclude-file", action="append")
     p.add_argument("--include-file", action="append")
     p.add_argument("--only-hunk", action="append",
-                   help="repeatable; 'modules/module_58.md' or 'modules/module_80.md#1'")
+                   help="repeatable; a doc path, or 'path#N' to pick one hunk")
     p.add_argument("--controls", type=int, default=6)
-    p.add_argument("--max-avoid-hits", type=int, default=0,
-                   help="max nitrogen-term hits allowed in a CONTROL file (default 0)")
-    p.add_argument("--no-avoid", action="store_true",
-                   help="disable the term filter on control selection")
     p.add_argument("--arena-root")
     p.add_argument("--key-root")
     p.add_argument("--dry-run", action="store_true")
