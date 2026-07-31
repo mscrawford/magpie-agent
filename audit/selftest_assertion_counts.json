@@ -20,7 +20,28 @@
   ],
   "_unmigrated_are_visible": "selftest_validator.sh prints a coverage line naming every checker still on the bare sentinel, so the unmigrated set stays measured rather than assumed.",
   "counts": {
+    "check_attribution_omissions": 25,
+    "check_attribution_prose": 18,
+    "check_attribution_tables": 5,
+    "check_bindability": 9,
+    "check_default_realizations": 2,
+    "check_dependent_counts": 19,
+    "check_dependent_direction": 14,
+    "check_doc_var_existence": 2,
+    "check_gams_citations_impl": 1,
+    "check_gams_equations": 2,
+    "check_gams_realizations": 2,
+    "check_gams_variables": 1,
+    "check_intra_doc_contradiction": 11,
     "check_local_paths": 12,
-    "check_rolemap_completeness": 18
+    "check_no_bare_cites": 3,
+    "check_param_defaults": 2,
+    "check_renames": 3,
+    "check_role_attribution": 16,
+    "check_rolemap_completeness": 18,
+    "check_semantic_invariance": 22,
+    "check_set_members": 16,
+    "compute_module_centrality": 6,
+    "gams_slices": 23
   }
 }

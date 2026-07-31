@@ -168,13 +168,26 @@ for k, v in sorted(d.get('counts', {}).items()):
 else
     : > "$COUNT_PINS"
 fi
+# GENERATORS outside scripts/ that carry a --self-test. They are not gate checks,
+# so they are not in SELFTEST_SCRIPTS, but their output IS consumed: the module
+# centrality table in core_docs/Module_Dependencies.md 1.2 and Appendix A of
+# cross_module/modification_safety_guide.md are generated from
+# compute_module_centrality.py. Nothing else re-runs it, so without this the
+# published table could go stale silently whenever the role map moves.
+# Paths are relative to the repo root; the sentinel name is the file stem.
+SELFTEST_TOOLS=(audit/tools/compute_module_centrality.py)
+
 st_counted=0; st_legacy=0; st_legacy_names=""
-for s in "${SELFTEST_SCRIPTS[@]}"; do
-    if [ ! -f "$SCRIPT_DIR/$s.py" ]; then
+for spec in "${SELFTEST_SCRIPTS[@]}" "${SELFTEST_TOOLS[@]}"; do
+    case "$spec" in
+        */*) s="$(basename "$spec" .py)"; st_path="$SCRIPT_DIR/../$spec" ;;
+        *)   s="$spec";                   st_path="$SCRIPT_DIR/$s.py"    ;;
+    esac
+    if [ ! -f "$st_path" ]; then
         fail "$s.py missing (expected a --self-test)"
         continue
     fi
-    st_out="$(python3 "$SCRIPT_DIR/$s.py" --self-test 2>&1)"; st_rc=$?
+    st_out="$(python3 "$st_path" --self-test 2>&1)"; st_rc=$?
     # The sentinel must be its OWN line so "SELFTEST_OK foo" cannot be satisfied
     # by a substring of "SELFTEST_OK foo_bar" (prefix-name collision). The count,
     # when present, is a single trailing integer.
@@ -192,19 +205,25 @@ for s in "${SELFTEST_SCRIPTS[@]}"; do
 
     st_n="$(awk '{print ($3 == "" ? "" : $3)}' <<<"$st_line")"
     st_want="$(awk -v k="$s" '$1 == k {print $2}' "$COUNT_PINS")"
+    st_how="declared"
 
+    # No explicit count on the sentinel: DERIVE one by counting the assertion
+    # outcome lines the check already prints. Most checks print one line per
+    # assertion, in one of three house styles, so deriving covers them with no
+    # edit. A check whose style prints only a SUMMARY derives 0 and must declare
+    # its count explicitly -- that is reported below, not silently tolerated.
     if [ -z "$st_n" ]; then
-        if [ -n "$st_want" ]; then
-            fail "$s --self-test dropped its assertion count (registry expects >= $st_want; a migrated check must not regress to the bare sentinel)"
-            continue
-        fi
-        st_legacy=$((st_legacy + 1)); st_legacy_names="$st_legacy_names $s"
-        pass "$s --self-test (legacy sentinel, no assertion count)"
-        continue
+        st_n="$(grep -cE 'SELF-?TEST[^:]*(PASS|FAIL)|SELF-?TEST \[[^]]*\]: *(PASS|FAIL)' <<<"$st_out")"
+        st_how="derived"
     fi
 
     if [ "$st_n" -le 0 ]; then
-        fail "$s --self-test reported 0 assertions -- it ran but asserted nothing"
+        if [ -n "$st_want" ]; then
+            fail "$s --self-test lost its assertion count (registry pins >= $st_want; it must print 'SELFTEST_OK $s <n>')"
+        else
+            st_legacy=$((st_legacy + 1)); st_legacy_names="$st_legacy_names $s"
+            pass "$s --self-test (summary-only output; no countable assertions -- declare a count)"
+        fi
         continue
     fi
     if [ -n "$st_want" ] && [ "$st_n" -lt "$st_want" ]; then
@@ -212,9 +231,13 @@ for s in "${SELFTEST_SCRIPTS[@]}"; do
         continue
     fi
     st_counted=$((st_counted + 1))
-    pass "$s --self-test ($st_n assertions)"
+    pass "$s --self-test ($st_n assertions, $st_how)"
 done
-echo "      assertion counts: $st_counted/$((st_counted + st_legacy)) checkers report a count; $st_legacy legacy —$st_legacy_names"
+if [ "$st_legacy" -eq 0 ]; then
+    echo "      assertion counts: $st_counted/$st_counted checkers counted; none uncounted"
+else
+    echo "      assertion counts: $st_counted/$((st_counted + st_legacy)) counted; $st_legacy uncounted (summary-only, must declare) —$st_legacy_names"
+fi
 
 # ---- 5: a silently-skipped section must ABORT (exit 99) ----
 # Regression test for the "completed=1 proves REACHED, not RAN" gap (R8 I2): make

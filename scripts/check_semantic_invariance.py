@@ -600,7 +600,10 @@ q13_tech_cost(i2) .. vm_tech_cost(i2) =e= sum(kcr, p13_cost(i2,kcr));
     print("=" * 60)
     if ok:
         print(f"{CHECK_NAME} self-test: PASS ({len(cases)} cases)")
-        print(f"SELFTEST_OK {CHECK_NAME}")
+        # The count travels on the sentinel so selftest_validator.sh can ratchet
+        # it (audit/selftest_assertion_counts.json). This check prints a SUMMARY
+        # rather than one line per case, so the harness cannot derive it.
+        print(f"SELFTEST_OK {CHECK_NAME} {len(cases)}")
         return 0
     print(f"{CHECK_NAME} self-test: FAIL")
     return 1
