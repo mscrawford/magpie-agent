@@ -549,8 +549,17 @@ COMPLETENESS_RE = re.compile(
 # NOTE the ",\s*and" alternative MUST precede the bare "," (ordered alternation): an
 # OXFORD list "Modules 14, 29, ..., 56, and 59" otherwise stops at 56 and reports the
 # last member as omitted -- a real FP this checker produced on module_52.md:484.
+# Separators: `,` `, and` `and` `&` and — added 2026-07-31 — `/`.
+# The slash form ("Modules 38/57/70") is used in the live corpus and was
+# silently unparsed: `module_36.md:1024` produced a FALSE OMISSION because
+# _mod_nums returned only {'09'} from a line that names 09, 38, 57 and 70, and
+# `:1025` parsed to the empty set, so that claim was never checked AT ALL --
+# a coverage hole, which is the more dangerous of the two failure modes because
+# it is invisible. Found by adversarial review of a Check 41 adjudication.
+# The slash is safe in this position: it is only reached after `Modules?\s+\d`,
+# so it cannot swallow a path or a unit like `tDM/ha`.
 MODULE_LIST_RE = re.compile(
-    r"\bModules?\s+(\d{1,2}(?:\s*\([^)]*\))?(?:\s*(?:,\s*and|,|and|&)\s*\d{1,2}(?:\s*\([^)]*\))?)+)",
+    r"\bModules?\s+(\d{1,2}(?:\s*\([^)]*\))?(?:\s*(?:,\s*and|,|and|&|/)\s*\d{1,2}(?:\s*\([^)]*\))?)+)",
     re.IGNORECASE)
 
 
@@ -1127,6 +1136,23 @@ def self_test() -> int:
     listing only {32} must flag 58 as an OMISSION.
     """
     ok = True
+
+    # ---- _mod_nums separators, incl. the `/` form (added 2026-07-31) --------
+    # Regression control for a real corpus bug: "Modules 38/57/70" parsed to the
+    # EMPTY set, so module_36.md:1024 raised a false OMISSION and :1025 was never
+    # checked at all. The last two cases are false-positive guards -- a unit like
+    # tDM/ha and a file path must not have their slashes read as separators.
+    for frag, want in [
+        ("- **Receives from**: Module 09 (GDP), Modules 38/57/70 (labor costs)", {"09", "38", "57", "70"}),
+        ("- **Provides to**: Modules 38/57/70 (wages)", {"38", "57", "70"}),
+        ("- **Depends on**: Modules 10, 29 and 30", {"10", "29", "30"}),
+        ("yields in tDM/ha per yr, used by Modules 10, 11", {"10", "11"}),
+        ("see modules/14_yields/managementcalib_aug19/input.gms", set()),
+    ]:
+        got = _mod_nums(frag)
+        if got != want:
+            print(f"FAIL _mod_nums({frag[:44]!r}) -> {sorted(got)}, want {sorted(want)}")
+            ok = False
 
     # ---- _classify_statement: POPULATE vs attribute-form writes (B4) --------
     # This extractor had NO direct test; the role map was always injected below.
