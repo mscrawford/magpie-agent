@@ -71,7 +71,21 @@ const DEFAULT_TRAPS = [
     q_naive: 'MAgPIE can apparently run each solve statement twice in a row. Where is that behaviour implemented, and what is it for?',
     q_trigger: 'Where is `s80_secondsolve` implemented in module 80, and what is its default value?' },
 ]
-const TRAPS = A.traps || DEFAULT_TRAPS
+// Rep 1 measured 0/31 propagation in every cell -- a FLOOR, not a null: with the
+// baseline at zero, C3-C4 cannot be non-zero, so the MANDATE question was never
+// actually put. Answerers averaged 28.8 tool uses and verified essentially
+// everything against code.
+//
+// EFFORT is the range-restoring knob, and it is deliberately the ONLY thing that
+// changes: same arenas, same traps, same prompt, same controls, so the delta is
+// attributable to effort alone. Lowering it makes verification a choice rather
+// than a reflex, which is the only regime in which a grep-procedure MANDATE has
+// room to change an outcome. Prompt-level de-priming was rejected as the knob
+// because AGENT.md is genuinely auto-loaded in a real session -- stripping it
+// would model a product that does not exist, and would also disable the canary.
+const EFFORT = A.effort || null                       // null => inherit session default
+const DROP = new Set(A.drop || [])                    // pre-registered drop order: T7,T8 first
+const TRAPS = (A.traps || DEFAULT_TRAPS).filter((t) => !DROP.has(t.id))
 
 // VACUITY GUARD. The first invocation of this script returned {"results":[]} in
 // 49 ms having spawned ZERO agents, because args was a string and TRAPS was []. A
@@ -190,12 +204,13 @@ const results = await pipeline(
   TRAPS,
   // stage 1: four answerers for this trap, one per cell
   (trap, _orig, i) => parallel(CELLS.map((cell) => () =>
-    agent(answerPrompt(trap, cell), {
+    agent(answerPrompt(trap, cell), Object.assign({
       label: `ans:${trap.id}:${cell.id}`,
       phase: 'Answer',
       model: 'sonnet',
       agentType: 'magpie-helper',
-    }).then((txt) => [cell.id, txt]).catch(() => [cell.id, null])
+    }, EFFORT ? { effort: EFFORT } : {}))
+      .then((txt) => [cell.id, txt]).catch(() => [cell.id, null])
   )),
   // stage 2: one blinded grader for this trap, sees all four
   async (answers, trap, i) => {
@@ -211,8 +226,13 @@ const results = await pipeline(
       schema: GRADE_SCHEMA,
     })
     const scored = {}
+    // Normalise the label. In rep 1, three of eight graders returned "ANSWER A"
+    // rather than "A" -- echoing the `### ANSWER A` block headers in this very
+    // prompt -- and 12 of 32 verdicts silently became MISSING. The first scoring
+    // pass then reported a rate over 5 traps while presenting as a run over 8.
+    const norm = (l) => String(l == null ? '' : l).replace(/^\s*ANSWER\s+/i, '').trim()
     for (const v of (g && g.verdicts) || []) {
-      const cid = map[v.label]
+      const cid = map[norm(v.label)]
       if (cid) scored[cid] = { outcome: v.outcome, evidence: (v.evidence || '').slice(0, 300), note: v.note || '', used_outside_corpus: !!v.used_outside_corpus }
     }
     const missing = CELLS.map((c) => c.id).filter((c) => !byCell[c])
