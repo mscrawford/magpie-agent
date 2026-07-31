@@ -64,10 +64,23 @@ KNOWN LIMITS — stated, not hidden
    MEASURED EFFECT on this check: PHANTOM findings 12 claims / 18 modules ->
    8 claims / 10 modules; OMISSION coverage 33 -> 37 modules. The whole
    module_45.md:448 row (4-of-4 phantom, all four explained by
-   `pm_climate_class` having no owner) disappeared. Owner-less is now 5, and
-   all 5 are correct: `fm_croprea` is a typo appearing only in GAMS comments
-   and is never declared, and 4 `sm_` scalars live in core/calculations.gms
-   rather than in any module.
+   `pm_climate_class` having no owner) disappeared.
+
+   ⚠️ CORRECTED 2026-07-31 (same day, by adversarial review). The first version
+   of this note claimed "owner-less is now 5, and all 5 are correct: ... 4 `sm_`
+   scalars live in core/calculations.gms rather than in any module." That was
+   FALSE on both counts and is the kind of confidently-wrong summary this
+   project keeps having to catch. Three of those four ARE declared in modules --
+   `sm_fix_SSP2`/`sm_fix_cc` at 09_drivers/aug17/input.gms:22-23 and
+   `sm_carbon_fraction` at 14_yields/*/input.gms -- and the fourth,
+   `sm_intersolve`, is in core/DECLARATIONS.gms, not calculations.gms. The real
+   cause was a THIRD declaration shape the scanner could not see: a bare
+   `parameters`/`scalars` block keyword with the member names on following
+   lines. That shape is now handled (shape B in build_producer_map), with a
+   positive control and a $ontext negative control in its --self-test.
+   TRUE state: owner-less is **2**, and both are correct -- `fm_croprea` is a
+   typo occurring only inside GAMS `*'` comments and is never declared
+   anywhere, and `sm_intersolve` is declared in core/, so no module owns it.
 3. REALIZATION-BLIND. The role map unions all realizations, so a read that only
    exists in a NON-default realization still counts. That is a scope
    difference, not a false positive, but it explains findings a

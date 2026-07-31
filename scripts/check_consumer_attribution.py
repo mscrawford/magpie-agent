@@ -211,16 +211,57 @@ def build_producer_map() -> dict[str, str]:
             text = read_text_or_empty(path)
             if not text:
                 continue
+            in_block = False      # inside a bare `parameters`/`scalars` block
+            in_ontext = False     # inside a $ontext ... $offtext comment region
             for line in text.splitlines():
+                stripped = line.strip()
+                low = stripped.lower()
+                # $ontext/$offtext regions are COMMENTS -- a declaration inside
+                # one is not a declaration. Added 2026-07-31 after review found
+                # the scanner would credit `table pm_ghost(...)` inside $ontext.
+                # No input.gms currently contains $ontext, so this is preventive.
+                if low.startswith("$ontext"):
+                    in_ontext = True
+                    continue
+                if low.startswith("$offtext"):
+                    in_ontext = False
+                    continue
+                if in_ontext:
+                    continue
+
+                # Shape A: `table NAME(...)` / `parameter NAME(...)` on one line.
                 m = INPUT_DECL_RE.match(line)
-                if not m:
+                if m:
+                    name = m.group("name")
+                    if name not in DECL_SECTION_KEYWORDS and is_interface_var(name):
+                        producers[name].add(module_name)
                     continue
-                name = m.group("name")
-                if name in DECL_SECTION_KEYWORDS:
+
+                # Shape B: a BARE section keyword opening a multi-name block --
+                #     parameters
+                #       sm_fix_SSP2   desc / 2025 /
+                #       sm_fix_cc     desc / 2025 /
+                #     ;
+                # Found 2026-07-31: this is how sm_fix_SSP2, sm_fix_cc and
+                # sm_carbon_fraction are declared, and shape A cannot see them,
+                # so they stayed owner-less and a prior docstring wrongly claimed
+                # they lived in core/. Entering block mode ONLY on a bare keyword
+                # is what keeps table DATA ROWS out: `table X(...)` and
+                # `parameter X(...)` carry a name on the same line, so they never
+                # open a block, and their $include/CSV bodies are never scanned.
+                if low.rstrip(";") in DECL_SECTION_KEYWORDS and not low.startswith("$"):
+                    in_block = True
                     continue
-                if not is_interface_var(name):
-                    continue
-                producers[name].add(module_name)
+                if in_block:
+                    if stripped.startswith(";") or stripped.endswith(";"):
+                        in_block = False
+                    if not stripped or stripped.startswith("*") or stripped.startswith("$"):
+                        continue
+                    bm = DECL_LINE_RE.match(line)
+                    if bm:
+                        name = bm.group("name")
+                        if name not in DECL_SECTION_KEYWORDS and is_interface_var(name):
+                            producers[name].add(module_name)
 
     # Resolve to single producer; mark ambiguous as empty-string sentinel.
     resolved: dict[str, str] = {}
@@ -808,7 +849,18 @@ def _write_selftest_fixture(root: Path) -> None:
       "$offdelim\n;\n")
     w("modules/09_drivers/aug17/input.gms",
       "parameter fm_deflator(t_all) GDP deflator (1)\n"
-      "/\n$ondelim\n$include \"./x.csv\"\n$offdelim\n/\n;\n")
+      "/\n$ondelim\n$include \"./x.csv\"\n$offdelim\n/\n;\n"
+      # Shape B: bare keyword opening a multi-name block. This is how the real
+      # sm_fix_SSP2/sm_fix_cc are declared (09_drivers/aug17/input.gms:22-23).
+      "\nparameters\n"
+      "* a comment inside the block must not be harvested\n"
+      "  sm_blockvar   year until which things are fixed (year) / 2025 /\n"
+      ";\n"
+      # NEGATIVE: a declaration inside a $ontext comment region is NOT a
+      # declaration. Must not be credited.
+      "\n$ontext\n"
+      "table pm_ghost(j,clcl) should never be credited\n"
+      "$offtext\n")
     # 14_yields READS pm_clim -> with an owner, this becomes a real D2 edge.
     w("modules/14_yields/managementcalib_aug19/presolve.gms",
       " p14_t(j) = pm_clim(j,\"cfa\") * fm_deflator(\"y1995\");\n")
@@ -1103,6 +1155,12 @@ def _self_test() -> int:
                 failures.append(f"build_producer_map: pm_clim -> {prod.get('pm_clim')!r}, want '45_climate' (declared as `table` in input.gms)")
             if prod.get("fm_deflator") != "09_drivers":
                 failures.append(f"build_producer_map: fm_deflator -> {prod.get('fm_deflator')!r}, want '09_drivers' (declared as `parameter` in input.gms)")
+            # Shape B: bare `parameters` block with members on following lines.
+            if prod.get("sm_blockvar") != "09_drivers":
+                failures.append(f"build_producer_map: sm_blockvar -> {prod.get('sm_blockvar')!r}, want '09_drivers' (multi-name `parameters` block in input.gms)")
+            # NEGATIVE control: $ontext regions are comments, not declarations.
+            if "pm_ghost" in prod:
+                failures.append(f"build_producer_map: credited pm_ghost -> {prod.get('pm_ghost')!r}, but it is inside a $ontext comment block")
 
             # build_consumer_map
             if "29_cropland" not in cons.get("vm_land", set()):

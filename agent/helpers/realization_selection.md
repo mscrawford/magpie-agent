@@ -53,11 +53,12 @@ gms::startRun(cfg)
 
 ## Modules with Multiple Realizations
 
-Of 46 modules, **22 have multiple realizations**. The rest have a single implementation.
+Of 46 modules, **23 have multiple realizations** (2026-07-31: was 22; M14 joined). The rest have a single implementation. Live list: 13, 14, 18, 21, 29, 30, 31, 34, 37, 38, 40, 41, 42, 44, 51, 53, 55, 58, 59, 60, 70, 71, 80.
 
 | Module | Name | Default ✅ | Alternatives | Key Difference |
 |--------|------|-----------|--------------|----------------|
 | 13 | tc | `endo_jan22` | `exo` | Endogenous TC (NLP) vs exogenous (linear, faster, needs prior endo run) |
+| 14 | yields | `managementcalib_aug19` | `dynRegPastrTau_apr26` | Pasture-yield spillover from crop TC: global scalar `s14_yld_past_switch` vs regional/time-varying table `f14_yld_past_switch(t_all,i)`. **The shipped input is a uniform 0.25 dummy, so at default data the two are behaviourally identical** — the alternative buys the *capability* to vary spillover by region/year, not a different result out of the box. |
 | 18 | residues | `flexreg_apr16` | `flexcluster_jul23`, `off` | Regional vs cluster-level residue handling, or disabled |
 | 21 | trade | `selfsuff_reduced` | `exo`, `selfsuff_reduced_bilateral22` | Self-sufficiency pools vs exogenous vs bilateral flows |
 | 29 | cropland | `detail_apr24` | `simple_apr24` | Fallow land & tree cover modeled vs fixed to zero ⚠️ recalib |
@@ -84,7 +85,7 @@ Of 46 modules, **22 have multiple realizations**. The rest have a single impleme
 
 ### Modules with Only One Realization (no switching possible)
 These major modules have a single realization — use **switches** for behavioral variation:
-- **14_yields** (`managementcalib_aug19`): Use `s14_degradation`, `s14_calib_ir2rf` switches
+- **~~14_yields~~ — ⚠️ NO LONGER TRUE, corrected 2026-07-31.** M14 gained a second realization, `dynRegPastrTau_apr26` (`modules/14_yields/module.gms:31,32`). Default remains `managementcalib_aug19` (`config/default.cfg:357`). See the multi-realization table above and `modules/module_14.md` §18. Switches `s14_degradation` / `s14_calib_ir2rf` still apply to the default.
 - **15_food** (`anthro_iso_jun22`): Use `s15_elastic_demand`, `c15_food_scenario`, `c15_calibscen` switches
 - **32_forestry** (`dynamic_may24`): Use `s32_hvarea`, `c32_rot_calc_type`, `c32_aff_policy` switches
 - **35_natveg** (`pot_forest_may24`): Use `s35_forest_damage`, `s35_hvarea`, `c35_ad_policy` switches
