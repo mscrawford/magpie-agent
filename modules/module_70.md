@@ -912,7 +912,7 @@ c70_feed_scen = "ssp2"
 
 **Downstream propagation beyond feed composition**: `i70_livestock_productivity` also feeds two paths that do not run through feed baskets at all:
 - **Livestock factor costs**: `i70_livestock_productivity` → `i70_fac_req_livst` (`preloop.gms:88`) → `vm_cost_prod_livst` via `q70_cost_prod_liv_labor` / `q70_cost_prod_liv_capital` (`equations.gms:59-66`) — part of the objective function.
-- **Module 14 pasture yields**: `i70_livestock_productivity` → `p70_cattle_stock_proxy` / `p70_milk_cow_proxy` (`presolve.gms:32,35`) → `p70_incr_cattle` (`presolve.gms:53`) → `pm_past_mngmnt_factor` (`presolve.gms:63-68`) → pasture yield scaling in `modules/14_yields/managementcalib_aug19/equations.gms:38` and `nl_fix.gms:11`.
+- **Module 14 pasture yields**: `i70_livestock_productivity` → `p70_cattle_stock_proxy` / `p70_milk_cow_proxy` (`presolve.gms:32,35`) → `p70_incr_cattle` (`presolve.gms:53`) → `pm_past_mngmnt_factor` (`presolve.gms:63-68`) → pasture yield scaling in `modules/14_yields/managementcalib_aug19/equations.gms:38` and `modules/14_yields/managementcalib_aug19/nl_fix.gms:11`.
 
 A user who flips `c70_feed_scen` expecting only a feed-basket-composition change and then observes different livestock factor costs or Module 14 pasture yields would misattribute the cause without tracing this switch here.
 
@@ -1475,7 +1475,7 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 - **Interfaces — was the weak dimension, now repaired**: R58 found the consumer/producer sets wrong in
   four places — `vm_feed_balanceflow` documented as internal-only (M71's default consumes it),
   `im_feed_baskets` missing from §Outputs entirely, M36 missing from the `vm_cost_prod_livst` consumer
-  set, `pm_past_mngmnt_factor`'s `nl_fix.gms:11` site uncited, and the §Participates In upstream set
+  set, `pm_past_mngmnt_factor`'s `modules/14_yields/managementcalib_aug19/nl_fix.gms:11` site uncited, and the §Participates In upstream set
   inverted. All are corrected above.
 
 > ⚠️ **CORRECTED (R58, 2026-07-17)**: this footer previously asserted "All interface variables
@@ -1519,7 +1519,8 @@ Updates parameter with current solution for use in next timestep's scavenging fl
 > `fbask_jan16` there is no M14 identifier of any kind (no `vm_yld`, no `i14_*`, no `f14_*`, no `q14_*`;
 > verified against a positive control — `vm_prod_reg` returns 6 hits from the same search). The edge runs
 > the **other way**: M70 *produces* `pm_past_mngmnt_factor` (`presolve.gms:63-68`), which M14 consumes
-> (`modules/14_yields/managementcalib_aug19/equations.gms:38` and `nl_fix.gms:11`). "70 (self)" is not a
+> (`modules/14_yields/managementcalib_aug19/equations.gms:38` and
+> `modules/14_yields/managementcalib_aug19/nl_fix.gms:11`). "70 (self)" is not a
 > module dependency at all. And four real upstream providers (09, 15, 36, 38) were dropped — all four are
 > listed correctly in §Critical Module Dependencies above, so the doc contradicted itself. The corrected
 > set matches that section.
