@@ -57,8 +57,21 @@ from pathlib import Path
 AGENT_DIR = Path(__file__).resolve().parents[2]
 MAGPIE_DIR = AGENT_DIR.parent
 
-# Checkers to run per injection. Doc-vs-code checks that could plausibly bind a
-# doc claim. Kept small so a run stays minutes, not hours.
+# Checkers to run per injection.
+#
+# CORRECTED 2026-07-31. This list held 11 checkers while 29 existed, and the
+# headline was still read as "what fraction of real doc bugs does THE GATE
+# catch". It was measuring a SUBSET and naming it the gate, so every miss a
+# non-listed checker would have caught was scored against the gate.
+#
+# The correction was not cosmetic: the 2026-07-20 run reported `citation` as a
+# 0/2 BLIND SPOT while **neither citation checker was in the list**. A blind
+# spot you never pointed an instrument at is a measurement artifact, and it had
+# been read as a finding about the gate for eleven days.
+#
+# Rule for this list: every checker that binds a DOC CLAIM against code belongs
+# here. Exclusions are decisions and are named below, so a future reader can
+# tell an exclusion from an oversight.
 CHECKERS = [
     "check_attribution_omissions",
     "check_dependent_counts",
@@ -71,7 +84,31 @@ CHECKERS = [
     "check_doc_var_existence",
     "check_gams_variables",
     "check_module_set_claims",   # Check 41 — added 2026-07-20 to close attribution_set
+    # --- added 2026-07-31: doc-claim checkers that existed but were never run ---
+    "check_no_bare_cites",        # the `citation` class -- absent while citation scored 0/2
+    "check_gams_citations_impl",  # the other half of `citation`
+    "check_set_members",          # the `set_membership` class
+    "check_param_defaults",
+    "check_renames",
+    "check_intra_doc_contradiction",
+    "check_gams_equations",
+    "check_gams_realizations",
+    "check_default_realizations",
+    "check_hedged_claims",
+    "gams_slices",
 ]
+
+# DELIBERATELY EXCLUDED, with the reason — these are not doc-claim checks, so
+# including them would inflate the rate rather than measure it:
+#   check_bindability            emits a coverage/to-do list, not defects
+#   check_local_paths            public-repo hygiene, not a doc claim
+#   check_cfg_gams_wiring        finds bugs in the PARENT repo, not in docs
+#   check_rolemap_completeness   a control on the role map, not a doc check
+#   check_semantic_invariance    needs a before/after PAIR of trees; no single-tree verdict
+#   check_scaling                scaling.gms values, measured but never in the seed corpus
+#   check_module_realizations    structural, fires on the module tree not the doc claim
+# Also note the gate's INLINE bash checks (3, 5, 7-12) are not represented here
+# at all, so this measures the CHECKER BATTERY, not literally the whole gate.
 
 # Curated REAL doc-bug fixes. Each entry is a commit whose diff to modules/*.md
 # reverted a genuine, verified bug. `klass` records what the bug WAS, so misses
