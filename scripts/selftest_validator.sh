@@ -7,12 +7,14 @@
 # silently died at check 1 (set -e + ((VAR++))-from-0) while commit messages and
 # project/sync_log.json recorded "NN/NN clean" — a green that no completed run
 # ever produced. This self-test makes that class of failure impossible to miss
-# by asserting five properties on an isolated fixture:
+# by asserting six properties on an isolated fixture:
 #   1. CLEAN tree         -> verdict=PASS, exit 0                  (no false positive)
 #   2. PLANTED defect     -> verdict=FAIL, exit 1, defect named, completed=1
 #   3. FORCED early exit   -> exit 99, "ABORTED"                   (death safety net)
 #   4. PER-CHECK controls -> each load-bearing check_*.py --self-test prints SELFTEST_OK
 #   5. SECTION-COUNT skip  -> stale SECTION_TOTAL -> exit 99       (skip safety net)
+#   6. INLINE-CHECK controls -> one planted defect per inline bash check, each
+#                               absent from the clean run and named in the planted one
 #
 # Run this before trusting any clean validate_consistency.sh result, and in CI.
 # Exit 0 = the guard is trustworthy; exit 1 = a property failed, do NOT trust it.
@@ -33,8 +35,25 @@ BASE="$(mktemp -d)"
 FIXTURE="$BASE/magpie-agent"
 trap 'rm -rf "$BASE"' EXIT
 
+# Two filenames this harness must handle are ASSEMBLED rather than spelled out,
+# because the checks they belong to scan this repo's own files and would flag this
+# harness for containing them -- a linter's positive control tripping the linter.
+#   STALE_DOCNAME: the legacy agent-doc filename. Check 7 scans *.md AND *.sh for
+#     it, so a literal here becomes a standing gate warning (observed: it did).
+#   STALE_PREFIX: the stale self-referential path prefix. Check 12 scans *.md only
+#     today, so a literal is harmless now; assembled anyway so a future widening of
+#     that check does not silently red-flag its own test.
+# Both literals live in their checks' own sections of validate_consistency.sh.
+STALE_DOCNAME="CLAUDE.""md"
+STALE_PREFIX="magpie-agent""/"
+
 build_clean_fixture() {
     rm -rf "$FIXTURE"
+    # Check 10 compares the fixture's AGENT.md against the two deployed copies one
+    # level up, i.e. files in $BASE rather than in $FIXTURE. Clearing them here keeps
+    # every sub-test hermetic no matter what an earlier one deposited beside the
+    # fixture (a no-op on a fresh base).
+    rm -f "$BASE/AGENT.md" "$BASE/$STALE_DOCNAME"
     mkdir -p "$FIXTURE"/{scripts,modules,core_docs,cross_module,reference,agent/helpers,project}
     cp "$VALIDATOR" "$FIXTURE/scripts/validate_consistency.sh"
     printf '# AGENT\n\nNo links here.\n' > "$FIXTURE/AGENT.md"
@@ -49,7 +68,7 @@ run() {  # $1 = script basename under fixture/scripts ; sets OUT, RC
 echo "[selftest] fixture base: $BASE"
 
 # ---- 1: clean fixture must PASS (no false positives) ----
-echo "[1/5] clean fixture should PASS"
+echo "[1/6] clean fixture should PASS"
 build_clean_fixture
 run validate_consistency.sh
 if [ "$RC" -eq 0 ] && grep -q "verdict=PASS" <<<"$OUT" && grep -q "completed=1" <<<"$OUT"; then
@@ -60,7 +79,7 @@ else
 fi
 
 # ---- 2: planted unclosed code block must be DETECTED (FAIL) ----
-echo "[2/5] planted defect should be DETECTED (FAIL)"
+echo "[2/6] planted defect should be DETECTED (FAIL)"
 build_clean_fixture
 # Odd number of ``` fences -> Check 13 must flag it.
 printf '# Planted defect\n```python\nprint("no closing fence")\n' > "$FIXTURE/core_docs/Unclosed.md"
@@ -76,7 +95,7 @@ fi
 # ---- 3: forced early exit must ABORT loudly (exit 99) ----
 # This is the direct regression test for the 2025-2026 silent-death bug: inject
 # a premature exit after the trap is installed and confirm the safety net fires.
-echo "[3/5] premature death should ABORT loudly (exit 99)"
+echo "[3/6] premature death should ABORT loudly (exit 99)"
 build_clean_fixture
 # Portable injection: BSD/macOS `sed` rejects GNU's one-line `/pat/a text`, so use awk.
 awk '{ print } /^trap on_exit EXIT$/ { print "echo \"[selftest] forcing early exit\"; exit 7" }' \
@@ -100,7 +119,7 @@ fi
 # --self-test falls through to a normal corpus run and exits 0, minting a FALSE
 # positive control. So we require each --self-test to print "SELFTEST_OK <name>"
 # on stdout, NOT merely exit 0. Exit-0-without-the-sentinel is treated as a FAIL.
-echo "[4/5] per-check positive controls (--self-test)"
+echo "[4/6] per-check positive controls (--self-test)"
 SELFTEST_SCRIPTS=(check_gams_citations_impl check_default_realizations check_gams_variables \
                   check_doc_var_existence check_scaling check_consumer_attribution \
                   check_hedged_claims check_module_realizations probe_dedup_check \
@@ -136,7 +155,7 @@ done
 # Regression test for the "completed=1 proves REACHED, not RAN" gap (R8 I2): make
 # SECTION_TOTAL disagree with the sections that actually run; the structural guard
 # must fire rather than report a green that verified fewer sections than it claims.
-echo "[5/5] section-count mismatch should ABORT (exit 99)"
+echo "[5/6] section-count mismatch should ABORT (exit 99)"
 build_clean_fixture
 sed 's/^SECTION_TOTAL=.*/SECTION_TOTAL=999/' "$VALIDATOR" > "$FIXTURE/scripts/validate_skip.sh"
 run validate_skip.sh
@@ -146,6 +165,102 @@ else
     fail "section mismatch expected exit 99 + 'section-count mismatch'; got exit $RC"
     grep "VALIDATOR_RESULT\|section-count\|FATAL" <<<"$OUT" | sed 's/^/        /'
 fi
+
+# ---- 6: planted-defect controls for the INLINE bash checks (Plan C item C2) ----
+# Sub-test 4 binds the extracted check_*.py checkers through their own --self-test.
+# The checks written INLINE in validate_consistency.sh had no equivalent control:
+# nothing proved they were still capable of firing, so a silent run from them was
+# unfalsifiable -- indistinguishable between "corpus clean" and "check blind".
+# These eight are the set worth covering: Checks 1, 2 and 6 are slated for removal,
+# 4/23/26 are retired tombstones, and 13 is already covered by sub-test 2 above.
+#
+# Each case asserts BOTH directions, which is what makes it a control rather than a
+# coincidence:
+#   * the message is ABSENT from the clean run  -> the plant is what causes it
+#   * the message is PRESENT in the planted run -> the check still fires
+#   * plus the exit code / verdict / counter movement the check's severity implies
+# So a check fails here if its detection breaks, and equally if it still logs but
+# stops counting. When a check's wording legitimately changes, update the needle --
+# do not drop the case.
+echo "[6/6] planted-defect controls for the inline bash checks"
+
+# STALE_DOCNAME and STALE_PREFIX are defined near build_clean_fixture above; see
+# the note there for why they are assembled rather than written out.
+plant_inline_defect() {  # $1 = check id; mutates the freshly built clean fixture
+    case "$1" in
+      03) printf 'This doc refers to module_99.md, which does not exist.\n' \
+              > "$FIXTURE/core_docs/BrokenRef.md" ;;
+      05) rm -f "$FIXTURE/project/sync_log.json" ;;
+      07) printf 'Legacy pointer: see %s for setup.\n' "$STALE_DOCNAME" \
+              > "$FIXTURE/core_docs/StaleName.md" ;;
+      08) printf '# Broken\n\n[missing target](no_such_file.md)\n' \
+              > "$FIXTURE/core_docs/BrokenLink.md" ;;
+      09) printf '# Orphan helper\n\nRegistered in no routing table.\n' \
+              > "$FIXTURE/agent/helpers/orphan_helper.md" ;;
+      10) printf '# AGENT\n\nDeployed copy has diverged.\n' > "$BASE/AGENT.md" ;;
+      11) printf '# Startup\n\nPinned at 0123456789abcdef0123456789abcdef01234567.\n' \
+              > "$FIXTURE/agent/helpers/session_startup.md" ;;
+      12) printf 'Run `%sscripts/foo.sh` to start.\n' "$STALE_PREFIX" \
+              > "$FIXTURE/core_docs/StalePrefix.md" ;;
+      *)  echo "        (no plant defined for check $1)"; return 1 ;;
+    esac
+}
+
+vr_num() {  # $1 = validator output, $2 = counter name -> its integer value
+    grep -o 'VALIDATOR_RESULT:.*' <<<"$1" | tail -1 | grep -oE "$2=[0-9]+" | cut -d= -f2
+}
+
+# One clean run, reused as the "absent before" reference for every case below.
+build_clean_fixture
+run validate_consistency.sh
+CLEAN_OUT="$OUT"
+CLEAN_WARNINGS="$(vr_num "$CLEAN_OUT" warnings)"; CLEAN_WARNINGS="${CLEAN_WARNINGS:-0}"
+
+# id | severity | the message the check must emit when it fires
+INLINE_CASES=(
+  "03|error|Broken reference: module_99.md referenced but doesn't exist"
+  "05|error|project/sync_log.json missing (run sync command)"
+  "07|warn|files still reference ${STALE_DOCNAME} (should be AGENT.md)"
+  "08|error|broken markdown links found (see above)"
+  "09|warn|trigger sync issues found (see above)"
+  "10|error|AGENT.md differs from ../AGENT.md"
+  "11|warn|files contain hardcoded commit hashes (may become stale)"
+  "12|error|backtick-quoted paths use stale '${STALE_PREFIX}' prefix"
+)
+
+for case_spec in "${INLINE_CASES[@]}"; do
+    IFS='|' read -r cid severity needle <<<"$case_spec"
+    build_clean_fixture
+    plant_inline_defect "$cid"
+    run validate_consistency.sh
+    err_n="$(vr_num "$OUT" errors)";     err_n="${err_n:-0}"
+    warn_n="$(vr_num "$OUT" warnings)";  warn_n="${warn_n:-0}"
+
+    problems=""
+    if grep -qF -- "$needle" <<<"$CLEAN_OUT"; then
+        problems="$problems; message ALREADY present in the clean run (vacuous control)"
+    fi
+    grep -qF -- "$needle" <<<"$OUT" || problems="$problems; planted defect NOT reported"
+    grep -q "completed=1" <<<"$OUT"  || problems="$problems; run did not complete"
+    if [ "$severity" = "error" ]; then
+        [ "$RC" -eq 1 ]                  || problems="$problems; expected exit 1, got $RC"
+        grep -q "verdict=FAIL" <<<"$OUT" || problems="$problems; expected verdict=FAIL"
+        [ "$err_n" -ge 1 ]               || problems="$problems; error counter did not move"
+    else
+        [ "$RC" -eq 0 ]                  || problems="$problems; expected exit 0, got $RC"
+        grep -q "verdict=PASS" <<<"$OUT" || problems="$problems; expected verdict=PASS"
+        [ "$err_n" -eq 0 ]               || problems="$problems; warning-level check raised an error"
+        [ "$warn_n" -gt "$CLEAN_WARNINGS" ] \
+                                         || problems="$problems; warning counter did not move ($warn_n vs clean $CLEAN_WARNINGS)"
+    fi
+
+    if [ -z "$problems" ]; then
+        pass "Check $cid ($severity) -> planted defect detected and named"
+    else
+        fail "Check $cid ($severity) positive control did not hold${problems}"
+        grep "VALIDATOR_RESULT" <<<"$OUT" | sed 's/^/          | /'
+    fi
+done
 
 echo ""
 if [ "$FAILURES" -eq 0 ]; then
