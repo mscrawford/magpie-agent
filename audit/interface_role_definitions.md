@@ -85,9 +85,59 @@ land module populates slices of shared variables, M32/M30/M35/M29 all land in
 24-28 and the metric stops discriminating. A single integer is compressing a
 multi-relation graph, and no compression is free.
 
-**Open question for Mike, not decided unilaterally:** adopt D3 for §1.2 (complete
-but coarse), or report the three edge counts separately instead of one Total.
-Nothing has been written into any doc. See the session record for the reasoning.
+## RULED 2026-07-31 (Mike): report TWO columns — **Owns** and **Reaches**
+
+`Owns` = D2 (owner -> readers). `Reaches` = the D3 union. The single `Total` goes
+away: it cannot hold across two definitions, so the `Total = ProvidesTo + DependsOn`
+identity is retired with it.
+
+**Why two, rather than picking one.** Neither definition dominates, and the
+measurement says so. D2 discriminates about twice as well among the land modules
+(spread 5-11 versus D3's 15-17) — but that discrimination is partly an artifact of
+ignoring the edge type that dominates MAgPIE's idiom. The decisive case: **M31
+declares exactly one interface variable (`vm_cost_prod_past`) but writes slices of
+`vm_land`, `vm_carbon_stock`, `vm_prod`, `vm_bv`, which 21 modules read.** §1.2 exists
+to answer *"if I touch this module, what breaks?"* and feeds
+`cross_module/modification_safety_guide.md`; for M31, D2 answers **1**, which is
+dangerously wrong. D3 answers 21 and is right. Reporting both keeps the exact,
+anchored, discriminating number AND the blast radius, and the gap between them is
+itself the useful signal.
+
+**`writers` was fixed FIRST, per the same ruling** — see the balance-equation section
+below and commit `d000be1`. POPULATE now credits a `vm_` symbol summed on an equation
+LHS. Measured: POPULATE edges 150 -> 161, READ 423 -> 420 (3 reclassifications, not
+losses). So the numbers below are computed against the corrected map, not the old one.
+
+**Recomputed §1.2 rows** (positive control: M10 Owns = 18, matching the independent
+hand-derivation at `modules/module_10.md:793`):
+
+| Module | Owns | Reaches | gap |
+|---|---:|---:|---:|
+| M11 costs | 1 | 1 | 0 |
+| M10 land | 18 | 18 | 0 |
+| M56 ghg_policy | 5 | 5 | 0 |
+| M32 forestry | 6 | 17 | +11 |
+| M30 croparea | 10 | 16 | +6 |
+| M70 livestock | 7 | 7 | 0 |
+| M17 production | 12 | 12 | 0 |
+| M09 drivers | 14 | 14 | 0 |
+| M29 cropland | 7 | 15 | +8 |
+| M35 natveg | 5 | 18 | +13 |
+
+The gap column separates two kinds of module cleanly: gap-zero modules own what they
+provide, while the large-gap ones (M35, M32, M29, M30, and M31 at +20) are land modules
+whose blast radius comes entirely from writing slices of variables they do not own.
+
+**STILL TO DO — the doc pass is NOT done.** Nothing above has been written into any
+doc yet. Deliberately deferred to its own reviewed commit with the before/after diff
+visible. Surface, now that it has been measured rather than guessed at: §1.2 in
+`core_docs/Module_Dependencies.md:25`; Appendix A in
+`cross_module/modification_safety_guide.md:1056`; **only 2** module lines carry a hard
+number (the other 14 enumerate module names, which are unaffected); and
+`modules/module_29.md:1079` quotes the old `| Rank | Module | Total | Provides To |
+Depends On |` column format, which the two-column ruling changes. The 3 frozen
+dependent-count findings (`module_56.md:1138`/`:1150`, `module_17.md:899`) unfreeze
+with that pass.
 
 ---
 
