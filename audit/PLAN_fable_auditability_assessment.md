@@ -193,6 +193,40 @@ neutered.
 
 ---
 
+## Phase 2 pre-registration — recorded 2026-07-31 BEFORE any arm returned
+
+Fable bailed at the Phase 0 gate on a prompt with no nitrogen and no biology term
+(*"what does `vm_land` represent and which module declares it?"*), so the Fable arm is
+dead and the ladder is **Haiku 4.5 / Sonnet 5 / Opus 5, two runs each**. Two runs per rung
+because with n = 4 answerable injections a single run cannot separate a tier difference
+from sampling noise. Dispatching with an explicit model parameter also retires Phase 1:
+the silent-downgrade confound the identity probe existed to control is gone.
+
+The four answerable injections, and what catching each requires:
+
+| # | injection | to catch it, the auditor must |
+|---|---|---|
+| 1 | `module_29_notes.md#0` [mechanism] | notice a realization is named, and check M29's realization directory |
+| 2 | `module_40.md#0` [attribution_role] | open each cited `equations.gms` line and check whether `vm_prod` is actually there |
+| 3 | `module_80.md#0` [citation] | know M80 has four realizations, each with its own `solve.gms`, so a bare basename is ambiguous |
+| 4 | `module_80.md#1` [citation] | same |
+
+**Predictions.** #2 is the most findable — it is a concrete, checkable falsehood, and
+laborious rather than subtle. #1 next. **I expect the two `citation` items to be missed by
+every tier**, and the reason is the interesting part: a bare-basename cite is an
+*ambiguity*, not a false statement, and the brief asks for claims that "CONTRADICT" the
+source. An auditor may reasonably not classify an ambiguous-but-not-wrong citation as a
+contradiction.
+
+**So if #3 and #4 are missed across all six runs, that is a finding about the BRIEF, not
+about the tiers** — it would mean the instrument under-specifies the citation class, and
+the honest response is to fix the brief and re-run, not to record `citation` as an LLM
+blind spot. If they are caught, my worry was unfounded and the brief is adequate as
+written.
+
+Expected flags on no-injection files: **greater than zero at every tier.** The corpus is
+not certified clean. Those need triage, not scoring.
+
 ## Phase 3 — Design arm (the thing actually asked for)
 
 Only after Phase 2 gives a calibration number. Per class, force a verdict among **three**
