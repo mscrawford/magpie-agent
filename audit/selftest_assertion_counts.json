@@ -42,7 +42,7 @@
     "check_semantic_invariance": 22,
     "check_set_members": 16,
     "compute_module_centrality": 6,
-    "prepare_audit_arena": 41,
+    "prepare_audit_arena": 46,
     "gams_slices": 23
   }
 }

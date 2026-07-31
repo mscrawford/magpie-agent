@@ -132,6 +132,15 @@ DEFAULT_EXCLUDED_FILES = ("modules/module_58.md",)
 DOC_PREFIXES = ("modules/", "core_docs/", "cross_module/")
 UNIFORM_MTIME = 1_600_000_000  # 2020-09-13, well before any of this work
 
+# Model-source mirror filter. A BLOCKLIST of data/binary formats, deliberately
+# not an allowlist of source extensions — see build_gams_mirror() for the bug
+# that distinction caused. Docs cite plain-text siblings of the .gms files
+# (`not_used.txt`, `files`), and an auditor that cannot open a cited file
+# reports it as nonexistent, correctly and uselessly.
+MIRROR_SKIP_EXT = {".cs3", ".cs2", ".mz", ".nc", ".png", ".jpg", ".jpeg", ".pdf",
+                   ".tgz", ".gz", ".zip", ".rds", ".RData"}
+MIRROR_MAX_BYTES = 512 * 1024
+
 # The project's own meta-layer. Not MAgPIE documentation — documentation of how
 # MAgPIE's documentation gets audited, which is where every answer key lives.
 META_DIRS = ("audit", "project")
@@ -246,16 +255,36 @@ def collect_hunks(classes, excluded, included):
 
 
 def build_gams_mirror(root: Path) -> int:
-    """Lean read-only mirror of the GAMS ground truth: *.gms + config + core.
+    """Lean read-only mirror of the GAMS ground truth: source text + config + core.
 
     A copy, not a symlink: a symlink would let an auditor with Write access edit
-    the real model source. Measured 2026-07-31 the full `modules/` tree is 488M
-    (almost all of it input data the checkers never read), while the 606 *.gms
-    files total 3.0M — every GAMS-side read in `scripts/` globs *.gms, plus
-    `config/default.cfg`. So the lean mirror is faithful, not a shortcut.
+    the real model source. The full `modules/` tree is 488M, almost all of it
+    input data (`.cs3`, `.mz`) that nothing here needs, so it is filtered.
+
+    CORRECTED 2026-07-31, and the correction is the point. The first version
+    copied `*.gms` ONLY, on the reasoning that every GAMS-side read in
+    `scripts/` globs `*.gms`. That reasoning was about what the CHECKERS read,
+    and it was silently generalised to what an LLM AUDITOR reads. An auditor
+    follows citations in the docs, and `modules/module_41.md:619` cites
+    `not_used.txt` — which exists 26 times in the real tree and zero times in
+    the `*.gms`-only mirror.
+
+    Two independent auditors duly reported the cited file as nonexistent, both
+    citing a `find` that returned nothing. They were RIGHT about the corpus they
+    were given and wrong about the model, and the difference was this function.
+    Their findings were then written up as fabrications before the arena was
+    checked. An unfaithful arena does not produce a wrong number — it produces a
+    wrong number that reads like a discovery about the auditor.
+
+    So the filter is now a blocklist of data/binary extensions, not an allowlist
+    of one source extension: anything a human could read stays.
     """
     n = 0
-    for p in (MAGPIE_DIR / "modules").rglob("*.gms"):
+    for p in (MAGPIE_DIR / "modules").rglob("*"):
+        if not p.is_file() or p.suffix.lower() in MIRROR_SKIP_EXT or p.name == ".DS_Store":
+            continue
+        if p.stat().st_size > MIRROR_MAX_BYTES:
+            continue
         dst = root / p.relative_to(MAGPIE_DIR)
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(p, dst)
@@ -940,6 +969,25 @@ def self_test() -> int:
               "modules/module_50.md" in pick_controls(c, {"modules/module_40.md"}, 2, None))
     check("avoid regex counts the terms Fable bails on",
           avoid_hits("nitrogen N2O fertiliser manure") == 4 and avoid_hits("land carbon") == 0)
+
+    # --- mirror fidelity: the docs cite non-.gms siblings, so they must survive ---
+    # Regression control for the *.gms-only mirror that made two auditors report
+    # a cited file as nonexistent. They were right about the arena.
+    check("the mirror filter does not exclude plain-text model files",
+          ".txt" not in MIRROR_SKIP_EXT and "" not in MIRROR_SKIP_EXT)
+    check("the mirror filter does exclude bulk input data",
+          {".cs3", ".mz"} <= MIRROR_SKIP_EXT)
+    real_not_used = list((MAGPIE_DIR / "modules").rglob("not_used.txt"))
+    if real_not_used:
+        with tempfile.TemporaryDirectory() as td:
+            n = build_gams_mirror(Path(td))
+            mirrored = list((Path(td) / "modules").rglob("not_used.txt"))
+            check("a cited non-.gms file (not_used.txt) reaches the arena",
+                  len(mirrored) == len(real_not_used))
+            check("the mirror still carries the .gms source",
+                  len(list((Path(td) / "modules").rglob("*.gms"))) > 500 and n > 600)
+            check("bulk input data is still excluded from the mirror",
+                  not list((Path(td) / "modules").rglob("*.cs3")))
 
     # --- findability preconditions, on the real hunks that motivated them ---
     hdr = "--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n"
