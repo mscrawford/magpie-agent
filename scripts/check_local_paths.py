@@ -162,7 +162,51 @@ def self_test() -> int:
         print("SELF-TEST FAIL: matched a line with no paths")
         return 1
 
-    print("SELF-TEST OK - positive (2 hits), negative (0 FPs), vacuity controls all pass.")
+    # ---- allowlisted(): branch controls, added 2026-07-31 --------------------
+    # WHY: mutation testing measured this checker at 84.2% survival -- the WORST
+    # in the battery -- because the self-test only ever drove scan_text. That is
+    # backwards for the risk: `allowlisted` is the function that decides whether
+    # a FOUND leak is SUPPRESSED, so a mutation here silently turns the
+    # public-repo guard into a no-op while the gate still prints PASS. Detection
+    # was tested; suppression was not. One fixture per and/or arm, both
+    # directions (feedback_test_the_testers: go at BRANCHES, not at functions).
+    hit = {"file": "audit/x.md", "match": "/Users/real/thing", "line": 1, "kind": "user_home"}
+    cases = [
+        ("file match, match=None (file-wide exemption)",
+         {"entries": [{"file": "audit/x.md"}]}, True),
+        ("file match, match equal",
+         {"entries": [{"file": "audit/x.md", "match": "/Users/real/thing"}]}, True),
+        ("file match, match DIFFERENT -> must NOT exempt",
+         {"entries": [{"file": "audit/x.md", "match": "/Users/other/thing"}]}, False),
+        ("path_prefix + match equal",
+         {"entries": [{"path_prefix": "audit/", "match": "/Users/real/thing"}]}, True),
+        ("path_prefix WITHOUT matching match -> must NOT exempt",
+         {"entries": [{"path_prefix": "audit/", "match": "/Users/other/thing"}]}, False),
+        ("path_prefix alone (no match key) -> must NOT exempt",
+         {"entries": [{"path_prefix": "audit/"}]}, False),
+        ("wrong prefix -> must NOT exempt",
+         {"entries": [{"path_prefix": "modules/", "match": "/Users/real/thing"}]}, False),
+        ("empty allowlist", {"entries": []}, False),
+    ]
+    for label, allow, want in cases:
+        got = allowlisted(hit, allow)
+        if got != want:
+            print(f"SELF-TEST FAIL: allowlisted({label}) -> {got}, want {want}")
+            return 1
+
+    # load_allowlist: absent file must degrade to an EMPTY allowlist, never to
+    # something that exempts everything.
+    real = ALLOWLIST
+    try:
+        globals()["ALLOWLIST"] = Path("/nonexistent/allowlist.json")
+        if load_allowlist() != {"entries": []}:
+            print("SELF-TEST FAIL: load_allowlist() on a missing file did not return an empty allowlist")
+            return 1
+    finally:
+        globals()["ALLOWLIST"] = real
+
+    print("SELF-TEST OK - positive (2 hits), negative (0 FPs), vacuity, "
+          "8 allowlist-branch and 1 load-allowlist control all pass.")
     print("SELFTEST_OK check_local_paths")
     return 0
 

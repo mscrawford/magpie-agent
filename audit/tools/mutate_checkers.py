@@ -52,6 +52,18 @@ ROSTER = [
     "check_attribution_tables", "check_attribution_prose",
     "check_attribution_omissions", "check_dependent_counts",
     "gams_slices", "check_dependent_direction", "check_bindability",
+    # Added 2026-07-31. These five were excluded, so the battery's headline
+    # survival rate said NOTHING about them -- including check_module_set_claims
+    # (Check 41), the newest gating-adjacent checker and the one whose output an
+    # adjudication round acts on, and check_local_paths (Check 40), which is
+    # GATING and guards a PUBLIC repo against credential/path leaks. A coverage
+    # number that silently omits the checks you most rely on is the same class of
+    # problem as the 9.52 figure: a reassuring aggregate over an unstated subset.
+    "check_cfg_gams_wiring",        # Check 38 (unwired; feeds MODEL_FINDINGS)
+    "check_fenced_identifiers",     # Check 39 (unwired)
+    "check_local_paths",            # Check 40 (GATING, public-repo guard)
+    "check_module_set_claims",      # Check 41
+    "check_rolemap_completeness",   # Check 42 (ground-truth control)
 ]
 
 CMP_SWAP = {
