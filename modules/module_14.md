@@ -1315,7 +1315,7 @@ Soil loss and pollination deficiency are **optional features** that can be enabl
 
 **Cross-module interfaces are unchanged.** Both realizations reference exactly the same 21 `vm_`/`pm_`/`im_`/`fm_`/`pcm_`/`sm_` identifiers (verified by diffing the extracted sets 2026-07-31), so M14's Provides-To / Depends-On sets do **not** change when switching realization. `f14_yld_past_switch` is a module-local input parameter (`f14_` prefix), not an interface.
 
-> 📊 **⚠️ CAPABILITY vs. DEFAULT — the shipped input is a uniform dummy.** VERIFIED 2026-07-31 against the real `rev4.132` data (obtained from the PIK cluster; the file is not in the repository — only the `input/files` manifest is tracked).
+> 📊 **⚠️ CAPABILITY vs. DEFAULT — the shipped input is a uniform dummy.** VERIFIED 2026-07-31 against the real `rev4.132` data, which is now **installed in the local tree** (`input/info.txt`); the CSV is not in the repository — only the `input/files` manifest is tracked.
 >
 > `dynRegPastrTau_apr26/input/f14_yld_past_switch.csv` contains **0.25 in every cell** — 456 values, 38 time steps (`y1965`–`y2150`) × 12 h12 regions (LAM, OAS, SSA, EUR, NEU, MEA, REF, CAZ, CHA, IND, JPN, USA), with **zero** cells differing from 0.25. That is exactly `managementcalib_aug19`'s scalar default (`config/default.cfg:369`). The file's own header declares itself a *"Dummy file for regional pasture yield switch"*, produced by `calcOutput(type = "YldPastSwitch", ...)` (madrat 3.36.4 | mrland 0.74.0).
 >

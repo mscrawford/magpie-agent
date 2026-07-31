@@ -30,8 +30,8 @@
           "commits": "c923b737f, d9fb0adcb",
           "modules_affected": [],
           "doc_update_needed": false,
-          "doc_update_status": "DEFERRED - data not obtainable",
-          "notes": "cfg$input bumped rev4.131 -> rev4.132 plus new input files for the new realization. Documented as a cfg-level fact only. No data-derived magnitude was updated: rev4.132 is internal/HPC-first and 404 on the public store, so the local tree remains rev4.131."
+          "doc_update_status": "DONE 2026-07-31 - data obtained + installed",
+          "notes": "cfg$input bumped rev4.131 -> rev4.132 plus new input files for the new realization. Documented as a cfg-level fact only. RESOLVED 2026-07-31: rev4.132 was pulled from the PIK cluster (3 archives from the rd3mod inputdata output share, additional_data_rev4.67 from the landuse input archive, calibration from the public store) and INSTALLED via download_and_update against a bare local-path repository. input/info.txt now records all 5 rev4.132/4.67 archives; 0 failure markers. The new realization's input dir received all THREE files, empirically confirming the input-re-plumb documented in module_14.md."
         }
       ],
       "modules_updated": ["14_yields"],
