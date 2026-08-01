@@ -68,6 +68,14 @@ RE_MODULE_DOC = re.compile(r"module_(\d{2})")
 
 # Chars before the citation searched for a realization name. The passage's
 # subject, not the document's.
+#
+# BACKWARD ONLY, deliberately. A first version also looked 80 chars ahead and
+# picked up (a) the heading of the NEXT section, and (b) a contrast clause that
+# follows the cite -- "Capital costs (`equations.gms:64-66`); in
+# `fbask_jan16_sticky`: investment-based ...", where the bare cite belongs to the
+# default and the non-default is named only to contrast with it. A passage's
+# subject is established BEFORE its citation, never after. 2 of 7 false positives
+# in the 2026-08-01 adjudication of all 19 findings.
 WINDOW = 300
 
 
@@ -101,7 +109,7 @@ def check_text(text: str, mod: str, tree: Tree) -> list[dict]:
         fname, n = m.group("file"), int(m.group("line"))
         if (fname, n) in seen:
             continue
-        ctx = text[max(0, m.start() - WINDOW): m.start() + 80]
+        ctx = text[max(0, m.start() - WINDOW): m.start()]
         named = [r for r in others if _bounded(r).search(ctx)]
         if not named:
             continue                       # passage is not about a non-default one
@@ -156,6 +164,11 @@ NEGATIVES = [
      "80_optimization"),
     ("passage names no realization at all",
      "The solver options are configured early (solve.gms:16).\n", "80_optimization"),
+    # REGRESSION: the non-default is named only to CONTRAST, after the cite. The
+    # bare cite belongs to the default and is correct. Backward-only window.
+    ("a non-default named AFTER the cite does not claim it",
+     "- `q70_cost_prod_liv_capital`: Capital costs (equations.gms:64-66); in "
+     "`fbask_jan16_sticky`: investment-based capital costs.\n", "70_livestock"),
     ("identical content across realizations is harmless",
      "In `lp_nlp_apr17` see (realization.gms:1).\n", "80_optimization"),
 ]

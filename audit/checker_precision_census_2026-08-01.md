@@ -316,6 +316,49 @@ seed corpus — but it does mean their "0 findings" on the live corpus is uninfo
 because nothing has ever demonstrated they *can* fire. Same ambiguity the whole
 benchmark exists to resolve.
 
+---
+
+# Addendum 3 — the bare-cite blind spot, and all 19 findings adjudicated
+
+`check_misleading_bare_cite.py` closes the class the seeded-bug benchmark named. Every
+one of its 19 initial findings was adjudicated against source, and the checker was then
+corrected using what that adjudication showed.
+
+## Adjudication of all 19 (before the fix)
+
+**12 true positives / 7 false positives = 63%.** The false positives had three causes:
+
+| cause | n | example |
+|---|---:|---|
+| incidental realization mention in the backward window, passage actually about the default | 5 | module_13.md:303 — tau carry-forward is `endo_jan22` behaviour; `exo` merely appeared nearby |
+| forward window caught the NEXT section's heading | 1 | module_44.md:585 — `## Alternative` followed the cite |
+| non-default named AFTER the cite, only to contrast | 1 | module_70.md:1268 — "Capital costs (`equations.gms:64-66`); in `fbask_jan16_sticky`: …" |
+
+## The fix, and its honest cost
+
+The last two share one cause: the context window looked **80 characters forward**. A
+passage's subject is established *before* its citation, never after. Made backward-only.
+
+**19 → 15 findings: 3 false positives removed, 1 true positive lost.** The lost one is
+module_80.md:447, a table row where the `nlp_ipopt` label sits after the cite. Precision
+**63% → 73% (11/15)**; recall on the adjudicated set 12 → 11.
+
+That trade is recorded rather than buried: the fix is not free, and a future session
+weighing a forward window should know it buys one finding back at the cost of three.
+
+## Residual false positives (4 of 15) — the hard class
+
+All four are "a non-default realization is named somewhere in the preceding 300
+characters, but the passage is really about the default". Distinguishing them needs the
+passage's *subject*, not the presence of a name — the same limit that caps the citation
+checker at ~44% coverage. Not fixable by window tuning.
+
+## Not wired into the gate
+
+At 73% precision this is a useful triage list, not a gate. Wiring it needs either the
+residual class addressed or an explicit decision to accept ~1 in 4 false alarms on a
+shared CI.
+
 ## Reproduce
 
 ```
