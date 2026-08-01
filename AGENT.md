@@ -90,6 +90,7 @@ When a command is detected, read and execute `agent/commands/[name].md`.
 | `/update` | Full pipeline: pull agent + sync MAgPIE + semantic freshness | Everyone |
 | `/sync` | Check MAgPIE code for changes, update docs | Everyone |
 | `/bootstrap` | First-time setup | New users |
+| `/propose-doc-fix` | Turn a doc defect into a reviewable PR (evidence-tiered) | Everyone |
 | `/validate` | Check documentation consistency (syntactic) | Maintainers |
 | `/validate-module` | Validate specific module docs | Maintainers |
 | `/validate-semantic` | Run adversarial semantic accuracy flywheel (scoring spec: `audit/flywheel_rubric.md`) | Maintainers |
