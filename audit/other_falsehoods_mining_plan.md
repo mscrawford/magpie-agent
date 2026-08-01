@@ -1,6 +1,11 @@
 # Mining the 261 other-falsehood candidates — a tiered method
 
-**Status: SCOPED TO TIERS 0-1 (Mike, 2026-08-01). Tiers 2-3 are not authorised yet.**
+**Status: TRACK 2. Tier 0 RUN IT (free). Tier 1 DEPRIORITISED and gated on Tier 0's
+non-citation tail. Tiers 2-3 NOT AUTHORISED.** Reordered 2026-08-01 - the lead track is
+now `audit/corpus_investigation_plan.md` (cross-module claims, docs-only), because a free
+re-analysis of R55 put pointer errors at ~4% of confirmed defects and 0 of the
+Criticals/Majors, while this pool is ~77% citation drift by crude routing. Read the master
+plan first.
 Written 2026-08-01 so the stop rule is fixed *before* any results are seen.
 
 > **Scope decision and its consequence.** Mike authorised a first look: Tier 0 + Tier 1
@@ -186,91 +191,22 @@ Tiers 0-2 together are well under one weekly window and answer the question
 
 ---
 
-# SPRINT P — pointer errors vs process errors in the corpus
+---
 
-**Added 2026-08-01 on Mike's amendment. Not yet run.** Sequenced AFTER the 261 mining
-(Tiers 0-1), because that run's class mix feeds this one.
+# SPRINT P — RELOCATED
 
-## Why this sprint exists
+Sprint P was absorbed into **`audit/corpus_investigation_plan.md` → TRACK 1 (Sprint X)**
+on 2026-08-01, and amended there rather than duplicated here.
 
-Every defect fixed on 2026-08-01 was a **pointer error** — 16 citation line numbers, 9
-realization paths. Every checker built that day binds a pointer. The session raised
-confidence about the layer where the model points, and said nothing about the layer where
-it *explains*.
+What changed in the move, and why:
 
-That matters because a pointer error costs a reader a minute of hunting. A process error
-teaches them something false about MAgPIE, and `AGENT.md`'s own PRIMARY DIRECTIVE is
-about exactly that failure ("MAgPIE applies historical rates labeled 'wildfire'" vs
-"MAgPIE models fire disturbance").
+- **sampling**: random module docs → **stratified, cross-module arm vs within-module arm**.
+  With one arm, "process errors concentrate in cross-module claims" is baked into the
+  sampling; with two, it is measurable.
+- **regime**: unspecified → **docs-only**, with a normal-regime control cell. Run normally
+  this measures 3.1% and reports the model, not the corpus.
+- **measures**: doc claims only → **outcome (does a reader get misled) plus a trace back to
+  the doc claim that caused it**, so a finding is actionable rather than diagnostic.
 
-## Taxonomy — three layers, not two
-
-Mike's framing was pointer-vs-process. The data supports a third bucket in between, and
-collapsing it hides where the defects actually are:
-
-| layer | what is wrong | mechanizable? | example classes |
-|---|---|---|---|
-| **POINTER** | the reference points to the wrong place; the claim may be true | fully | `citation`, `realization` |
-| **BINDABLE FACT** | a discrete fact is wrong, but it is checkable against code | yes, with a role map / set index | `attribution_declare/populate/read`, `set_membership`, `default_value`, `formula` |
-| **PROCESS** | the account of HOW the model works is wrong | no — needs equation bodies + reasoning | `mechanism`, `data_flow_direction`, parameterized-vs-mechanistic |
-
-## Free first estimate (computed 2026-08-01 from data already on disk)
-
-`audit/integrated/depth_residual_density.json` — R55, 3 hub docs, K=5 decorrelated Opus
-lenses, every Critical/Major adversarially refuted (only UPHELD/CORRECTED counted):
-
-```
-POINTER          1 / 27   3.7%     0 of 8 Criticals+Majors
-BINDABLE FACT   21 / 27  77.8%     6 of 8
-PROCESS          5 / 27  18.5%     2 of 8
-```
-
-(27 classified against 28 reported confirmed — a 1-item discrepancy, unreconciled, flagged
-rather than smoothed.)
-
-**Provisional reading: pointer errors are ~4% of confirmed defects and 0% of the serious
-ones.** Treat as a lead, not a result — n=27, one round, three of the most-audited hub
-docs, and the lens set determines what gets found.
-
-## The methodological trap this sprint must avoid
-
-**Sample from CLAIMS, not from FINDINGS.** A findings pool measures what the instruments
-look for; process errors are by definition the class no instrument binds, so mining
-findings cannot estimate their rate. R57 already recorded this as survivorship
-("mining a found-bug corpus cannot surface a never-named class").
-
-The depth-audit workflow already does the right thing — it builds an exhaustive claim
-ledger with a coverage denominator (`total_checkable`) before auditing. **Reuse it; do
-not invent a new extractor.**
-
-## Design
-
-1. **Sample docs at random**, NOT by centrality. R55/R58 both ran on hubs, and R58 already
-   found its own module-selection was survivorship-biased. Hubs are the most-audited docs,
-   so their residual density is a floor, not an estimate.
-2. **Per-claim ledger first**, so every rate carries its denominator: claims of each layer
-   per doc, then defects per claim per layer.
-3. **Run all five lenses**, and report per lens. The pointer lens (`citation_formula`) and
-   the process lens (`mechanism_direction`) are already separate in the workflow.
-4. **Lens ablation on a subset** — drop `mechanism_direction` and see what is lost. That
-   estimates what the standing battery (which has no process lens at all) is blind to,
-   which is the number that actually justifies or kills further process-layer investment.
-5. **Adversarially refute every Critical/Major** before counting, as R55 did. Process
-   claims are the most confabulation-prone to audit precisely because they need reasoning.
-
-## What would change the plan
-
-- **If PROCESS is <5% of defects and ~0 Criticals**: pointer/fact mechanization is the
-  right investment and the corpus is in better shape than feared. Stop here.
-- **If PROCESS is >20% of defects or carries most Criticals**: the entire checker battery
-  addresses the minority layer, and the arena's docs-only 29.2% has a mechanism. That
-  would make the process layer the top priority and would argue for an LLM-audit cadence
-  rather than more deterministic checkers.
-- **If BINDABLE FACT dominates (the R55 signal, 78%)**: the highest-value work is neither
-  — it is finishing the role-map/set-index mechanization, which is partly built already.
-
-## Cost
-
-Reusing `doc_depth_audit.workflow.js` on a random sample of ~6 docs with all 5 lenses plus
-the ablation subset: roughly 40-60 agents, ~15-20M tokens, ~1 window. The free R55
-re-analysis above is already done and cost nothing.
+The free R55 pointer/fact/process estimate that motivated the sprint is reproduced in the
+master plan; the derivation is `audit/integrated/depth_residual_density.json`.
