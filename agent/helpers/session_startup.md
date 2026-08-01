@@ -70,10 +70,24 @@ cd "$AGENT_DIR" && python3 scripts/sync_magpie4_clone.py 2>&1 | tail -3
 
 ```bash
 # From magpie-agent/ directory:
+test -d ../modules && echo "GAMS source: present" || echo "GAMS source: ABSENT"
 cat ../CITATION.cff | grep "^version:" | head -1
 git -C .. rev-parse --abbrev-ref HEAD
 git -C .. --no-pager log --oneline -1
 ```
+
+> **🔴 If `GAMS source: ABSENT`, say so in your greeting before answering anything.**
+> This repo can be cloned on its own, in which case `../modules/` does not exist and every
+> answer falls back to documentation alone. That is the single largest quality difference ever
+> measured on this agent: **29.2% of answers assert something the code contradicts without
+> source access, versus 3.1% with it** (`audit/arena_1a_regrade.md` §3, arena round 1A,
+> p = 0.0157). The failure is otherwise silent — a missing `../CITATION.cff` reads as a
+> version-lookup error, not as "you cannot verify anything you are about to say".
+>
+> Tell the user plainly: *"⚠️ The MAgPIE GAMS source is not reachable from here (`../modules/`
+> is absent), so I can only answer from documentation and cannot verify claims against the
+> code. Measured error rates are ~10x higher in this mode. To fix it, place this repo inside a
+> MAgPIE checkout."* Then answer with `🟡 Documented` at best — never `🟢 Verified`.
 
 **What to look for:**
 - Version number (e.g., `4.13.0-dev`)
