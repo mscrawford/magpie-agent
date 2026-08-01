@@ -121,9 +121,26 @@ checked end to end, because a *replacement* is exactly where an unexamined subst
 - **Still safe** — the effort manipulation (28.1 → 6.0 tool calls/answerer) and the
   `AGENT.md`-never-read finding. Both are parsed from transcript `tool_use` inputs and touch
   neither grading nor the return channel.
-- **Still unsafe** — the propagation rate and the regime effect, but for a *newly identified*
-  reason, and now with a known direction of bias in the low-effort cells: 7 stubs scored CORRECT
-  deflate propagation there. The earlier concern (the grader missing falsehoods, which would
-  deflate rep 1's `0/31`) pushes the contrast the other way. Both are live; neither is quantified.
-  Only a re-grade on the correct substrate settles it.
+- **Still unsafe, but less damaged than first feared** — the propagation rate and the regime
+  effect. Scoring the *files* of the 12 stub cells with the traps' own mechanical regexes
+  (`score_phase1a.mechanical`, the production entry point) returns **CORRECT for 11 of 12**.
+  So on the trap claim specifically, the stub cells' real answers mostly agreed with the
+  verdict the grader reached by accident, and the propagation counts are probably only mildly
+  disturbed. That is luck, not design, and the regexes are crude — but it bounds the damage.
+  A re-grade on the correct substrate is still required to quote either number.
 - **Newly established** — the substrate defect itself, measured above.
+
+### The sharper cost: what the substrate defect actually hid
+
+Not propagation — **fabrication**. The trap-focused rubric asks one question ("did the answer
+repeat *this* defect?"), so an answer can invent equations and line numbers elsewhere and still
+be scored CORRECT. Two of the six fabricated-identifier answers sit in stub cells (rep2 T4 C4,
+rep4 T4 C4), where the grader saw ~60 characters; the rest were simply never asked about. The
+anchored prompt is a second, independent defect: it directs the grader's attention to one claim
+and away from everything else in the answer, which is exactly how `plant2forestry` was scored
+CORRECT on text the grader *did* fully see.
+
+Any hardened grader therefore needs an **unanchored** field — "does this answer assert anything
+else the code contradicts?" — alongside the trap verdict. The mechanical checker gives that
+field a non-LLM answer key on the fabrication subclass, so its false-negative rate becomes
+measurable rather than assumed.
