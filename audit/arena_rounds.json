@@ -1,0 +1,56 @@
+{
+ "schema": "arena_rounds/v1",
+ "purpose": "Ledger for ARENA rounds - the flywheel that measures whether a corpus defect REACHES the user's answer. Distinct from validation_rounds.json (is the doc accurate?) and pipeline_audit_rounds.json (is the machinery sound?). Protocol and invariants: audit/arena_protocol.md.",
+ "naming_note": "Always cite these as 'arena round <id>'. A bare 'round N' is ambiguous across three ledgers here plus the preproc-agent's own.",
+ "rounds": [
+  {
+   "id": "1A",
+   "date": "2026-07-31/2026-08-01",
+   "question": "Does a documentation defect reach the user's answer, and do the 22 MANDATEs in agent/helpers/verifiers.md change that?",
+   "design": "2x2 factorial: arm (real verifiers.md, 39049 B vs placebo stub, 505 B) x phrasing (naive, zero trigger keywords vs trigger-hitting). 8 traps (3 native + 5 seeded). Answerer pinned sonnet with tools, agentType magpie-helper. Regime varied across replicates: rep1 normal effort, rep2/rep4 low effort, rep3 docs-only (no GAMS access).",
+   "n": {"answers": 104, "answers_scored": 103, "traps": 8, "cells": 4, "replicates": 4},
+   "grading": "FINAL: written-file substrate, 2 independent Opus graders per trap group, split rubric (ASSERTS_FALSEHOOD / OMITS_DEFAULT_CAVEAT / CORRECT_AND_COMPLETE / NOT_ELICITED) plus an un-anchored 'anything else the code contradicts' field; adjudication on disagreement. Inter-grader agreement 103/104 = 99%.",
+   "results": {
+    "propagation_narrow": {"rate": 0.117, "k": 12, "n": 103, "ci95": [0.068, 0.193], "definition": "asserts something the code contradicts"},
+    "propagation_wide": {"rate": 0.194, "k": 20, "n": 103, "ci95": [0.129, 0.281], "definition": "falsehood OR omitted default caveat; comparable to the original rubric"},
+    "regime_effect": {"rep1_normal": 0.031, "rep2_low": 0.042, "rep3_docs_only": 0.292, "rep4_low": 0.130, "rep1_vs_pooled_wide_p": 0.0058, "docs_only_vs_normal_narrow_p": 0.0157, "note": "low effort degrades COMPLETENESS (omitted caveats); no code access degrades CORRECTNESS (outright falsehoods)"},
+    "arm_null": {"real": 0.096, "placebo": 0.137, "fisher_p": 0.555, "note": "genuine null, not a floor - both arms well off zero (5/52, 7/51)"},
+    "class_effect": {"attribution_role": 0.281, "all_other_classes": 0.042, "fisher_p": 0.0012, "note": "T5 and T6 both elevated; the class effect is real"},
+    "item_effect": {"T5_vs_T6_narrow_p": 1.0, "T5_vs_T6_wide_p": 0.032, "note": "propagation is BOTH class-specific and item-specific"},
+    "mechanically_certain_defects": {"k": 8, "n": 104, "by_arm": {"real": 1, "placebo": 7}, "fisher_p": 0.0599, "status": "EXPLORATORY - not pre-registered, defect definition widened after a first look. Lead for a powered replication, not a finding."}
+   },
+   "scope_limits": [
+    "Every question was authored to hit a known defect. These are ADVERSARIAL rates; the base rate on ordinary questions is unmeasured and certainly lower.",
+    "The ablation removed verifiers.md but left AGENT.md, which already mandates citing/precision/non-fabrication. It measured the MARGINAL value of the procedural layer, NOT 'do instructions work'.",
+    "12 mechanical surface measures are flat across arms (all p > 0.45) including within rep1 alone, while the same measures move 2-7x under regime change. Tested against MANDATE 16 specifically (full-path vs bare-basename citation): 60.9% vs 53.9%, p = 0.299 - directional, unresolved.",
+    "Answerer pinned to one model. Nothing here generalises across models."
+   ],
+   "instrument_defects_found": [
+    "Arena built inside a git work tree injected 0 of 5 hunks while looking plausible (fixed: build git-free).",
+    "SUBSTRATE DIVERGENCE: graders read the workflow return value, the re-adjudication read the written files; 70% of cells differed, 12 were graded on 21-109 char stubs. Invalidated a full day's conclusion. See arena_1a_substrate_defect.md.",
+    "Canary fidelity gate collapsed at low effort (the measured cell) and was refused as a suspected prompt injection by 10 of 104 answerers. Replaced by parsed tool_use inputs.",
+    "Anchored rubric scored answers CORRECT while they fabricated elsewhere; the un-anchored field caught 6/6 mechanically certain defects it missed."
+   ],
+   "artifacts": {
+    "prereg": "audit/arena_1a_prereg.md",
+    "reps": ["audit/arena_1a_rep1.md", "audit/arena_1a_rep2.md"],
+    "synthesis": "audit/arena_1a_synthesis.md (SUPERSEDED - read the regrade first)",
+    "adjudication": "audit/arena_1a_adjudication.md (CORRECTED - central inference disconfirmed)",
+    "substrate_defect": "audit/arena_1a_substrate_defect.md",
+    "final": "audit/arena_1a_regrade.md",
+    "data": ["audit/data/arena_1a_regrade.json", "audit/data/arena_1a_rep1_grader.json", "audit/data/arena_1a_adjudication.json"]
+   },
+   "open": [
+    "Precision on the reduced citation-finding set is unmeasured (the 57-67% figure predates the directory-name FP fix).",
+    "Triage fan-out over 43 citation + 25 non-default + 261 un-anchored candidates - none acted on until independently re-derived.",
+    "A powered replication of the fabrication arm effect needs ~83 answers per arm."
+   ]
+  }
+ ],
+ "cumulative_stats": {
+  "rounds": 1,
+  "answers_graded": 104,
+  "instrument_defects_found_and_fixed": 4,
+  "non_llm_checkers_built": 3
+ }
+}

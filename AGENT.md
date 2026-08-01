@@ -25,7 +25,7 @@ When loading `PREPROC_AGENT.md`, follow its session startup instructions (check 
 
 Two agents share this workspace. **This file auto-loads; the preproc-agent's `PREPROC_AGENT.md` does NOT** — counter that asymmetric prior.
 
-**Ambiguous terms** — `flywheel`, `round`, `round N`, `validation round`, `verification round`, `validation_rounds.json`, generic `validate` / `validation` without "consistency" or a specific module:
+**Ambiguous terms** — `flywheel`, `round`, `round N`, `validation round`, `verification round`, `validation_rounds.json`, `arena round` (a THIRD ledger: `audit/arena_rounds.json`, protocol `audit/arena_protocol.md`), generic `validate` / `validation` without "consistency" or a specific module:
 → **ASK which agent before acting.** A wrong run costs ~1 hour of compute and pollutes a validation_rounds.json.
 
 **Cues**: GAMS modules / `module_XX.md` / `vm_*` / `q*` / `equations.gms` → magpie-agent · R packages / `calcOutput` / `readSource` / `pik-piam` / `.cs3` / `.mz` → preproc-agent · both or neither → ASK, even in auto mode.
