@@ -1,3 +1,24 @@
+> ## ⚠️ CORRECTED 2026-08-01 — read `arena_1a_substrate_defect.md` first
+>
+> **The central inference below is not supported by its own evidence.** This document
+> attributes 11 overturned verdicts to single-grader unreliability. In fact the original
+> grader and these adjudicators **read different text**: the grader consumed the workflow's
+> returned value, while this adjudication batch was built from the `.arena/out/*.md` files the
+> answerers wrote. Those diverge in **70% of cells (73/104)**, and in 12 cells the returned
+> value was a stub of 21–109 characters.
+>
+> Re-classified by substrate identity, the 21 answers decompose as **17 agree / 2 substrate
+> artifacts / 1 genuine grader miss / 1 rubric-definition difference** (rubric-faithful
+> mapping; 11 / 8 / 1 / 1 under the strict mapping). The claim "a single LLM grader per item is
+> not a measurement" was **not tested** by this run.
+>
+> **What survives:** the two confabulations verified against source (`plant2forestry`,
+> `50_nsoil_budget`) are real, and A05 remains a genuine grader miss on identical text. The
+> `ASSERTS_FALSEHOOD` vs `OMITS_DEFAULT_CAVEAT` rubric split remains the right distinction.
+> **What does not:** the T5-vs-T6 comparison, the "grader missed four falsehoods in T6" count
+> (2 of those 4 were stub cells the grader never saw), and the methodological lesson in the
+> final section.
+
 # Independent re-adjudication — the grader was the weakest link, and it was wrong both ways
 
 Three Opus adjudicators, blind, on the 21 T5/T6 answers that carried essentially the entire
