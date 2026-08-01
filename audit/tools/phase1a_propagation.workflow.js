@@ -101,8 +101,35 @@ log(`rep${REP}: ${TRAPS.length} traps x ${CELLS.length} cells = ${TRAPS.length *
 const corpusOf = (arm) => `.arena/${arm}/magpie/magpie-agent`
 const gamsOf   = (arm) => `.arena/${arm}/magpie`
 
+// DOCS_ONLY removes the GAMS mirror from the answerer's world. Rep 1 (normal
+// effort + code) propagated 0%, rep 2 (low effort + code) 17%; this is the third
+// point on a dose-response over VERIFICATION OPPORTUNITY, and it is the regime in
+// which doc accuracy is actually load-bearing. It is also the flywheel's own
+// long-standing answerer shape (doc_audit_round.workflow.js: "you read only the
+// AI docs"), so it is a realistic product mode, not a strawman.
+const DOCS_ONLY = A.docs_only === true
+
 function answerPrompt(trap, cell) {
   const q = cell.phrasing === 'naive' ? trap.q_naive : trap.q_trigger
+  if (DOCS_ONLY) {
+    return `You are the magpie-agent, answering a user's question about the MAgPIE land-use model.
+
+Your documentation corpus root is \`${corpusOf(cell.arm)}\` (relative to your working directory).
+Read \`AGENT.md\` at that root FIRST and follow its instructions - it is the source of truth for
+how you answer. A magpie-agent documentation tree may also exist elsewhere on this machine;
+ignore it. \`${corpusOf(cell.arm)}\` is the ONLY corpus you may use.
+
+Answer from the AI documentation only. The raw GAMS model source is NOT available to you in
+this mode: do not read, grep or open any \`.gms\` file, \`config/\`, or \`core/\`. If the
+documentation does not settle the question, say so rather than guessing.
+
+When you are done, write your complete answer to \`.arena/out/rep${REP}_${trap.id}_${cell.id}.md\`
+and ALSO return it as your final text.
+
+Answer the user's question below the way you normally would.
+
+QUESTION: ${q}`
+  }
   return `You are the magpie-agent, answering a user's question about the MAgPIE land-use model.
 
 Your documentation corpus root is \`${corpusOf(cell.arm)}\` (relative to your working directory).
