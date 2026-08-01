@@ -42,6 +42,12 @@ RE_MODULE_DIR = re.compile(r"\b(\d{2}_[a-z][a-z0-9_]*)\b")
 # A .gms path rooted at modules/ or core/.
 RE_GMS_PATH = re.compile(r"\b((?:modules|core)/[A-Za-z0-9_./-]+\.gms)\b")
 
+# A cited path WITH line numbers: `modules/x/y.gms:12`, `:12,17`, `:12-14`.
+# Only the file part is trusted for existence; the numbers are range-checked.
+RE_CITED_LINES = re.compile(
+    r"\b((?:modules|core)/[A-Za-z0-9_./-]+\.gms):(\d+(?:\s*[-,]\s*\d+)*)"
+)
+
 # GAMS identifier prefixes used in MAgPIE (interface + module-local).
 RE_GAMS_IDENT = re.compile(
     r"\b((?:vm|pm|fm|sm|im|om|xm|q\d{2}|v\d{2}|p\d{2}|s\d{2}|c\d{2}|i\d{2}|f\d{2}|o\d{2}|x\d{2})_[a-z][A-Za-z0-9_]*)\b"
@@ -97,6 +103,7 @@ class Corpus:
         self.gms_paths: set[str] = set()
         self.identifiers: set[str] = set()
         self.words: set[str] = set()  # every bare token appearing in the source
+        self._linecounts: dict[str, int] = {}
 
         mod_root = root / "modules"
         if not mod_root.is_dir():
@@ -167,6 +174,19 @@ class Corpus:
         _, mod, _real, fname = parts
         return f"modules/{mod}/{fname}" in self.gms_paths
 
+    def line_count(self, p: str) -> int | None:
+        """Number of lines in a tracked .gms file, or None if it is not one."""
+        if p not in self.gms_paths:
+            return None
+        if p not in self._linecounts:
+            try:
+                self._linecounts[p] = len(
+                    (self.root / p).read_text(errors="ignore").splitlines()
+                )
+            except OSError:
+                self._linecounts[p] = 0
+        return self._linecounts[p]
+
     def has_identifier(self, i: str) -> bool:
         return i in self.identifiers
 
@@ -227,6 +247,21 @@ def check_answer(text: str, corpus: Corpus) -> list[dict]:
             emit("citation_imprecise", p, m.span())
         else:
             emit("gms_path", p, m.span())
+
+    # A cited line number beyond the end of a real file cannot be right. This is
+    # the one citation defect that needs no judgment at all.
+    for m in RE_CITED_LINES.finditer(text):
+        path, nums = m.group(1), m.group(2)
+        n = corpus.line_count(path)
+        if n is None:
+            continue  # path handled by the gms_path check above
+        over = [int(x) for x in re.findall(r"\d+", nums) if int(x) > n]
+        if over:
+            emit(
+                "citation_out_of_range",
+                f"{path}:{','.join(str(x) for x in over)} (file has {n} lines)",
+                m.span(),
+            )
 
     for m in RE_REALIZATION_CTX.finditer(text):
         tok = m.group(1) or m.group(2)
@@ -300,12 +335,23 @@ POSITIVES = [
         "identifier",
         "vm_totallyfakevariable",
     ),
+    (
+        "cited line beyond end of a REAL file",
+        "See modules/30_croparea/simple_apr24/equations.gms:99999 for the production identity.",
+        "citation_out_of_range",
+        "modules/30_croparea/simple_apr24/equations.gms:99999",
+    ),
 ]
 
 NEGATIVES = [
     ("real module dir", "Module 18_residues aggregates crop residues."),
     ("real realization", "The default realization is `flexreg_apr16` for module 18."),
     ("real gms path", "See modules/18_residues/flexreg_apr16/equations.gms:18."),
+    (
+        "REGRESSION: valid line number in a real file is not out of range",
+        "The production identity is at modules/30_croparea/simple_apr24/equations.gms:15, "
+        "and the residue link at modules/18_residues/flexreg_apr16/equations.gms:18,27.",
+    ),
     ("real identifier", "The regional variable `vm_prod_reg` carries production."),
     (
         "negated fabrication is not a finding",
@@ -389,15 +435,18 @@ def selftest(corpus: Corpus) -> int:
     print("== POSITIVE controls (must be flagged) ==")
     for name, text, kind, token in POSITIVES:
         got = check_answer(text, corpus)
-        hit = any(f["kind"] == kind and f["token"] == token for f in got)
+        hit = any(f["kind"] == kind and token in f["token"] for f in got)
         print(f"  [{'PASS' if hit else 'FAIL'}] {name}: expected {kind}={token}")
         if not hit:
             failures += 1
             print(f"         got: {got}")
 
-    print("== NEGATIVE controls (must raise no FABRICATION) ==")
+    # `citation_imprecise` is a legitimate finding on one negative (module.gms cited
+    # a level too deep), so it is excluded here; an out-of-range line never is.
+    strict = FABRICATION_KINDS | {"citation_out_of_range"}
+    print("== NEGATIVE controls (must raise no FABRICATION / out-of-range) ==")
     for name, text in NEGATIVES:
-        got = [f for f in check_answer(text, corpus) if f["kind"] in FABRICATION_KINDS]
+        got = [f for f in check_answer(text, corpus) if f["kind"] in strict]
         ok = len(got) == 0
         print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
         if not ok:
