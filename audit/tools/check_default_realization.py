@@ -45,9 +45,22 @@ RE_REAL_PATH = re.compile(r"\bmodules/(\d{2}_[a-z][a-z0-9_]*)/([A-Za-z][A-Za-z0-
 RE_HEADING = re.compile(r"^#{1,6}\s", re.MULTILINE)
 
 # Language that establishes the default/non-default distinction.
+#
+# `default` is NOT matched when it is immediately followed by `/` -- module 73's
+# realization is literally named `default`, so `73_timber/default/equations.gms`
+# would otherwise read as default-establishing language and excuse the reference.
 RE_QUALIFIER = re.compile(
-    r"(?i)\b(default|non-default|not the default|alternative realization|"
+    r"(?i)\b(default(?!/)|non-default|not the default|alternative realization|"
     r"alternative realisation|if you (?:run|use)|when configured|realization comparison)\b"
+)
+
+# How close the module's default NAME must sit to default-establishing language
+# for the pair to count as "this section says which realization is configured".
+ESTABLISH_WINDOW = 120
+
+# An explicit flag immediately before the reference itself.
+RE_EXPLICIT_FLAG = re.compile(
+    r"(?i)(non-default|not the default|alternative realis[az]ation|rather than the default)"
 )
 
 NON_REALIZATION_DIRS = {"input"}  # `modules/NN_x/input/` is not a realization
@@ -139,14 +152,27 @@ def check_text(text: str, d: Defaults) -> list[dict]:
         if (mod, real) in seen:
             continue
         sec = section_of(pos)
-        # Structural suppression: the containing section establishes the default.
+
+        # Suppression requires the section to ESTABLISH which realization is
+        # configured -- not merely to mention the default's name somewhere.
         #
-        # The default name must match on IDENTIFIER boundaries, not as a substring:
-        # module 80's default `nlp_apr17` is a substring of the non-default
-        # `lp_nlp_apr17`, so a plain `in` test excuses precisely the reference this
-        # checker exists to catch. Caught by the M80 positive control on first run.
-        if re.search(rf"(?<![A-Za-z0-9_]){re.escape(dflt)}(?![A-Za-z0-9_])", sec) \
-                or RE_QUALIFIER.search(sec):
+        # Measured 2026-08-01: answers that list `flexreg_apr16` and
+        # `flexcluster_jul23` side by side, never saying which is configured, were
+        # being excused by a bare name test. That was 3 of the 5 recall misses.
+        # So the default NAME must co-occur with default-establishing LANGUAGE.
+        #
+        # The name matches on IDENTIFIER boundaries, not as a substring: module
+        # 80's default `nlp_apr17` is a substring of the non-default
+        # `lp_nlp_apr17`, so a plain containment test excuses exactly the
+        # reference this checker exists to catch.
+        name_re = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(dflt)}(?![A-Za-z0-9_])")
+        establishes = any(
+            name_re.search(sec[max(0, q.start() - ESTABLISH_WINDOW): q.end() + ESTABLISH_WINDOW])
+            for q in RE_QUALIFIER.finditer(sec)
+        )
+        # ...or the reference itself is explicitly flagged as non-default.
+        flagged = bool(RE_EXPLICIT_FLAG.search(text[max(0, pos - 160): pos + 160]))
+        if establishes or flagged:
             continue
         seen.add((mod, real))
         out.append({
@@ -171,6 +197,17 @@ POSITIVES = [
     ("non-default M80 realization cited bare",
      "## Solver\n\nThe second solve is controlled at "
      "`modules/80_optimization/lp_nlp_apr17/solve.gms:66`.\n"),
+    # Both realizations NAMED but neither declared configured -- 3 of the 5
+    # recall misses measured on 2026-08-01 had exactly this shape.
+    ("both realizations named, neither established as the default",
+     "## Consumers\n\nModule 18 has two realizations, `flexreg_apr16` and "
+     "`flexcluster_jul23`. The latter reads cell-level `vm_prod` at "
+     "`modules/18_residues/flexcluster_jul23/equations.gms:18`.\n"),
+    # `default` as a PATH SEGMENT (module 73's realization is named `default`)
+    # must not read as default-establishing language.
+    ("the word 'default' inside a path does not establish anything",
+     "## Consumers\n\nTimber cost is at `modules/73_timber/default/equations.gms:26`, "
+     "and residues at `modules/18_residues/flexcluster_jul23/equations.gms:18`.\n"),
 ]
 
 NEGATIVES = [
