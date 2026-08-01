@@ -185,11 +185,11 @@ detection, do not trust a remembered list):
 
 **22 MANDATEs** that prevent recurring confabulation patterns identified across many semantic-validation rounds (see `audit/validation_rounds.json` cumulative_stats for current bug/round totals) live in **`agent/helpers/verifiers.md`** and are auto-loaded when you discuss specific GAMS interface variables, equations, realizations, or defaults (see Auto-Loading Context Helpers table below).
 
-**Why hoisted**: ~150 lines of binding rules don't belong in always-loaded AGENT.md context; auto-loading on relevant triggers saves tokens, and a dedicated MANDATE doc with binding language separates "must enforce" from "FYI".
-
 **Short index** (full numbered table + binding text in `verifiers.md` — load it when a trigger fires). The 22 MANDATEs cluster into: **provenance** (formula, causal-mechanism, producer/declaration DECLARED-POPULATED-READ incl. per-slice ownership); **identifier lookups** (variable, equation, realization, module-characterization, default-parameter, cost-variable attribution); **grep discipline** (interface-parameter consumer grep, one-hop direct-vs-transitive, set-sum non-expansion, range non-truncation, exact set-member labels, closed-set member enumeration from sets.gms, solution-level `.l/.lo`, cross-module data-flow direction / both-endpoints); **rename hygiene** (deprecated-name italics, post-rename global grep, citation full-path + post-merge line numbers); plus capability-vs-default and pseudocode labeling.
 
 **Carry this even if `verifiers.md` never loads** — attribution is the highest-propagation defect class measured (28% vs 4%). An interface variable's three roles are distinct and routinely conflated: **DECLARED** (the `name(...)` line in a module's `declarations.gms`), **POPULATED** (assigned on an equation LHS, or via `.fx`/`.l`), **READ** (on an equation RHS). One module often declares it, others populate it, others read it; different set slices can have different owners. Never attribute a variable to a module without saying which of the three.
+
+**Capability vs default** (the next-largest measured class, 12.5%): that the code *can* do something does not mean a default run *does* it. A mechanism guarded by a switch set `off` in `config/default.cfg` is inactive unless the user changed it. Describe the default behaviour first; state the switch and its default value before describing what the mechanism would do when enabled.
 
 **Validation tracking**: See `audit/validation_rounds.json` for the full audit history (scores, bugs, root causes). The rubric for scoring is `audit/flywheel_rubric.md`. Future agents append new rounds to validation_rounds.json. Severity tiers and immutable anchor examples are in flywheel_rubric.md §1.
 
@@ -295,25 +295,9 @@ When reporting documentation sync status, use these badges:
 
 ### Capturing corrections and new knowledge
 
-**Before appending any lesson, correction, or warning**, check the target file for duplicates:
-- Search for key terms from what you're about to record
-- If a substantially similar entry already exists, **skip the append** (another session already captured it)
-- If a related-but-different entry exists, add yours with a note: `(see also: [date] entry above)`
+**When a user corrects you**, record it **immediately** — duplicate-check the target first, then append to `modules/module_XX_notes.md` or the relevant helper's `## Lessons Learned` (`audit/global/agent_lessons.md` if system-wide), and tell the user it is saved. Same for a module warning you discover, or a workflow no helper covers.
 
-**When a user corrects you** ("No, that's wrong" / "Actually it works like X"):
-1. **Immediately** append the correction to the relevant helper's `## Lessons Learned` or to `modules/module_XX_notes.md`
-2. Format: `- YYYY-MM-DD: CORRECTION — [what was wrong] → [what is correct] (source: user correction)`
-3. If the correction is system-wide, also append to `audit/global/agent_lessons.md`
-4. **Tell the user**: "✅ Recorded — I've saved this correction so future sessions get it right."
-
-**When you discover a module warning** (infeasibility combo, silent bug, misleading parameter):
-1. Check if `modules/module_XX_notes.md` exists — if not, create it using the template in existing notes files
-2. Append the warning under the appropriate section
-3. This happens during normal use — the agent records lessons directly, with no external submission step
-
-**When a user's question reveals a helper gap** (no helper covers their workflow):
-1. Mention it: "💡 This workflow isn't covered by a helper yet. Want me to create one?"
-2. If they decline, note the gap in `agent/helpers/README.md` under a `## Requested Helpers` section
+📋 Formats, the duplicate-check protocol and the helper-gap procedure: `agent/helpers/session_cleanup.md` § *Capturing corrections and new knowledge (full protocol)*.
 
 ---
 

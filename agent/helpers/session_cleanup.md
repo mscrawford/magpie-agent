@@ -140,3 +140,35 @@ message publishes on push. Scan both.
 **A stray `git add -A` from the PARENT repo** would publish agent files to public MAgPIE.
 The agent surface is kept out of the parent index via `.git/info/exclude`; do not remove
 those entries.
+
+---
+
+## Capturing corrections and new knowledge (full protocol)
+
+*Relocated from `AGENT.md` 2026-08-01 to reclaim always-loaded context. AGENT.md keeps the
+trigger-time essentials inline, because a correction arrives mid-session and this helper only
+auto-loads on goodbye triggers — the detail lives here, the trigger does not.*
+
+**Before appending any lesson, correction, or warning**, check the target file for duplicates:
+- Search for key terms from what you're about to record.
+- If a substantially similar entry already exists, **skip the append** (another session already
+  captured it).
+- If a related-but-different entry exists, add yours with a note: `(see also: [date] entry above)`.
+
+**When a user corrects you** ("No, that's wrong" / "Actually it works like X"):
+1. **Immediately** append to the relevant helper's `## Lessons Learned` or to
+   `modules/module_XX_notes.md`.
+2. Format: `- YYYY-MM-DD: CORRECTION — [what was wrong] → [what is correct] (source: user correction)`
+3. If the correction is system-wide, also append to `audit/global/agent_lessons.md`.
+4. **Tell the user**: "✅ Recorded — I've saved this correction so future sessions get it right."
+
+**When you discover a module warning** (infeasibility combo, silent bug, misleading parameter):
+1. Check whether `modules/module_XX_notes.md` exists — if not, create it from the template in an
+   existing notes file.
+2. Append the warning under the appropriate section.
+3. This happens during normal use; the agent records lessons directly, with no external submission
+   step.
+
+**When a user's question reveals a helper gap** (no helper covers their workflow):
+1. Mention it: "💡 This workflow isn't covered by a helper yet. Want me to create one?"
+2. If they decline, note the gap in `agent/helpers/README.md` under `## Requested Helpers`.
