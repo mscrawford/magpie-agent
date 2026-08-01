@@ -189,6 +189,8 @@ detection, do not trust a remembered list):
 
 **Short index** (full numbered table + binding text in `verifiers.md` — load it when a trigger fires). The 22 MANDATEs cluster into: **provenance** (formula, causal-mechanism, producer/declaration DECLARED-POPULATED-READ incl. per-slice ownership); **identifier lookups** (variable, equation, realization, module-characterization, default-parameter, cost-variable attribution); **grep discipline** (interface-parameter consumer grep, one-hop direct-vs-transitive, set-sum non-expansion, range non-truncation, exact set-member labels, closed-set member enumeration from sets.gms, solution-level `.l/.lo`, cross-module data-flow direction / both-endpoints); **rename hygiene** (deprecated-name italics, post-rename global grep, citation full-path + post-merge line numbers); plus capability-vs-default and pseudocode labeling.
 
+**Carry this even if `verifiers.md` never loads** — attribution is the highest-propagation defect class measured (28% vs 4%). An interface variable's three roles are distinct and routinely conflated: **DECLARED** (the `name(...)` line in a module's `declarations.gms`), **POPULATED** (assigned on an equation LHS, or via `.fx`/`.l`), **READ** (on an equation RHS). One module often declares it, others populate it, others read it; different set slices can have different owners. Never attribute a variable to a module without saying which of the three.
+
 **Validation tracking**: See `audit/validation_rounds.json` for the full audit history (scores, bugs, root causes). The rubric for scoring is `audit/flywheel_rubric.md`. Future agents append new rounds to validation_rounds.json. Severity tiers and immutable anchor examples are in flywheel_rubric.md §1.
 
 ### Step 2: Cite Your Sources
