@@ -86,7 +86,9 @@ CHECKERS = [
     "check_module_set_claims",   # Check 41 — added 2026-07-20 to close attribution_set
     # --- added 2026-07-31: doc-claim checkers that existed but were never run ---
     "check_no_bare_cites",        # the `citation` class -- absent while citation scored 0/2
-    "check_gams_citations_impl",  # the other half of `citation`
+    # REMOVED 2026-08-01: requires a positional argv[1] the harness cannot supply,
+    # so it raised IndexError on every run and scored its whole class as a blind
+    # spot. Re-add only with an arg-less entry point. It is not in the gate either.
     "check_set_members",          # the `set_membership` class
     "check_param_defaults",
     "check_renames",
@@ -197,6 +199,16 @@ def findings(worktree: Path, env: dict) -> dict[str, set[str]]:
                 f"from the list. Refusing to report a silently-skipped checker as "
                 f"a blind spot.")
         r = run([sys.executable, str(script)], env=env)
+        # A CRASH IS NOT A CLEAN RUN. `check_gams_citations_impl` requires a
+        # positional argv[1] the harness never passed, so it raised IndexError on
+        # every invocation and its zero findings were read as a blind spot for a
+        # full round. There was a vacuity guard for a checker ABSENT from the
+        # worktree and none for one that runs and dies.
+        if "Traceback" in r.stderr:
+            raise SystemExit(
+                f"FATAL: checker {chk!r} CRASHED (exit {r.returncode}). A crash must not "
+                f"read as 'no findings'. Last line: "
+                f"{(r.stderr.strip().splitlines() or [''])[-1][:200]}")
         lines = set()
         for ln in (r.stdout + r.stderr).splitlines():
             s = ln.strip()
