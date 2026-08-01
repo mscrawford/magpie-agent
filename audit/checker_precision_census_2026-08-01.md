@@ -263,6 +263,59 @@ precision on the added portion.** The first is the right operating point. Raisin
 further needs a *different predicate* — one that can resolve what a citation is about
 from section context — not a wider window on this one.
 
+---
+
+# Addendum 2 — seeded-bug benchmark after adding today's defects as traps
+
+`audit/tools/seed_known_bugs.py` reverse-applies real fix commits hunk-by-hunk, putting
+historical bugs back into today's corpus. Today's two citation-repair commits were added
+as seeds (`citation_line_drift`, `citation_config_drift`), and
+`scripts/check_citation_placement.py` was registered so the battery actually runs the
+checker able to see them.
+
+## Result
+
+```
+new seeds        f021afa 7/7   c8c177a 10/10      -> 17/17 CAUGHT
+overall          35/61 applicable hunks = 57%
+```
+
+**Read the 57% with the caveat attached.** 17 of the 35 catches are the seeds just added,
+matched to a checker built the same day. Excluding them the pre-existing rate is
+**18/44 = 41%**, and that is the number that describes the battery's real coverage.
+Adding seeds a new checker was designed to catch raises the headline without closing a
+single blind spot; quoting 57% as an improvement over the prior run would be measuring
+the seed list, not the battery.
+
+The 17/17 is still worth having — as a **regression anchor**. It means a future refactor
+of the citation checker cannot silently lose these classes.
+
+## The `citation` blind spot is NOT closed, and now has a name
+
+`3620958` ("3 module_80 mis-citations") remains **0/2 MISSED** even though
+`check_citation_placement` fired 17 times elsewhere. The injected defect is:
+
+```
+-  ... (solve.gms:16, 174)                  <- bare basename
++  ... (lp_nlp_apr17/solve.gms:16, 174)     <- qualified
+```
+
+`RE_CITATION` requires a path rooted at `modules|core|config`, so a **bare-basename
+citation is never matched at all** — the checker does not miss it, it never sees it.
+`check_no_bare_cites` exists for exactly this class and also fired 0 times on every
+seeded bug.
+
+So the actionable item is specific rather than vague: **two checkers nominally cover
+bare-basename citations and neither fires on a real instance of one.** That is worth
+more than the 41% headline.
+
+## Checkers that never fired on any seeded bug
+
+16 of 24. That is not automatically a defect — several target classes absent from the
+seed corpus — but it does mean their "0 findings" on the live corpus is uninformative,
+because nothing has ever demonstrated they *can* fire. Same ambiguity the whole
+benchmark exists to resolve.
+
 ## Reproduce
 
 ```

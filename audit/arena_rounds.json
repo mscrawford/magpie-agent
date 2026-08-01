@@ -108,7 +108,9 @@
     "SUPERSEDED COUNT: the '43 certain-class citation findings' figure was inflated ~4x by four extraction defects (bulleted source lists leaking identifiers across items; set member lines cited under the set name; filenames admitted as claimed identifiers; flat markdown sections). True post-fix count over the same 105 answers is 9. Any rate computed off 43 is void.",
     "Triage fan-out over the remaining 7 citation + 9 non-default true positives - none acted on until independently re-derived.",
     "A powered replication of the fabrication arm effect needs ~83 answers per arm.",
-    "RECALL + COVERAGE MEASURED 2026-08-01: 160/160 = 100% recall on the subset the citation checker evaluates, but it evaluates only 350/800 = 43.8% of citations (it silently skips any with no claimed identifier). 46% of skips are structurally unverifiable. Widening the lookbehind was MEASURED at ~20% precision on a random sample of 10 and REJECTED. Ceiling is ~44% coverage at high precision; going higher needs a different predicate, not a wider window."
+    "RECALL + COVERAGE MEASURED 2026-08-01: 160/160 = 100% recall on the subset the citation checker evaluates, but it evaluates only 350/800 = 43.8% of citations (it silently skips any with no claimed identifier). 46% of skips are structurally unverifiable. Widening the lookbehind was MEASURED at ~20% precision on a random sample of 10 and REJECTED. Ceiling is ~44% coverage at high precision; going higher needs a different predicate, not a wider window.",
+    "SEEDED-BUG BENCHMARK 2026-08-01 after adding today's citation drifts as traps: new seeds 17/17 caught (regression anchor), overall 35/61 = 57% -- but 17 of the 35 are the seeds just added, matched to a checker built the same day, so the PRE-EXISTING rate is 18/44 = 41%. Do not quote 57% as an improvement.",
+    "NAMED BLIND SPOT: bare-basename citations. Commit 3620958 (module_80 mis-citations) is still 0/2 -- the defect is `solve.gms:16` vs `lp_nlp_apr17/solve.gms:16`, and RE_CITATION only matches paths rooted at modules|core|config, so the checker never SEES it. check_no_bare_cites nominally covers this class and also fired 0 times on every seeded bug. Two checkers, neither fires on a real instance."
    ]
   }
  ],
@@ -117,6 +119,12 @@
   "answers_graded": 104,
   "instrument_defects_found_and_fixed": 8,
   "non_llm_checkers_built": 3,
-  "shared_extractor": "audit/tools/magpie_corpus.py (2026-08-01 consolidation)"
+  "shared_extractor": "audit/tools/magpie_corpus.py (2026-08-01 consolidation)",
+  "seeded_bug_benchmark": {
+   "applicable_hunks": 61,
+   "caught": 35,
+   "pre_existing_rate": "18/44 = 41%",
+   "note": "57% headline includes 17 same-day seeds matched to a same-day checker"
+  }
  }
 }
