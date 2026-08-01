@@ -1,0 +1,35 @@
+{
+  "_what": "Novel doc-defect leads surfaced during Phase 1A setup. Seed for audit/novel_findings_ledger.json (Phase 2).",
+  "_rule": "Nothing here is relayed or acted on until independently re-derived. status reflects MY re-derivation, not the finder's confidence.",
+  "leads": [
+    {
+      "id": "L-1A-01",
+      "found_by": "phase1a smoke-test answerer (sonnet, magpie-helper, arena real arm)",
+      "file": "modules/module_10_notes.md",
+      "line": 19,
+      "claim": "\"MAgPIE's spatial resolution is configurable via `cfg$magpie_folder` and the input data\"",
+      "finder_said": "cfg$magpie_folder does not appear in config/default.cfg; looks fabricated or confused",
+      "my_rederivation": "PARTIALLY CONFIRMED, and the finder OVERSTATED it. `magpie_folder` appears 0x in config/default.cfg but DOES exist in the model repo: scripts/start_functions.R and scripts/run_submit/submit.R. So it is a real object (the repo path), not a phantom identifier. The defect is a MIS-ATTRIBUTED MECHANISM: resolution is set by which pre-clustered cellular input `cfg$input[\"cellular\"]` points at (config/default.cfg:26, resolution encoded in the filename as _c200_), not by cfg$magpie_folder.",
+      "class": "mechanism / mis-attributed config lever",
+      "status": "CONFIRMED",
+      "gate_visible": "unknown - check_fenced_identifiers only binds tokens carrying a MAgPIE type/module prefix, and `cfg$magpie_folder` carries none, so probably blind (same coverage hole as the ssp_scenario phantom)",
+      "why_it_matters": "notes files are ALWAYS read when answering about their module (AGENT.md Step 1), so a wrong lever here propagates directly to users.",
+      "date": "2026-07-31"
+    },
+    {
+      "id": "L-1A-02",
+      "found_by": "phase1a smoke-test answerer (sonnet, magpie-helper, arena real arm)",
+      "file": "core_docs/Data_Flow.md + modules/module_10.md vs modules/module_80.md",
+      "line": "Data_Flow.md:135,243,388; module_10.md:417  vs  module_80.md:485,618,789",
+      "claim": "Number of 0.5-degree land grid cells is given as 67,420 in one set of docs and 59,199 in another.",
+      "finder_said": "flagged as an unresolved numeric inconsistency rather than picking one",
+      "my_rederivation": "CONFIRMED AS AN INCONSISTENCY, NOT YET RESOLVED. Both numbers verified present at the cited lines. Which is correct is NOT established - it needs the actual land mask / LPJmL cell list, which I have not read. Do not repair by picking the more common number.",
+      "class": "intra-corpus contradiction (cross-file)",
+      "status": "UNTRIAGED",
+      "gate_visible": "no - check_intra_doc_contradiction operates within a doc; this contradiction spans core_docs/ and modules/",
+      "why_it_matters": "a cross-file numeric contradiction is a checkable class the battery currently cannot see; if common, it argues for a cross-file numeric-consistency checker rather than more audits.",
+      "date": "2026-07-31"
+    }
+  ],
+  "_status": "Seed for the Phase 2 novel-findings ledger. Nothing here is relayed or acted on until independently re-derived; `status` reflects MY re-derivation, not the finder's confidence."
+}
