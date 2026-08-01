@@ -75,6 +75,22 @@ class Files:
         self.root = root
         self._cache: dict[str, list[str] | None] = {}
         self._spans: dict[str, dict[str, tuple[int, int]]] = {}
+        # Directory names — realizations and module dirs. These name a LOCATION,
+        # not file content, so they can never appear inside the cited file's text.
+        # Treating them as claimed identifiers produced 7 of 7 false positives in
+        # the 2026-08-01 stratified precision sample.
+        self.dir_names: set[str] = set()
+        mods = root / "modules"
+        if mods.is_dir():
+            for m in mods.iterdir():
+                if not m.is_dir():
+                    continue
+                self.dir_names.add(m.name)
+                if "_" in m.name:
+                    self.dir_names.add(m.name.split("_", 1)[1])
+                for r in m.iterdir():
+                    if r.is_dir():
+                        self.dir_names.add(r.name)
 
     def lines(self, rel: str) -> list[str] | None:
         if rel not in self._cache:
@@ -117,7 +133,7 @@ class Files:
         return out
 
 
-def _claimed_identifiers(text: str, cite_start: int) -> list[str]:
+def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None = None) -> list[str]:
     """Identifiers appearing shortly BEFORE the citation — what it is cited for."""
     left = text[max(0, cite_start - LOOKBEHIND): cite_start]
     # Stop at a hard sentence boundary so we do not reach into a previous claim.
@@ -128,8 +144,12 @@ def _claimed_identifiers(text: str, cite_start: int) -> list[str]:
     out: list[str] = []
     for m in RE_CLAIMED.finditer(left):
         tok = m.group(1) or m.group(2)
-        if tok and tok not in out:
-            out.append(tok)
+        if not tok or tok in out:
+            continue
+        # A realization / module directory name is a LOCATION, not file content.
+        if dir_names and tok in dir_names:
+            continue
+        out.append(tok)
     return out
 
 
@@ -152,7 +172,7 @@ def check_text(text: str, files: Files) -> list[dict]:
         cited = _parse_lines(spec)
         if not cited:
             continue
-        claimed = _claimed_identifiers(text, m.start())
+        claimed = _claimed_identifiers(text, m.start(), files.dir_names)
         if not claimed:
             continue                      # nothing asserted next to it; nothing to verify
 
