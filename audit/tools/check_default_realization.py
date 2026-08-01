@@ -12,7 +12,7 @@ prose does not work.
 
 The predicate is fully mechanical: realizations enumerate from the module tree,
 defaults come from `config/default.cfg` (all 46 modules resolve, and every default
-names a directory that exists).
+names a directory that exists -- both asserted by `magpie_corpus --selftest`).
 
 Suppression is STRUCTURAL, not a distance window: a reference is excused when the
 markdown section CONTAINING it establishes the default -- by naming the module's
@@ -23,6 +23,10 @@ equation-span anchor.)
 
 Scope: flags an unflagged non-default reference. It does not decide whether the
 surrounding claim is true of that realization.
+
+Extraction and the existence oracle live in `magpie_corpus` (2026-08-01
+consolidation). The default-establishing LANGUAGE below stays here: it is this
+predicate's judgment, not shared extraction.
 
 Usage
 -----
@@ -39,9 +43,13 @@ import re
 import sys
 from pathlib import Path
 
-RE_CFG = re.compile(r'cfg\$gms\$([A-Za-z_][A-Za-z0-9_]*)\s*<-\s*"([^"]+)"')
-# `modules/18_residues/flexcluster_jul23/...` anywhere in prose or a fence.
-RE_REAL_PATH = re.compile(r"\bmodules/(\d{2}_[a-z][a-z0-9_]*)/([A-Za-z][A-Za-z0-9_]*)\b")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from magpie_corpus import (  # noqa: E402
+    RE_DATED_REALIZATION,
+    RE_REAL_PATH,
+    Tree,
+)
+
 RE_HEADING = re.compile(r"^#{1,6}\s", re.MULTILINE)
 
 # Language that establishes the default/non-default distinction.
@@ -63,50 +71,6 @@ RE_EXPLICIT_FLAG = re.compile(
     r"(?i)(non-default|not the default|alternative realis[az]ation|rather than the default)"
 )
 
-NON_REALIZATION_DIRS = {"input"}  # `modules/NN_x/input/` is not a realization
-
-# A bare realization name in prose (`flexcluster_jul23`), not a path. Restricted to
-# the dated MAgPIE naming convention on purpose: undated names like `static`, `off`
-# and `exo` are ordinary English and would false-positive everywhere. Path-form
-# references still catch those, so this trades recall for precision only on the
-# undated minority.
-RE_DATED_REALIZATION = re.compile(
-    r"\b([a-z][a-z0-9_]*_(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\d{2})\b"
-)
-
-
-class Defaults:
-    def __init__(self, root: Path):
-        self.root = root
-        cfg = (root / "config" / "default.cfg").read_text(errors="ignore")
-        keys = dict(RE_CFG.findall(cfg))
-        self.by_dir: dict[str, str] = {}
-        self.realizations: dict[str, set[str]] = {}
-        for p in sorted((root / "modules").iterdir()):
-            if not p.is_dir() or "_" not in p.name:
-                continue
-            short = p.name.split("_", 1)[1]
-            self.realizations[p.name] = {
-                r.name for r in p.iterdir() if r.is_dir() and r.name not in NON_REALIZATION_DIRS
-            }
-            if short in keys:
-                self.by_dir[p.name] = keys[short]
-
-        # realization name -> owning module dirs. Only names owned by exactly one
-        # module are usable for bare-name detection; a shared name (`static`,
-        # `off`) cannot be attributed without a path.
-        owners: dict[str, set[str]] = {}
-        for mod, reals in self.realizations.items():
-            for r in reals:
-                owners.setdefault(r, set()).add(mod)
-        self.unique_owner = {r: next(iter(m)) for r, m in owners.items() if len(m) == 1}
-
-    def default_of(self, module_dir: str) -> str | None:
-        return self.by_dir.get(module_dir)
-
-    def is_realization(self, module_dir: str, name: str) -> bool:
-        return name in self.realizations.get(module_dir, set())
-
 
 def _sections(text: str) -> list[tuple[int, int]]:
     """(start, end) offsets of markdown sections; whole doc if it has no headings."""
@@ -119,7 +83,7 @@ def _sections(text: str) -> list[tuple[int, int]]:
             for i, s in enumerate(starts)]
 
 
-def check_text(text: str, d: Defaults) -> list[dict]:
+def check_text(text: str, d: Tree) -> list[dict]:
     secs = _sections(text)
 
     def section_of(pos: int) -> str:
@@ -144,7 +108,7 @@ def check_text(text: str, d: Defaults) -> list[dict]:
     cands.sort()
 
     for pos, mod, real in cands:
-        if not d.is_realization(mod, real):
+        if not d.is_realization_of(mod, real):
             continue
         dflt = d.default_of(mod)
         if dflt is None or real == dflt:
@@ -164,7 +128,8 @@ def check_text(text: str, d: Defaults) -> list[dict]:
         # The name matches on IDENTIFIER boundaries, not as a substring: module
         # 80's default `nlp_apr17` is a substring of the non-default
         # `lp_nlp_apr17`, so a plain containment test excuses exactly the
-        # reference this checker exists to catch.
+        # reference this checker exists to catch. (`magpie_corpus --selftest`
+        # asserts that hazard is still live in the tree.)
         name_re = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(dflt)}(?![A-Za-z0-9_])")
         establishes = any(
             name_re.search(sec[max(0, q.start() - ESTABLISH_WINDOW): q.end() + ESTABLISH_WINDOW])
@@ -229,7 +194,7 @@ NEGATIVES = [
 ]
 
 
-def selftest(d: Defaults) -> int:
+def selftest(d: Tree) -> int:
     bad = 0
     print("== POSITIVE controls (must flag) ==")
     for name, text in POSITIVES:
@@ -256,8 +221,9 @@ def main() -> int:
     ap.add_argument("--json")
     a = ap.parse_args()
 
-    d = Defaults(Path(a.root).resolve())
-    print(f"defaults resolved for {len(d.by_dir)}/{len(d.realizations)} modules", file=sys.stderr)
+    d = Tree(Path(a.root).resolve())
+    print(f"defaults resolved for {len(d.defaults_by_module)}/{len(d.module_dirs)} modules",
+          file=sys.stderr)
     if a.selftest:
         return 1 if selftest(d) else 0
     if not a.docs:

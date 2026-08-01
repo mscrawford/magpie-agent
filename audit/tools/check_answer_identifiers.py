@@ -17,6 +17,10 @@ that both exist, a real path with a wrong line number, an omitted default
 caveat). A clean report here is NOT "the answer is true"; it is "the answer names
 nothing that fails to exist". Callers must not widen it.
 
+Extraction, the existence oracle and the shared guards live in `magpie_corpus`
+(2026-08-01 consolidation). What stays here is the PREDICATE: which combinations
+of "extracted" and "does not exist" constitute a fabrication.
+
 Usage
 -----
   python3 check_answer_identifiers.py --selftest
@@ -27,184 +31,44 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import sys
 from pathlib import Path
 
-# --------------------------------------------------------------------------
-# Extraction patterns
-# --------------------------------------------------------------------------
-
-# A MAgPIE module directory: two digits, underscore, lowercase name.
-RE_MODULE_DIR = re.compile(r"\b(\d{2}_[a-z][a-z0-9_]*)\b")
-
-# A .gms path rooted at modules/ or core/.
-RE_GMS_PATH = re.compile(r"\b((?:modules|core)/[A-Za-z0-9_./-]+\.gms)\b")
-
-# A cited path WITH line numbers: `modules/x/y.gms:12`, `:12,17`, `:12-14`.
-# Only the file part is trusted for existence; the numbers are range-checked.
-RE_CITED_LINES = re.compile(
-    r"\b((?:modules|core)/[A-Za-z0-9_./-]+\.gms):(\d+(?:\s*[-,]\s*\d+)*)"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from magpie_corpus import (  # noqa: E402
+    RE_CITED_LINES,
+    RE_GAMS_IDENT,
+    RE_GMS_PATH,
+    RE_MODULE_DIR,
+    RE_NEGATED,
+    RE_REALIZATION_CTX,
+    Tree,
+    is_elided_path,
+    is_glob_stem,
+    is_negated,
+    split_batch,
+    window,
 )
 
-# GAMS identifier prefixes used in MAgPIE (interface + module-local).
-RE_GAMS_IDENT = re.compile(
-    r"\b((?:vm|pm|fm|sm|im|om|xm|q\d{2}|v\d{2}|p\d{2}|s\d{2}|c\d{2}|i\d{2}|f\d{2}|o\d{2}|x\d{2})_[a-z][A-Za-z0-9_]*)\b"
-)
-
-# A backticked token near the word "realization"/"realisation".
-#
-# Both directions are needed: the real fabrication this was built to catch
-# ("in the `plant2forestry` realization") is the BACKWARD form. But the backward
-# form also produced 2 of 6 false positives by reaching across a clause to a
-# variable name. Two guards, applied together:
-#   - the backward window is tight (<=12 chars, i.e. "the `X` realization"),
-#     while the observed false positives sat 38 and 51 chars away;
-#   - the candidate must not itself be a GAMS identifier (checked in
-#     check_answer against the corpus, which is the guard that actually
-#     discriminates -- `vm_land_forestry` is an identifier, `plant2forestry`
-#     is not).
-RE_REALIZATION_CTX = re.compile(
-    r"reali[sz]ation[^.\n]{0,60}?`([A-Za-z][A-Za-z0-9_]*)`"
-    r"|`([A-Za-z][A-Za-z0-9_]*)`[^.\n]{0,12}?reali[sz]ation",
-    re.IGNORECASE,
-)
-
-# Negation guard: an assertion that something does NOT exist is not a fabrication.
-# "no separate `35_natural_vegetation` input" names a wrong identifier while
-# claiming it is NOT used -- the claim's truth does not rest on the name existing.
-RE_NEGATED = re.compile(
-    r"(?:does not exist|doesn't exist|no such|not a real|is not present|"
-    r"there is no|no module|not found in the tree|does not appear anywhere|"
-    r"\bno\s+(?:separate\s+|other\s+)?`?[A-Za-z0-9_]*`?\s*(?:forest\s+)?input|"
-    r"does not read|not read from)",
-    re.IGNORECASE,
-)
+# Re-exported for callers that predate the consolidation (calibrate_graders.py,
+# check_citation_content.py). Keep them importable from here.
+__all__ = [
+    "Corpus",
+    "FABRICATION_KINDS",
+    "RE_GAMS_IDENT",
+    "RE_NEGATED",
+    "check_answer",
+    "split_batch",
+]
 
 
-def _window(text: str, start: int, end: int, pad: int = 90) -> str:
-    return text[max(0, start - pad) : min(len(text), end + pad)].replace("\n", " ")
+class Corpus(Tree):
+    """Existence oracle for this checker.
 
-
-# --------------------------------------------------------------------------
-# Corpus index
-# --------------------------------------------------------------------------
-
-
-class Corpus:
-    """Existence oracle built once from the real GAMS tree."""
-
-    def __init__(self, root: Path):
-        self.root = root
-        self.module_dirs: set[str] = set()
-        self.module_names: set[str] = set()  # "14_yields" -> "yields"
-        self.realizations: set[str] = set()
-        self.gms_paths: set[str] = set()
-        self.identifiers: set[str] = set()
-        self.words: set[str] = set()  # every bare token appearing in the source
-        self._linecounts: dict[str, int] = {}
-
-        mod_root = root / "modules"
-        if not mod_root.is_dir():
-            raise SystemExit(f"no modules/ under {root}")
-
-        for m in sorted(mod_root.iterdir()):
-            if not m.is_dir():
-                continue
-            self.module_dirs.add(m.name)
-            if "_" in m.name:
-                self.module_names.add(m.name.split("_", 1)[1])
-            for r in m.iterdir():
-                if r.is_dir():
-                    self.realizations.add(r.name)
-
-        for base in ("modules", "core"):
-            b = root / base
-            if not b.is_dir():
-                continue
-            for p in b.rglob("*.gms"):
-                self.gms_paths.add(str(p.relative_to(root)))
-                try:
-                    txt = p.read_text(errors="ignore")
-                except OSError:
-                    continue
-                self.identifiers.update(RE_GAMS_IDENT.findall(txt))
-                self.words.update(re.findall(r"[A-Za-z][A-Za-z0-9_]{2,}", txt))
-
-        # config/default.cfg names realizations and switches that never appear in
-        # the .gms tree (e.g. `cfg$gms$yields <- "managementcalib_aug19"`).
-        cfg = root / "config" / "default.cfg"
-        if cfg.is_file():
-            self.words.update(
-                re.findall(r"[A-Za-z][A-Za-z0-9_]{2,}", cfg.read_text(errors="ignore"))
-            )
-
-    def has_module(self, name: str) -> bool:
-        return name in self.module_dirs
-
-    def has_realization(self, name: str) -> bool:
-        return name in self.realizations
-
-    def has_path(self, p: str) -> bool:
-        return p in self.gms_paths
-
-    def path_exists_under_some_realization(self, p: str) -> bool:
-        """True if `modules/<mod>/<file>` exists as `modules/<mod>/<realization>/<file>`.
-
-        Distinguishes an omitted realization level (a citation defect -- the file
-        is real) from a path that names nothing at all (a fabrication).
-        """
-        parts = p.split("/")
-        if len(parts) != 3 or parts[0] != "modules":
-            return False
-        _, mod, fname = parts
-        return any(
-            q.startswith(f"modules/{mod}/") and q.endswith(f"/{fname}")
-            for q in self.gms_paths
-        )
-
-    def path_exists_at_module_level(self, p: str) -> bool:
-        """The mirror case: `modules/<mod>/<realization>/<file>` cited when the
-        file actually lives at `modules/<mod>/<file>` (`module.gms` is the usual
-        one). Also a citation defect, not a fabrication."""
-        parts = p.split("/")
-        if len(parts) != 4 or parts[0] != "modules":
-            return False
-        _, mod, _real, fname = parts
-        return f"modules/{mod}/{fname}" in self.gms_paths
-
-    def line_count(self, p: str) -> int | None:
-        """Number of lines in a tracked .gms file, or None if it is not one."""
-        if p not in self.gms_paths:
-            return None
-        if p not in self._linecounts:
-            try:
-                self._linecounts[p] = len(
-                    (self.root / p).read_text(errors="ignore").splitlines()
-                )
-            except OSError:
-                self._linecounts[p] = 0
-        return self._linecounts[p]
-
-    def has_identifier(self, i: str) -> bool:
-        return i in self.identifiers
-
-    def is_identifier_prefix(self, i: str) -> bool:
-        """True if `i` is a stem of a real identifier (e.g. `vm_peatland` for
-        `vm_peatland_cost`). Answers use such stems as grep patterns; treating
-        them as fabricated names is a false positive."""
-        return any(x.startswith(i + "_") for x in self.identifiers)
-
-    def appears_anywhere(self, tok: str) -> bool:
-        """True if the bare token occurs anywhere in the source or the config.
-
-        This is the guard that separates a genuinely invented name from a real
-        thing mis-labelled as a realization: `kbe60` is a set, `yields` and
-        `bioenergy` are module names, all present in the tree -- while
-        `plant2forestry` occurs nowhere at all.
-        """
-        return tok in self.words or tok in self.module_names
+    A thin alias over the shared `Tree` -- the name is kept because
+    `calibrate_graders.py` imports it.
+    """
 
 
 # --------------------------------------------------------------------------
@@ -217,17 +81,18 @@ def check_answer(text: str, corpus: Corpus) -> list[dict]:
     findings: list[dict] = []
 
     def emit(kind: str, token: str, span: tuple[int, int]) -> None:
-        ctx = _window(text, *span)
-        if RE_NEGATED.search(ctx):
-            return  # the answer itself says it does not exist
-        # A negation cue immediately to the LEFT ("no `s80_solprint` scalar",
-        # "no separate feed from `35_natural_vegetation`") means the answer is
-        # denying the thing exists, not asserting it. Three of seven false
-        # positives in the first real run were this shape.
-        left = text[max(0, span[0] - 40) : span[0]]
-        if re.search(r"\b(?:no|not|never|neither|nonexistent|non-existent)\b", left, re.I):
+        # The answer itself may be DENYING that the thing exists -- "there is no
+        # module 50_nsoil_budget", "no `s80_solprint` scalar". Naming a
+        # non-existent thing in order to say it does not exist is not a
+        # fabrication. Three of seven false positives in the first real run were
+        # this shape.
+        if is_negated(text, span):
             return
-        findings.append({"kind": kind, "token": token, "context": ctx.strip()[:260]})
+        findings.append({
+            "kind": kind,
+            "token": token,
+            "context": window(text, *span).strip()[:260],
+        })
 
     for m in RE_MODULE_DIR.finditer(text):
         if not corpus.has_module(m.group(1)):
@@ -237,7 +102,7 @@ def check_answer(text: str, corpus: Corpus) -> list[dict]:
         p = m.group(1)
         if corpus.has_path(p):
             continue
-        if "..." in p:
+        if is_elided_path(p):
             continue  # an explicitly elided path is not a claim about a filename
         # A path that is right except for the omitted realization level is a
         # CITATION defect, not a fabricated entity: the file does exist, one
@@ -284,8 +149,7 @@ def check_answer(text: str, corpus: Corpus) -> list[dict]:
     for m in RE_GAMS_IDENT.finditer(text):
         tok = m.group(1)
         # `vm_dem_*` is a glob the answer wrote; the regex sees the stem `vm_dem_`.
-        # A trailing underscore is never a real identifier.
-        if tok.endswith("_"):
+        if is_glob_stem(tok):
             continue
         # `vm_peatland` used as a grep stem for `vm_peatland_cost` is not an
         # invented name.
@@ -460,16 +324,6 @@ def selftest(corpus: Corpus) -> int:
 # --------------------------------------------------------------------------
 
 
-def split_batch(path: Path) -> dict[str, str]:
-    """Split a batch.md of '### ANSWER <label>' blocks into {label: text}."""
-    raw = path.read_text(errors="ignore")
-    parts = re.split(r"^### ANSWER\s+(\S+)\s*$", raw, flags=re.MULTILINE)
-    out: dict[str, str] = {}
-    for i in range(1, len(parts) - 1, 2):
-        out[parts[i].strip()] = parts[i + 1]
-    return out
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=".", help="magpie root (contains modules/)")
@@ -480,7 +334,7 @@ def main() -> int:
 
     corpus = Corpus(Path(a.root).resolve())
     print(
-        f"corpus: {len(corpus.module_dirs)} modules, {len(corpus.realizations)} realization dirs, "
+        f"corpus: {len(corpus.module_dirs)} modules, {len(corpus.realizations)} realizations, "
         f"{len(corpus.gms_paths)} .gms files, {len(corpus.identifiers)} identifiers",
         file=sys.stderr,
     )

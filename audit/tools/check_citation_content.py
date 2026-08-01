@@ -27,6 +27,12 @@ nothing it is next to", not "one of several tokens did not match".
 Scope: decides placement, not truth. A correctly-placed citation can still support
 a false claim, and this says nothing about that.
 
+Extraction, the existence oracle and the shared guards live in `magpie_corpus`
+(2026-08-01 consolidation). Note one guard deliberately NOT taken from there:
+`is_identifier_prefix`. This checker matches a claimed identifier as a SUBSTRING
+of the cited line, so a stem (`vm_peatland`) already resolves against its full
+name (`vm_peatland_cost`); excluding stems would only cost recall.
+
 Usage
 -----
   python3 check_citation_content.py --selftest
@@ -42,99 +48,36 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from check_answer_identifiers import RE_GAMS_IDENT, split_batch  # noqa: E402
-
-# Files we are willing to resolve a citation against.
-ALLOWED_PREFIXES = ("modules/", "core/", "config/")
-
-# `modules/x/y.gms:12`, `:12-14`, `:12,17`; also config/default.cfg:811
-RE_CITATION = re.compile(
-    r"\b((?:modules|core|config)/[A-Za-z0-9_./-]+\.(?:gms|cfg)):(\d+(?:\s*[-,]\s*\d+)*)"
+from magpie_corpus import (  # noqa: E402
+    GAMS_PREFIX_ALT,
+    RE_CITATION,
+    Tree,
+    is_filename,
+    is_glob_stem,
+    is_negated_claim,
+    split_batch,
 )
 
 # Tokens that can be "the thing cited": GAMS identifiers, realization-ish names,
-# and config keys. Deliberately broader than RE_GAMS_IDENT.
+# and config keys. Deliberately broader than RE_GAMS_IDENT -- but the GAMS half
+# is BUILT from the shared prefix alternation rather than re-spelled, which is
+# the divergence this consolidation removed.
 RE_CLAIMED = re.compile(
-    r"`([A-Za-z][A-Za-z0-9_$.]{2,})`"          # backticked token
-    r"|\b((?:vm|pm|fm|sm|im|om|xm|q\d{2}|v\d{2}|p\d{2}|s\d{2}|c\d{2}|i\d{2}|f\d{2}|o\d{2}|x\d{2})_[a-z][A-Za-z0-9_]*)\b"
+    r"`([A-Za-z][A-Za-z0-9_$.]{2,})`"                       # backticked token
+    rf"|\b((?:{GAMS_PREFIX_ALT})_[a-z][A-Za-z0-9_]*)\b"     # bare GAMS identifier
 )
 
 NEAR_WINDOW = 3          # +/- lines counted as "off by small"
 LOOKBEHIND = 240         # chars before the citation searched for claimed identifiers
 
 
-# An equation definition: `q30_prod(j2,kcr) ..` — occurs exactly once per file,
-# which is what makes it usable as a STRUCTURAL anchor.
-RE_EQN_DEF = re.compile(r"^\s*(q\d{2}_[A-Za-z0-9_]+)\s*(\([^)]*\))?\s*\.\.")
+def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None = None
+                         ) -> tuple[list[str], str]:
+    """Identifiers appearing shortly BEFORE the citation -- what it is cited for.
 
-
-class Files:
-    """Line-indexed reader for citable files, with a cache."""
-
-    def __init__(self, root: Path):
-        self.root = root
-        self._cache: dict[str, list[str] | None] = {}
-        self._spans: dict[str, dict[str, tuple[int, int]]] = {}
-        # Directory names — realizations and module dirs. These name a LOCATION,
-        # not file content, so they can never appear inside the cited file's text.
-        # Treating them as claimed identifiers produced 7 of 7 false positives in
-        # the 2026-08-01 stratified precision sample.
-        self.dir_names: set[str] = set()
-        mods = root / "modules"
-        if mods.is_dir():
-            for m in mods.iterdir():
-                if not m.is_dir():
-                    continue
-                self.dir_names.add(m.name)
-                if "_" in m.name:
-                    self.dir_names.add(m.name.split("_", 1)[1])
-                for r in m.iterdir():
-                    if r.is_dir():
-                        self.dir_names.add(r.name)
-
-    def lines(self, rel: str) -> list[str] | None:
-        if rel not in self._cache:
-            if not rel.startswith(ALLOWED_PREFIXES) or ".." in rel:
-                self._cache[rel] = None
-            else:
-                p = self.root / rel
-                try:
-                    self._cache[rel] = p.read_text(errors="ignore").splitlines()
-                except OSError:
-                    self._cache[rel] = None
-        return self._cache[rel]
-
-    def equation_spans(self, rel: str) -> dict[str, tuple[int, int]]:
-        """{equation name: (first line, terminator line)} for one file.
-
-        A doc legitimately cites a BODY line of an equation while naming the
-        equation for context -- `q30_prod` is defined at :14 but its body is :15.
-        A proximity threshold cannot tell that apart from a citation that drifted
-        onto a neighbouring equation; the span boundary can, categorically.
-        Only equation names get this treatment: they are defined exactly once per
-        file. Recurring symbols (vm_/pm_) have no unique anchor and stay on the
-        plain proximity check.
-        """
-        if rel in self._spans:
-            return self._spans[rel]
-        out: dict[str, tuple[int, int]] = {}
-        lines = self.lines(rel) or []
-        for i, ln in enumerate(lines, start=1):
-            m = RE_EQN_DEF.match(ln)
-            if not m:
-                continue
-            end = i
-            for j in range(i, min(len(lines), i + 80)):
-                end = j + 1
-                if ";" in lines[j]:
-                    break
-            out[m.group(1)] = (i, end)
-        self._spans[rel] = out
-        return out
-
-
-def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None = None) -> list[str]:
-    """Identifiers appearing shortly BEFORE the citation — what it is cited for."""
+    Returns (identifiers, clause) so the caller can also test the clause for
+    negation without re-deriving the sentence boundary.
+    """
     left = text[max(0, cite_start - LOOKBEHIND): cite_start]
     # Stop at a hard sentence boundary so we do not reach into a previous claim.
     for sep in ("\n\n", ". ", "; "):
@@ -146,17 +89,25 @@ def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None 
         tok = m.group(1) or m.group(2)
         if not tok or tok in out:
             continue
-        # A realization / module directory name is a LOCATION, not file content.
+        # A realization / module directory name is a LOCATION, not file content,
+        # so it can never appear inside the cited file's text. Treating these as
+        # claimed identifiers produced 7 of 7 false positives in the 2026-08-01
+        # stratified precision sample.
         if dir_names and tok in dir_names:
+            continue
+        # ...and neither is a FILE name. A file essentially never contains its own
+        # basename, so admitting `presolve.gms` guarantees a spurious
+        # "identifier absent from the cited file".
+        if is_filename(tok):
             continue
         # `s57_maxmac_*` is a GLOB the doc wrote; the regex sees the stem
         # `s57_maxmac_`. A trailing underscore is never a real identifier, and
         # the family it globs usually lives in a different file from the cited
-        # effect. Same class already guarded in check_answer_identifiers.py.
-        if tok.endswith("_"):
+        # effect.
+        if is_glob_stem(tok):
             continue
         out.append(tok)
-    return out
+    return out, left
 
 
 def _parse_lines(spec: str) -> list[int]:
@@ -168,7 +119,7 @@ def _parse_lines(spec: str) -> list[int]:
     return nums
 
 
-def check_text(text: str, files: Files) -> list[dict]:
+def check_text(text: str, files: Tree) -> list[dict]:
     findings: list[dict] = []
     for m in RE_CITATION.finditer(text):
         rel, spec = m.group(1), m.group(2)
@@ -178,9 +129,17 @@ def check_text(text: str, files: Files) -> list[dict]:
         cited = _parse_lines(spec)
         if not cited:
             continue
-        claimed = _claimed_identifiers(text, m.start(), files.dir_names)
+        claimed, clause = _claimed_identifiers(text, m.start(), files.dir_names)
         if not claimed:
             continue                      # nothing asserted next to it; nothing to verify
+        # The clause may be DENYING that the identifier is there -- "no
+        # `s15_secondsolve` switch exists (`.../input.gms:12`)". An identifier
+        # absent from the cited file is then the answer being RIGHT, not a
+        # mis-citation. Guard ported from the fabrication checker, where the same
+        # class was 3 of 7 false positives. Anchored per token: see
+        # `is_negated_claim` for why a clause-wide cue test is wrong here.
+        if is_negated_claim(clause, claimed):
+            continue
 
         n = len(lines)
         over = [c for c in cited if c > n]
@@ -264,6 +223,13 @@ POSITIVES = [
     ("equation name cited OUTSIDE its span is still flagged",
      "the equation `q30_prod` is at `modules/30_croparea/simple_apr24/equations.gms:1`.",
      "citation_line_wrong"),
+    # Negation-guard boundary: the guard must not swallow an ORDINARY mis-citation
+    # merely because the sentence contains the word "not". Without this control the
+    # ported guard could silently become a recall hole.
+    ("a sentence with an unrelated 'not' is still checked",
+     "`vm_totallyfakevariable` is not optional and is defined at "
+     "`modules/30_croparea/simple_apr24/equations.gms:15`.",
+     "citation_identifier_absent"),
 ]
 
 NEGATIVES = [
@@ -290,10 +256,23 @@ NEGATIVES = [
      "(`modules/57_maccs/on_aug22/equations.gms:38,48`)."),
     ("unresolvable path is not this checker's finding",
      "`vm_prod` is at `modules/99_invented/default/equations.gms:12`."),
+    # Ported negation guard: asserting a symbol is ABSENT, with a citation to the
+    # file checked, is the answer being right.
+    ("REGRESSION: negated claim about an absent symbol",
+     "There is no such thing as `vm_totallyfakevariable` in "
+     "`modules/30_croparea/simple_apr24/equations.gms:15`."),
+    # Both from adjudicating the 2026-08-01 consolidation diff, verbatim in shape.
+    ("REGRESSION: a filename is not a claimed identifier",
+     "the withdrawal variable is directly fixed every timestep in `presolve.gms` "
+     "(`modules/42_water_demand/all_sectors_aug13/presolve.gms:38-54`):"),
+    ("REGRESSION: elided identifier inside a denial",
+     "There is no `q42_...` equation for these three sectors (Module 42 has exactly two "
+     "equations total, both for agriculture/costs - "
+     "`modules/42_water_demand/all_sectors_aug13/declarations.gms:21-24`)."),
 ]
 
 
-def selftest(files: Files) -> int:
+def selftest(files: Tree) -> int:
     bad = 0
     print("== POSITIVE controls ==")
     for name, text, kind in POSITIVES:
@@ -323,7 +302,7 @@ def main() -> int:
     ap.add_argument("--json")
     a = ap.parse_args()
 
-    files = Files(Path(a.root).resolve())
+    files = Tree(Path(a.root).resolve())
     if a.selftest:
         return 1 if selftest(files) else 0
     if not a.batch:
