@@ -113,6 +113,29 @@ uninterpretable is that a control pinned at zero leaves no room for any effect t
 both arms sit well off the floor (5/52 and 7/51, 12 events total), so "no difference" is a
 measurement rather than an artifact of the outcome having nowhere to move.
 
+### What the arm null does and does not mean — scope it before quoting it
+
+**The ablation never removed the instruction to cite.** `AGENT.md` is byte-identical in both arms
+(bar the 2-line canary) and already mandates *"ALWAYS state where your information came from"*,
+*"Reference specific files, equations, and line numbers"*, *"Cited `file:line` for factual
+claims"* and *"NEVER FABRICATE"*. The placebo stub even keeps the accuracy framing. So this
+experiment measured the **marginal** value of the 22 procedural MANDATEs on top of an
+already-instructed baseline — **not** "instructions vs no instructions". Anyone reading the null
+as "documentation rules do not change agent behaviour" is reading it several sizes too large.
+
+Twelve mechanical surface measures (length, citation count, code fences, epistemic badges,
+distinct identifiers, realization naming, "default" mentions, hedging, grep evidence,
+DECLARED/POPULATED/READ language, attribution blocks, headings) are **flat across arms** — all
+p > 0.45, including within rep 1 alone, the one cell where `AGENT.md` was reliably read. The same
+measures move **2–7×** under regime changes (normal-vs-low effort; code access vs docs-only, where
+citations run 8.8 vs 1.2). The instrument detects large behavioural differences easily; it detects
+none from the MANDATEs.
+
+Tested directly against what MANDATE 16 uniquely governs — full-path vs bare-basename citation —
+the effect points the right way and is too small to resolve: full-path **share 60.9% real vs
+53.9% placebo (p = 0.299)**; bare cites 3.42 vs 4.54 (p = 0.167); rep 1 alone 68.1% vs 64.1%
+(p = 0.624).
+
 **But see the separate, non-LLM result:** on *mechanically certain* defects (fabricated
 identifiers and impossible line citations) the arms split 1/52 real vs 7/52 placebo, p = 0.06 —
 see `arena_1a_substrate_defect.md` § and the caveats there (not pre-registered, n = 8, the defect
