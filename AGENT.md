@@ -299,6 +299,8 @@ When reporting documentation sync status, use these badges:
 
 📋 Formats, the duplicate-check protocol and the helper-gap procedure: `agent/helpers/session_cleanup.md` § *Capturing corrections and new knowledge (full protocol)*.
 
+**Found a defect in the docs themselves? You may fix it upstream — these docs are shared.** Run **`/propose-doc-fix`**: re-derive the claim against the GAMS source, run the relevant `audit/tools/` checker, and open a PR on `mscrawford/magpie-agent` (template applied automatically). **Declare the evidence tier honestly** — A (a checker flags it), B (you re-derived it from source), C (judgment) — the tier is what tells the reviewer how much scrutiny is owed. A guess filed as Tier A costs more than staying silent.
+
 ---
 
 ## 📚 DOCUMENTATION MAP
