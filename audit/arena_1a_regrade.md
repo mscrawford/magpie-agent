@@ -1,0 +1,122 @@
+# The regrade: numbers re-established on the correct substrate
+
+All 104 Phase 1A answers re-graded from the **written-file** substrate with a hardened rubric —
+two independent Opus graders per trap group, blind to arm/rep/cell, each required to verify the
+code truth itself, plus an **un-anchored** step asking for any *other* assertion the code
+contradicts. Disagreements went to an independent adjudicator. 17 agents, 2.23M tokens, 470 tool
+uses, 0 errors.
+
+Data: `audit/data/arena_1a_regrade.json` (paths scrubbed). Harness:
+`audit/tools/regrade_phase1a.workflow.js`. Non-LLM key: `audit/tools/check_answer_identifiers.py`.
+
+---
+
+## 1. The single-grader design was not the problem — the substrate was
+
+**Two independent graders agreed on 103 of 104 answers (99%).** One disagreement, one
+adjudicator.
+
+That is the cleanest possible confirmation of `arena_1a_substrate_defect.md`. The earlier
+"11 of 21 overturned" was never evidence about grader reliability: graders reading the *same*
+text agree essentially always. What differed before was the input, not the judgment.
+
+**The `arena_1a_adjudication.md` retraction stands, and its replacement conclusion is now
+positively supported rather than merely asserted.**
+
+## 2. Propagation rate, re-established
+
+Denominator excludes `NOT_ELICITED` (1 answer).
+
+| definition | rate | 95% CI |
+|---|---|---|
+| **narrow** — asserts something the code contradicts | **12/103 = 11.7%** | [6.8, 19.3] |
+| **wide** — falsehood *or* omitted default caveat | **20/103 = 19.4%** | [12.9, 28.1] |
+
+The wide definition is the one comparable to the original rubric, whose `PROPAGATED` explicitly
+covered implicit assertion. It lands at 19.4% against the withdrawn 20.0% — the old figure was
+about right, but arrived at over a substrate that was wrong in 70% of cells. Right answer, broken
+method; it is now measured rather than lucky.
+
+## 3. The regime effect survives — and splits into two different failures
+
+| rep | condition | narrow | wide |
+|---|---|---:|---:|
+| 1 | normal effort | 3.1% (1/32) | 3.1% (1/32) |
+| 2 | low effort | 4.2% (1/24) | 20.8% (5/24) |
+| 3 | **docs-only** (no GAMS access) | **29.2% (7/24)** | 29.2% (7/24) |
+| 4 | low effort replicate | 13.0% (3/23) | 30.4% (7/23) |
+
+Original framing (rep 1 vs reps 2–4 pooled): **wide p = 0.0058**, reproducing the withdrawn
+p = 0.0062 almost exactly. Narrow: p = 0.0985.
+
+The split rubric earns its keep here, because the two regimes fail in *different ways*:
+
+- **Low effort degrades completeness.** Rep 2 asserts almost no falsehoods (4.2%) but its wide
+  rate is 20.8% — a 16.6-point gap that is *entirely* omitted default caveats. A hurried agent
+  still says true things; it stops saying which realization they are true of.
+- **No code access degrades correctness.** Rep 3 (docs-only) is the only cell where narrow and
+  wide coincide at 29.2%: those agents assert outright falsehoods. Against normal effort this is
+  **p = 0.0157** on the narrow measure — the strongest single contrast in the experiment.
+
+That is a mechanistically sensible result: an agent that cannot open the GAMS source cannot
+refute a wrong doc line, so it repeats it. An agent that can, but is hurried, verifies the claim
+and drops the caveat.
+
+## 4. The arm null holds
+
+| | narrow | wide |
+|---|---:|---:|
+| real `verifiers.md` (22 MANDATEs) | 9.6% (5/52) | 17.3% (9/52) |
+| placebo stub | 13.7% (7/51) | 21.6% (11/51) |
+
+Fisher p = 0.555 (narrow). The 22 MANDATEs show **no detectable effect on trap propagation**,
+confirmed now on the correct substrate with a 99%-agreement instrument. This was the finding
+already believed safe; it survives.
+
+**And this time it is a real null, not a floor.** The reason rep 1's original `0/31` was
+uninterpretable is that a control pinned at zero leaves no room for any effect to appear. Here
+both arms sit well off the floor (5/52 and 7/51, 12 events total), so "no difference" is a
+measurement rather than an artifact of the outcome having nowhere to move.
+
+**But see the separate, non-LLM result:** on *mechanically certain* defects (fabricated
+identifiers and impossible line citations) the arms split 1/52 real vs 7/52 placebo, p = 0.06 —
+see `arena_1a_substrate_defect.md` § and the caveats there (not pre-registered, n = 8, the defect
+definition was widened after a first look). The two are compatible: the MANDATEs may not stop an
+agent repeating a defect it *read*, while still reducing what it *invents*. Neither claim is
+settled; the second needs a pre-registered replication.
+
+## 5. The un-anchored field works — 6 of 6
+
+Every one of the 6 answers carrying a mechanically certain fabrication was flagged by at least
+one grader's `other_falsehoods`, against a non-LLM key. Five of the six still received a trap
+verdict of `CORRECT_AND_COMPLETE` — correctly, because the trap claim *was* handled; the
+fabrication was elsewhere in the answer.
+
+That is precisely the blind spot of the original anchored rubric, which asked only "did the
+answer repeat *this* defect?" and therefore scored those answers clean. Keep both fields.
+
+Volume warning: the graders reported **261 other-falsehood items across 77 answers**. That is a
+candidate pool, not a result — it is an LLM claim, unverified, and at that volume it certainly
+contains false positives. Nothing from it enters the ledger without independent re-derivation.
+
+## 6. The awareness covariate — recorded, underpowered, not load-bearing
+
+10 of 104 answerers detected the canary instruction and refused it as a suspected prompt
+injection (7 of them in rep 1). Those 10 produced **0 falsehoods** vs 12/93 among the rest, but
+with zero events in one cell that is p = 0.601 — no evidence, only an absence.
+
+The concern it raised is answered: excluding all aware answers, rep 1 vs reps 2/4 is 1/25 vs
+4/44 (p = 0.646), materially unchanged. **Awareness is not driving the control's low rate.**
+
+## 7. What is now safe to quote
+
+- Inter-grader agreement 99%; the single-grader design is not implicated.
+- Propagation 11.7% narrow / 19.4% wide, with the intervals above.
+- The regime effect (wide, p = 0.0058) and its decomposition into completeness vs correctness.
+- Docs-only vs normal on outright falsehoods, p = 0.0157.
+- The arm null on trap propagation.
+- The effort manipulation (28.1 → 6.0 tool calls) and the `AGENT.md`-never-read finding, both
+  unchanged and both independent of grading.
+
+Still **not** settled: the arm difference on mechanically certain defects (p = 0.06, exploratory)
+and the 261 unverified other-falsehood candidates.
