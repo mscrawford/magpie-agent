@@ -85,6 +85,20 @@ def plan_repairs(text: str, tree: Tree) -> tuple[list[dict], list[dict]]:
         ]
         if len(exact) == 1:
             cands = exact
+        # Config files put a COMMENT naming the realization directly above the
+        # assignment that sets it:
+        #
+        #     # * (detail_apr24): the detailed cropland realization
+        #     cfg$gms$cropland    <- "detail_apr24"
+        #
+        # so a token legitimately matches twice and reads as ambiguous. The
+        # assignment is what a citation means; a comment about it is not. Prefer
+        # the `cfg$gms$` line when exactly one candidate is an assignment.
+        if len(cands) > 1 and f["path"].startswith("config/"):
+            assigns = [c for c in cands
+                       if 1 <= c <= len(lines) and lines[c - 1].lstrip().startswith("cfg$")]
+            if len(assigns) == 1:
+                cands = assigns
         # A single-number citation only. A range citation has no single target.
         if not re.fullmatch(r"\d+", f["cited"]):
             refused.append({**f, "why": "range citation has no single repair target"})
@@ -170,6 +184,18 @@ def selftest(tree: Tree) -> int:
     if not good:
         bad += 1
         print(f"        planned={ok2} refused={ref2}")
+
+    print("== CONFIG-ASSIGNMENT-TIEBREAK control ==")
+    # `detail_apr24` appears in default.cfg at :812 (a comment) and :814 (the
+    # assignment). Only the assignment is what a citation can mean.
+    doc3 = ("> **Default Realization**: `detail_apr24`\n"
+            "> Confirmed in `config/default.cfg:811`.\n")
+    ok3, ref3 = plan_repairs(doc3, tree)
+    good3 = len(ok3) == 1 and ok3[0]["to"] == 814
+    print(f"  [{'PASS' if good3 else 'FAIL'}] comment-vs-assignment resolves to the cfg$ line")
+    if not good3:
+        bad += 1
+        print(f"        planned={ok3} refused={ref3}")
 
     print("== REFUSAL controls (must NOT repair) ==")
     cases = [

@@ -11,7 +11,7 @@ one of the defects — it was declared, not performed.)*
 ---
 
 > ⚙️ **Default Realization**: `detail_apr24`
-> Confirmed in `config/default.cfg:811`: `cfg$gms$cropland <- "detail_apr24"`.
+> Confirmed in `config/default.cfg:814`: `cfg$gms$cropland <- "detail_apr24"`.
 >
 > ⚠️ **CORRECTED (R58, 2026-07-17)**: this box previously said `simple_apr24` "uses simplified crop
 > allocation without rotational constraints". Both halves are false for M29 — `simple_apr24` does no

@@ -131,7 +131,7 @@ v59_som_target(j,"crop") = (
 ) × Natural_density(j)
 ```
 
-The simplified `Σ(crops) Area × C_ratio × Natural_density` shorthand used in earlier versions of this doc omitted terms 2-4. Term 2 (SCM = dedicated soil-carbon management) is gated by `i59_scm_target` per scenario; terms 3-4 (fallow + treecover) are land-management categories distinct from cropping area. See `modules/module_59.md` for the full equation walk-through. Default `s59_scm_target = 0` (`config/default.cfg:1975`), so term 2 is zero in a default run.
+The simplified `Σ(crops) Area × C_ratio × Natural_density` shorthand used in earlier versions of this doc omitted terms 2-4. Term 2 (SCM = dedicated soil-carbon management) is gated by `i59_scm_target` per scenario; terms 3-4 (fallow + treecover) are land-management categories distinct from cropping area. See `modules/module_59.md` for the full equation walk-through. Default `s59_scm_target = 0` (`config/default.cfg:1978`), so term 2 is zero in a default run.
 
 **C_ratio Factors** (Module 59):
 - Land use: Cropland vs set-aside
@@ -873,8 +873,8 @@ plot(ages, vegc_by_age, xlab="Age (years)", ylab="Vegetation Carbon (tC/ha)",
 
 **7. Peatland Carbon Is Outside the Module-59 Soil Pool** (not outside MAgPIE):
 - Module 59 models **mineral** soil carbon only (IPCC 2019 mineral-soil stock-change factors); it contains no peat representation, so `vm_carbon_stock(...,"soilc",...)` does **not** carry peat carbon.
-- Peatlands ARE modelled, in **Module 58 (`peatland`, default realization `v2` - `config/default.cfg:1871`)**: intact / degraded / rewetted peatland areas, drainage driven by managed-land change, rewetting, and peat extraction, with GHG emission factors (Humpenoeder et al. 2020; `modules/58_peatland/v2/realization.gms:8-17`). Peatland emissions enter the emissions interface directly via `q58_peatland_emis` → `vm_emissions_reg(i,"peatland",poll58)` (`modules/58_peatland/v2/equations.gms:91-92`), as an `emis_annual` source (`core/sets.gms:322`) - **not** through the `vm_carbon_stock` stock-change path of section 4.1.
-- Default `s58_fix_peatland = 2020` (`config/default.cfg:1928`): peatland area is held at historic levels up to 2020 and is dynamic thereafter.
+- Peatlands ARE modelled, in **Module 58 (`peatland`, default realization `v2` - `config/default.cfg:1874`)**: intact / degraded / rewetted peatland areas, drainage driven by managed-land change, rewetting, and peat extraction, with GHG emission factors (Humpenoeder et al. 2020; `modules/58_peatland/v2/realization.gms:8-17`). Peatland emissions enter the emissions interface directly via `q58_peatland_emis` → `vm_emissions_reg(i,"peatland",poll58)` (`modules/58_peatland/v2/equations.gms:91-92`), as an `emis_annual` source (`core/sets.gms:322`) - **not** through the `vm_carbon_stock` stock-change path of section 4.1.
+- Default `s58_fix_peatland = 2020` (`config/default.cfg:1931`): peatland area is held at historic levels up to 2020 and is dynamic thereafter.
 - **Implication**: peatland carbon must be read from the Module-58 emission stream, not from the carbon-balance stock accounting documented here. Double-counting is avoided by construction (peat is not in `c_pools`).
 
 ---

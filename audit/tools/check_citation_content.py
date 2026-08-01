@@ -73,8 +73,8 @@ NEAR_WINDOW = 3          # +/- lines counted as "off by small"
 LOOKBEHIND = 240         # chars before the citation searched for claimed identifiers
 
 
-def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None = None
-                         ) -> tuple[list[str], str]:
+def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None = None,
+                         cited_path: str = "") -> tuple[list[str], str]:
     """Identifiers appearing shortly BEFORE the citation -- what it is cited for.
 
     Returns (identifiers, clause) so the caller can also test the clause for
@@ -92,7 +92,15 @@ def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None 
         # so it can never appear inside the cited file's text. Treating these as
         # claimed identifiers produced 7 of 7 false positives in the 2026-08-01
         # stratified precision sample.
-        if dir_names and tok in dir_names:
+        #
+        # EXCEPT in a config file, which assigns realization names as string
+        # VALUES -- `cfg$gms$cropland <- "detail_apr24"`. There the name is
+        # exactly the content to verify, and blanket-dropping it made 21 of 55
+        # `config/*` citations unverifiable. The 2026-08-01 recall measurement
+        # found a live defect hiding in that blind spot: module_29.md cited
+        # `config/default.cfg:811` for `detail_apr24`, but :811 is a comment
+        # about `simple_apr24` and the assignment is at :814.
+        if dir_names and tok in dir_names and not cited_path.startswith("config/"):
             continue
         # ...and neither is a FILE name. A file essentially never contains its own
         # basename, so admitting `presolve.gms` guarantees a spurious
@@ -128,7 +136,7 @@ def check_text(text: str, files: Tree) -> list[dict]:
         cited = _parse_lines(spec)
         if not cited:
             continue
-        claimed, clause = _claimed_identifiers(text, m.start(), files.dir_names)
+        claimed, clause = _claimed_identifiers(text, m.start(), files.dir_names, rel)
         if not claimed:
             continue                      # nothing asserted next to it; nothing to verify
         # The clause may be DENYING that the identifier is there -- "no

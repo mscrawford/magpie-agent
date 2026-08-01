@@ -1,6 +1,6 @@
 # Module 18: Residues - Complete Documentation
 
-**Realization (DEFAULT)**: `flexreg_apr16` (regional-level, 9 equations) - confirmed in `config/default.cfg:622` (`cfg$gms$residues <- "flexreg_apr16"`)
+**Realization (DEFAULT)**: `flexreg_apr16` (regional-level, 9 equations) - confirmed in `config/default.cfg:625` (`cfg$gms$residues <- "flexreg_apr16"`)
 **Alternative Realizations**: `flexcluster_jul23` (cluster-level, 12 equations), `off` (no residue accounting)
 **Source Files Verified**: `flexreg_apr16/declarations.gms` (58 lines), `equations.gms` (124 lines), `input.gms` (51 lines), `sets.gms` (40 lines), `presolve.gms` (10 lines), `preloop.gms` (9 lines), `realization.gms` (37 lines), `scaling.gms` (14 lines)
 **Documentation Coverage**: This document leads with the default `flexreg_apr16` realization. The `flexcluster_jul23` realization is summarized in the [Alternative Realization](#alternative-realization-flexcluster_jul23) section below.
@@ -8,7 +8,7 @@
 ---
 
 > ⚙️ **Default Realization**: `flexreg_apr16`
-> Confirmed in `config/default.cfg:622`. Alternatives: `flexcluster_jul23` (cluster-based AG biomass aggregation), `off` (disables residue accounting entirely).
+> Confirmed in `config/default.cfg:625`. Alternatives: `flexcluster_jul23` (cluster-based AG biomass aggregation), `off` (disables residue accounting entirely).
 
 ## Overview
 
@@ -587,7 +587,7 @@ For the full equation listing of `flexcluster_jul23`, see `modules/18_residues/f
 - **Variable count**: 8 variables (7 at regional level i, 1 cluster v18_prod_res) verified in `declarations.gms:9-18`
 - **Formulas**: All 9 equation formulas in this document copied verbatim from `flexreg_apr16/equations.gms`
 - **Citations**: All file:line citations target `flexreg_apr16/*.gms` unless explicitly marked as shared (`modules/18_residues/input/`)
-- **Realization name**: `flexreg_apr16` confirmed in `config/default.cfg:622`
+- **Realization name**: `flexreg_apr16` confirmed in `config/default.cfg:625`
 
 **Alternative realization (`flexcluster_jul23`)**: Summary section above reflects the 3 additional cluster-level equations identified by comparing `flexcluster_jul23/declarations.gms` (76 lines, 12 equations) vs `flexreg_apr16/declarations.gms` (58 lines, 9 equations).
 

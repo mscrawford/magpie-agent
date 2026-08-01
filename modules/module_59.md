@@ -1056,7 +1056,7 @@ Key input variables from other modules are documented in the Dependencies sectio
 > M52 and missed M11/M50/M51 entirely.
 
 **Scope**: the sets below are for the **default** realization `cellpool_jan23`
-(`config/default.cfg:1934`). Realization differences are called out explicitly — they are not
+(`config/default.cfg:1937`). Realization differences are called out explicitly — they are not
 interchangeable.
 
 **Provides to** (5 modules):
