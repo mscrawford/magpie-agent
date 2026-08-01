@@ -1,170 +1,170 @@
 {
   "T1/C3": {
     "arm": "real",
-    "touched_real": 5,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 3,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T2/C1": {
     "arm": "real",
-    "touched_real": 6,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 4,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T6/C4": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 7,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 3,
+    "live": 0,
+    "contained": true
   },
   "T5/C2": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 8,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 6,
+    "live": 0,
+    "contained": true
   },
   "T3/C3": {
     "arm": "real",
-    "touched_real": 18,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 7,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T3/C1": {
     "arm": "real",
-    "touched_real": 15,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 13,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T4/C3": {
     "arm": "real",
-    "touched_real": 6,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 3,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T1/C4": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 7,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 5,
+    "live": 0,
+    "contained": true
   },
   "T1/C1": {
     "arm": "real",
-    "touched_real": 3,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 1,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T3/C4": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 29,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 10,
+    "live": 0,
+    "contained": true
   },
   "T3/C2": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 18,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 14,
+    "live": 0,
+    "contained": true
   },
   "T6/C2": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 7,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 2,
+    "live": 0,
+    "contained": true
   },
   "T1/C2": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 10,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 4,
+    "live": 0,
+    "contained": true
   },
   "T2/C3": {
     "arm": "real",
-    "touched_real": 3,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 1,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T2/C2": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 10,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 4,
+    "live": 0,
+    "contained": true
   },
   "T5/C1": {
     "arm": "real",
-    "touched_real": 7,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 5,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T5/C3": {
     "arm": "real",
-    "touched_real": 10,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 8,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T4/C1": {
     "arm": "real",
-    "touched_real": 10,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 3,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T2/C4": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 6,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 2,
+    "live": 0,
+    "contained": true
   },
   "T6/C3": {
     "arm": "real",
-    "touched_real": 13,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 6,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T4/C4": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 7,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 3,
+    "live": 0,
+    "contained": true
   },
   "T6/C1": {
     "arm": "real",
-    "touched_real": 9,
-    "touched_placebo": 0,
-    "contained": true,
-    "gams_touches": 0
+    "real": 4,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
   },
   "T5/C4": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 6,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 4,
+    "live": 0,
+    "contained": true
   },
   "T4/C2": {
     "arm": "placebo",
-    "touched_real": 0,
-    "touched_placebo": 16,
-    "contained": true,
-    "gams_touches": 0
+    "real": 0,
+    "placebo": 6,
+    "live": 0,
+    "contained": true
   }
 }

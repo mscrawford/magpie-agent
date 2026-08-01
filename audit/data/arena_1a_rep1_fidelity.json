@@ -1,0 +1,114 @@
+{
+  "T6/C3": {
+    "arm": "real",
+    "real": 8,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T1/C4": {
+    "arm": "placebo",
+    "real": 0,
+    "placebo": 10,
+    "live": 0,
+    "contained": true
+  },
+  "T1/C2": {
+    "arm": "placebo",
+    "real": 0,
+    "placebo": 11,
+    "live": 0,
+    "contained": true
+  },
+  "T7/C3": {
+    "arm": "real",
+    "real": 10,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T2/C3": {
+    "arm": "real",
+    "real": 6,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T4/C2": {
+    "arm": "placebo",
+    "real": 0,
+    "placebo": 7,
+    "live": 0,
+    "contained": true
+  },
+  "T6/C1": {
+    "arm": "real",
+    "real": 7,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T8/C4": {
+    "arm": "placebo",
+    "real": 0,
+    "placebo": 7,
+    "live": 0,
+    "contained": true
+  },
+  "T5/C3": {
+    "arm": "real",
+    "real": 7,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T5/C1": {
+    "arm": "real",
+    "real": 15,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T6/C4": {
+    "arm": "placebo",
+    "real": 0,
+    "placebo": 5,
+    "live": 0,
+    "contained": true
+  },
+  "T3/C1": {
+    "arm": "real",
+    "real": 11,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T4/C3": {
+    "arm": "real",
+    "real": 7,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T8/C3": {
+    "arm": "real",
+    "real": 5,
+    "placebo": 0,
+    "live": 0,
+    "contained": true
+  },
+  "T8/C1": {
+    "arm": "real",
+    "real": 2,
+    "placebo": 0,
+    "live": 10,
+    "contained": false
+  },
+  "T2/C4": {
+    "arm": "placebo",
+    "real": 0,
+    "placebo": 5,
+    "live": 0,
+    "contained": true
+  }
+}
