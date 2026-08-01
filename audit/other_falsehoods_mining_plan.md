@@ -1,7 +1,28 @@
 # Mining the 261 other-falsehood candidates — a tiered method
 
-**Status: design, not yet run.** Written 2026-08-01 so the stop rule is fixed *before*
-any results are seen.
+**Status: SCOPED TO TIERS 0-1 (Mike, 2026-08-01). Tiers 2-3 are not authorised yet.**
+Written 2026-08-01 so the stop rule is fixed *before* any results are seen.
+
+> **Scope decision and its consequence.** Mike authorised a first look: Tier 0 + Tier 1
+> only, then stop and report. That is the right shape for "is there anything here" — but
+> it has a consequence worth stating plainly, because it changes what the run can
+> conclude:
+>
+> **Tier 1 measures whether the CLAIMS are true. It does not measure whether they are
+> CORPUS defects.** A pool that is 60% true could be 60% model confabulation, and the
+> unknown-unknown count would still be unknown. The doc-trace (Tier 2) is what converts a
+> confirmed answer-falsehood into a finding about the docs.
+>
+> **Mitigation, adopted, costs nothing:** for a MECHANICALLY confirmed item the doc-trace
+> is itself mechanical — grep the claim's identifiers and citations across `modules/`,
+> `cross_module/`, `core_docs/`. That half folds into Tier 0 at no model cost, so the
+> first look still reports a provisional DOC_DEFECT count. Only judgment-heavy items are
+> deferred to a later Tier 2.
+>
+> So the deliverable of this run is: **claim precision per class (exact on the mechanical
+> half, sampled on the rest) + a provisional lower-bound DOC_DEFECT yield.** The Tier 3
+> gate cannot be fully evaluated until the judgment-half trace runs; if the provisional
+> yield already clears it, that is a lower bound and the gate is met a fortiori.
 
 The arena regrade's un-anchored rubric field ("does this answer assert anything *else*
 the code contradicts?") produced **261 items across 77 answers**. `arena_1a_regrade.md`
@@ -59,6 +80,11 @@ warning: the yield of genuinely *novel* classes may sit almost entirely in the ~
    - "module X does not reference `vm_y`" → a scripted grep against the GAMS tree
    - "no such file / contains only" → `test -e`
 3. Emit three buckets: **MECH_CONFIRMED**, **MECH_REFUTED**, **NEEDS_JUDGMENT**.
+4. **Mechanical doc-trace on MECH_CONFIRMED** (folded down from Tier 2, 2026-08-01):
+   grep each confirmed claim's identifiers and citations across `modules/`,
+   `cross_module/`, `core_docs/`. Classify DOC_DEFECT / MODEL_CONFAB / DOC_SILENT.
+   Costs no model calls and is what makes a Tier-0-only run able to say anything about
+   the CORPUS rather than only about the answers.
 
 **Expected to decide ~119 of 219 (46%) with no LLM in the loop**, and it produces an
 unbiased precision estimate on the decidable half — a number no sampling can beat.
@@ -95,7 +121,7 @@ Rules, each earned the hard way:
 
 ---
 
-## Tier 2 — doc tracing, the number that actually matters (~1 window)
+## Tier 2 — doc tracing on the JUDGMENT half (NOT AUTHORISED YET)
 
 For every CONFIRMED item from Tiers 0 and 1, ask one question against the docs:
 
@@ -109,7 +135,7 @@ judgment only on near-misses.
 
 ---
 
-## Tier 3 — scale, gated on a threshold fixed NOW
+## Tier 3 — scale, gated on a threshold fixed NOW (NOT AUTHORISED YET)
 
 Run the full 219 through Tier 1+2 **only if**:
 
