@@ -1,0 +1,248 @@
+#!/usr/bin/env python3
+"""Flag a doc that describes a NON-DEFAULT realization without saying so.
+
+Why this one
+------------
+The hardened regrade measured where propagation actually concentrates. The worst
+trap in the corpus (T5) scores 25% on outright falsehoods but **75%** once
+"true, but of a realization it never flags as non-default" is counted -- the
+largest narrow/wide gap anywhere in the run. `AGENT.md` Step 1c already instructs
+"ALWAYS LEAD WITH THE DEFAULT REALIZATION" in prose, and the measurement says
+prose does not work.
+
+The predicate is fully mechanical: realizations enumerate from the module tree,
+defaults come from `config/default.cfg` (all 46 modules resolve, and every default
+names a directory that exists).
+
+Suppression is STRUCTURAL, not a distance window: a reference is excused when the
+markdown section CONTAINING it establishes the default -- by naming the module's
+default realization, or by using default/non-default language. A doc that opens a
+section with "the default is X" and then discusses Y throughout is correct, and no
+choice of +/-N characters captures that. (Same lesson as the citation checker's
+equation-span anchor.)
+
+Scope: flags an unflagged non-default reference. It does not decide whether the
+surrounding claim is true of that realization.
+
+Usage
+-----
+  python3 check_default_realization.py --selftest
+  python3 check_default_realization.py --docs 'magpie-agent/modules/*.md' --root .
+"""
+
+from __future__ import annotations
+
+import argparse
+import glob as globmod
+import json
+import re
+import sys
+from pathlib import Path
+
+RE_CFG = re.compile(r'cfg\$gms\$([A-Za-z_][A-Za-z0-9_]*)\s*<-\s*"([^"]+)"')
+# `modules/18_residues/flexcluster_jul23/...` anywhere in prose or a fence.
+RE_REAL_PATH = re.compile(r"\bmodules/(\d{2}_[a-z][a-z0-9_]*)/([A-Za-z][A-Za-z0-9_]*)\b")
+RE_HEADING = re.compile(r"^#{1,6}\s", re.MULTILINE)
+
+# Language that establishes the default/non-default distinction.
+RE_QUALIFIER = re.compile(
+    r"(?i)\b(default|non-default|not the default|alternative realization|"
+    r"alternative realisation|if you (?:run|use)|when configured|realization comparison)\b"
+)
+
+NON_REALIZATION_DIRS = {"input"}  # `modules/NN_x/input/` is not a realization
+
+# A bare realization name in prose (`flexcluster_jul23`), not a path. Restricted to
+# the dated MAgPIE naming convention on purpose: undated names like `static`, `off`
+# and `exo` are ordinary English and would false-positive everywhere. Path-form
+# references still catch those, so this trades recall for precision only on the
+# undated minority.
+RE_DATED_REALIZATION = re.compile(
+    r"\b([a-z][a-z0-9_]*_(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\d{2})\b"
+)
+
+
+class Defaults:
+    def __init__(self, root: Path):
+        self.root = root
+        cfg = (root / "config" / "default.cfg").read_text(errors="ignore")
+        keys = dict(RE_CFG.findall(cfg))
+        self.by_dir: dict[str, str] = {}
+        self.realizations: dict[str, set[str]] = {}
+        for p in sorted((root / "modules").iterdir()):
+            if not p.is_dir() or "_" not in p.name:
+                continue
+            short = p.name.split("_", 1)[1]
+            self.realizations[p.name] = {
+                r.name for r in p.iterdir() if r.is_dir() and r.name not in NON_REALIZATION_DIRS
+            }
+            if short in keys:
+                self.by_dir[p.name] = keys[short]
+
+        # realization name -> owning module dirs. Only names owned by exactly one
+        # module are usable for bare-name detection; a shared name (`static`,
+        # `off`) cannot be attributed without a path.
+        owners: dict[str, set[str]] = {}
+        for mod, reals in self.realizations.items():
+            for r in reals:
+                owners.setdefault(r, set()).add(mod)
+        self.unique_owner = {r: next(iter(m)) for r, m in owners.items() if len(m) == 1}
+
+    def default_of(self, module_dir: str) -> str | None:
+        return self.by_dir.get(module_dir)
+
+    def is_realization(self, module_dir: str, name: str) -> bool:
+        return name in self.realizations.get(module_dir, set())
+
+
+def _sections(text: str) -> list[tuple[int, int]]:
+    """(start, end) offsets of markdown sections; whole doc if it has no headings."""
+    starts = [m.start() for m in RE_HEADING.finditer(text)]
+    if not starts:
+        return [(0, len(text))]
+    if starts[0] != 0:
+        starts = [0] + starts
+    return [(s, starts[i + 1] if i + 1 < len(starts) else len(text))
+            for i, s in enumerate(starts)]
+
+
+def check_text(text: str, d: Defaults) -> list[dict]:
+    secs = _sections(text)
+
+    def section_of(pos: int) -> str:
+        for s, e in secs:
+            if s <= pos < e:
+                return text[s:e]
+        return text
+
+    seen: set[tuple[str, str]] = set()
+    out: list[dict] = []
+
+    # Candidates: path-form references, plus bare dated realization names whose
+    # owning module is unambiguous.
+    cands: list[tuple[int, str, str]] = [
+        (m.start(), m.group(1), m.group(2)) for m in RE_REAL_PATH.finditer(text)
+    ]
+    for m in RE_DATED_REALIZATION.finditer(text):
+        name = m.group(1)
+        mod = d.unique_owner.get(name)
+        if mod:
+            cands.append((m.start(), mod, name))
+    cands.sort()
+
+    for pos, mod, real in cands:
+        if not d.is_realization(mod, real):
+            continue
+        dflt = d.default_of(mod)
+        if dflt is None or real == dflt:
+            continue
+        if (mod, real) in seen:
+            continue
+        sec = section_of(pos)
+        # Structural suppression: the containing section establishes the default.
+        #
+        # The default name must match on IDENTIFIER boundaries, not as a substring:
+        # module 80's default `nlp_apr17` is a substring of the non-default
+        # `lp_nlp_apr17`, so a plain `in` test excuses precisely the reference this
+        # checker exists to catch. Caught by the M80 positive control on first run.
+        if re.search(rf"(?<![A-Za-z0-9_]){re.escape(dflt)}(?![A-Za-z0-9_])", sec) \
+                or RE_QUALIFIER.search(sec):
+            continue
+        seen.add((mod, real))
+        out.append({
+            "kind": "nondefault_realization_unflagged",
+            "module": mod, "cited_realization": real, "default": dflt,
+            "line": text.count("\n", 0, pos) + 1,
+            "context": text[max(0, pos - 90): pos + 90].replace("\n", " ").strip()[:200],
+        })
+    return out
+
+
+# --------------------------------------------------------------------------
+# Self-test. Ground truth read from the tree: 18_residues default is
+# flexreg_apr16, flexcluster_jul23 is the alternative; 80_optimization default
+# is nlp_apr17, lp_nlp_apr17 is not.
+# --------------------------------------------------------------------------
+
+POSITIVES = [
+    ("non-default realization cited bare",
+     "## Consumers\n\nModule 18 reads cell-level `vm_prod` at "
+     "`modules/18_residues/flexcluster_jul23/equations.gms:18`.\n"),
+    ("non-default M80 realization cited bare",
+     "## Solver\n\nThe second solve is controlled at "
+     "`modules/80_optimization/lp_nlp_apr17/solve.gms:66`.\n"),
+]
+
+NEGATIVES = [
+    ("the DEFAULT realization is never flagged",
+     "## Consumers\n\nModule 18 reads `vm_prod_reg` at "
+     "`modules/18_residues/flexreg_apr16/equations.gms:18`.\n"),
+    ("section names the default explicitly",
+     "## Consumers\n\nThe default realization is `flexreg_apr16`, which reads regional "
+     "production. The alternative `modules/18_residues/flexcluster_jul23/equations.gms:18` "
+     "reads cell-level `vm_prod`.\n"),
+    ("section uses non-default language",
+     "## Consumers\n\nIn the non-default configuration, "
+     "`modules/18_residues/flexcluster_jul23/equations.gms:18` reads cell-level `vm_prod`.\n"),
+    ("a non-realization subdirectory is not a realization",
+     "## Inputs\n\nSee `modules/18_residues/input/` for the source files.\n"),
+    ("qualifier in the SAME section but a later paragraph still suppresses",
+     "## Consumers\n\n`modules/18_residues/flexcluster_jul23/equations.gms:18` reads "
+     "cell-level `vm_prod`.\n\nNote this is not the default realization.\n"),
+]
+
+
+def selftest(d: Defaults) -> int:
+    bad = 0
+    print("== POSITIVE controls (must flag) ==")
+    for name, text in POSITIVES:
+        got = check_text(text, d)
+        print(f"  [{'PASS' if got else 'FAIL'}] {name}")
+        if not got:
+            bad += 1
+    print("== NEGATIVE controls (must be clean) ==")
+    for name, text in NEGATIVES:
+        got = check_text(text, d)
+        print(f"  [{'PASS' if not got else 'FAIL'}] {name}")
+        if got:
+            bad += 1
+            print(f"        false positives: {got}")
+    print(f"\nself-test: {bad} failure(s)")
+    return bad
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--root", default=".")
+    ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--docs", action="append", help="glob of docs to scan (repeatable)")
+    ap.add_argument("--json")
+    a = ap.parse_args()
+
+    d = Defaults(Path(a.root).resolve())
+    print(f"defaults resolved for {len(d.by_dir)}/{len(d.realizations)} modules", file=sys.stderr)
+    if a.selftest:
+        return 1 if selftest(d) else 0
+    if not a.docs:
+        ap.error("need --docs or --selftest")
+
+    files = sorted({f for g in a.docs for f in globmod.glob(g)})
+    res = {}
+    for f in files:
+        fs = check_text(Path(f).read_text(errors="ignore"), d)
+        if fs:
+            res[f] = fs
+    n = sum(len(v) for v in res.values())
+    print(f"{n} unflagged non-default realization references over {len(res)}/{len(files)} docs")
+    for f, fs in sorted(res.items()):
+        for x in fs:
+            print(f"  {f}:{x['line']}  {x['module']}  cites {x['cited_realization']} "
+                  f"(default {x['default']})")
+    if a.json:
+        Path(a.json).write_text(json.dumps(res, indent=1))
+        print(f"wrote {a.json}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
