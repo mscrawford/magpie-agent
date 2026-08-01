@@ -844,7 +844,7 @@ p29_carbon_density_ac(t,j,ac,ag_pools) = pm_carbon_density_plantation_ac_uncalib
 | `vm_bv` | Biodiversity value — M29 **populates only** the `crop_fallow` / `crop_tree` slices | (j,landcover44,potnatveg) | Mio. ha | Module 44 (Biodiversity) |
 
 **Source**: `declarations.gms:38-45` covers the M29-declared positive variables only. `vm_bv` is
-**declared in Module 44** (`modules/44_biodiversity/bv_btc_mar21/declarations.gms:19` →
+**declared in Module 44** (`modules/44_biodiversity/bii_target/declarations.gms:11` (default realization) →
 `vm_bv(j,landcover44,potnatveg)`) and is merely **populated** here by `q29_fallow_bv` /
 `q29_treecover_bv` (`detail_apr24/equations.gms:76-78,101-104`).
 
@@ -986,7 +986,7 @@ A scaling.gms file exists (`detail_apr24/scaling.gms`) but all scale statements 
 > attributions. The old wording contradicted **this doc's own interface table above** (which is the
 > correct one) and the code. Verified by grep in both paren- and dot-form:
 > - `vm_fallow` outside M29 → `32_forestry/dynamic_may24/presolve.gms:18`;
->   `50_nr_soil_budget/macceff_aug22/equations.gms:26`; `59_som/static_jan19/equations.gms:13`;
+>   `50_nr_soil_budget/macceff_aug22/equations.gms:26`; `59_som/static_jan19/equations.gms:13` (non-default);
 >   `59_som/cellpool_jan23/equations.gms:25` ⇒ **{32, 50, 59}** — no M44.
 > - `vm_treecover` outside M29 → `22_land_conservation/area_based_apr22/presolve_ini.gms:87,98,109`;
 >   `59_som/static_jan19/equations.gms:14`; `59_som/cellpool_jan23/equations.gms:26` ⇒ **{22, 59}** —
@@ -1053,7 +1053,7 @@ Module 29 contributes to agricultural land that supports food production:
 
 Module 29 provides land use data that Module 50/51 use for nitrogen accounting:
 
-- **Cropland Nitrogen Demand**: Module 50 uses `vm_land(j,"crop")` for N fertilizer requirements; `vm_land` is also read by Module 22 (Land Conservation) (`modules/22_land_conservation/area_based_apr22/presolve_ini.gms:86`), Module 30 (Croparea) (`modules/30_croparea/simple_apr24/equations.gms:23`), Module 31 (Pasture) (`modules/31_past/static/presolve.gms:11`), Module 32 (Forestry) (`modules/32_forestry/dynamic_may24/presolve.gms:19`), Module 34 (Urban) (`modules/34_urban/static/presolve.gms:9`), Module 35 (Natveg) (`modules/35_natveg/pot_forest_may24/presolve.gms:40`), Module 58 (Peatland) (`modules/58_peatland/v2/equations.gms:23`), Module 59 (SOM) (`modules/59_som/cellpool_jan23/equations.gms:33`)
+- **Cropland Nitrogen Demand**: Module 50 uses `vm_land(j,"crop")` for N fertilizer requirements; `vm_land` is also read by Module 22 (Land Conservation) (`modules/22_land_conservation/area_based_apr22/presolve_ini.gms:86`), Module 30 (Croparea) (`modules/30_croparea/simple_apr24/equations.gms:23`), Module 31 (Pasture) (`modules/31_past/endo_jun13/presolve.gms:9`, default realization), Module 32 (Forestry) (`modules/32_forestry/dynamic_may24/presolve.gms:19`), Module 34 (Urban) (`modules/34_urban/exo_nov21/equations.gms:18,21,31`, default realization), Module 35 (Natveg) (`modules/35_natveg/pot_forest_may24/presolve.gms:40`), Module 58 (Peatland) (`modules/58_peatland/v2/equations.gms:23`), Module 59 (SOM) (`modules/59_som/cellpool_jan23/equations.gms:33`)
 - **Soil Nitrogen Dynamics**: Cropland expansion/contraction affects soil N pools
 - **Tree Cover Impact**: Trees on cropland affect N cycling (via soil carbon Module 59)
 
@@ -1104,7 +1104,7 @@ source, in either the `name(` (equation) or `name.` (solution-level) form.
 | `vm_fallow(j)` | M29 | `equations.gms` | **32, 50, 59** |
 | `vm_treecover(j)` | M29 | `equations.gms` | **22, 59** |
 | `vm_carbon_stock(j,"crop",ag_pools,stockType)` | **M56** (`56_ghg_policy/price_aug22/declarations.gms:34`) | `detail_apr24/equations.gms:39` | **31, 32, 34, 35, 52, 56, 59** |
-| `vm_bv(j,...)` | **M44** (`44_biodiversity/bv_btc_mar21/declarations.gms:19`) | `detail_apr24/equations.gms` | **30, 31, 32, 34, 35, 44** |
+| `vm_bv(j,...)` | **M44** (`44_biodiversity/bii_target/declarations.gms:11`, default) | `simple_apr24/equations.gms` (default) | **30, 31, 32, 34, 35, 44** |
 | `pm_avl_cropland_iso` | M29 | preloop/presolve | **13, 30, 59** |
 
 **Modules that consume at least one variable M29 populates:** 10, 11, 13, 22, 30, 31, 32, 34, 35, 44,

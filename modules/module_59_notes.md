@@ -8,7 +8,7 @@
 
 1. **8 equations fully documented** (validated 2026-03-06): The `cellpool_jan23` realization was fully verified with equations split into correct sections.
 
-2. **Static vs. dynamic**: The `static_jan19` realization tracks carbon stocks without dynamic feedbacks. The `cellpool_jan23` realization models carbon pool dynamics at cell level — much more computationally intensive.
+2. **Static vs. dynamic**: The `static_jan19` realization (non-default; the default is `cellpool_jan23`) tracks carbon stocks without dynamic feedbacks. The `cellpool_jan23` realization models carbon pool dynamics at cell level — much more computationally intensive.
 
 3. **Interaction with Module 52 (carbon)**: SOM carbon stocks feed into Module 52's total carbon accounting. Changes to tillage or crop residue management affect SOM, which affects carbon sequestration reporting.
 

@@ -205,11 +205,11 @@ Module 44 aggregates biodiversity stocks calculated by land-use modules:
 
 **How `vm_bv` is calculated** (examples from provider modules):
 
-**Cropland** (Module 30, `detail_apr24`):
+**Cropland** (Module 30, `simple_apr24` — the default realization):
 ```
 vm_bv(j,"crop_ann",potnatveg) = vm_land(j,"crop") × [crop shares] × fm_bii_coeff("crop_ann",potnatveg) × fm_luh2_side_layers(j,potnatveg)
 ```
-`modules/30_croparea/detail_apr24/equations.gms:95`
+`modules/30_croparea/simple_apr24/equations.gms:57` (identical equation at `modules/30_croparea/detail_apr24/equations.gms:95`)
 
 **Pasture** (Module 31, `endo_jun13`):
 ```

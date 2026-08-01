@@ -423,6 +423,8 @@ pm_labor_prod(t,j) = 0.80 means:
 
 **Location**: `modules/37_labor_prod/exo/input/f37_labourprodimpact.cs3`
 
+> ⚠️ **Not loaded in a default run.** Module 37's default realization is `off` (`cfg$gms$labor_prod <- "off"`), which has no `input/` directory at all — this file exists only under the non-default `exo` realization.
+
 **Dimensions**: (t_all, j, rcp37, metric37, intensity37, uncertainty37)
 - t_all: Time periods (1995-2150, 5-year intervals)
 - j: 200 MAgPIE cells (0.5° grid aggregated)
@@ -1082,7 +1084,7 @@ Physical Mechanism:
 • Wet Bulb Globe Temperature (WBGT) calculated from ESM climate projections
   - Combines temperature, humidity, wind speed, solar radiation
   - WBGT > 30°C → significant productivity loss
-• modules/37_labor_prod/exo/input.gms:18-22
+• modules/37_labor_prod/exo/input.gms:18-22  (non-default realization; default is `off`)
 
 Productivity Calculation:
 Two alternative metrics:
