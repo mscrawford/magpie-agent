@@ -1,13 +1,27 @@
 # Phase 1A synthesis — four runs, 89 scored answers, and what actually moves propagation
 
-> **⚠️ PARTIALLY RETRACTED 2026-08-01 — read `audit/arena_1a_adjudication.md` first.**
-> An independent 3-way blind re-adjudication of the answers carrying the propagation signal
-> overturned 11 of 21 single-grader verdicts (the three adjudicators agreed with each other
-> 20/21). **§3 below is withdrawn**: the T5-vs-T6 item asymmetry was a grading artifact, and
-> both items produce falsehoods at ~36–40%. The **propagation rate (§1) and the regime effect
-> are no longer safe to quote** — the grader missed 4 outright falsehoods, so rep 1's 0/31 may
-> be an undercount. What survives untouched: the effort manipulation, the `AGENT.md`-never-read
-> finding (§4), and the arm null (§2), none of which depend on LLM grading.
+> **⚠️ SUPERSEDED 2026-08-01 (second correction) — read `audit/arena_1a_regrade.md` first.**
+> All 104 answers have now been re-graded on the correct (written-file) substrate by two
+> independent graders who agreed **99% (103/104)**. That replaces every number below.
+>
+> - **§1 propagation** — re-established at **11.7% narrow / 19.4% wide** (CI [12.9, 28.1]).
+>   The original 20.0% was about right, reached over a substrate wrong in 70% of cells.
+> - **The regime effect SURVIVES** (rep 1 vs pooled, wide **p = 0.0058**, reproducing the
+>   original p = 0.0062) and now decomposes: low effort degrades *completeness* (omitted default
+>   caveats), no-code-access degrades *correctness* (docs-only 29.2% narrow, p = 0.0157).
+> - **§3 is PARTIALLY RESTORED.** Its retraction (below, 2026-08-01 first pass) rested on a
+>   T5≈T6 comparison that was substrate-confounded. On the correct substrate T5 vs T6 is
+>   p = 1.000 narrow but **p = 0.032 wide** (75.0% vs 31.2%) — so the item effect §3 claimed is
+>   real on the omitted-caveat measure. But §3's stronger clause, *"not class-specific"*, is
+>   **wrong**: the `attribution_role` class runs 28.1% vs 4.2% for all other classes,
+>   p = 0.0012. Propagation is **both** class-specific and item-specific.
+> - **§2 arm null and §4** survive unchanged, and the arm null is now a genuine null rather
+>   than a floor (both arms well off zero).
+>
+> *(Superseded first-pass banner, retained for provenance: "PARTIALLY RETRACTED — a 3-way blind
+> re-adjudication overturned 11 of 21 single-grader verdicts; §3 withdrawn; propagation and the
+> regime effect no longer safe to quote." That re-adjudication compared two graders reading
+> DIFFERENT text; see `arena_1a_substrate_defect.md`.)*
 
 Pre-registration `audit/arena_1a_prereg.md` (`bd5134f`, before any dispatch).
 Per-run records: `audit/arena_1a_rep1.md`, `audit/arena_1a_rep2.md`.

@@ -14,10 +14,22 @@
 >
 > **What survives:** the two confabulations verified against source (`plant2forestry`,
 > `50_nsoil_budget`) are real, and A05 remains a genuine grader miss on identical text. The
-> `ASSERTS_FALSEHOOD` vs `OMITS_DEFAULT_CAVEAT` rubric split remains the right distinction.
-> **What does not:** the T5-vs-T6 comparison, the "grader missed four falsehoods in T6" count
-> (2 of those 4 were stub cells the grader never saw), and the methodological lesson in the
-> final section.
+> `ASSERTS_FALSEHOOD` vs `OMITS_DEFAULT_CAVEAT` rubric split remains the right distinction —
+> and it turned out to be load-bearing, since the T5 item scores 25% narrow but 75% wide.
+> **What does not:** the "grader missed four falsehoods in T6" count (2 of those 4 were stub
+> cells the grader never saw), and the methodological lesson in the final section.
+>
+> **UPDATE 2026-08-01 (second pass) — the final section's claim is now DISCONFIRMED, not
+> merely untested.** `audit/arena_1a_regrade.md` re-graded all 104 answers with two independent
+> graders on the correct substrate: **they agreed on 103 of 104 (99%)**. Graders reading the
+> same text agree essentially always, so "a single LLM grader per item is not a measurement" is
+> false as stated. The instrument problem was the substrate, and separately the *anchoring* of
+> the rubric (which asks about one claim and so scores fabrications elsewhere as clean).
+>
+> **The T5-vs-T6 control conclusion is half right.** On outright falsehoods the two items are
+> indistinguishable (p = 1.000), as this document argued. On the wider measure they differ
+> (75.0% vs 31.2%, p = 0.032). The control-item *technique* below is still the right move; the
+> inference drawn from it here was over-stated.
 
 # Independent re-adjudication — the grader was the weakest link, and it was wrong both ways
 

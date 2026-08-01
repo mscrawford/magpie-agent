@@ -62,6 +62,41 @@ That is a mechanistically sensible result: an agent that cannot open the GAMS so
 refute a wrong doc line, so it repeats it. An agent that can, but is hurried, verifies the claim
 and drops the caveat.
 
+## 3b. Per-trap: the class effect is real, and so is the item effect
+
+| trap | class | narrow | wide |
+|---|---|---:|---:|
+| T1 | set_member_label | 0/16 | 0/16 |
+| T2 | phantom identifier | 0/15 | 0/15 |
+| T3 | capability-vs-default | 12.5% | 12.5% |
+| T4 | mechanism/realization | 0/16 | 0/16 |
+| **T5** | attribution_role | **25.0%** | **75.0%** |
+| **T6** | attribution_role | **31.2%** | 31.2% |
+| T7 | citation | 0/4 | 0/4 |
+| T8 | citation | 25.0% | 25.0% |
+
+This settles two claims that were argued in both directions across the previous two sessions.
+
+**The class effect is real.** The `attribution_role` pair runs **28.1% (9/32) against 4.2%
+(3/71) for every other class**, Fisher **p = 0.0012** narrow, p < 0.0001 wide. The earlier worry
+— that a class rate had been manufactured by pooling heterogeneous items so that one item drove
+it — does not survive: *both* members are elevated, and the class separates from the rest of the
+corpus decisively.
+
+**The item effect is also real, but only on the wide measure.** T5 vs T6 is **p = 1.000 narrow**
+(25.0% vs 31.2%) and **p = 0.032 wide** (75.0% vs 31.2%). Both prior positions were half right:
+the re-adjudication's "these two items behave the same" holds for outright falsehoods, and the
+synthesis's withdrawn §3 ("propagation is item-specific") holds for the omitted-caveat measure.
+Its stronger clause — *"not class-specific"* — is wrong.
+
+The honest statement is that propagation is **class-specific AND item-specific**, and which one
+you see depends on whether you count omitted default caveats. T5's 75% wide against 25% narrow is
+the single largest narrow/wide gap in the corpus: answers about which modules consume `vm_prod`
+overwhelmingly name a realization without saying it is not the default.
+
+That is a direct argument for Phase B — the non-default-realization checker targets exactly the
+gap that dominates the worst trap in the corpus.
+
 ## 4. The arm null holds
 
 | | narrow | wide |

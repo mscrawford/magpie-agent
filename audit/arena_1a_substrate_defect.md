@@ -89,8 +89,12 @@ Of the two remaining disagreements on **identical** text, only one is a grader e
 
 **So `arena_1a_adjudication.md`'s central inference — that the single-grader *design* is not a
 measurement — is not supported by its own evidence.** The dominant driver of the 11 overturned
-verdicts was substrate divergence. The single-grader design may still be weak; this experiment
-did not test it.
+verdicts was substrate divergence.
+
+> **Resolved the same day by `arena_1a_regrade.md`:** two independent graders on the correct
+> substrate agreed on **103 of 104 answers (99%)**. The single-grader design is not weak — it
+> was never the problem. What *is* weak is an **anchored** rubric, which asks only about the
+> designated trap claim and therefore scores fabrications elsewhere in the answer as clean.
 
 ## The shape of my error
 
