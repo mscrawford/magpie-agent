@@ -211,10 +211,29 @@ coverage denominator (`total_checkable`) and already runs the 5 lenses
 (`workflow.js:71-75`). The semantic flywheel (`/validate-semantic`) already exists. This
 is a targeted variant, not new machinery.
 
-What it does NOT already do, and what must be added tonight: **record the class alongside
-the lens on every finding**, and **carry a dedup key** (one defect = one code fact). R55's
-findings array has `bug_class` and `lenses` but no dedup field, which is why its own
-retired double count is still live in the JSON.
+It already records `bug_class` and `lenses` per finding (`workflow.js:108-111,342`) and
+already dedups — but **on the wrong key, and at the wrong scope**, which is exactly why
+R55's retired double count is still live in the JSON:
+
+```
+workflow.js:251-253   normClaim(b) = doc_line :: first 80 chars of claim text, lowercased
+workflow.js:277-287   dedup is PER DOC, across lenses
+```
+
+Two failure modes follow directly, and both are the ones MEASUREMENT.md retired by hand:
+
+- **Same defect, different phrasings, same doc line.** M52 bugs 1/5/10 are one defect at
+  `module_52.md:458`; the claim strings differ, so three keys survive. Keying on claim
+  *text* cannot collapse them.
+- **Same code fact, two doc sites, two docs.** M52-4 ≅ M56-7 is one parallel-not-serial
+  error verified from both ends. The dedup is per-doc, so a cross-doc duplicate is
+  **structurally uncatchable** — no amount of key tuning reaches it.
+
+**Fix before dispatch (small, and it is the difference between a rate and an artifact):**
+key on the *code fact* — `file_evidence` normalized to file+identifier, plus `bug_class` —
+not on claim prose; and run a second dedup pass **across docs** after the per-doc one.
+Then emit `findings`, `distinct defects` and `doc sites` as three separate counts, because
+they are three different numbers and only the middle one belongs in a rate.
 
 ## Pre-registered decision rules
 
