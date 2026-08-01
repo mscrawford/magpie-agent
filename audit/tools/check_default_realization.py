@@ -50,47 +50,98 @@ from magpie_corpus import (  # noqa: E402
     Tree,
 )
 
-RE_HEADING = re.compile(r"^#{1,6}\s", re.MULTILINE)
+RE_HEADING = re.compile(r"^(#{1,6})\s", re.MULTILINE)
 
 # Language that establishes the default/non-default distinction.
 #
 # `default` is NOT matched when it is immediately followed by `/` -- module 73's
 # realization is literally named `default`, so `73_timber/default/equations.gms`
 # would otherwise read as default-establishing language and excuse the reference.
+# `active` / `in use` / `currently configured` are safe to include here even though
+# they are ordinary English: this pattern only suppresses when the module's DEFAULT
+# NAME also sits within ESTABLISH_WINDOW characters. module_59.md writes
+# "**Active**: `cellpool_jan23`" / "**Legacy**: `static_jan19`", which establishes
+# the configuration perfectly well without ever using the word "default".
 RE_QUALIFIER = re.compile(
     r"(?i)\b(default(?!/)|non-default|not the default|alternative realization|"
-    r"alternative realisation|if you (?:run|use)|when configured|realization comparison)\b"
+    r"alternative realisation|if you (?:run|use)|when configured|realization comparison|"
+    r"active|currently configured|in use)\b"
 )
 
 # How close the module's default NAME must sit to default-establishing language
 # for the pair to count as "this section says which realization is configured".
 ESTABLISH_WINDOW = 120
 
-# An explicit flag immediately before the reference itself.
+# An explicit flag near the reference itself. Unlike RE_QUALIFIER these need no
+# accompanying default name -- each one, on its own, tells the reader this
+# realization is not the one a stock run uses.
+#
+# The vocabulary here was measured, not guessed: the 2026-08-01 census found real
+# docs flagging non-default realizations as "(NOT default)", "**Legacy**:",
+# "**Alternative**:" and "the prior `X` realization", none of which the original
+# four patterns matched. Each was a false positive.
 RE_EXPLICIT_FLAG = re.compile(
-    r"(?i)(non-default|not the default|alternative realis[az]ation|rather than the default)"
+    r"(?i)(non-default|not the default|not default|alternative realis[az]ation|"
+    r"rather than the default|\*\*alternative\*\*|\blegacy\b|\bdeprecated\b|"
+    r"\bsuperseded\b|\bthe prior\b|\bformer\b)"
 )
 
 
-def _sections(text: str) -> list[tuple[int, int]]:
-    """(start, end) offsets of markdown sections; whole doc if it has no headings."""
-    starts = [m.start() for m in RE_HEADING.finditer(text)]
-    if not starts:
-        return [(0, len(text))]
-    if starts[0] != 0:
-        starts = [0] + starts
-    return [(s, starts[i + 1] if i + 1 < len(starts) else len(text))
-            for i, s in enumerate(starts)]
+def _sections(text: str) -> list[tuple[int, int, int]]:
+    """(start, end, heading level) of each markdown section, in document order.
+
+    Level 0 is the implicit preamble before the first heading.
+    """
+    marks = [(m.start(), len(m.group(1))) for m in RE_HEADING.finditer(text)]
+    if not marks:
+        return [(0, len(text), 0)]
+    if marks[0][0] != 0:
+        marks = [(0, 0)] + marks
+    out = []
+    for i, (s, lvl) in enumerate(marks):
+        e = marks[i + 1][0] if i + 1 < len(marks) else len(text)
+        out.append((s, e, lvl))
+    return out
+
+
+def _context_of(text: str, secs: list[tuple[int, int, int]], pos: int) -> str:
+    """The section containing `pos`, PLUS the preamble of every ANCESTOR section.
+
+    Markdown headings nest. A doc that writes
+
+        ## 3. Alternative Realization: `sticky_labor` (NOT default)
+        ### 3.1 CES production function
+        **File**: `modules/38_factor_costs/sticky_labor/equations.gms:19-23`
+
+    has flagged the realization perfectly well -- but a FLAT section split makes
+    `### 3.1` a fresh section that has lost its parent's "(NOT default)", and
+    every reference inside it reads as unflagged. That was the largest remaining
+    false-positive class in the 2026-08-01 census.
+
+    Only each ancestor's PREAMBLE is included (its heading through the start of
+    its first child), not its whole subtree: a qualifier in a distant sibling
+    subsection says nothing about this one.
+    """
+    idx = next((i for i, (s, e, _) in enumerate(secs) if s <= pos < e), len(secs) - 1)
+    start, end, lvl = secs[idx]
+    parts = [text[start:end]]
+    want = lvl
+    for j in range(idx - 1, -1, -1):
+        s, e, l2 = secs[j]
+        if l2 < want:
+            nxt = secs[j + 1][0] if j + 1 < len(secs) else e
+            parts.append(text[s:nxt])
+            want = l2
+            if want == 0:
+                break
+    return "\n".join(parts)
 
 
 def check_text(text: str, d: Tree) -> list[dict]:
     secs = _sections(text)
 
     def section_of(pos: int) -> str:
-        for s, e in secs:
-            if s <= pos < e:
-                return text[s:e]
-        return text
+        return _context_of(text, secs, pos)
 
     seen: set[tuple[str, str]] = set()
     out: list[dict] = []
@@ -168,6 +219,14 @@ POSITIVES = [
      "## Consumers\n\nModule 18 has two realizations, `flexreg_apr16` and "
      "`flexcluster_jul23`. The latter reads cell-level `vm_prod` at "
      "`modules/18_residues/flexcluster_jul23/equations.gms:18`.\n"),
+    # Ancestor scoping must not become "anything anywhere above suppresses". A
+    # qualifier in a SIBLING subsection says nothing about this one, and without
+    # this control the hierarchical fix could silently over-suppress.
+    ("a qualifier in a SIBLING subsection does not suppress",
+     "## 3. Realizations\n\n"
+     "### 3.1 Regional\n\nThe default realization is `flexreg_apr16`.\n\n"
+     "### 3.2 Cluster detail\n\n"
+     "`modules/18_residues/flexcluster_jul23/equations.gms:18` reads cell-level data.\n"),
     # `default` as a PATH SEGMENT (module 73's realization is named `default`)
     # must not read as default-establishing language.
     ("the word 'default' inside a path does not establish anything",
@@ -191,6 +250,25 @@ NEGATIVES = [
     ("qualifier in the SAME section but a later paragraph still suppresses",
      "## Consumers\n\n`modules/18_residues/flexcluster_jul23/equations.gms:18` reads "
      "cell-level `vm_prod`.\n\nNote this is not the default realization.\n"),
+    # --- Vocabulary regressions: every one is a real doc phrasing that the
+    # --- original four patterns missed, found in the 2026-08-01 census.
+    ("REGRESSION: 'Active:' establishes the configuration without the word default",
+     "### Realizations\n\n**Active**: `cellpool_jan23` (cell-level pools)\n"
+     "**Legacy**: `static_jan19` (IPCC 2006 factors)\n"),
+    ("REGRESSION: '(NOT default)' is an explicit flag",
+     "## 3. Alternative Realization: `sticky_labor` (NOT default)\n\n"
+     "**Source**: `modules/38_factor_costs/sticky_labor/`.\n"),
+    ("REGRESSION: '**Alternative**:' labels a non-default realization",
+     "## Consumers\n\nRegional biomass is the norm. **Alternative**: `flexcluster_jul23` "
+     "adds cluster-level AG biomass.\n"),
+    ("REGRESSION: a parent heading's flag governs its SUBSECTIONS",
+     "## 3. Alternative Realization: `sticky_labor` (NOT default)\n\n"
+     "**Source**: `modules/38_factor_costs/sticky_labor/`.\n\n"
+     "### 3.1 CES production function\n\n"
+     "**File**: `modules/38_factor_costs/sticky_labor/equations.gms:19-23`\n"),
+    ("REGRESSION: 'the prior X realization' marks it as superseded",
+     "## Bounds\n\nBounds are set in `modules/71_disagg_lvst/foragebased_jul23/preloop.gms:17` "
+     "(and the prior `foragebased_aug18` realization).\n"),
 ]
 
 

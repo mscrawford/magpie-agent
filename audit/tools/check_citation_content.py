@@ -55,6 +55,7 @@ from magpie_corpus import (  # noqa: E402
     is_filename,
     is_glob_stem,
     is_negated_claim,
+    last_clause,
     split_batch,
 )
 
@@ -78,12 +79,9 @@ def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None 
     Returns (identifiers, clause) so the caller can also test the clause for
     negation without re-deriving the sentence boundary.
     """
-    left = text[max(0, cite_start - LOOKBEHIND): cite_start]
-    # Stop at a hard sentence boundary so we do not reach into a previous claim.
-    for sep in ("\n\n", ". ", "; "):
-        i = left.rfind(sep)
-        if i != -1:
-            left = left[i + len(sep):]
+    # Stop at a clause boundary so we do not reach into a PREVIOUS claim -- which
+    # in a bulleted source list is the common case, not the edge case.
+    left = last_clause(text[max(0, cite_start - LOOKBEHIND): cite_start])
     out: list[str] = []
     for m in RE_CLAIMED.finditer(left):
         tok = m.group(1) or m.group(2)
@@ -162,10 +160,11 @@ def check_text(text: str, files: Tree) -> list[dict]:
         if on(cited):
             continue                      # citation supports something next to it
 
-        # STRUCTURAL anchor before the proximity fallback: if a claimed equation
-        # name owns a span in this file and the cited line sits INSIDE it, the
-        # citation is correct (a body line cited under the equation's name).
-        spans = files.equation_spans(rel)
+        # STRUCTURAL anchors before the proximity fallback: if a claimed equation
+        # or SET name owns a span in this file and the cited line sits INSIDE it,
+        # the citation is correct -- an equation body line cited under the
+        # equation's name, or a set MEMBER line cited under the set's name.
+        spans = {**files.equation_spans(rel), **files.set_spans(rel)}
         if any(
             tok in spans and spans[tok][0] <= c <= spans[tok][1]
             for tok in claimed for c in cited
@@ -195,7 +194,19 @@ def check_text(text: str, files: Tree) -> list[dict]:
                 "detail": "none of the claimed identifiers appears anywhere in this file",
                 "claimed": claimed[:4],
             })
-    return findings
+
+    # One citation repeated within an answer is ONE defect. Without this, an
+    # answer that cites `config/default.cfg:1367` twice for the same identifier
+    # contributed 2 to every rate quoted off this checker.
+    seen: set[tuple] = set()
+    out: list[dict] = []
+    for f in findings:
+        k = (f["kind"], f["path"], f["cited"], tuple(f["claimed"]))
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(f)
+    return out
 
 
 CERTAIN = {"citation_identifier_absent", "citation_line_wrong", "citation_out_of_range"}
@@ -230,6 +241,12 @@ POSITIVES = [
      "`vm_totallyfakevariable` is not optional and is defined at "
      "`modules/30_croparea/simple_apr24/equations.gms:15`.",
      "citation_identifier_absent"),
+    # Set-span anchor, OUT-of-span direction: without this the span suppression
+    # could become a silent no-op that still passes its happy path. `kall`'s span
+    # is 228-235; line 1 is far outside it.
+    ("set name cited OUTSIDE its span is still flagged",
+     "the `kall` set is declared at `core/sets.gms:1`.",
+     "citation_line_wrong"),
 ]
 
 NEGATIVES = [
@@ -265,6 +282,11 @@ NEGATIVES = [
     ("REGRESSION: a filename is not a claimed identifier",
      "the withdrawal variable is directly fixed every timestep in `presolve.gms` "
      "(`modules/42_water_demand/all_sectors_aug13/presolve.gms:38-54`):"),
+    # Set-span anchor, IN-span direction: `kall` is declared at core/sets.gms:228
+    # and its members run to :234. Citing the member line while naming the set is
+    # correct usage -- 4 of 18 false positives in the 2026-08-01 census.
+    ("REGRESSION: set member line cited under the set's name",
+     "Both are members of the `kall` (all products) set, declared in `core/sets.gms:231`."),
     ("REGRESSION: elided identifier inside a denial",
      "There is no `q42_...` equation for these three sectors (Module 42 has exactly two "
      "equations total, both for agriculture/costs - "

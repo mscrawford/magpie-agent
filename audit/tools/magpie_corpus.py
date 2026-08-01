@@ -127,6 +127,19 @@ RE_EQN_DEF = re.compile(r"^\s*(q\d{2}_[A-Za-z0-9_]+)\s*(\([^)]*\))?\s*\.\.")
 
 RE_CFG_KEY = re.compile(r'cfg\$gms\$([A-Za-z_][A-Za-z0-9_]*)\s*<-\s*"([^"]+)"')
 
+# A GAMS set declaration inside a `sets` block:
+#
+#     kall All products in the sectoral version
+#     /
+#     tece,maiz,...
+#     potato,...,pasture, begr, betr,
+#     /
+#
+# The name is on the declaration line; the MEMBERS are on the lines after it. A
+# doc citing the member line while naming the set is doing the normal thing --
+# exactly the equation-body case that RE_EQN_DEF's span already covers.
+RE_SET_DECL = re.compile(r"^\s{1,6}([a-z][A-Za-z0-9_]*)\s*(?:\([^)]*\))?\s+[A-Za-z]")
+
 
 # ==========================================================================
 # Guards -- learned once, available to every checker
@@ -244,6 +257,38 @@ def is_filename(tok: str) -> bool:
     elsewhere.
     """
     return tok.endswith(SOURCE_EXTENSIONS)
+
+
+# Where one asserted claim ends and the next begins.
+#
+# Sentence punctuation is not enough. Assistant answers end with SOURCE LISTS:
+#
+#     - `.../equations.gms:10-20` (q43_water)
+#     - `.../preloop.gms:8-12` (surface-only water availability)
+#
+# with no `.` anywhere. A lookbehind that stops only at `. ` / `; ` / a blank line
+# carries the first bullet's identifiers onto every later bullet's citation, and
+# then reports each as "identifier absent from the cited file". That single
+# omission was the dominant false-positive driver in the 2026-08-01 census --
+# 9 of the first 14 findings adjudicated.
+#
+# So a boundary is also: a list item, a numbered item, or a code-fence edge.
+RE_CLAUSE_BOUNDARY = re.compile(
+    r"\n\s*\n"            # blank line
+    r"|\n\s*[-*+]\s"      # markdown list item
+    r"|\n\s*\d+[.)]\s"    # numbered list item
+    r"|```"               # code fence edge
+    r"|\.\s"              # sentence end
+    r"|;\s"               # clause end
+)
+
+
+def last_clause(text: str) -> str:
+    """The final clause of `text` -- what a trailing citation is cited FOR."""
+    end = 0
+    for m in RE_CLAUSE_BOUNDARY.finditer(text):
+        end = m.end()
+    return text[end:]
 
 
 def split_batch(path: Path) -> dict[str, str]:
@@ -501,6 +546,37 @@ class Tree:
         self._spans_cache[rel] = out
         return out
 
+    def set_spans(self, rel: str) -> dict[str, tuple[int, int]]:
+        """{set name: (declaration line, closing `/` line)} for one file.
+
+        The set-declaration analogue of `equation_spans`. Citing `core/sets.gms:231`
+        -- a member line of `kall`, whose name sits at :228 -- is correct usage,
+        and was 4 of 18 false positives in the 2026-08-01 precision census. Only
+        multi-line `/ ... /` blocks get a span; a one-line declaration is already
+        handled by plain containment.
+        """
+        key = rel + "\0sets"
+        if key in self._spans_cache:
+            return self._spans_cache[key]
+        out: dict[str, tuple[int, int]] = {}
+        lines = self.lines(rel) or []
+        for i, ln in enumerate(lines, start=1):
+            m = RE_SET_DECL.match(ln)
+            if not m or "/" in ln:
+                continue
+            # The member block must OPEN on the next non-blank line.
+            j = i
+            while j < len(lines) and not lines[j].strip():
+                j += 1
+            if j >= len(lines) or not lines[j].lstrip().startswith("/"):
+                continue
+            for k in range(j + 1, min(len(lines), j + 200)):
+                if lines[k].strip().startswith("/") or lines[k].strip().endswith("/"):
+                    out[m.group(1)] = (i, k + 1)
+                    break
+        self._spans_cache[key] = out
+        return out
+
 
 # ==========================================================================
 # Self-test for the SHARED layer itself
@@ -585,6 +661,26 @@ CLAIM_NEGATION_CASES = [
      "not solved for) every timestep in `vm_prod_reg`", ["vm_prod_reg"], False),
 ]
 
+# `last_clause` controls. The source-list shape is kept verbatim: it was 9 of the
+# first 14 findings adjudicated in the 2026-08-01 precision census.
+CLAUSE_CASES = [
+    # The returned clause is the CURRENT bullet's own body -- crucially it must
+    # NOT still contain `q43_water` from the bullet above.
+    ("clause: a markdown bullet is a boundary",
+     "- `equations.gms:10-20` (q43_water)\n- `preloop.gms:8-12` (surface-only avail) ",
+     "`preloop.gms:8-12` (surface-only avail) "),
+    ("clause: a numbered item is a boundary",
+     "1. first claim about vm_a\n2. second claim ", "second claim "),
+    ("clause: a code fence is a boundary",
+     "text about vm_a\n```gams\nfoo\n```\nafter the fence ", "\nafter the fence "),
+    ("clause: a blank line is a boundary",
+     "first paragraph vm_a\n\nsecond paragraph ", "second paragraph "),
+    ("clause: a sentence end is a boundary",
+     "First sentence vm_a. Second sentence ", "Second sentence "),
+    ("clause: no boundary returns the whole text",
+     "one continuous clause ", "one continuous clause "),
+]
+
 
 def _selftest_guards() -> int:
     bad = 0
@@ -617,6 +713,13 @@ def _selftest_guards() -> int:
         print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
         if not ok:
             bad += 1
+    for name, text, expect in CLAUSE_CASES:
+        got = last_clause(text)
+        ok = got == expect
+        print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
+        if not ok:
+            bad += 1
+            print(f"        expected {expect!r}, got {got!r}")
     return bad
 
 
