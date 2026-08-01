@@ -252,6 +252,29 @@ function normClaim(b) {
   return `${(b.doc_line || '').trim()}::${(b.claim_in_doc || '').trim().slice(0, 80).toLowerCase()}`
 }
 
+// CODEFACT_KEY_BEGIN  (extracted verbatim by audit/tools/test_codefact_dedup.js -- keep the markers)
+// A SECOND, REPORTING-ONLY grouping. One defect = one code fact, however many doc sites,
+// lenses or phrasings surfaced it. normClaim() keys on claim PROSE and is scoped PER DOC,
+// so it cannot collapse (a) several phrasings of one defect at one doc line, or (b) one
+// code fact documented in two different docs -- the two double counts R55's verification
+// pass had to retire by hand (round55_depth/MEASUREMENT.md:65-79).
+//
+// This does NOT replace normClaim. Keyed on evidence alone it would over-merge two
+// genuinely distinct defects that happen to cite the same file, so the run reports BOTH:
+//   findings          = normClaim groups   (upper bound; over-counts duplicates)
+//   distinct_defects  = codeFactKey groups (lower bound; may over-merge)
+//   doc_sites         = distinct doc_line values
+// Carry the range. A point estimate off either key alone is the failure mode this exists
+// to prevent.
+function codeFactKey(b) {
+  const ev = String(b.file_evidence || b.evidence || '')
+  // First cited source path, line numbers stripped: 'modules/14_yields/x/presolve.gms:66' -> '.../presolve.gms'
+  const m = ev.match(/((?:modules|core|config|scripts)\/[A-Za-z0-9_./-]*\.(?:gms|cfg|R|csv))/)
+  const path = m ? m[1] : `NOEVIDENCE::${String(b.doc_line || '').trim()}`
+  return `${path}::${(b.bug_class || 'other').trim()}`
+}
+// CODEFACT_KEY_END
+
 // ---------- run ----------
 log(`Depth-first R${R}: ${DOCS.length} docs x ${LENSES.length} lenses. Ground-truth role map: ${ROLEMAP}`)
 
@@ -343,15 +366,40 @@ const perDoc = DOCS.map(doc => {
   }
 })
 
+// ---------- code-fact dedup, ACROSS docs (reporting only; see codeFactKey) ----------
+// The prose key above is scoped per doc, so a single code fact documented in two docs
+// survives as two findings. Group the whole confirmed set once more, globally.
+const allConfirmed = perDoc.flatMap(d => d.confirmed_bugs)
+const factGroups = {}
+allConfirmed.forEach(b => {
+  const k = codeFactKey(b)
+  ;(factGroups[k] = factGroups[k] || []).push(b)
+})
+const crossDocGroups = Object.entries(factGroups)
+  .map(([k, bs]) => ({ key: k, n: bs.length, ids: bs.map(b => b.id), doc_lines: [...new Set(bs.map(b => b.doc_line))] }))
+  .filter(g => g.n > 1)
+  .sort((a, b) => b.n - a.n)
+const dedup = {
+  findings: allConfirmed.length,                                   // prose key: UPPER bound
+  distinct_defects: Object.keys(factGroups).length,                // code-fact key: LOWER bound
+  doc_sites: new Set(allConfirmed.map(b => b.doc_line)).size,
+  merged_groups: crossDocGroups,
+  cross_doc_merges: crossDocGroups.filter(g => g.doc_lines.length > 1).length,
+  NOTE: 'findings and distinct_defects BRACKET the true count; the prose key over-counts phrasings, the code-fact key can over-merge two defects citing one file. Quote the range, never one endpoint. Control: audit/tools/test_codefact_dedup.js',
+}
+log(`dedup: ${dedup.findings} findings -> ${dedup.distinct_defects} distinct defects across ${dedup.doc_sites} doc sites (${dedup.cross_doc_merges} cross-doc merges)`)
+
 phase('Measure')
 const measure = await agent(measurePrompt(matrix, perDoc.map(d => ({ ...d, confirmed_bugs: undefined }))), { label: 'measure', phase: 'Measure', model: 'opus', schema: MEASURE_SCHEMA }).catch(() => null)
 
 return {
   round: R,
   docs: DOCS.map(d => d.label),
+  doc_klass: Object.fromEntries(DOCS.map(d => [d.label, d.klass])),   // locus arm, for post-hoc aggregation
   lenses: LENSES.map(l => l.key),
   matrix,
   per_doc: perDoc,
+  dedup,
   measurement: measure,
   totals: {
     confirmed: perDoc.reduce((n, d) => n + d.confirmed_total, 0),
