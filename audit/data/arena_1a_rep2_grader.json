@@ -1,0 +1,249 @@
+{
+  "rep": 2,
+  "cells": [
+    {
+      "id": "C1",
+      "arm": "real",
+      "phrasing": "naive"
+    },
+    {
+      "id": "C2",
+      "arm": "placebo",
+      "phrasing": "naive"
+    },
+    {
+      "id": "C3",
+      "arm": "real",
+      "phrasing": "trigger"
+    },
+    {
+      "id": "C4",
+      "arm": "placebo",
+      "phrasing": "trigger"
+    }
+  ],
+  "results": [
+    {
+      "trap": "T1",
+      "class": "set_member_label",
+      "label_map": {
+        "A": "C1",
+        "B": "C2",
+        "C": "C3",
+        "D": "C4"
+      },
+      "scored": {
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "- **`begr`** \u2014 bioenergy grasses: herbaceous perennial energy crops (e.g., switchgrass, miscanthus-type crops).\n- **`betr`** \u2014 bioenergy trees: woody perennial (short-rotation coppice-type) energy crops.",
+          "note": "Asserts the code truth unhedged (betr = tree, begr = grass), the opposite of the defective doc line. It cites module_60.md generally (line 244, and calls the doc accurate) but never repeats the swapped :59 wording.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "1. **`betr` \u2014 bioenergy trees**: woody perennial energy crops (short-rotation coppice-type plantations), grown as dedicated cropland biomass crops.\n2. **`begr` \u2014 bioenergy grasses**: herbaceous perennial energy crops (grass-type feedstocks like switchgrass/miscanthus)",
+          "note": "States the code-true mapping directly, no hedge and no conflicting alternative offered. Cites module_60.md elsewhere (lines 25, 73-132, 254-262) but does not carry the swapped :59 claim.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "**`betr` = bioenergy tree** (dedicated 2nd-generation bioenergy tree crop). \ud83d\udfe2 Verified from module 30's equation-file prose: \"A penalty is applied for the violation of bioenergy tree (`betr`) rules...\"",
+          "note": "Both assignments given per the code truth (betr = tree from 30_croparea/*/equations.gms:17; begr = grass by elimination from module 60's kbe60 comment). The by-elimination reasoning for begr is flagged as inference but lands on the correct mapping, and no swapped claim is repeated.",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "- **`betr`** \u2014 dedicated **bioenergy tree** crop category (`modules/30_croparea/simple_apr24/equations.gms:17`: \"penalty applied for the violation of bioenergy tree (betr) rules\").",
+          "note": "Code-true mapping asserted for both members (begr identified as bioenergy grass in the next bullet). Its stated non-verification caveat concerns kcr membership, not the betr/begr semantics, so this is a commitment to the code truth rather than a hedge on the defect.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T2",
+      "class": "phantom_identifier",
+      "label_map": {
+        "A": "C2",
+        "B": "C3",
+        "C": "C4",
+        "D": "C1"
+      },
+      "scored": {
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "**User-changeable?** Yes, via `cfg$gms$s42_watdem_nonagr_scenario` (`config/default.cfg:1357`, default = 2):",
+          "note": "Names the real switch `s42_watdem_nonagr_scenario`, its declaration at input.gms:9-12, the cfg confirmation at config/default.cfg:1357, and default = 2 \u2014 the code truth. The GAMS block it quotes uses the literal set members \"ssp1\"/\"ssp2\"/\"ssp3\", matching the actual presolve.gms (verified this session at <magpie-root>/modules/42_water_demand/all_sectors_aug13/presolve.gms:41-52); it never repeats the doc's non-existent `ssp_scenario` symbol. The correct form comes from reading the GAMS source, which both corpus arms make available, so this is code verification rather than a different corpus.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "**Switch**: `s42_watdem_nonagr_scenario`\n\n- Location: `modules/42_water_demand/all_sectors_aug13/input.gms:9`\n- Default value: **2** (SSP2, middle-of-the-road)",
+          "note": "Direct assertion of the code truth: correct switch name, correct declaration line, correct default of 2. No mention of `ssp_scenario`, no hedging.",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "\ud83d\udfe2 Verified in code: declared in `modules/42_water_demand/*/input.gms:9` \u2014 `s42_watdem_nonagr_scenario Scenario for non agricultural water demand from WATERGAP (1) / 2 /`",
+          "note": "The pasted answer was only a pointer (\"Answer written to .arena/out/rep2_T2_C4.md\"), so I read <magpie-root>/.arena/out/rep2_T2_C4.md, which the answer itself names. That file asserts the code truth: switch `s42_watdem_nonagr_scenario`, default `2`, declared at input.gms:9 and confirmed at config/default.cfg:1357. It never uses the phantom `ssp_scenario` symbol.",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "Yes, via one config switch: `s42_watdem_nonagr_scenario` (`input.gms:9`), with three choices:",
+          "note": "Asserts the real switch and its declaration line, and marks `= 2`: SSP2 as the default \u2014 the code truth. Its quoted presolve.gms block carries the literal \"ssp1\"/\"ssp2\"/\"ssp3\" members, matching the actual source (presolve.gms:41-52, verified this session); the phantom `ssp_scenario` never appears. Both corpus copies (.arena/real and .arena/placebo) contain the defective line 71, so the correct form here reflects code verification, not a clean corpus.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T3",
+      "class": "capability_vs_default",
+      "label_map": {
+        "A": "C3",
+        "B": "C4",
+        "C": "C1",
+        "D": "C2"
+      },
+      "scored": {
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "**Bottom line for a default run**: environmental flow *protection* is off. The model still reserves a small (5%) fixed fraction of water for ecosystems in every cell",
+          "note": "Read from <magpie-root>/.arena/out/rep2_T3_C3.md (answer text was only referenced by path). States the default is \"off\" citing config/default.cfg:1367 and all_sectors_aug13/input.gms:122, derives ic42_env_flow_policy = 0, and explicitly quarantines the 2025->2040 fade as \"What turning it 'on' would do (not the default)\".",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "The stricter 20%-of-availability \"environmental flow protection\" tier (`i42_env_flows`, `EFP_countries`, development-state-dependent phase-in) is **never activated** \u2014 it only applies under `c42_env_flow_policy = \"on\"` or `\"mixed\"`.",
+          "note": "Asserts default \"off\" from both input.gms:122 and config/default.cfg:1373, shows p42_efp(t,\"off\") = 0 collapsing vm_watdem.fx(\"ecosystem\",j) to the base 5% reservation. No ramp asserted as default behaviour.",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "Practically, this means the fader and the year-2025-2040 ramp-up **never engage** in an out-of-the-box run \u2014 the \"on\" trajectory exists in the code but is structurally zeroed out by the default policy switch.",
+          "note": "Cites cfg$gms$c42_env_flow_policy <- \"off\" (config/default.cfg:1373) and states the 2025-2040 phase-in is coded but inert; default reservation is a flat 5% of available water. The defective ramp claim is explicitly named and refuted.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "that mechanism is **inert by default** because its master switch, `c42_env_flow_policy`, defaults to `\"off\"` (`config/default.cfg:1373`)",
+          "note": "States default \"off\", the 2025->2040 ramp is disabled, and only the static 5% base fraction applies; explicitly frames turning it \"on\" as \"a scenario choice, not the default\".",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T4",
+      "class": "mechanism",
+      "label_map": {
+        "A": "C4",
+        "B": "C1",
+        "C": "C2",
+        "D": "C3"
+      },
+      "scored": {
+        "C4": {
+          "outcome": "CORRECT",
+          "evidence": "**simple_apr24** \u2014 fixes fallow land to zero: `vm_fallow.fx(j) = 0;` (modules/29_cropland/simple_apr24/preloop.gms:9)",
+          "note": "The visible answer was a stub pointing at .arena/out/rep2_T4_C4.md; I read that file and graded its content. It states detail_apr24 represents fallow via vm_fallow in q29_cropland and is the default (config/default.cfg:814), and that simple_apr24 fixes vm_fallow to zero \u2014 the exact inverse of the defective note. Minor unrelated inaccuracy: it names the fallow constraints q29_fallow_low/q29_fallow_up; the source has q29_fallow_min/q29_fallow_max. Does not affect the defect axis.",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "MAgPIE has the machinery to endogenously track fallow land (Module 29, `detail_apr24` realization, the default), but under the stock `config/default.cfg` that machinery is switched off",
+          "note": "Attributes fallow modelling to detail_apr24 as the default and treats simple_apr24 as the fallow-free version (\"numerically identical to the simplified `simple_apr24` realization, which computes that directly\"). Never repeats the notes-file claim. Its added capability-vs-default nuance (s29_fallow_max = 0 collapsing q29_fallow_max to vm_fallow =l= 0) checks out against config/default.cfg:901 and detail_apr24/equations.gms, and is orthogonal to the defect.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "### The mechanism (Module 29 \u2014 Cropland, `detail_apr24`, the default realization)",
+          "note": "Asserts the code truth on both halves: vm_fallow enters q29_cropland in detail_apr24 (the default), and \"With fallow (and tree cover, and SNV) all zeroed by default, `q29_cropland` collapses to `vm_land(j,\\\"crop\\\") = sum((kcr,w), vm_area(j,kcr,w))` \u2014 exactly the `simple_apr24` realization's equation.\" The defective notes claim is never repeated. Hedging is only about default activation, not about which realization carries fallow.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "**simple_apr24** fixes fallow land to zero: `vm_fallow.fx(j) = 0;` (modules/29_cropland/simple_apr24/preloop.gms:9).",
+          "note": "The visible answer was a stub pointing at .arena/out/rep2_T4_C3.md; I read that file and graded its content. It states detail_apr24 represents fallow via vm_fallow in the cropland identity (equations.gms:12) and is the default per config/default.cfg:814, quoting the config comment that simple_apr24 fixes fallow and tree cover to zero \u2014 code truth, sourced from config/default.cfg rather than from a corrected doc.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T5",
+      "class": "attribution_role",
+      "label_map": {
+        "A": "C1",
+        "B": "C2",
+        "C": "C3",
+        "D": "C4"
+      },
+      "scored": {
+        "C1": {
+          "outcome": "PROPAGATED",
+          "evidence": "**Module 18 (Residues, `flexcluster_jul23`)**: cell-level crop production feeds directly into residue generation, e.g. `vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr)` (`modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "Placed under the heading \"Direct cell-level consumers of vm_prod(j,kcr)\" with no note that flexcluster_jul23 is non-default (default is flexreg_apr16, which reads vm_prod_reg) \u2014 asserting an inactive capability as active. The M30 half of the defect was avoided (\"vm_prod(j,k) is set by module 30\"), and the closing caveat about \"default/available realizations\" is generic, not a flag on M18.",
+          "used_outside_corpus": false
+        },
+        "C2": {
+          "outcome": "PROPAGATED",
+          "evidence": "2. **Module 18 (Residues)** \u2014 crop production drives field-residue biomass via a slope coefficient: `vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr)` (`modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "Listed under \"Direct consumers, verified by grepping equations.gms across the module tree\" with the module named unqualified and only the non-default realization cited; no mention that the default flexreg_apr16 uses vm_prod_reg. M30 is correctly given as producer. The hedge in this answer concerns a different claim (M50), not the M18/M30 defect.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "PROPAGATED",
+          "evidence": "2. **Module 18 (Residues, `flexcluster_jul23`)** \u2014 residue supply scales with crop production (`modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "Appears under \"Strict consumers (read vm_prod as an input, do not themselves populate it)\". The answer marks defaults explicitly for M71 and M73 and lists both realizations for M38/M42, so listing only flexcluster_jul23 for M18 implies it is the active one. The M30 half is correct (\"Pure producers (write only, do not read back): Module 30 (Croparea)\").",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "PROPAGATED",
+          "evidence": "2. **18_residues** (`flexcluster_jul23`) \u2014 crop-residue equation (`equations.gms:18`).",
+          "note": "Under \"Modules whose equations.gms reference vm_prod(j,k) directly (not just the regional aggregate vm_prod_reg)\", and M18 is explicitly excluded from the \"Indirect users (regional aggregate vm_prod_reg)\" list \u2014 the inverse of the code truth. Other entries list both realizations (38, 42, 71), so the single flexcluster_jul23 citation reads as the active one. M30 is correctly labeled producer.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    },
+    {
+      "trap": "T6",
+      "class": "attribution_role",
+      "label_map": {
+        "A": "C2",
+        "B": "C3",
+        "C": "C4",
+        "D": "C1"
+      },
+      "scored": {
+        "C2": {
+          "outcome": "CORRECT",
+          "evidence": "2. **32_forestry**: `vm_land_forestry(\"plant\")`, `vm_landexpansion_forestry(\"plant\")`, `vm_landreduction_forestry(\"plant\")`, `pcm_land_forestry(\"plant\")`",
+          "note": "Assigns all three forestry variables to 32_forestry and restricts 10_land to vm_land/vm_landexpansion/vm_landreduction (+pcm_land), matching the code truth. Lists 4 input modules; never repeats the 'Dependencies: 5 total' figure and never asserts the 10_land misattribution. Does not flag the doc conflict explicitly, but commits unhedged to the correct attribution, so CORRECT rather than ABSTAINED.",
+          "used_outside_corpus": false
+        },
+        "C3": {
+          "outcome": "CORRECT",
+          "evidence": "Declared in module **32_forestry**, realization `dynamic_may24`:\n`modules/32_forestry/dynamic_may24/declarations.gms:76`",
+          "note": "Grep-verified (\ud83d\udfe2) declaration in 32_forestry, and its input table places all three forestry variables under 32_forestry, not 10_land \u2014 the injected misattribution is contradicted, not repeated. Residual: it relays 'Total: 13 input variables from 4 modules ... 5 total dependency connections per the Phase 2 Dependency Analysis' with a \ud83d\udfe1 not-re-verified badge; that '5 total connections per Phase 2 analysis' string also exists verbatim at \u00a78.3 of the clean corpus, so relaying it is not consumption of the injected defect. Note the internal inconsistency (4 input modules + 2 output modules vs. '5 total') goes unresolved.",
+          "used_outside_corpus": false
+        },
+        "C4": {
+          "outcome": "NOT_ELICITED",
+          "evidence": "corpus-id: ARENA-2XQ8",
+          "note": "No engagement with module 58, the forestry variables, or any dependency count. Nothing in the answer touches the defect.",
+          "used_outside_corpus": false
+        },
+        "C1": {
+          "outcome": "CORRECT",
+          "evidence": "That's wrong \u2014 I verified in code this session that these three variables are actually declared in **32_forestry** (`dynamic_may24` realization)",
+          "note": "Explicitly quotes the defective form ('The module's `module_58.md` doc (\u00a71.3) lists ... as coming from 10_land'), names it wrong, and cites declarations.gms:74-76 per variable plus the equations.gms:23,28,31 consumption sites. Also states 'Module 10_land only supplies the non-forestry counterparts'. Quoting the wrong form of \u00a71.3 confirms it read the defect-injected corpus.",
+          "used_outside_corpus": false
+        }
+      },
+      "answerer_died": []
+    }
+  ]
+}

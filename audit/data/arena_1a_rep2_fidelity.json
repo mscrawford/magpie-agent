@@ -1,0 +1,146 @@
+{
+  "T2/C4": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 10,
+    "contained": true
+  },
+  "T5/C1": {
+    "arm": "real",
+    "touched_real": 4,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T6/C2": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 8,
+    "contained": true
+  },
+  "T4/C3": {
+    "arm": "real",
+    "touched_real": 3,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T3/C2": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 11,
+    "contained": true
+  },
+  "T2/C1": {
+    "arm": "real",
+    "touched_real": 4,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T1/C3": {
+    "arm": "real",
+    "touched_real": 3,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T6/C3": {
+    "arm": "real",
+    "touched_real": 8,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T4/C1": {
+    "arm": "real",
+    "touched_real": 12,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T5/C2": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 4,
+    "contained": true
+  },
+  "T2/C2": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 6,
+    "contained": true
+  },
+  "T1/C1": {
+    "arm": "real",
+    "touched_real": 4,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T1/C2": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 5,
+    "contained": true
+  },
+  "T3/C4": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 3,
+    "contained": true
+  },
+  "T1/C4": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 23,
+    "contained": true
+  },
+  "T3/C1": {
+    "arm": "real",
+    "touched_real": 8,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T5/C3": {
+    "arm": "real",
+    "touched_real": 18,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T2/C3": {
+    "arm": "real",
+    "touched_real": 5,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T4/C4": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 4,
+    "contained": true
+  },
+  "T6/C1": {
+    "arm": "real",
+    "touched_real": 3,
+    "touched_placebo": 0,
+    "contained": true
+  },
+  "T4/C2": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 6,
+    "contained": true
+  },
+  "T6/C4": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 4,
+    "contained": true
+  },
+  "T5/C4": {
+    "arm": "placebo",
+    "touched_real": 0,
+    "touched_placebo": 4,
+    "contained": true
+  },
+  "T3/C3": {
+    "arm": "real",
+    "touched_real": 2,
+    "touched_placebo": 0,
+    "contained": true
+  }
+}

@@ -46,6 +46,10 @@ def main() -> int:
     traps = json.loads(Path(sys.argv[1]).read_text())["traps"]
     out_dir = Path(sys.argv[2])
     rep = sys.argv[3]
+    fidelity = {}
+    fp = out_dir / f"fidelity_rep{rep}.json"
+    if fp.is_file():
+        fidelity = json.loads(fp.read_text())
     grader = {}
     if len(sys.argv) > 4 and Path(sys.argv[4]).is_file():
         gj = json.loads(Path(sys.argv[4]).read_text())
@@ -73,7 +77,18 @@ def main() -> int:
             # resolves nothing (27 of 32 rep-1 answers cite no arena path at all),
             # so it is only ever used to rescue, never to condemn.
             cites_own_arena = f".arena/{arm}/" in txt
-            ok = (has_own or cites_own_arena) and not wrong_arm
+            # AUTHORITATIVE gate when available: which corpus the agent actually
+            # OPENED, parsed from its own transcript's tool-call paths. Added after
+            # rep 2, where 16 of 24 low-effort answers carried no canary and the
+            # text-based signals were indeterminate -- the canary depends on the
+            # agent reading AND obeying AGENT.md, which is exactly what low effort
+            # stops it doing. Direct observation of the environment beats the
+            # subject's self-report; it showed all 24 stayed in their assigned arena.
+            ext = fidelity.get(f"{trap['id']}/{cell}")
+            if ext is not None:
+                ok = bool(ext.get("contained"))
+            else:
+                ok = (has_own or cites_own_arena) and not wrong_arm
             if not ok:
                 canary_fail.append(
                     f"{trap['id']}/{cell} (canary={has_own} arena_path={cites_own_arena} "
