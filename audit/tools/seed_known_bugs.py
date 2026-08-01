@@ -96,6 +96,11 @@ CHECKERS = [
     "check_default_realizations",
     "check_hedged_claims",
     "gams_slices",
+    # --- added 2026-08-01 alongside the two citation-drift seed commits ---
+    # Without this the new seeds would have scored as MISSES by a battery that
+    # never ran the checker able to see them. There is a vacuity guard for a
+    # checker ABSENT from the worktree, but none for one that was never listed.
+    "check_citation_placement",
 ]
 
 # DELIBERATELY EXCLUDED, with the reason — these are not doc-claim checks, so
@@ -126,6 +131,17 @@ SEED_COMMITS = [
     ("2f52a70", "module_10 land-init source LUH2 -> LUH3", "data_source"),
     ("ec119a9", "2 MANDATE-18 vein bugs", "attribution_role"),
     ("3620958", "3 module_80 mis-citations", "citation"),
+    # --- 2026-08-01: defects found and fixed the SAME day, added as seeds so a
+    # --- future refactor of the citation checker cannot silently lose them.
+    # Both are line-number DRIFT, not invented citations: the cited file is right
+    # and the line has moved. 12 of the 16 pointed at the COMMENT BLOCK above a
+    # config switch rather than the assignment, which is an authoring habit
+    # rather than scattered typos -- worth its own class so a miss is grouped,
+    # not averaged away.
+    ("f021afa", "7 citation line drifts (comment-vs-assignment, .gms + cfg)",
+     "citation_line_drift"),
+    ("c8c177a", "9 config/default.cfg citation drifts, all +3",
+     "citation_config_drift"),
 ]
 
 HUNK_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@", re.M)
