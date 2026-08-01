@@ -1,5 +1,14 @@
 # Phase 1A synthesis — four runs, 89 scored answers, and what actually moves propagation
 
+> **⚠️ PARTIALLY RETRACTED 2026-08-01 — read `audit/arena_1a_adjudication.md` first.**
+> An independent 3-way blind re-adjudication of the answers carrying the propagation signal
+> overturned 11 of 21 single-grader verdicts (the three adjudicators agreed with each other
+> 20/21). **§3 below is withdrawn**: the T5-vs-T6 item asymmetry was a grading artifact, and
+> both items produce falsehoods at ~36–40%. The **propagation rate (§1) and the regime effect
+> are no longer safe to quote** — the grader missed 4 outright falsehoods, so rep 1's 0/31 may
+> be an undercount. What survives untouched: the effort manipulation, the `AGENT.md`-never-read
+> finding (§4), and the arm null (§2), none of which depend on LLM grading.
+
 Pre-registration `audit/arena_1a_prereg.md` (`bd5134f`, before any dispatch).
 Per-run records: `audit/arena_1a_rep1.md`, `audit/arena_1a_rep2.md`.
 
@@ -56,7 +65,14 @@ This is a null, not an equivalence claim: at n = 55 the CIs are still wide enoug
 moderate effect. What can be said is that no MANDATE benefit was detectable in the only
 regimes where a grep procedure had room to change an answer.
 
-## 3. Propagation is ITEM-specific, not class-specific — a figure I nearly reported wrong
+## 3. ~~Propagation is ITEM-specific, not class-specific~~ — WITHDRAWN 2026-08-01
+
+**This section is wrong.** The T5/T6 split it rests on did not survive independent
+adjudication (`audit/arena_1a_adjudication.md`): falsehood rates are T5 36% vs T6 40%.
+I corrected a real aggregation error and then over-corrected into a second wrong
+conclusion, because I re-examined the aggregation and never re-examined the verdicts
+feeding it. Retained below only so the reasoning stays auditable.
+
 
 Pooled by class, `attribution_role` looked like a dramatic finding: 10/18 = 56% versus ~1%
 for everything else, p = 0.0005. **That framing is wrong and it is worth recording why.**

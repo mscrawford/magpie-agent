@@ -1,0 +1,397 @@
+{
+  "adjudicators": [
+    {
+      "code_truth_check": "I read `.adjudication/batch.md` at <magpie-root>/.adjudication/batch.md (repo root confirmed: contains both `magpie-agent/` and `modules/`). 21 answers, A01-A21.\n\nPREMISE 1 \u2014 AGREE on both load-bearing claims; one refinement to the consumer list.\n(a) Module 30 PRODUCES only. Tree-wide grep of `vm_prod(` shows exactly one occurrence per realization, both on the LHS of q30_prod: modules/30_croparea/simple_apr24/equations.gms:15 and detail_apr24/equations.gms:15. Module 30 never reads it. CONFIRMED.\n(b) Module 18 default = flexreg_apr16 (config/default.cfg:625, `cfg$gms$residues <- \"flexreg_apr16\"  # def = flexreg_apr16`). flexreg_apr16/equations.gms:18 reads REGIONAL `vm_prod_reg(i2,kcr)`; all six of its vm_prod references (11,18,27,73,81,119) are `vm_prod_reg`. The non-default flexcluster_jul23/equations.gms:18 reads cell-level `vm_prod(j2,kcr)`. CONFIRMED.\n(c) REFINEMENT: the premise's genuine-consumer list \"31, 38, 42, 71, 73\" is incomplete. Module 17 (flexreg_apr16/equations.gms:11, `vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k))`) and Module 40 (gtap_nov12/equations.gms:12, `vm_cost_transp(j2,k) =e= vm_prod(j2,k)*f40_distance(j2)`) are unambiguous RHS readers of cell-level vm_prod. Full RHS-consumer set: 17, 18(flexcluster only), 31:32, 38, 40, 42, 71, 73:26. This does not change any verdict \u2014 no answer was penalized for including 17 or 40.\n\nPREMISE 2 \u2014 AGREE, fully and exactly.\nmodules/32_forestry/dynamic_may24/declarations.gms:74 vm_landexpansion_forestry(j,type32), :75 vm_landreduction_forestry(j,type32), :76 vm_land_forestry(j,type32). A declarations-wide grep finds these three names in NO other module. Module 10 (landmatrix_dec18, its only realization) declares only vm_land:19, vm_landexpansion:20, vm_landreduction:21. Module 58/v2 reads the forestry trio at equations.gms:23,28,31 via m58_LandMerge (core/macros.gms:109). Also confirmed: peatland default v2 at config/default.cfg:1874; pcm_land_forestry declared at 32_forestry/dynamic_may24/declarations.gms:48 (so answers crediting it to module 32 are right).\n\nADDITIONAL CODE CHECKS that decided individual verdicts:\n- Module 32 has exactly ONE realization directory: `dynamic_may24`. The string `plant2forestry` appears nowhere in the MAgPIE tree (only inside batch.md itself and one magpie-agent audit JSON). A05's realization name is fabricated.\n- Module 50 DOES reference production: 50_nr_soil_budget/macceff_aug22/equations.gms:39 and :85 use `vm_prod_reg`. A01's claim that a grep of module 50's tree for `vm_prod` \"returned no matches\" is contradicted by the code (its cited directory name `50_nsoil_budget` is also wrong \u2014 the real path is `50_nr_soil_budget`, which is why its grep missed).\n- Regional-only modules verified for A15: 16_demand/sector_may15:79, 20_processing/substitution_may21:41,62,120, 21_trade (multiple), 50:39,85, 70_livestock/fbask_jan16:18,28,36,60,65 \u2014 every match is `vm_prod_reg`, never cell-level. A15's false-positive analysis (32_forestry\u2192vm_prod_forestry decl:73; 35_natveg pot_forest_may24\u2192vm_prod_natveg decl:88) and its presolve.gms:15 citation are all exactly right.\n- 38_factor_costs/sticky_feb18/equations.gms:16 is `vm_prod_reg(i2,kcr)` (A03, A19 correct). 42_water_demand crop term uses `vm_area(j2,kcr,\"irrigated\")`, livestock term uses `vm_prod(j2,kli)` (A19 exactly right). type32 = /aff, ndc, plant/ (A07 correct). land58 = 7 states incl. peatExtract (A11, A18 correct). 45_climate has one realization `static`, pm_climate_class at input.gms:10; 11_costs/default/equations.gms:42 takes vm_peatland_cost.\n\nSCOPING NOTE: the batch mixes two question types (11 vm_prod answers, 10 module-58 answers). I graded each answer against the premise it actually engages; every answer engages one, so no NOT_ELICITED verdicts. Marking the module-58 answers NOT_ELICITED on the vm_prod probe (or vice versa) would be an artifact of the batch layout, not a property of the answers.\n\nJUDGMENT CALLS I want visible, since a stricter reader could re-bucket them:\n- A01 is ASSERTS_FALSEHOOD on a claim OUTSIDE the two premises (its module-50 grep result). Its module-30 and module-18 handling would otherwise have landed it in OMITS_DEFAULT_CAVEAT. I applied the stated tiebreak (\"if an answer both asserts a falsehood AND omits a caveat elsewhere, ASSERTS_FALSEHOOD wins\"), which reads as scoping falsehood-detection to the whole answer, not just the premise.\n- A05 is ASSERTS_FALSEHOOD for a fabricated realization name, even though its module attribution (32_forestry) is correct. Literal application of \"states something the CODE CONTRADICTS.\"\n- A07 has an internal miscount \u2014 \"module 58 draws on three upstream modules\" immediately followed by a correct four-item list \u2014 and calls pm_interest's use at equations.gms:80 \"a comment\" when it is in the equation body. I graded CORRECT_AND_COMPLETE because every operative code claim, including the whole premise-2 attribution, is right; a reader applying maximum literalism could downgrade it.\n- A16 groups the forestry trio under a \"10_land\" bullet but parenthetically credits \"forestry sub-supplier 32_forestry\", and states separately that module 32 declares vm_land_forestry. I graded CORRECT_AND_COMPLETE because it names the right source module twice; the \"sub-supplier\" framing is structurally misleading (10 and 32 are peers \u2014 58 reads each directly) but is not the flat 10_land misattribution seen in A12/A14/A21.\n- Line-number drift (e.g. A13/A20 citing 73_timber equations.gms:34, which is a comment line) I treated as non-decisive throughout, consistent with this repo's own convention that cited line numbers drift between syncs. Note that A08/A13/A20's 71_disagg_lvst \":37\" citation is in fact CORRECT \u2014 foragebased_jul23/equations.gms:37 contains `vm_prod(j2,kli_rum) / (vm_prod_reg(i2,kli_rum))`, which a naive grep excluding \"vm_prod_reg\" hides.",
+      "verdicts": [
+        {
+          "label": "A01",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "I searched `modules/50_nsoil_budget/*/equations.gms` and other `.gms` files in that module tree for `vm_prod` and found **no direct reference** \u2014 the search returned no matches.",
+          "note": "Code contradicts: modules/50_nr_soil_budget/macceff_aug22/equations.gms:39 and :85 both reference vm_prod_reg. The answer's cited path `50_nsoil_budget` is not the real directory (`50_nr_soil_budget`), which explains the false negative \u2014 but it is asserted with a green verified badge and 'exit code 2 = no matches'. It then uses that false negative to reject a TRUE documentation claim, speculating module 50 depends on production only 'indirectly ... via module 18's residue pool', when in fact module 50 reads vm_prod_reg directly for nitrogen in harvested biomass exactly as documented. Separately, the answer names flexcluster_jul23 for module 18's cell-level read without flagging that flexreg_apr16 is the default \u2014 absent the module-50 error this would have been OMITS_DEFAULT_CAVEAT. Its module-30 handling is correct (listed as the definer, excluded from the consumer list)."
+        },
+        {
+          "label": "A02",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "That is inaccurate \u2014 those three variables are actually **declared in module 32_forestry** (realization `dynamic_may24`):",
+          "note": "Best-in-batch on premise 2. It explicitly detects and corrects the module_58.md misattribution, then cites each variable to its exact declaration line \u2014 vm_land_forestry:76, vm_landexpansion_forestry:74, vm_landreduction_forestry:75 \u2014 all three verified correct against 32_forestry/dynamic_may24/declarations.gms. It also states affirmatively that 'Module 10_land only supplies the non-forestry counterparts.' Default realization v2 named and confirmed. Spot-checks of its other citations all pass: 45_climate/static/input.gms:10 (pm_climate_class), 11_costs/default/equations.gms:42 (vm_peatland_cost), 58/v2/preloop.gms:36, equations.gms:23,28,31 and 89-92. Only blemish is citing declarations.gms:20-21 for three module-10 variables that actually span 19-21 \u2014 a range truncation, not a substantive error."
+        },
+        {
+          "label": "A03",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "From the regional aggregate `vm_prod_reg(i,kall)` (module_17.md \u00a74.1, \"grep-verified\" direct consumers), the following modules read it:",
+          "note": "Never makes a claim requiring the caveat. Module 18 appears ONLY under the regional vm_prod_reg heading ('residue availability from crop production') \u2014 which is true of the DEFAULT flexreg_apr16, whose equations.gms:18 reads vm_prod_reg(i2,kcr). It never claims module 18 reads cell-level vm_prod. Module 30 is correctly framed as where vm_prod 'is calculated', not as a consumer. Its cell-level consumer list (17, 40, reporting) is incomplete \u2014 it omits 38, 42, 71, 73 \u2014 but incompleteness of a list is neither a falsehood nor a default-caveat omission under the stated categories. Verified correct: 38 sticky_feb18:16 is indeed vm_prod_reg; 16_demand (sector_may15:79), 20, 21, 50, 70 all genuinely read vm_prod_reg; 71's :37 vm_prod_reg citation is real. The answer also openly discloses it opened no .gms file this session."
+        },
+        {
+          "label": "A04",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "So three of the eight modules above (30, 31, 71, 73) both write slices of `vm_prod` **and** read it back",
+          "note": "Directly contradicted: module 30's only vm_prod reference in either realization is the LHS of q30_prod (simple_apr24/equations.gms:15, detail_apr24/equations.gms:15). It never reads vm_prod back. The answer compounds this by placing module 30 in a table it introduces as 'consumers of vm_prod(j,k)' and by classifying it among modules that are bidirectional. (The sentence also miscounts its own list \u2014 it says 'three' then names four modules.) It additionally cites module 18 to flexcluster_jul23 with no default flag, but per the tiebreak the falsehood governs."
+        },
+        {
+          "label": "A05",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "**`vm_land_forestry` is declared by Module 32 (Forestry, plantations)**, in the `plant2forestry` realization",
+          "note": "The module attribution is RIGHT \u2014 module 32, and the answer correctly lists 32_forestry as the source of all three forestry variables in module 58's input table, so it does not commit the premise-2 error. But `plant2forestry` is a fabricated realization: modules/32_forestry/ contains exactly one realization directory, `dynamic_may24`, and the string plant2forestry appears nowhere in the MAgPIE tree. This is a code-contradicted claim about where the declaration lives, i.e. squarely within the probed subject matter, so the literal definition of ASSERTS_FALSEHOOD applies. A reader scoping the category strictly to 'which MODULE supplies it' would instead grade this CORRECT_AND_COMPLETE \u2014 I flag that explicitly because this is the one falsehood verdict in the batch whose central attribution is correct."
+        },
+        {
+          "label": "A06",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "- **Module 18 (Residues, `flexcluster_jul23`)** \u2014 uses `vm_prod(j2,kcr)` together with slope coefficients `f18_cgf(\"slope\",kcr)` in the cluster-level aboveground-biomass equation (\ud83d\udfe2 `modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "True of flexcluster_jul23, which it names \u2014 but it never flags that flexreg_apr16 is the default (config/default.cfg:625). It compounds the ambiguity by ALSO listing module 18 under the regional section citing flexreg_apr16/equations.gms, presenting both realizations side by side as if both were active, with no statement of which one a default run uses. No falsehood found: module 30 is correctly excluded from the consumer list; its module 50 claim (vm_prod_reg \u00d7 fm_attributes('nr',kcr) at 50_nr_soil_budget equations.gms:39,85) is exactly right; module 38's dual cell+regional use is right; and it explicitly declines to assert either way on the module-16 discrepancy rather than guessing."
+        },
+        {
+          "label": "A07",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "Module 58 gets forestry land data from **module 32 (Forestry)**, specifically the `plant` element of `type32`",
+          "note": "Premise 2 handled correctly and verifiably: module 32 named as the source, declarations.gms:74-76 cited with the three variable names quoted verbatim as they appear in the file, and module 10 credited only with the non-forestry trio. type32 = /aff, ndc, plant/ confirmed at 32_forestry/dynamic_may24/sets.gms:17. Default realization v2 named. It also correctly labels the forestry-to-peatland coupling 'a parameterized coupling (proportional scaling), not a mechanistic model'. Two blemishes I judged non-decisive: it says module 58 'draws on three upstream modules' and then lists four (10, 32, 12, 45) \u2014 an enumeration slip its own adjacent list corrects; and it describes pm_interest at equations.gms:80 as being 'in a comment', when line 80 is inside the q58_peatland_cost_annuity equation body."
+        },
+        {
+          "label": "A08",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "2. **Module 18 (Residues, `flexcluster_jul23`)** \u2014 residue supply scaled by crop production: `... + vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr)` (`modules/18_residues/flexcluster_jul23/equations.gms:18`)",
+          "note": "Names the realization, states nothing false about it, but never flags that flexcluster_jul23 is not the default \u2014 and then carries module 18 into its bolded summary of 'strict downstream consumer modules', where an unqualified reader would take it as true of a default run. Premise 1's module-30 half is handled correctly and explicitly: 30 sits in a 'Producers (write vm_prod \u2014 not consumers)' section and is absent from the consumer list. Citations verified: 73_timber:26/44/53, 71 jul23:23/37/56 (:37 is real \u2014 it is the vm_prod(j2,kli_rum)/vm_prod_reg(i2,kli_rum) ratio), 31_past:17/32, 42:14 both realizations. Its 71 parenthetical garbles which lines belong to aug18 vs jul23, which is citation noise, not a substantive claim."
+        },
+        {
+          "label": "A09",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "Module 58 does **not** read forestry-plantation area from module 32_forestry's internal state directly \u2014 it consumes 32_forestry's **interface variables**",
+          "note": "Correct on premise 2 and unusually precise about the mechanism. Lists four input modules with 32_forestry as its own entry; the 10_land entry contains only vm_land, vm_landexpansion, vm_landreduction and pcm_land, with no forestry variable smuggled in. Every checkable citation verified: config/default.cfg:1874 is exactly the peatland line; m58_LandMerge is at core/macros.gms:109 and the reproduced macro body matches; equations.gms:23,28,31; presolve.gms:11 for pcm_land_forestry; preloop.gms:36 for p58_mapping_cell_climate. pcm_land_forestry is correctly credited to module 32 (declared there at declarations.gms:48). It also correctly notes the uniform-scaling assumption as a documented simplification."
+        },
+        {
+          "label": "A10",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "3. **Module 30 (Croparea) itself** \u2014 `vm_prod` is set by Module 30's own production equation (`equations.gms:15` in the grep list), so it is simultaneously produced and used within the module.",
+          "note": "Contradicted by the code: modules/30_croparea/{simple,detail}_apr24/equations.gms:15 puts vm_prod on the LHS only; it is written, never read, inside module 30. The claim appears as item 3 under the explicit heading 'Direct consumers of vm_prod(j,k) at cell level', and module 30 is carried into the closing summary chain as 'consumed ... internally by 30/31'. Module 31 genuinely does read it back (endo_jun13/equations.gms:32); module 30 does not, and the answer merges the two cases. It also cites module 18 to flexcluster_jul23 with no default flag, but the falsehood governs."
+        },
+        {
+          "label": "A11",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "**From `32_forestry` (Forestry Plantations)** \u2014 this is the forestry-land source:",
+          "note": "Gets premise 2 right and says so emphatically \u2014 the forestry trio plus pcm_land_forestry are attributed to 32_forestry under their own heading, the 10_land block contains only vm_land/vm_landexpansion/vm_landreduction/pcm_land, and the answer states outright that 'Module 58 does not read forestry data from anywhere else'. Default realization v2 named. Its list of module 58's seven peatland states (intact, crop, past, forestry, peatExtract, unused, rewetted) matches land58 at 58_peatland/v2/sets.gms exactly. It is candid that it worked from documentation without opening .gms files this session, and correctly labels its own citations as doc-sourced rather than code-verified."
+        },
+        {
+          "label": "A12",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land** \u2014 `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "This is precisely the premise-2 error: the three forestry variables are declared in 32_forestry/dynamic_may24/declarations.gms:74-76, and module 10 (landmatrix_dec18, its only realization) declares only vm_land:19, vm_landexpansion:20, vm_landreduction:21. Module 32 does not appear at all in the answer's list of module 58's input modules. The answer is internally self-contradictory \u2014 its opening sentence correctly states vm_land_forestry 'is declared by Module 32 (Forestry)' \u2014 but the input-source list, which is what the question asked for, routes all six variables through 10_land."
+        },
+        {
+          "label": "A13",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "| 18_residues | `modules/18_residues/flexcluster_jul23/equations.gms:18` | Residue generation scaled by crop production |",
+          "note": "The row is true of flexcluster_jul23, which the file path names, but the answer never notes that flexreg_apr16 is the default and reads the REGIONAL vm_prod_reg instead \u2014 and the table is headed 'Modules that consume (read) vm_prod in their own equations, verified in code', so the omission matters. Premise 1's module-30 half is handled correctly: 30 appears only under 'Modules that write into vm_prod (define/constrain it, not consume in the pull sense)'. It also correctly notes 31_past reads its own written value at equations.gms:32. Minor citation drift only: 73_timber 'equations.gms:34 area' \u2014 line 34 is a comment; the real vm_prod lines there are 26, 44, 53."
+        },
+        {
+          "label": "A14",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land**: `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "Same premise-2 falsehood as A12 and A21: the forestry trio is credited to 10_land, when all three are declared at 32_forestry/dynamic_may24/declarations.gms:74-76 and module 10 supplies only the non-forestry counterparts. 32_forestry is absent from the input-module list entirely. Notably the answer's FIRST line gets the declaration right ('vm_land_forestry is declared in module 32 (forestry), realization dynamic_may24: ...declarations.gms:76' \u2014 verified exact), then contradicts it one paragraph later. It does flag that the module-58 input list is doc-sourced and 'not independently re-verified', which is honest provenance labeling but does not neutralize the assertion."
+        },
+        {
+          "label": "A15",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "2. **18_residues** (`flexcluster_jul23`) \u2014 uses `vm_prod(j2,kcr)` in the crop-residue generation equation (`equations.gms:18`).",
+          "note": "Realization named, claim true of it, but no flag that flexreg_apr16 is the default \u2014 the single gap in an otherwise exceptionally accurate answer. Premise 1's module-30 half is handled better than any other vm_prod answer: item 3 reads '30_croparea (simple_apr24 and detail_apr24) \u2014 producer, not consumer'. Every other verifiable claim checks out exactly: the five regional-only modules (16, 20, 21, 50, 70) do contain only vm_prod_reg matches; the false-positive analysis is right (32_forestry's vm_prod_forestry at declarations.gms:73, 35_natveg pot_forest_may24's vm_prod_natveg at declarations.gms:88); and presolve.gms:15 is indeed vm_prod.l(j,kcr) = pm_prod_init(j,kcr)."
+        },
+        {
+          "label": "A16",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "- 10_land (incl. forestry sub-supplier 32_forestry): vm_land, vm_landexpansion,",
+          "note": "Graded correct because it names module 32 as the source of the forestry variables in BOTH places it matters: the opening sentence ('vm_land_forestry is declared in module 32 (forestry), realization dynamic_may24: modules/32_forestry/dynamic_may24/declarations.gms:76' \u2014 verified exact) and inside the input list itself via the parenthetical. That is materially different from A12/A14/A21, which credit 10_land with no mention of module 32 anywhere in the input list. Flagged blemish: the 'forestry sub-supplier' framing invents a hierarchy the code does not have \u2014 modules 10 and 32 are peers, and module 58 reads each directly at equations.gms:23,28,31; nothing routes through module 10. A reader who treats that structural mischaracterization as itself code-contradicted could downgrade this to ASSERTS_FALSEHOOD; I did not, because the source attribution the question turns on is stated correctly twice."
+        },
+        {
+          "label": "A17",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "Modules 30, 31, and 71 appear as both producers (writing `vm_prod` for their own commodity subset) and consumers (reading `vm_prod` back, e.g. in constraint equations), per `modules/module_40.md:53`.",
+          "note": "Contradicted for module 30, which has vm_prod only on the LHS of q30_prod in both realizations and never reads it back. The answer lists 'Module 30 (Croparea) \u2014 modules/30_croparea/simple_apr24/equations.gms:15' under a heading that reads 'Consumers of vm_prod (cell-level)', then asserts the bidirectionality explicitly in the quoted sentence. This is self-contradictory: an earlier block correctly labels module 30 a producer under 'Producers (write vm_prod, not consumers)'. The explicit 'reading vm_prod back' claim is the operative one. Module 31 and 71 genuinely are bidirectional (31_past:32; 71 jul23:37), so the error is specific to module 30."
+        },
+        {
+          "label": "A18",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "Module 58's only forestry-related input is **module 32_forestry**, via three interface variables: `vm_land_forestry(j,\"plant\")`, `vm_landexpansion_forestry(j,\"plant\")`, and `vm_landreduction_forestry(j,\"plant\")`",
+          "note": "Premise 2 stated affirmatively and exclusively ('only forestry-related input is module 32_forestry'), with the 10_land block correctly limited to vm_land/vm_landexpansion/vm_landreduction/pcm_land. Default realization v2 named. Verified details: the 7-element land58 set matches sets.gms exactly; m58_LandMerge is in core/macros.gms; q58_peatlandMan2 at equations.gms:60-61 does bound drained forestry peatland by v58_manLand, as claimed; pcm_land_forestry is correctly credited to module 32. Provenance is honestly labeled as documentation-based with citations not re-checked this session \u2014 which, given every one I checked held, is if anything an under-claim."
+        },
+        {
+          "label": "A19",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "- **Module 18 (Residues, `flexcluster_jul23`)** \u2014 crop residue generation is proportional to production: `vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr)` (`modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "Realization named and the claim is true of it, but there is no flag that flexreg_apr16 is the default and reads vm_prod_reg \u2014 and module 18 is the FIRST entry under 'Direct cell-level consumers', where the omission does the most work. Module 30 is correctly treated as the source, never as a consumer. Everything else I checked is right and unusually careful: its exclusion of module 42 is exactly correct (agr_sector_aug13/equations.gms:9-14 uses vm_area(j2,kcr,'irrigated') for the crop term and vm_prod(j2,kli) only for livestock); its exclusion of module 71 as a crop consumer is right; sticky_feb18:16 is genuinely vm_prod_reg; and it explicitly downgrades the M16/M20/M50 claims it did not re-grep to documented rather than verified."
+        },
+        {
+          "label": "A20",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "Note: `30_croparea` both *writes* the crop-level defining equation for `vm_prod` and is counted here as a \"consumer\" per the doc's convention (bidirectional module) \u2014 treat it as such rather than a pure downstream user.",
+          "note": "Contradicted: module 30 is not bidirectional \u2014 vm_prod appears there once per realization, on the LHS of q30_prod. The answer opens with 'All confirmed as genuine equation-level consumers (all in equations.gms, not just declared)', heads its list 'Consumers of vm_prod (8 modules, verified by direct grep ... this session)', and places 30_croparea in it at position 2. The quoted note shows the answer noticed module 30 only writes, then instructed the reader to treat it as a consumer anyway to preserve the documented count of 8 \u2014 surfacing the tension and resolving it in favor of the false claim. It also cites module 18 to flexcluster_jul23 with no default flag; the falsehood governs."
+        },
+        {
+          "label": "A21",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land**: `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "Same premise-2 falsehood as A12 and A14: all six variables credited to 10_land, when the forestry trio is declared at 32_forestry/dynamic_may24/declarations.gms:74-76 and module 10 declares only the other three (declarations.gms:19-21). 32_forestry does not appear in module 58's input list at all. As with A12/A14 the answer's opening line is correct ('vm_land_forestry declaration: Module 32 (Forestry)'), so the error is a failure to reconcile the doc-sourced input list against its own correct declaration finding. Its closing caveat concedes it did not open 32_forestry's declarations.gms to confirm the line number \u2014 but the misattribution is in the input list, not the line citation."
+        }
+      ]
+    },
+    {
+      "verdicts": [
+        {
+          "label": "A01",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "**Module 18 (Residues, `flexcluster_jul23`)** \u2014 crop production drives the \"field\" residue pool via a slope coefficient: `... + vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr))` \u2014 `modules/18_residues/flexcluster_jul23/equations.gms:18`.",
+          "note": "Module 30 is correctly presented as the definer (\"Where the quantity comes from\"), never as a consumer \u2014 no premise-1a falsehood. The M18 claim is true of the named realization flexcluster_jul23 (equations.gms:18 confirmed), but the answer never flags that the default is flexreg_apr16 (config/default.cfg:625), whose not_used.txt explicitly records `vm_prod,input,not needed` and which reads vm_prod_reg instead. Its M50 finding is also correct: module 50 references only vm_prod_reg (50_nr_soil_budget/macceff_aug22/equations.gms:39,85)."
+        },
+        {
+          "label": "A02",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "That is inaccurate \u2014 those three variables are actually **declared in module 32_forestry** (realization `dynamic_may24`)",
+          "note": "Explicitly corrects the 10_land misattribution and cites the exact declaration lines, which I confirmed: vm_landexpansion_forestry:74, vm_landreduction_forestry:75, vm_land_forestry:76 in 32_forestry/dynamic_may24/declarations.gms. Also correctly states module 10 supplies only vm_land/vm_landexpansion/vm_landreduction (landmatrix_dec18/declarations.gms:19-21) and cites 58_peatland/v2/equations.gms:23,28,31. Module 58's realization is correctly identified as the default v2. No caveat was owed elsewhere."
+        },
+        {
+          "label": "A03",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "- **Module 18 (Residues)** \u2014 residue availability from crop production.",
+          "note": "Places module 18 in the vm_prod_reg (regional) consumer list, which is exactly what the DEFAULT realization flexreg_apr16 does (equations.gms:18,27,73,81,119 all use vm_prod_reg) \u2014 so no caveat was needed. Module 30 is described as calculating vm_prod, not consuming it. Separately: the cell-level consumer list is short (omits 31, 38, 42, 71, 73, all of which do read cell-level vm_prod), but incompleteness of enumeration is not one of the four categories and the answer asserts nothing the code contradicts on either premise."
+        },
+        {
+          "label": "A04",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "So three of the eight modules above (30, 31, 71, 73) both write slices of `vm_prod` **and** read it back",
+          "note": "Code contradicts: vm_prod appears in module 30 only on the LHS of q30_prod (30_croparea/simple_apr24/equations.gms:15 and detail_apr24/equations.gms:15) \u2014 a tree-wide grep shows no other vm_prod reference anywhere in modules/30_croparea/. Module 30 is also listed as a row in the table headed \"consumers of `vm_prod(j,k)`\". (The answer additionally cites flexcluster_jul23 for module 18 without a default caveat, but ASSERTS_FALSEHOOD wins per the tie-break rule.)"
+        },
+        {
+          "label": "A05",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "**`vm_land_forestry` is declared by Module 32 (Forestry, plantations)**, in the `plant2forestry` realization \u2014 declared with domain `(j,type32)`",
+          "note": "Flagging the scope of this call explicitly so it can be re-weighed: on the premise-2 discriminator the answer is RIGHT \u2014 it attributes the three forestry variables to 32_forestry, not 10_land, and lists 10_land with only the non-forestry variables. The code-contradicted claim is the declaration SITE: `plant2forestry` does not exist. `ls -d modules/32_forestry/*/` returns only dynamic_may24/ and input/, and the declaration is at dynamic_may24/declarations.gms:76. Since premise 2 is precisely about where these variables are declared, a fabricated realization name at that exact site is code-contradicted."
+        },
+        {
+          "label": "A06",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "- **Module 18 (Residues, `flexcluster_jul23`)** \u2014 uses `vm_prod(j2,kcr)` together with slope coefficients `f18_cgf(\"slope\",kcr)` in the cluster-level aboveground-biomass equation (\ud83d\udfe2 `modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "True of the named realization. The answer does mention flexreg_apr16 elsewhere (in its vm_prod_reg section), but it presents the two as if both were live rather than as mutually exclusive alternatives, and never states that flexreg_apr16 is the default (config/default.cfg:625) or that the default does not read cell-level vm_prod. That is the missing caveat, not a falsehood. Module 30 is correctly described as defining vm_prod, not consuming it."
+        },
+        {
+          "label": "A07",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "Module 58 gets forestry land data from **module 32 (Forestry)**, specifically the `plant` element of `type32`",
+          "note": "Correct on premise 2 and confirmed line-for-line: declarations.gms:74-76 in 32_forestry/dynamic_may24 (I read lines 70-80 and the three descriptions match verbatim), type32 = / aff, ndc, plant / (dynamic_may24/sets.gms:17), 10_land listed with only vm_land/vm_landexpansion/vm_landreduction, and 58_peatland/v2/equations.gms:23,28,31 confirmed. Realization v2 correctly identified as default. Minor non-decisive slip: it says \"three upstream modules\" then lists four bullets."
+        },
+        {
+          "label": "A08",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "2. **Module 18 (Residues, `flexcluster_jul23`)** \u2014 residue supply scaled by crop production: `... + vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr)` (`modules/18_residues/flexcluster_jul23/equations.gms:18`)",
+          "note": "Handles premise 1a correctly and unusually explicitly \u2014 module 30 is placed under \"Producers (write vm_prod \u2014 not consumers)\" and the summary lists strict consumers as 17, 18, 38, 40, 42, with 30/31/71/73 as populators (31/71/73 only re-reading). But the module 18 entry names flexcluster_jul23 with no note that the default is flexreg_apr16, which reads vm_prod_reg instead. Non-decisive citation slips elsewhere (e.g. \"jul23 variant lines 23/37/56\" \u2014 jul23 has cell-level vm_prod at 15, 23, 56)."
+        },
+        {
+          "label": "A09",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "Module 58 does **not** read forestry-plantation area from module 32_forestry's internal state directly \u2014 it consumes 32_forestry's **interface variables**, merged together with cropland/pasture variables from module 10_land via a shared macro, `m58_LandMerge`",
+          "note": "Correctly separates the two suppliers: 10_land supplies only vm_land/vm_landexpansion/vm_landreduction (+pcm_land), 32_forestry supplies the forestry trio. Verified details: m58_LandMerge is indeed defined in core/macros.gms:109 and used at 58_peatland/v2/equations.gms:23,28,31 and presolve.gms:11; config/default.cfg:1874 does read cfg$gms$peatland <- \"v2\". No caveat owed."
+        },
+        {
+          "label": "A10",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "3. **Module 30 (Croparea) itself** \u2014 `vm_prod` is set by Module 30's own production equation (`equations.gms:15` in the grep list), so it is simultaneously produced and used within the module.",
+          "note": "Listed under the heading \"Direct consumers of `vm_prod(j,k)` at cell level\" and asserting module 30 \"used\" it. Code contradicts: vm_prod occurs in modules/30_croparea/ at exactly two places, both the LHS of q30_prod (simple_apr24/equations.gms:15, detail_apr24/equations.gms:15) \u2014 there is no read. The answer also cites flexcluster_jul23 for module 18 without a default caveat, and misattributes sticky_feb18 lines (:93,:110 \u2014 the actual vm_prod lines are 35 and 43); ASSERTS_FALSEHOOD takes precedence."
+        },
+        {
+          "label": "A11",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "**From `32_forestry` (Forestry Plantations)** \u2014 this is the forestry-land source:",
+          "note": "Attributes all three forestry interface variables (plus pcm_land_forestry) to 32_forestry and keeps 10_land's list to the non-forestry variables, matching declarations.gms:19-21 (module 10) vs. 74-76 (module 32). Answer is explicitly doc-sourced and self-labelled \ud83d\udfe1 rather than code-verified, but the substance is what the code says on both counts, and no default caveat was owed (module 58's v2 is the default; module 32 has only dynamic_may24)."
+        },
+        {
+          "label": "A12",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land** \u2014 `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "This is the exact falsehood shape named in the rubric: module 58's forestry inputs attributed to 10_land. Code contradicts \u2014 10_land/landmatrix_dec18/declarations.gms declares only vm_land (:19), vm_landexpansion (:20), vm_landreduction (:21); the forestry trio is declared in 32_forestry/dynamic_may24/declarations.gms:74-76. The answer's own opening sentence correctly credits module 32, so it contradicts itself, but the input list asserts the false attribution without qualification and 32_forestry never appears as a supplier in that list."
+        },
+        {
+          "label": "A13",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "| 18_residues | `modules/18_residues/flexcluster_jul23/equations.gms:18` | Residue generation scaled by crop production |",
+          "note": "Premise 1a handled correctly \u2014 module 30 sits under \"Modules that write into `vm_prod` (define/constrain it, not 'consume' in the pull sense)\" and is kept out of the consumer table. The module 18 row names flexcluster_jul23 (true of it) but nothing flags that flexreg_apr16 is the default and reads vm_prod_reg. Non-decisive: cites 73_timber/default/equations.gms:34 for vm_prod; the actual cell-level vm_prod lines there are 26, 44, 53."
+        },
+        {
+          "label": "A14",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land**: `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "Same shape as A12: the module 58 input list puts all three forestry variables under 10_land, and 32_forestry appears nowhere in that list. Code contradicts (module 10 declares only the three non-forestry variables at landmatrix_dec18/declarations.gms:19-21). The answer's first line does correctly place the vm_land_forestry declaration at 32_forestry/dynamic_may24/declarations.gms:76 \u2014 which I confirmed \u2014 but that does not neutralize the unqualified false attribution that follows."
+        },
+        {
+          "label": "A15",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "2. **18_residues** (`flexcluster_jul23`) \u2014 uses `vm_prod(j2,kcr)` in the crop-residue generation equation (`equations.gms:18`).",
+          "note": "Premise 1a handled explicitly and correctly: \"**30_croparea** (`simple_apr24` and `detail_apr24`) \u2014 **producer**, not consumer\". The module 18 entry names flexcluster_jul23 but never mentions flexreg_apr16 or that it is the default; note the answer also lists which modules use only vm_prod_reg (16, 20, 21, 50, 70) without putting default-realization module 18 there, which is precisely where the default belongs. Its false-positive section (32_forestry's vm_prod_forestry, 35_natveg's vm_prod_natveg) checks out against the tree-wide grep."
+        },
+        {
+          "label": "A16",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "**vm_land_forestry** is declared in module 32 (forestry), realization `dynamic_may24`: `modules/32_forestry/dynamic_may24/declarations.gms:76`.",
+          "note": "Borderline but not a falsehood on the rubric's test: it never says module 10 declares or supplies the forestry variables. It states the correct declaration site (confirmed at :76) and, where it groups module 58's inputs, the heading is qualified \"10_land (incl. forestry sub-supplier 32_forestry)\" \u2014 naming 32_forestry as the source of the forestry items inline. Flagging the weakness: the \"sub-supplier\" framing implies 32 feeds 58 via 10, which the code does not show (58_peatland/v2/equations.gms:23,28,31 read both suppliers' interfaces directly)."
+        },
+        {
+          "label": "A17",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "Modules 30, 31, and 71 appear as both producers (writing `vm_prod` for their own commodity subset) and consumers (reading `vm_prod` back, e.g. in constraint equations), per `modules/module_40.md:53`.",
+          "note": "Code contradicts for module 30: it never reads vm_prod back \u2014 the only two occurrences in modules/30_croparea/ are the LHS of q30_prod at simple_apr24/equations.gms:15 and detail_apr24/equations.gms:15. Module 30 also appears as a bullet under the heading \"Consumers of `vm_prod` (cell-level)\", contradicting the answer's own earlier and correct \"Producers (write vm_prod, not consumers)\" list. (31 and 71 genuinely do read it back: 31_past/endo_jun13/equations.gms:32 and 71_disagg_lvst/foragebased_jul23/equations.gms:23.)"
+        },
+        {
+          "label": "A18",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "Module 58's only forestry-related input is **module 32_forestry**, via three interface variables: `vm_land_forestry(j,\"plant\")`, `vm_landexpansion_forestry(j,\"plant\")`, and `vm_landreduction_forestry(j,\"plant\")`",
+          "note": "Clean separation of the two suppliers, matching the code: 10_land bullet holds only vm_land/vm_landexpansion/vm_landreduction (+pcm_land), forestry trio under 32_forestry. Confirmed against 10_land/landmatrix_dec18/declarations.gms:19-21 and 32_forestry/dynamic_may24/declarations.gms:74-76. Its manPeat58 = {crop, past, forestry} claim also matches 58_peatland/v2/sets.gms. Doc-sourced and self-labelled \ud83d\udfe1, but no code-contradicted claim and no caveat owed."
+        },
+        {
+          "label": "A19",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "- **Module 18 (Residues, `flexcluster_jul23`)** \u2014 crop residue generation is proportional to production: `vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr)` (`modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "Module 30 is treated as the source that computes vm_prod, never as a consumer \u2014 premise 1a clean. Module 18 heads the cell-level consumer list with flexcluster_jul23 named but no indication it is not the default; the answer never mentions flexreg_apr16 at all, so a reader takes the cell-level residue coupling as active in a default run when it is not. Its exclusion of module 42 from crop consumers is correct (agr_sector_aug13/equations.gms:14 uses vm_prod(j2,kli) only)."
+        },
+        {
+          "label": "A20",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "Note: `30_croparea` both *writes* the crop-level defining equation for `vm_prod` and is counted here as a \"consumer\" per the doc's convention (bidirectional module) \u2014 treat it as such rather than a pure downstream user.",
+          "note": "The answer opens \"All confirmed as genuine equation-level consumers\" and lists 30_croparea as consumer #2 of 8, then instructs the reader to treat it as bidirectional. Code contradicts: module 30 has no read of vm_prod anywhere \u2014 only the LHS of q30_prod at simple_apr24/equations.gms:15 and detail_apr24/equations.gms:15. The hedge (\"per the doc's convention\") does not retract the claim; it reasserts it while sourcing it. The flexcluster_jul23 citation for module 18 also lacks the default caveat; falsehood wins."
+        },
+        {
+          "label": "A21",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land**: `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "Third instance of the rubric's named falsehood shape. Module 58's input list attributes the forestry trio to 10_land with no qualification and no mention of 32_forestry as a supplier, against landmatrix_dec18/declarations.gms:19-21 (three non-forestry variables only) and dynamic_may24/declarations.gms:74-76. The headline \"`vm_land_forestry` declaration: Module 32 (Forestry)\" is correct but is contradicted two lines later by the input list."
+        }
+      ],
+      "code_truth_check": "I verified both premises directly against the GAMS source under <magpie-root>/modules and config/default.cfg. I AGREE with both premises on every point that decides a verdict, with two factual corrections to the premise text itself \u2014 neither changes any classification.\n\nPREMISE 1 \u2014 AGREE on the decisive claims.\n(a) Module 30 produces, does not consume: CONFIRMED. A grep of modules/30_croparea/ for vm_prod returns exactly two hits, both the LHS of q30_prod \u2014 simple_apr24/equations.gms:15 and detail_apr24/equations.gms:15 (`vm_prod(j2,kcr) =e= sum(w, vm_area(j2,kcr,w) * vm_yld(j2,kcr,w));`). There is no read anywhere in the module. Default croparea realization is simple_apr24 (config/default.cfg:915).\n(b) Module 18's default is flexreg_apr16 and it does NOT read cell-level vm_prod: CONFIRMED, and more strongly than stated. config/default.cfg:625 sets cfg$gms$residues <- \"flexreg_apr16\". Every vm_prod reference in flexreg_apr16/equations.gms is the REGIONAL vm_prod_reg (lines 18, 27, 73, 81, 119), and flexreg_apr16/not_used.txt:2 explicitly records `vm_prod,input,not needed`. The non-default flexcluster_jul23 does read cell-level vm_prod at equations.gms:18.\nCORRECTION 1 (non-decisive): module 18 has THREE realizations, not two \u2014 flexcluster_jul23, flexreg_apr16, and off (off/not_used.txt lists both vm_prod and vm_prod_reg as unused).\nCORRECTION 2 / DISAGREEMENT (non-decisive): the premise's list of \"genuine consumers of cell-level vm_prod: modules 31, 38, 42, 71, 73\" is incomplete. A tree-wide grep shows two further genuine cell-level readers, both in their default realizations: module 17 (flexreg_apr16/equations.gms:11, `vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k))`, plus presolve.gms:15) and module 40 (gtap_nov12/equations.gms:12, `vm_cost_transp(j2,k) =e= vm_prod(j2,k)*f40_distance(j2)`; gtap_nov12 is the default per config/default.cfg:1314). I did not penalise any answer for listing 17 or 40 as consumers, because the code supports it. Full cell-level reader set I derived: 17, 18(flexcluster_jul23 only), 31, 38, 40, 42, 71, 73; writers: 30, 31, 71, 73.\n\nPREMISE 2 \u2014 AGREE fully, verified verbatim.\n32_forestry/dynamic_may24/declarations.gms:74 vm_landexpansion_forestry(j,type32), :75 vm_landreduction_forestry(j,type32), :76 vm_land_forestry(j,type32). Module 10 (landmatrix_dec18, the default per config/default.cfg:232) declares only vm_land(j,land):19, vm_landexpansion(j,land):20, vm_landreduction(j,land):21 \u2014 a tree-wide grep of declarations.gms files finds the forestry trio declared nowhere but module 32. Module 58 v2 (default, config/default.cfg:1874) reads them at 58_peatland/v2/equations.gms:23, 28, 31 via m58_LandMerge (macro defined at core/macros.gms:109), plus presolve.gms:11 for pcm_land_forestry.\nSupporting facts I checked because answers turned on them: 32_forestry has exactly ONE realization, dynamic_may24 (so A05's \"plant2forestry\" is fabricated); type32 = / aff, ndc, plant / (dynamic_may24/sets.gms:17); manPeat58 = / crop, past, forestry / and land58 = / intact, crop, past, forestry, peatExtract, unused, rewetted / (58_peatland/v2/sets.gms); module 50 references only vm_prod_reg (50_nr_soil_budget/macceff_aug22/equations.gms:39,85), which validates A01's M50 finding; sticky_feb18/equations.gms:16 does use vm_prod_reg(i2,kcr) as A03 and A19 claim.\n\nOne scope call I want visible rather than buried: A05 is graded ASSERTS_FALSEHOOD for a fabricated realization name (`plant2forestry`) at the very declaration site premise 2 is about, even though its module-32-vs-module-10 attribution is correct. If the intended reading of ASSERTS_FALSEHOOD is narrower \u2014 only the 10_land misattribution shape \u2014 A05 should be re-read as CORRECT_AND_COMPLETE. The three unambiguous premise-2 falsehoods are A12, A14, and A21."
+    },
+    {
+      "code_truth_check": "Read `.adjudication/batch.md` at the repo root `<home>/Documents/Work/Workspace/magpie` (contains both `magpie-agent/` and `modules/`), 826 lines, 21 answers A01-A21. I re-derived both premises against the GAMS source rather than taking them on faith.\n\nPREMISE 1 \u2014 AGREE, with one correction to its consumer list.\n\u2022 Module 30 PRODUCES only. A full-tree grep of `modules/30_croparea/` returns exactly two `vm_prod` hits, both LHS definitions: `simple_apr24/equations.gms:15` and `detail_apr24/equations.gms:15` (`vm_prod(j2,kcr) =e= sum(w, vm_area(j2,kcr,w) * vm_yld(j2,kcr,w));`). Module 30 never reads vm_prod. CONFIRMED.\n\u2022 Module 18 default is `flexreg_apr16` \u2014 `config/default.cfg:625` reads `cfg$gms$residues <- \"flexreg_apr16\"   # def = flexreg_apr16`. That realization reads the REGIONAL aggregate: `flexreg_apr16/equations.gms:18,27,73,81,119` all use `vm_prod_reg(i2,...)`, zero cell-level hits. The non-default `flexcluster_jul23/equations.gms:18` does read `vm_prod(j2,kcr)`. CONFIRMED exactly as stated.\n\u2022 CORRECTION to the premise's genuine-consumer list \"31, 38, 42, 71, 73\": it is incomplete. Module 40 (transport) is also a genuine cell-level consumer under the DEFAULT realization \u2014 `cfg$gms$transport <- \"gtap_nov12\"` (config/default.cfg:1314) and `40_transport/gtap_nov12/equations.gms:12` reads `vm_prod(j2,k)`. Module 17 (`flexreg_apr16/equations.gms:11`) also reads it for the regional aggregation, and module 31 reads its own value back at `endo_jun13/equations.gms:32`. This correction does not change any verdict \u2014 no answer was graded down for listing 17 or 40.\n\nPREMISE 2 \u2014 AGREE, fully.\n\u2022 `32_forestry/dynamic_may24/declarations.gms` lines 74/75/76 are, in file order, `vm_landexpansion_forestry(j,type32)`, `vm_landreduction_forestry(j,type32)`, `vm_land_forestry(j,type32)`. Module 32 has exactly ONE realization directory (`dynamic_may24`) \u2014 relevant to A05 below.\n\u2022 `modules/10_land/landmatrix_dec18/declarations.gms:19-21` declares only `vm_land`, `vm_landexpansion`, `vm_landreduction` (plus `vm_landdiff`, `vm_cost_land_transition`, `vm_lu_transitions`). No forestry variants anywhere in module 10. CONFIRMED.\n\u2022 `58_peatland/v2/equations.gms` lines 23, 28, 31 are exactly the three `m58_LandMerge(vm_land*, vm_land*_forestry, \"j2\")` calls. CONFIRMED. (Ancillary: `cfg$gms$peatland <- \"v2\"` is at config/default.cfg:1874 \u2014 A09's citation is exact; `$macro m58_LandMerge` is at core/macros.gms:109 \u2014 A09/A11/A18's claim is exact.)\n\nOne off-axis note affecting A05: it attributes vm_land_forestry to Module 32 (premise-correct) but places it \"in the `plant2forestry` realization\", which does not exist \u2014 `ls -d modules/32_forestry/*/` returns only `dynamic_may24/` and `input/`. A fabricated realization identifier is code-contradicted, so under the literal category definition it lands in ASSERTS_FALSEHOOD even though its premise-2 attribution is right. Flagging this because it is a different error axis from the two premises.",
+      "verdicts": [
+        {
+          "label": "A01",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "**Module 18 (Residues, `flexcluster_jul23`)** \u2014 crop production drives the \"field\" residue pool via a slope coefficient: `... + vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr))` \u2014 `modules/18_residues/flexcluster_jul23/equations.gms:18`.",
+          "note": "True of flexcluster_jul23, which it names, but never flags that the default is flexreg_apr16 (config/default.cfg:625) and reads vm_prod_reg instead. The summary diagram then drops the realization entirely ('M18 Residues: field residue biomass'). No falsehood: module 30 is correctly presented as the definer, not a consumer, and the module-50 non-hit is honestly reported."
+        },
+        {
+          "label": "A02",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "That is inaccurate \u2014 those three variables are actually **declared in module 32_forestry** (realization `dynamic_may24`)",
+          "note": "Actively corrects the module-10 misattribution, cites declarations.gms:74-76 with each of the three line numbers assigned correctly (74 expansion, 75 reduction, 76 land \u2014 verified exact), and states module 10 supplies only the non-forestry counterparts. Names v2 as module 58's default. Nothing needed a realization caveat here."
+        },
+        {
+          "label": "A03",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "- **Module 18 (Residues)** \u2014 residue availability from crop production.",
+          "note": "The deciding placement: this line sits under the vm_prod_reg consumer list, not the cell-level list. That is exactly right for the default flexreg_apr16. Its cell-level list is 17, 40, reporting \u2014 incomplete but not false, and omission is not a falsehood. Module 30 appears only as the calculating module. Its module-16 vm_prod_reg claim also checks out (16_demand/sector_may15/equations.gms:79). Never makes a claim that needed the caveat."
+        },
+        {
+          "label": "A04",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "So three of the eight modules above (30, 31, 71, 73) both write slices of `vm_prod` **and** read it back (e.g., 71 reads `vm_prod(j,kli_rum)` for its own balanceflow ratio at `module_71.md:108`); the other four (18, 38, 40, 42) are pure downstream consumers.",
+          "note": "Directly claims module 30 reads vm_prod back; module 30 is also a row in the table headed 'Modules that consume `vm_prod`'. Code contradicts: the only two vm_prod occurrences in the entire 30_croparea tree are LHS definitions. (It separately omits the module-18 default caveat, but ASSERTS_FALSEHOOD wins.)"
+        },
+        {
+          "label": "A05",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "**`vm_land_forestry` is declared by Module 32 (Forestry, plantations)**, in the `plant2forestry` realization \u2014 declared with domain `(j,type32)`",
+          "note": "Off-axis falsehood: `plant2forestry` does not exist. Module 32 has exactly one realization, `dynamic_may24` (only directory besides `input/`). A fabricated realization identifier is code-contradicted. Its premise-2 attribution is correct \u2014 module 32, not module 10, and the module-58 input list correctly sources the forestry variables to 32_forestry \u2014 so this is a fabrication error, not the module-10 error."
+        },
+        {
+          "label": "A06",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "- **Module 18 (Residues, `flexcluster_jul23`)** \u2014 uses `vm_prod(j2,kcr)` together with slope coefficients `f18_cgf(\"slope\",kcr)` in the cluster-level aboveground-biomass equation (\ud83d\udfe2 `modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "Names the realization, so not a falsehood. It also lists module 18 under the regional-aggregate section citing flexreg_apr16 \u2014 but presents both as concurrently active pathways and never says which is the default, so the distinction is not handled. Module 30 is correctly the definer, not a consumer."
+        },
+        {
+          "label": "A07",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "Module 58 gets forestry land data from **module 32 (Forestry)**, specifically the `plant` element of `type32`",
+          "note": "Correct attribution to module 32 with declarations.gms:74-76 quoted verbatim and in the right file order; module 10 supplies only the non-forestry land variables. Names v2 as default. Minor internal slip ('three upstream modules' followed by four bullets) is a counting typo, not a code-contradicted claim."
+        },
+        {
+          "label": "A08",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "2. **Module 18 (Residues, `flexcluster_jul23`)** \u2014 residue supply scaled by crop production: `... + vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr)` (`modules/18_residues/flexcluster_jul23/equations.gms:18`)",
+          "note": "Names flexcluster_jul23 but never flags it is non-default; the summary line then lists '18 (Residues)' among strict downstream consumers with no realization at all. Handles module 30 correctly \u2014 puts it under Producers and pointedly excludes it from the read-back list ('31/71/73 additionally read it back'), which matches the code."
+        },
+        {
+          "label": "A09",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "**32_forestry**: `vm_land_forestry(\"plant\")`, `vm_landexpansion_forestry(\"plant\")`, `vm_landreduction_forestry(\"plant\")`, `pcm_land_forestry(\"plant\")`",
+          "note": "Clean separation: 10_land supplies vm_land/vm_landexpansion/vm_landreduction, 32_forestry supplies the forestry trio. Two incidental citations verified exact this session: config/default.cfg:1874 for `cfg$gms$peatland <- \"v2\"`, and m58_LandMerge at core/macros.gms:109."
+        },
+        {
+          "label": "A10",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "3. **Module 30 (Croparea) itself** \u2014 `vm_prod` is set by Module 30's own production equation (`equations.gms:15` in the grep list), so it is simultaneously produced and used within the module.",
+          "note": "Listed as entry 3 under the heading 'Direct consumers of `vm_prod(j,k)` at cell level', and the closing summary repeats 'consumed... internally by 30/31'. Code contradicts: module 30 has zero reads of vm_prod. (It also omits the module-18 default caveat and misstates module 42 as reading vm_prod(j2,k) for irrigation when the crop term uses vm_area; falsehood wins regardless.)"
+        },
+        {
+          "label": "A11",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "**From `32_forestry` (Forestry Plantations)** \u2014 this is the forestry-land source:",
+          "note": "Assigns the forestry trio to 32_forestry and the plain trio to 10_land, with no crossover. Explicitly says module 58's forestry state is 'driven exclusively by the `plant` land type from module `32_forestry`'s interface variables'. Its m58_LandMerge location (core/macros.gms) is correct \u2014 verified at core/macros.gms:109. No claim required a realization caveat."
+        },
+        {
+          "label": "A12",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land** \u2014 `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "Sources all three forestry variables to 10_land. Code contradicts: 10_land/landmatrix_dec18/declarations.gms:19-21 declares only the non-forestry trio; the forestry trio is declared at 32_forestry/dynamic_may24/declarations.gms:74-76. The answer's own opening sentence correctly credits module 32, making it self-contradictory \u2014 but the falsehood is asserted, so it governs."
+        },
+        {
+          "label": "A13",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "| 18_residues | `modules/18_residues/flexcluster_jul23/equations.gms:18` | Residue generation scaled by crop production |",
+          "note": "The realization is named only inside the file path, with no note that flexreg_apr16 is the default and reads vm_prod_reg. Module 30 is correctly placed under 'Modules that write into `vm_prod`', not among consumers, so no falsehood on premise 1."
+        },
+        {
+          "label": "A14",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land**: `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "Same shape as A12: the module-58 input list puts all three forestry variables under 10_land. Code contradicts. Its first line correctly cites 32_forestry/dynamic_may24/declarations.gms:76 for vm_land_forestry (verified exact), so the answer contradicts itself; the asserted falsehood decides it."
+        },
+        {
+          "label": "A15",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "2. **18_residues** (`flexcluster_jul23`) \u2014 uses `vm_prod(j2,kcr)` in the crop-residue generation equation (`equations.gms:18`).",
+          "note": "Names the realization but never flags it as non-default, and its 'use only the regional aggregate' list (16, 20, 21, 50, 70) pointedly omits 18 \u2014 which under the default flexreg_apr16 belongs there. Best handling of module 30 in the batch: explicitly labelled '**producer**, not consumer', matching the code exactly."
+        },
+        {
+          "label": "A16",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "**vm_land_forestry** is declared in module 32 (forestry), realization `dynamic_may24`:",
+          "note": "Load-bearing attribution is correct and cites declarations.gms:76 and equations.gms:59 (`vm_land_forestry(j2,type32) =e= sum(ac, v32_land(j2,type32,ac));`) \u2014 both verified exact. Borderline: the input bullet is headed '10_land (incl. forestry sub-supplier 32_forestry)', a muddled grouping, and no supplier relation between 10 and 32 exists in code. But unlike A12/A14/A21 it names 32_forestry as the forestry source inside the bullet and never states module 10 declares or supplies these variables, so it is imprecise framing rather than an asserted falsehood."
+        },
+        {
+          "label": "A17",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "Modules 30, 31, and 71 appear as both producers (writing `vm_prod` for their own commodity subset) and consumers (reading `vm_prod` back, e.g. in constraint equations), per `modules/module_40.md:53`.",
+          "note": "Explicitly claims module 30 reads vm_prod back, and module 30 is a bullet under the heading 'Consumers of `vm_prod` (cell-level)'. Code contradicts. (Module 18 does carry flexcluster_jul23 in its path with no default caveat; falsehood wins.)"
+        },
+        {
+          "label": "A18",
+          "category": "CORRECT_AND_COMPLETE",
+          "quote": "Module 58's only forestry-related input is **module 32_forestry**, via three interface variables: `vm_land_forestry(j,\"plant\")`, `vm_landexpansion_forestry(j,\"plant\")`, and `vm_landreduction_forestry(j,\"plant\")`",
+          "note": "Clean split between 10_land's trio and 32_forestry's trio, with the forestry source stated exclusively and unambiguously. Names v2 as the default realization. No claim in this answer needed a default-vs-non-default caveat."
+        },
+        {
+          "label": "A19",
+          "category": "OMITS_DEFAULT_CAVEAT",
+          "quote": "- **Module 18 (Residues, `flexcluster_jul23`)** \u2014 crop residue generation is proportional to production: `vm_prod(j2,kcr) * f18_cgf(\"slope\",kcr)` (`modules/18_residues/flexcluster_jul23/equations.gms:18`).",
+          "note": "Names flexcluster_jul23; the string 'flexreg_apr16' appears nowhere in the answer, so the reader is never told the default reads vm_prod_reg instead. No falsehood: module 30 is the calculator only, and its module-42 exclusion is correct \u2014 42_water_demand/agr_sector_aug13/equations.gms:12-14 does use vm_area for the crop term and vm_prod(j2,kli) only for livestock."
+        },
+        {
+          "label": "A20",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "Note: `30_croparea` both *writes* the crop-level defining equation for `vm_prod` and is counted here as a \"consumer\" per the doc's convention (bidirectional module) \u2014 treat it as such rather than a pure downstream user.",
+          "note": "Calls module 30 a 'bidirectional module' and instructs the reader to treat it as a consumer; it is entry 2 in a list headed 'Consumers of `vm_prod` (8 modules, verified \ud83d\udfe2 by direct grep of `.gms` equation files this session)'. Code contradicts \u2014 module 30 writes only. The \ud83d\udfe2 grep claim makes it worse, since the grep it claims to have run returns only LHS hits."
+        },
+        {
+          "label": "A21",
+          "category": "ASSERTS_FALSEHOOD",
+          "quote": "- **10_land**: `vm_land`, `vm_landexpansion`, `vm_landreduction`, `vm_land_forestry`, `vm_landexpansion_forestry`, `vm_landreduction_forestry`",
+          "note": "Same shape as A12/A14: the module-58 input list attributes all three forestry variables to 10_land. Code contradicts (declared at 32_forestry/dynamic_may24/declarations.gms:74-76). Its opening line correctly names Module 32 as the declarer, so the answer is internally inconsistent; the asserted falsehood governs."
+        }
+      ]
+    }
+  ]
+}
