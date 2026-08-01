@@ -1,6 +1,6 @@
 {
  "fm_aboveground_fraction": {
-  "declared_in": null,
+  "declared_in": "14_yields",
   "populated_by": [],
   "read_by": [
    "14",
@@ -8,7 +8,7 @@
   ]
  },
  "fm_attributes": {
-  "declared_in": null,
+  "declared_in": "16_demand",
   "populated_by": [],
   "read_by": [
    "15",
@@ -23,7 +23,7 @@
   ]
  },
  "fm_bii_coeff": {
-  "declared_in": null,
+  "declared_in": "44_biodiversity",
   "populated_by": [],
   "read_by": [
    "29",
@@ -36,7 +36,7 @@
   ]
  },
  "fm_carbon_density": {
-  "declared_in": null,
+  "declared_in": "52_carbon",
   "populated_by": [
    "52"
   ],
@@ -53,7 +53,7 @@
   ]
  },
  "fm_croparea": {
-  "declared_in": null,
+  "declared_in": "30_croparea",
   "populated_by": [
    "30"
   ],
@@ -65,7 +65,7 @@
   ]
  },
  "fm_feed_balanceflow": {
-  "declared_in": null,
+  "declared_in": "70_livestock",
   "populated_by": [],
   "read_by": [
    "70",
@@ -73,7 +73,7 @@
   ]
  },
  "fm_gdp_defl_ppp": {
-  "declared_in": null,
+  "declared_in": "09_drivers",
   "populated_by": [],
   "read_by": [
    "09",
@@ -81,7 +81,7 @@
   ]
  },
  "fm_ipcc_bef": {
-  "declared_in": null,
+  "declared_in": "14_yields",
   "populated_by": [],
   "read_by": [
    "14",
@@ -89,7 +89,7 @@
   ]
  },
  "fm_land_iso": {
-  "declared_in": null,
+  "declared_in": "10_land",
   "populated_by": [],
   "read_by": [
    "10",
@@ -97,7 +97,7 @@
   ]
  },
  "fm_luh2_side_layers": {
-  "declared_in": null,
+  "declared_in": "10_land",
   "populated_by": [],
   "read_by": [
    "10",
@@ -110,7 +110,7 @@
   ]
  },
  "fm_nutrition_attributes": {
-  "declared_in": null,
+  "declared_in": "15_food",
   "populated_by": [],
   "read_by": [
    "15",
@@ -118,7 +118,7 @@
   ]
  },
  "fm_tau1995": {
-  "declared_in": null,
+  "declared_in": "13_tc",
   "populated_by": [],
   "read_by": [
    "13",
@@ -450,7 +450,7 @@
   ]
  },
  "pm_climate_class": {
-  "declared_in": null,
+  "declared_in": "45_climate",
   "populated_by": [],
   "read_by": [
    "14",
@@ -630,17 +630,27 @@
    "17"
   ]
  },
+ "vm_AEI": {
+  "declared_in": "41_area_equipped_for_irrigation",
+  "populated_by": [
+   "41"
+  ],
+  "read_by": [
+   "30",
+   "41"
+  ]
+ },
  "vm_area": {
   "declared_in": "30_croparea",
   "populated_by": [
-   "30"
+   "30",
+   "41"
   ],
   "read_by": [
    "18",
    "29",
    "30",
    "32",
-   "41",
    "42",
    "50",
    "53",
@@ -679,7 +689,6 @@
    "32",
    "34",
    "35",
-   "56",
    "59"
   ],
   "read_by": [
@@ -751,8 +760,7 @@
  "vm_cost_glo": {
   "declared_in": "11_costs",
   "populated_by": [
-   "11",
-   "80"
+   "11"
   ],
   "read_by": [
    "11",
@@ -904,7 +912,6 @@
  "vm_cost_transp": {
   "declared_in": "40_transport",
   "populated_by": [
-   "11",
    "40"
   ],
   "read_by": [
@@ -997,7 +1004,6 @@
  "vm_emission_costs": {
   "declared_in": "56_ghg_policy",
   "populated_by": [
-   "15",
    "56"
   ],
   "read_by": [
@@ -1129,7 +1135,8 @@
  "vm_landexpansion": {
   "declared_in": "10_land",
   "populated_by": [
-   "10"
+   "10",
+   "35"
   ],
   "read_by": [
    "10",
@@ -1173,11 +1180,12 @@
  "vm_lu_transitions": {
   "declared_in": "10_land",
   "populated_by": [
-   "10"
+   "10",
+   "29",
+   "35"
   ],
   "read_by": [
    "10",
-   "29",
    "35",
    "59"
   ]
@@ -1229,10 +1237,10 @@
  "vm_natforest_reduction": {
   "declared_in": "35_natveg",
   "populated_by": [
+   "32",
    "35"
   ],
   "read_by": [
-   "32",
    "35"
   ]
  },
@@ -1345,7 +1353,9 @@
  },
  "vm_prod_forestry": {
   "declared_in": "32_forestry",
-  "populated_by": [],
+  "populated_by": [
+   "32"
+  ],
   "read_by": [
    "32",
    "73"
@@ -1353,7 +1363,9 @@
  },
  "vm_prod_natveg": {
   "declared_in": "35_natveg",
-  "populated_by": [],
+  "populated_by": [
+   "35"
+  ],
   "read_by": [
    "35",
    "73"
@@ -1365,7 +1377,7 @@
    "17",
    "18",
    "20",
-   "71"
+   "21"
   ],
   "read_by": [
    "16",
@@ -1495,7 +1507,8 @@
  "vm_watdem": {
   "declared_in": "42_water_demand",
   "populated_by": [
-   "42"
+   "42",
+   "43"
   ],
   "read_by": [
    "42",

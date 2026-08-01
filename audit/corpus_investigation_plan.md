@@ -71,6 +71,34 @@ had one finding). What does NOT survive is any point estimate: MEASUREMENT.md §
 recorded that a rate built on 2 events has a Poisson 95% CI of roughly [0.27, 8.2] per 100
 and "cannot discriminate against a ~2 per 100 bar". Carry the range or carry nothing.
 
+⚠️ **Third caveat, found 2026-08-01 during R60 setup: R55's attribution findings were
+produced against a role map with 26 known defects.** The role map is the code-derived
+ground truth every lens agent is told to check FIRST for any DECLARED/POPULATED/READ claim
+(`doc_depth_audit.workflow.js` ROLEMAP_CLAUSE, billed as "~0-FNR on this class"). It was
+regenerated for R60, and the delta was decomposed:
+
+```
+CHECKER effect  (same SHA 0d7ebeb90, R55 checker vs current):  26 vars differ
+CODE    effect  (same checker, 0d7ebeb90 vs 2c02843ec):         0 vars differ
+```
+
+**All of it is checker improvement; MAgPIE's interface topology did not move at all.**
+Mostly 13 `fm_*` vars plus `pm_climate_class` that R55's map carried as
+`declared_in: None`, and several wrong `populated_by` entries. The old map was *blanker*,
+which biases toward reporting omissions that were not omissions.
+
+**9 of R55's 28 findings — including 3 of the 7 Majors — name a variable the map had wrong
+at the time.** Six of those are attribution-class, i.e. half the attribution findings.
+The Critical is **not** among them (`pm_carbon_density_secdforest_ac_uncalib` was mapped
+correctly), so it stands on this axis.
+
+This downranks confidence; it does not void the findings — the map is a first reference
+that agents must confirm with a both-endpoints grep, and the Majors survived adversarial
+refutation. But stacked on the dedup caveat, **R55 is no longer a clean baseline for the
+attribution classes.** R60's within-module arm, drawn at random against the corrected map,
+becomes the first clean within-module baseline this project has, and should be quoted as
+the comparator rather than R55 once it exists.
+
 At the same time, the arena's only two significant effects both point the same way:
 
 ```
