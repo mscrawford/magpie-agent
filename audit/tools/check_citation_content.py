@@ -149,6 +149,12 @@ def _claimed_identifiers(text: str, cite_start: int, dir_names: set[str] | None 
         # A realization / module directory name is a LOCATION, not file content.
         if dir_names and tok in dir_names:
             continue
+        # `s57_maxmac_*` is a GLOB the doc wrote; the regex sees the stem
+        # `s57_maxmac_`. A trailing underscore is never a real identifier, and
+        # the family it globs usually lives in a different file from the cited
+        # effect. Same class already guarded in check_answer_identifiers.py.
+        if tok.endswith("_"):
+            continue
         out.append(tok)
     return out
 
@@ -279,6 +285,9 @@ NEGATIVES = [
     # must not be flagged. This is the FP class a +/-N threshold cannot separate.
     ("equation name cited at its BODY line, inside the span",
      "the equation `q30_prod` (`modules/30_croparea/simple_apr24/equations.gms:15`)"),
+    ("REGRESSION: glob stem is not a claimed identifier",
+     "`s57_maxmac_*` causes a 1/(1-mitigation) blowup "
+     "(`modules/57_maccs/on_aug22/equations.gms:38,48`)."),
     ("unresolvable path is not this checker's finding",
      "`vm_prod` is at `modules/99_invented/default/equations.gms:12`."),
 ]
