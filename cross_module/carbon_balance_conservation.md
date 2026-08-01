@@ -137,7 +137,7 @@ The simplified `Σ(crops) Area × C_ratio × Natural_density` shorthand used in 
 - Land use: Cropland vs set-aside
 - Tillage: Full, reduced, no-till (default: full)
 - Input level: Low, medium, high without manure (default: medium)
-- Irrigation: adjusts the equilibrium via `f59_cratio_irrigation`, **active by default** (`c59_irrigation_scenario = "on"`, `config/default.cfg:1953`); set to `"off"` to neutralise it (factor forced to 1, `modules/59_som/cellpool_jan23/input.gms:70`)
+- Irrigation: adjusts the equilibrium via `f59_cratio_irrigation`, **active by default** (`c59_irrigation_scenario = "on"`, `config/default.cfg:1956`); set to `"off"` to neutralise it (factor forced to 1, `modules/59_som/cellpool_jan23/input.gms:70`)
 
 ---
 
@@ -430,7 +430,7 @@ C_equilibrium = C_natural × FLU × FMG × FI
 - **FI** (Input): Low / Medium / High / High with manure (default: medium, no manure)
 
 **Additional**:
-- **Irrigation effect**: adjusts the equilibrium via `f59_cratio_irrigation`, active by default (`c59_irrigation_scenario = "on"`, `config/default.cfg:1953`); set to `"off"` to neutralise it (factor forced to 1, `modules/59_som/cellpool_jan23/input.gms:70`)
+- **Irrigation effect**: adjusts the equilibrium via `f59_cratio_irrigation`, active by default (`c59_irrigation_scenario = "on"`, `config/default.cfg:1956`); set to `"off"` to neutralise it (factor forced to 1, `modules/59_som/cellpool_jan23/input.gms:70`)
 - **Crop-specific**: Different crops produce different residue amounts
 
 **Example Stock Change Factors** (typical values from IPCC):

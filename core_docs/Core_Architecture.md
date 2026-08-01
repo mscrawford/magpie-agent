@@ -228,7 +228,7 @@ FOR each time step t:
     7. Clear ct/pt, save restart point, advance to next time step
 ```
 
-**Note**: The WHILE loop (steps 4a-4c) implements food demand coupling. With the default `s15_elastic_demand=0` (config/default.cfg:414; modules/15_food/anthro_iso_jun22/input.gms:66), the loop runs ONCE per timestep (Module 15 intersolve does not reset sm_intersolve to 0). When `s15_elastic_demand=1`, Module 15 iterates between food demand and the optimizer until convergence, up to a maximum of `s15_maxiter=10` iterations (default; modules/15_food/anthro_iso_jun22/input.gms:70).
+**Note**: The WHILE loop (steps 4a-4c) implements food demand coupling. With the default `s15_elastic_demand=0` (config/default.cfg:417; modules/15_food/anthro_iso_jun22/input.gms:66), the loop runs ONCE per timestep (Module 15 intersolve does not reset sm_intersolve to 0). When `s15_elastic_demand=1`, Module 15 iterates between food demand and the optimizer until convergence, up to a maximum of `s15_maxiter=10` iterations (default; modules/15_food/anthro_iso_jun22/input.gms:70).
 
 ### 6. Variable Naming Convention
 

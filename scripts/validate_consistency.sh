@@ -151,8 +151,12 @@ check_finding() {
 # dependent-COUNT claims vs role-map truth) -> 35.
 # 2026-07-16 (later): +1 advisory check (36 hand-off DIRECTION claims vs
 # slice-resolved code truth, check_dependent_direction.py) -> 36.
+# 2026-08-01: +1 advisory check (citation PLACEMENT: does a cited file:line
+# contain the identifier it is cited for, audit/tools/check_citation_content.py)
+# -> 41. Narrowed to the two classes whose reliability is measured or derivable;
+# see the check's own header for why the other two are excluded.
 SECTION_NUM=0
-SECTION_TOTAL=40
+SECTION_TOTAL=41
 print_section() {
     SECTION_NUM=$((SECTION_NUM + 1))
     echo ""
@@ -1510,6 +1514,70 @@ if [ -f "$ROLEMAP_SCRIPT" ]; then
     fi
 else
     check_warning "Role-map completeness checker not found: $ROLEMAP_SCRIPT"
+fi
+
+# ===============================================
+# Check 42: citation placement (ADVISORY)
+# ===============================================
+# Does a cited `file:line` in the docs actually contain the identifier it is
+# cited for? Fully mechanical (audit/tools/check_citation_content.py).
+#
+# DELIBERATELY ADVISORY, and deliberately NARROWED to two classes. The
+# 2026-08-01 precision census (audit/checker_precision_census_2026-08-01.md)
+# measured this checker per class and found its own severity labels INVERTED
+# relative to reliability:
+#
+#     citation_off_by_small       labelled "minor"      100% precise (4/4)
+#     citation_line_wrong         labelled "moderate"    50%
+#     citation_identifier_absent  labelled "major"       20%
+#
+# Four out of five `identifier_absent` findings are the checker failing to read a
+# proposition stated in prose, not a doc being wrong. Surfacing all 37 findings
+# here would be mostly noise, and a gate that cries wolf trains people to ignore
+# it -- the same reasoning that narrowed Check 41. So only `off_by_small` (the
+# measured-perfect, auto-repairable class) and `out_of_range` (a line past EOF
+# cannot be right, no census needed) are counted.
+#
+# Promotion from check_warning to check_error requires an explicit decision: CI is
+# shared, and precision on the DOC corpus is inferred from a census run on
+# ANSWERS. Measure it on docs before gating.
+#
+# VACUITY GUARD: citations_checked=0 means no citation resolved to a readable
+# file (absent ../modules/, bad --root). Zero findings would then be a vacuous
+# clean, so that is an ERROR, not a pass.
+# ===============================================
+print_section "" "Checking citation placement (advisory)..."
+
+CITECHK="$AGENT_DIR/audit/tools/check_citation_content.py"
+if [ -f "$CITECHK" ]; then
+    # Run from the magpie root with RELATIVE globs. The checker echoes the doc
+    # paths it scanned, and this repo is PUBLIC: absolute globs would print a
+    # local home-directory prefix into the report file and into CI logs. Check 40
+    # scans tracked files only and would never catch that.
+    MAGPIE_ROOT="$(dirname "$AGENT_DIR")"
+    AGENT_REL="$(basename "$AGENT_DIR")"
+    if CITE_OUT=$(cd "$MAGPIE_ROOT" && python3 "$CITECHK" --root . \
+            --docs "$AGENT_REL/modules/*.md" \
+            --docs "$AGENT_REL/cross_module/*.md" \
+            --docs "$AGENT_REL/core_docs/*.md" 2>&1); then CITE_EXIT=0; else CITE_EXIT=$?; fi
+    CITE_LINE=$(echo "$CITE_OUT" | grep -m1 "^SUMMARY citations_checked=")
+    CITE_CHECKED=$(echo "$CITE_LINE" | grep -oE "citations_checked=[0-9]+" | grep -oE "[0-9]+")
+    CITE_ACTION=$(echo "$CITE_LINE" | grep -oE "actionable=[0-9]+" | grep -oE "[0-9]+")
+    if [ "$CITE_EXIT" -ne 0 ]; then
+        check_error "Citation-placement checker failed to run (exit $CITE_EXIT) - a crash must NOT read as clean"
+        echo "$CITE_OUT" | head -5 | while read -r line; do log "    $line"; done
+    elif [ -z "$CITE_LINE" ]; then
+        check_error "Citation-placement checker printed no SUMMARY line (silent skip reads as clean)"
+    elif [ "${CITE_CHECKED:-0}" = "0" ]; then
+        check_error "Citation-placement checked 0 citations - vacuous run (parent modules/ absent?), NOT a clean result"
+    elif [ "${CITE_ACTION:-0}" != "0" ]; then
+        check_warning "Citation placement: ${CITE_ACTION} actionable finding(s). ${CITE_LINE} (advisory; repair the unambiguous ones with audit/tools/repair_citation_lines.py --apply)"
+        echo "$CITE_OUT" | grep -E "citation_(off_by_small|out_of_range)" | head -10 | while read -r line; do log "    $line"; done
+    else
+        check_pass "Citation placement: 0 actionable. ${CITE_LINE}"
+    fi
+else
+    check_warning "Citation-placement checker not found: $CITECHK"
 fi
 
 # ============

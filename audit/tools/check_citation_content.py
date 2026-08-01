@@ -42,6 +42,7 @@ Usage
 from __future__ import annotations
 
 import argparse
+import glob as globmod
 import json
 import re
 import sys
@@ -143,6 +144,7 @@ def check_text(text: str, files: Tree) -> list[dict]:
         over = [c for c in cited if c > n]
         if over:
             findings.append({
+                "pos": m.start(),
                 "kind": "citation_out_of_range", "path": rel,
                 "cited": spec, "detail": f"file has {n} lines",
                 "claimed": claimed[:4],
@@ -176,6 +178,7 @@ def check_text(text: str, files: Tree) -> list[dict]:
         if on(near):
             actual = sorted({i for i in near for tok in claimed if tok in lines[i - 1]})
             findings.append({
+                "pos": m.start(),
                 "kind": "citation_off_by_small", "path": rel, "cited": spec,
                 "detail": f"found at {actual}", "claimed": claimed[:4],
             })
@@ -185,11 +188,13 @@ def check_text(text: str, files: Tree) -> list[dict]:
                             for tok in claimed if tok in lines[i - 1]})
         if elsewhere:
             findings.append({
+                "pos": m.start(),
                 "kind": "citation_line_wrong", "path": rel, "cited": spec,
                 "detail": f"found instead at {elsewhere[:6]}", "claimed": claimed[:4],
             })
         else:
             findings.append({
+                "pos": m.start(),
                 "kind": "citation_identifier_absent", "path": rel, "cited": spec,
                 "detail": "none of the claimed identifiers appears anywhere in this file",
                 "claimed": claimed[:4],
@@ -198,18 +203,36 @@ def check_text(text: str, files: Tree) -> list[dict]:
     # One citation repeated within an answer is ONE defect. Without this, an
     # answer that cites `config/default.cfg:1367` twice for the same identifier
     # contributed 2 to every rate quoted off this checker.
-    seen: set[tuple] = set()
-    out: list[dict] = []
+    # `positions` keeps EVERY occurrence's offset, because a repairer must act on
+    # the specific occurrence: `module_52.md` cites `presolve.gms:66` three times,
+    # and two of those are CORRECT (line 66 really does hold
+    # `pm_carbon_density_secdforest_ac_uncalib`). A textual replace of
+    # "path:66" -> "path:64" fixed one citation and broke two.
+    bykey: dict[tuple, dict] = {}
     for f in findings:
         k = (f["kind"], f["path"], f["cited"], tuple(f["claimed"]))
-        if k in seen:
+        if k in bykey:
+            bykey[k]["positions"].append(f.pop("pos"))
             continue
-        seen.add(k)
-        out.append(f)
-    return out
+        f["positions"] = [f.pop("pos")]
+        bykey[k] = f
+    return list(bykey.values())
 
 
 CERTAIN = {"citation_identifier_absent", "citation_line_wrong", "citation_out_of_range"}
+
+# Classes whose reliability has been MEASURED or is derivable without judgment,
+# and which are therefore fit to act on automatically or to surface in the gate.
+#
+# From the 2026-08-01 precision census (audit/checker_precision_census_2026-08-01.md):
+#   citation_off_by_small       100% (4/4)   <- and auto-repairable
+#   citation_line_wrong          50% (2/4)
+#   citation_identifier_absent   20% (1/5)   <- 4 of 5 are the checker failing to
+#                                               read a proposition, not a doc defect
+# `citation_out_of_range` needs no census: a line past the end of a file cannot be
+# right. Note the tool's own severity labels are INVERTED relative to this -- the
+# class it calls "major" is its least reliable.
+ACTIONABLE = {"citation_off_by_small", "citation_out_of_range"}
 
 # --------------------------------------------------------------------------
 # Self-test. Every control's ground truth was read out of the tree by hand
@@ -320,22 +343,38 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=".")
     ap.add_argument("--selftest", action="store_true")
-    ap.add_argument("--batch")
+    ap.add_argument("--batch", help="batch.md of '### ANSWER <label>' blocks")
+    ap.add_argument("--docs", action="append",
+                    help="glob of docs to scan (repeatable). The GATE target: the "
+                         "precision census measured ANSWERS, the gate runs on DOCS.")
     ap.add_argument("--json")
     a = ap.parse_args()
 
     files = Tree(Path(a.root).resolve())
     if a.selftest:
         return 1 if selftest(files) else 0
-    if not a.batch:
-        ap.error("need --batch or --selftest")
+    if not a.batch and not a.docs:
+        ap.error("need --batch, --docs or --selftest")
 
-    answers = split_batch(Path(a.batch))
+    if a.docs:
+        paths = sorted({f for g in a.docs for f in globmod.glob(g)})
+        answers = {p: Path(p).read_text(errors="ignore") for p in paths}
+    else:
+        answers = split_batch(Path(a.batch))
     res = {lab: check_text(txt, files) for lab, txt in sorted(answers.items())}
     tot = sum(len(v) for v in res.values())
     certain = sum(1 for v in res.values() for f in v if f["kind"] in CERTAIN)
+    actionable = sum(1 for v in res.values() for f in v if f["kind"] in ACTIONABLE)
+    # How many citations were RESOLVED at all. A run that checked zero is a
+    # vacuous clean, not a clean -- the gate keys its vacuity guard on this.
+    checked = sum(
+        1 for txt in answers.values() for m in RE_CITATION.finditer(txt)
+        if files.lines(m.group(1)) is not None
+    )
     print(f"{tot} citation findings over {sum(1 for v in res.values() if v)}/{len(answers)} answers "
           f"({certain} in the mechanically-certain classes)")
+    print(f"SUMMARY citations_checked={checked} findings={tot} certain={certain} "
+          f"actionable={actionable} scanned={len(answers)}")
     for lab, fs in sorted(res.items()):
         for f in fs:
             print(f"  {lab}  {f['kind']:<28} {f['path']}:{f['cited']}  {f['detail']}")

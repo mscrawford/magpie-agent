@@ -466,8 +466,8 @@ Module 70 includes scenarios for substituting conventional feed (cereals, fodder
 > does not exist), never compared in a `$if`, never used as an index. They are also absent from
 > `config/default.cfg`, so they have no config surface at all. (Positive controls on the same search:
 > `c70_feed_scen` returns its `$setglobal` **plus** `%c70_feed_scen%` expansions at `preloop.gms:19-21`
-> **plus** `config/default.cfg:2170`; `c70_fac_req_regr` returns `$if "%c70_fac_req_regr%" ==` guards at
-> `preloop.gms:82,83,90` **plus** `config/default.cfg:2206`.)
+> **plus** `config/default.cfg:2173`; `c70_fac_req_regr` returns `$if "%c70_fac_req_regr%" ==` guards at
+> `preloop.gms:82,83,90` **plus** `config/default.cfg:2209`.)
 >
 > The SCP mechanism is driven **entirely** by the `s70_*` scalars below — substitution shares
 > (`s70_cereal_scp_substitution` / `s70_foddr_scp_substitution`), functional form
