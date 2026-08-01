@@ -108,7 +108,7 @@
     "SUPERSEDED COUNT: the '43 certain-class citation findings' figure was inflated ~4x by four extraction defects (bulleted source lists leaking identifiers across items; set member lines cited under the set name; filenames admitted as claimed identifiers; flat markdown sections). True post-fix count over the same 105 answers is 9. Any rate computed off 43 is void.",
     "Triage fan-out over the remaining 7 citation + 9 non-default true positives - none acted on until independently re-derived.",
     "A powered replication of the fabrication arm effect needs ~83 answers per arm.",
-    "Recall is UNMEASURED for all three checkers; this pass only reduced findings."
+    "RECALL + COVERAGE MEASURED 2026-08-01: 160/160 = 100% recall on the subset the citation checker evaluates, but it evaluates only 350/800 = 43.8% of citations (it silently skips any with no claimed identifier). 46% of skips are structurally unverifiable. Widening the lookbehind was MEASURED at ~20% precision on a random sample of 10 and REJECTED. Ceiling is ~44% coverage at high precision; going higher needs a different predicate, not a wider window."
    ]
   }
  ],

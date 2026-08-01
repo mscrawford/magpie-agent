@@ -53,8 +53,12 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from check_citation_content import _claimed_identifiers, check_text  # noqa: E402
-from magpie_corpus import RE_CITATION, Tree  # noqa: E402
+from check_citation_content import (  # noqa: E402
+    LOOKBEHIND, RE_CLAIMED, _claimed_identifiers, _parse_lines, check_text,
+)
+from magpie_corpus import (  # noqa: E402
+    RE_CITATION, Tree, is_filename, is_glob_stem,
+)
 
 
 def find_correct_citations(text: str, tree: Tree) -> list[dict]:
@@ -135,10 +139,59 @@ def coverage(corpus: dict[str, str], tree: Tree) -> dict[str, int]:
     return dict(c)
 
 
+RE_BOLD_LABEL = re.compile(r"\*\*[^*]{2,40}\*\*\s*[:(]?\s*$")
+
+
+def classify_skipped(corpus: dict[str, str], tree: Tree) -> dict[str, int]:
+    """Why the checker declines 56% of citations, and how much is recoverable.
+
+    The skipped population is the largest known gap. Widening the lookbehind is
+    the obvious fix and also the exact move that caused the bullet-inheritance
+    false positives, so this measures BEFORE anything changes:
+
+      recoverable_and_correct  a wider window yields an identifier, and it IS at
+                               the cited line -> extending only adds confirmations
+      recoverable_would_flag   a wider window yields an identifier NOT at the cited
+                               line -> extending manufactures findings that would
+                               each need adjudication. This is the risky bucket.
+      bold_label_only          "**Usage Location**: `path`" -- the subject lives in
+                               a heading, not in any window
+      nothing_nearby           no identifier-like token at all
+    """
+    c = defaultdict(int)
+    for txt in corpus.values():
+        for m in RE_CITATION.finditer(txt):
+            rel = m.group(1)
+            lines = tree.lines(rel)
+            if lines is None:
+                continue
+            claimed, clause = _claimed_identifiers(txt, m.start(), tree.dir_names, rel)
+            if claimed:
+                continue
+            c["skipped"] += 1
+            # What a window that ignored clause boundaries would have found.
+            wide_ctx = txt[max(0, m.start() - LOOKBEHIND): m.start()]
+            wide = [t for t in RE_CLAIMED.findall(wide_ctx)]
+            toks = [(a or b) for a, b in wide]
+            toks = [t for t in toks if t and not is_filename(t) and not is_glob_stem(t)
+                    and (rel.startswith("config/") or t not in tree.dir_names)]
+            if not toks:
+                c["bold_label_only" if RE_BOLD_LABEL.search(clause.rstrip())
+                  else "nothing_nearby"] += 1
+                continue
+            cited = _parse_lines(m.group(2))
+            on_line = any(t in lines[i - 1] for i in cited
+                          if 1 <= i <= len(lines) for t in toks)
+            c["recoverable_and_correct" if on_line else "recoverable_would_flag"] += 1
+    return dict(c)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=".")
     ap.add_argument("--docs", action="append", required=True)
+    ap.add_argument("--classify-skipped", action="store_true",
+                    help="report the composition of the skipped population and exit")
     ap.add_argument("--deltas", default="1,2,3,5,15,50,99999",
                     help="line offsets to seed; 99999 forces past-EOF")
     ap.add_argument("--n", type=int, default=40, help="seeds per delta")
@@ -160,6 +213,17 @@ def main() -> int:
         print(f"  {k:<32} {v:>5}  {pct}")
     print("  NOTE: recall below is measured ON THE EVALUATED SUBSET. Multiply by the")
     print("        evaluated fraction for effective corpus coverage.")
+
+    if a.classify_skipped:
+        cls = classify_skipped(corpus, tree)
+        tot_s = cls.get("skipped", 0)
+        print("\n=== COMPOSITION of the SKIPPED population ===")
+        for k in ("skipped", "recoverable_and_correct", "recoverable_would_flag",
+                  "bold_label_only", "nothing_nearby"):
+            v = cls.get(k, 0)
+            pct = f"{v / tot_s:5.1%}" if tot_s else "  n/a"
+            print(f"  {k:<28} {v:>5}  {pct}")
+        return 0
 
     bases: list[tuple[str, dict]] = []
     for f, txt in corpus.items():

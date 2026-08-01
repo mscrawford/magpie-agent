@@ -189,6 +189,80 @@ That is the capability-vs-default class the corpus is measured to be worst at.
 - Denominator caveat unchanged: these are 105 **adversarial** answers, each written to hit
   a known defect. Nothing here is a base rate.
 
+---
+
+# Addendum — recall, coverage, and why the skipped population is NOT worth chasing
+
+Added the same day, after the precision work above. Everything in that pass reduced
+the finding count, and a checker tuned only against false positives converges on the
+empty set — which scores 100% precision and is useless. So: what does it miss?
+
+## Recall — 100%, on the subset it evaluates
+
+`audit/tools/measure_checker_recall.py` seeds defects by **mutating citations that are
+already there and already correct**, in their own prose context. Hand-written seeds
+would inherit the shapes I already had in mind, which are the shapes the positive
+controls already cover; mutating the live corpus makes the seed distribution match the
+real one by construction. Each mutant is verified to be a genuine defect before it
+counts, and `--deltas 0` runs the pipeline unmutated as a harness control.
+
+| delta | seeded | caught | recall |
+|---|---:|---:|---:|
+| 0 (harness control) | 40 | 0 | **PASS** — catching an unmutated citation would mean the harness flags correct text |
+| ±1, ±3, ±15, past-EOF | 160 | 160 | **100%** |
+
+## Coverage — the number that was never being reported
+
+```
+citations_total                800  100.0%
+evaluated                      350   43.8%
+skipped_no_claimed_identifier  450   56.2%
+```
+
+The checker **silently declines** any citation with no claimed identifier next to it.
+Recall on the evaluated subset is not recall over the corpus: effective coverage is
+**~44%**. A bare "100% recall" reads several sizes too large without this.
+
+## Composition of the 450 skips — measured, not sampled
+
+```
+recoverable_and_correct        164   36.4%   widening adds only confirmations
+recoverable_would_flag          73   16.2%   widening manufactures findings
+bold_label_only                  4    0.9%
+nothing_nearby                 209   46.4%   structurally unverifiable
+```
+
+**46% are structurally unverifiable.** "See `path:15` for details" asserts nothing a
+placement predicate can check. That is a property of the corpus, not a fixable gap.
+
+**Method note worth keeping.** A 10-item eyeball of the skipped set suggested
+`**Usage Location**: \`path\`` labels were a major class. The census puts them at
+**0.9%**. The sample misled me about the population — the same lesson as hand-picked
+precision (6/6 implying ~100% where a random sample gave 57–67%), in the other
+direction.
+
+## Decision: do not widen the lookbehind
+
+The 73 `recoverable_would_flag` are exactly the population the clause-boundary fix
+suppressed. Rather than infer their precision from the earlier census (different
+corpus, before several fixes), 10 were drawn at random and adjudicated:
+
+- **7 clear false positives** — bullet inheritance (2), a `;` clause boundary, a
+  crossed `## Scaling` heading, a citation whose subject *is* the cited prose, and a
+  realization-comparison bullet;
+- **2 possible true positives**;
+- **1 already caught** by `citation_out_of_range` through another route.
+
+**~20% precision if widened** — the same rate as `citation_identifier_absent`.
+Widening would add ~73 findings, ~15 of them real. For an advisory gate whose entire
+value is precision, that is a bad trade, and it would re-introduce the exact defect
+class fixed earlier today.
+
+**The ceiling is therefore ~44% coverage at high precision, or ~74% at roughly 20%
+precision on the added portion.** The first is the right operating point. Raising it
+further needs a *different predicate* — one that can resolve what a citation is about
+from section context — not a wider window on this one.
+
 ## Reproduce
 
 ```
