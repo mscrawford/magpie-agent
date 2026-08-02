@@ -1,221 +1,459 @@
 # R60 depth audit — `cross_module/circular_dependency_resolution.md`
 
-**Lens**: `config_realization` (defaults, `cfg$gms$*` switches, realization names, default-vs-alternative)
-**Ground truth**: MAgPIE `develop` read-only worktree (referred to below as `<develop>`; all commands were run with cwd = that worktree unless the path starts with `audit/` or `core_docs/`, which are magpie-agent paths).
-**Role-map reference**: `audit/integrated/depth_rolemap.json` (checked first for every `vm_`/`pm_`/`im_`/`pcm_`/`fm_` attribution claim, then confirmed with both-endpoints greps).
-**Claims verified**: 57
-**Result**: 15 bugs (1 Critical, 7 Major, 7 Minor), 6 deferred.
+**Lens**: `config_realization` (entry from `config/default.cfg` + realization directory listings; defaults, `cfg$gms$*` switches, realization names, default-vs-alternative)
+**Ground truth**: MAgPIE `develop` read-only worktree (`<develop>`). Every shell command below was run with cwd = that worktree, except paths starting `audit/`, `core_docs/` or `modules/module_*.md`, which are magpie-agent paths.
+**Role-map reference**: `audit/integrated/depth_rolemap.json`, consulted **first** for every `vm_`/`pm_`/`im_`/`pcm_`/`fm_` attribution claim, then confirmed with both-endpoints greps against code.
+**Claims verified**: 58
+**Result**: **20 bugs** (2 Critical, 10 Major, 8 Minor), 8 deferred.
+
+> **Merge note**: an earlier pass of this same lens/doc pair had written a 15-bug report to this path. This file is a **superset**: every finding retained from that pass was **re-derived independently against code this session** (marked `[re-derived]`), and 5 findings are new to this pass (marked `[new]`). Two of that pass's findings were demoted to *deferred* here where I could not reproduce the claimed harm. Nothing was carried over on trust.
 
 ---
 
-## Lens summary: what checked out
+## 0. What the lens cleared (negative results — do not re-litigate)
 
-Everything in the realization/default layer that the doc names explicitly is **correct** — this doc leads with defaults throughout:
+The realization/default layer of this doc is in good shape: **every realization it names is the config default**, and it never describes a non-default realization as active. No wrong-realization Critical.
 
 | Doc claim | Code | Verdict |
 |---|---|---|
-| `56_ghg_policy/price_aug22` | `cfg$gms$ghg_policy <- "price_aug22"` (`config/default.cfg:1634`) | ✅ default |
-| `52_carbon/normal_dec17` | `config/default.cfg:1577` | ✅ default |
-| `10_land/landmatrix_dec18` | `config/default.cfg:232` (only realization) | ✅ default |
-| `13_tc/endo_jan22` | `config/default.cfg:293` | ✅ default |
+| `10_land/landmatrix_dec18` | `config/default.cfg:232` (sole realization) | ✅ default |
+| `13_tc/endo_jan22` | `config/default.cfg:293` (alt: `exo`) | ✅ default |
 | `14_yields/managementcalib_aug19` | `config/default.cfg:357` (alt: `dynRegPastrTau_apr26`) | ✅ default |
-| `21_trade/selfsuff_reduced` is default, pool-based; `selfsuff_reduced_bilateral22` is non-default | `config/default.cfg:653`; `ls modules/21_trade/` | ✅ default, correctly flagged |
-| `41_.../endo_apr13` | `config/default.cfg:1322` | ✅ default |
-| `vm_import`/`vm_export` do not exist; `v21_trade` only in `selfsuff_reduced_bilateral22` | whole-tree grep empty (positive control `vm_supply` returns 5 files); `modules/21_trade/selfsuff_reduced_bilateral22/declarations.gms:23` | ✅ |
-| `s56_buffer_aff` default 50 %, half of removals credited | `modules/56_ghg_policy/price_aug22/input.gms:71` `/ 0.5 /`; used as `(1-s56_buffer_aff)` at `equations.gms:77`; `config/default.cfg:1788` | ✅ |
-| `s56_c_price_induced_aff` (1/0) | `input.gms:69` `/ 1 /`; `config/default.cfg:1762` | ✅ |
+| `21_trade/selfsuff_reduced`, pool-based; `selfsuff_reduced_bilateral22` non-default | `config/default.cfg:653`; `ls -d modules/21_trade/*/` | ✅ default, correctly flagged |
+| `41_.../endo_apr13` | `config/default.cfg:1322` (alt: `static`) | ✅ default |
+| `52_carbon/normal_dec17` | `config/default.cfg:1577` (sole realization) | ✅ default |
+| `56_ghg_policy/price_aug22` | `config/default.cfg:1634` (sole realization) | ✅ default |
+| "`vm_import`/`vm_export` do NOT exist"; bilateral `v21_trade` only in `selfsuff_reduced_bilateral22` | `rg -n "vm_import\|vm_export" modules/ core/` → 0 hits; positive control `rg -ln "v21_trade" modules/21_trade/` → 3 files, **all** under `selfsuff_reduced_bilateral22/` | ✅ |
+| `s56_buffer_aff` = 0.5, "half of removals credited" | `config/default.cfg:1788`; used as `(1-s56_buffer_aff)` at `modules/56_ghg_policy/price_aug22/equations.gms:77` | ✅ |
+| `s56_c_price_induced_aff` is a 1/0 switch | default **1**, `config/default.cfg:1762` (doc omits the default value but does not misstate it) | ✅ |
+| `q10_land_area` snippet (doc §1.2) | `modules/10_land/landmatrix_dec18/equations.gms:13-15` — verbatim | ✅ |
+| `pcm_land` / `pcm_carbon_stock` / `pcm_tau` Appendix-A **citations** | `modules/10_land/landmatrix_dec18/postsolve.gms:9`, `modules/56_ghg_policy/price_aug22/postsolve.gms:8`, `modules/13_tc/endo_jan22/postsolve.gms:16` — all three land exactly | ✅ |
+| §3.1 step 1 (`i14_yields_calib` / `vm_tau` / `pcm_tau` paragraph) | `modules/14_yields/managementcalib_aug19/equations.gms:14-16` and `:35-39` — exact | ✅ |
 | `q52_emis_co2_actual` reads `pcm_carbon_stock` **and** `vm_carbon_stock` | `modules/52_carbon/normal_dec17/equations.gms:16-19` | ✅ |
-| Land-conversion cost is area-based (`q39_cost_landcon`), no carbon density | `modules/39_landconversion/calib/equations.gms:12` (`calib` is the default, `config/default.cfg:1288`) | ✅ |
-| `q10_land_area` snippet (doc §1.2) | `modules/10_land/landmatrix_dec18/equations.gms:13-15` — verbatim match | ✅ |
-| §3.1 step 1 (the `i14_yields_calib` / `vm_tau` / `pcm_tau` paragraph) | `modules/14_yields/managementcalib_aug19/equations.gms:14-16` and `:35-39`; `modules/13_tc/endo_jan22/postsolve.gms:16` — all three citations land exactly | ✅ (previously repaired; still correct) |
-| `q21_trade_glo` formula, `q21_trade_reg`/`q21_trade_reg_up` split | `modules/21_trade/selfsuff_reduced/equations.gms:12-14, 31-42` | ✅ |
-| CONOPT / IPOPT / CPLEX are all real | `modules/80_optimization/nlp_ipopt/`, `lp_nlp_apr17/solve.gms:20-34`; default `cfg$gms$optimization <- "nlp_apr17"`, `c80_nlp_solver <- "conopt4"` | ✅ (checked because it looked like a fabrication — it is not) |
-| Chapman-Richards forest growth | `core/sets.gms:281` `chap_par`, `modules/52_carbon/normal_dec17/start.gms:16` | ✅ |
-| Run horizon "…until 2100" | `c_timesteps = "coup2100"` → `core/sets.gms:188`, last element `y2100` | ✅ |
-| `pm_yields_semi_calib(j,kve,w)` signature | `modules/14_yields/managementcalib_aug19/declarations.gms:19` — exact | ✅ |
-| `pcm_land`/`pcm_tau` Appendix-A citations (`10_land/.../postsolve.gms:9`, `13_tc/endo_jan22/postsolve.gms:16`) | exact match | ✅ |
+| Land-conversion cost is area-based (`q39_cost_landcon`), no carbon density | `modules/39_landconversion/calib/equations.gms:12-15` (`calib` is default, `config/default.cfg:1288`) | ✅ |
+| `q21_trade_glo` formula; `q21_trade_reg`/`q21_trade_reg_up` split | `modules/21_trade/selfsuff_reduced/equations.gms:12-14, 31, 39` | ✅ |
+| `pm_land_conservation(t,j,land,consv_type)` signature, declared M22 | `modules/22_land_conservation/area_based_apr22/declarations.gms:15` | ✅ |
+| `im_pollutant_prices(t_all,i,pollutants,emis_source)` signature | `modules/56_ghg_policy/price_aug22/declarations.gms:9` | ✅ |
+| `"vegc"` ∈ `c_pools`; `"actual"` ∈ `stockType`; `land_natveg = {primforest, secdforest, other}` | `core/sets.gms:324-325, 262-263`; `modules/56_ghg_policy/price_aug22/sets.gms:212-213` | ✅ |
+| "Module 54 (Phosphorus): 0 cycles, 1 connection" | M54's only interface object is `vm_p_fert_costs` (→ M11); it reads none. Sole realization `off`, `config/default.cfg:1608` | ✅ |
+| CONOPT / IPOPT / CPLEX all real | `modules/80_optimization/{nlp_apr17,nlp_ipopt,lp_nlp_apr17}`; default `optimization <- "nlp_apr17"`, `c80_nlp_solver <- "conopt4"` (`config/default.cfg:2303,2312`) | ✅ (checked because it read like a fabrication — it is not) |
+| `vm_cost_landcon` exists (used in a pseudocode example) | `modules/39_landconversion/calib/declarations.gms:13` | ✅ |
+| `pc41_AEI_start(j) = vm_AEI.l(j)` in M41 postsolve | `modules/41_area_equipped_for_irrigation/endo_apr13/postsolve.gms:8` | ✅ |
 
 ---
 
-## Bugs
+## 1. Bugs
 
-### B01 — Critical — the livestock→manure→soil-fertility→yield feedback does not exist in the code
-**Doc** `circular_dependency_resolution:241-245, 253, 273`
-> `vm_prod_reg(i2,kap) [70] → manure availability` / `(Manure affects soil fertility)` / `pm_yields_semi_calib(j,kve,w) [14]`
-> "3. **Across timesteps**: Manure from livestock(t) affects yields(t+1)"
-> "Fix: … Limit manure impact on yields (Module 59, SOM)"
+### CDR-01 🔴 Critical — M41: previous-timestep AEI is a **lower** bound, not an upper bound `[re-derived]`
 
-**Reality**: module 14 (both realizations) touches exactly two interface variables — `vm_tau` and `vm_yld`. It never reads `vm_manure`, `vm_manure_recycling`, `vm_nr_som`, `vm_nr_som_fertilizer`, `vm_nr_inorg_fert_reg`, or any module-17/50/55/59 output. `vm_manure` (declared 55_awms) is read only by 50, 51, 53. Module 59's outputs (`vm_cost_scm`, `vm_nr_som`, `vm_nr_som_fertilizer`) are read only by 11, 51, 50. There is no nutrient→yield channel anywhere in MAgPIE: `vm_yld` = `i14_yields_calib · vm_tau / fm_tau1995` (crops) or `i14_yields_calib · pm_past_mngmnt_factor · (1+s14_yld_past_switch·…)` (pasture).
+**Doc** `circular_dependency_resolution.md:344`
+> "1. **Within timestep**: AEI capacity from **previous timestep** is **upper bound**"
 
-The **real** 70→14 edge is `pm_past_mngmnt_factor` (declared `modules/70_livestock/fbask_jan16/declarations.gms:41`, computed in `presolve.gms:44-49` from cattle-number proxies driven by `im_pop` and `pm_kcal_pc_initial`, read at `modules/14_yields/managementcalib_aug19/equations.gms:38`) — a **pasture-management intensification factor**, not manure and not soil fertility, and it affects pasture yields only.
-
-**Evidence**: `modules/14_yields/managementcalib_aug19/equations.gms:35-39`; `modules/70_livestock/fbask_jan16/presolve.gms:44-49`.
-**Verify**:
+**Reality** — default realization `endo_apr13` (`config/default.cfg:1322`). `vm_AEI(j)` is a positive variable **optimized in the current timestep** (`declarations.gms:19`). Presolve sets a *floor*:
+```gams
+* modules/41_area_equipped_for_irrigation/endo_apr13/presolve.gms:11
+vm_AEI.lo(j) = pc41_AEI_start(j) / ((1 - s41_AEI_depreciation)**(m_timestep_length));
 ```
-rg -o 'vm_\w+' modules/14_yields/managementcalib_aug19/*.gms | sort -u
-  → only vm_tau and vm_yld
-rg -n 'vm_prod|manure|vm_nr_|nutrient|som' modules/14_yields/managementcalib_aug19/*.gms
-  → 1 hit, a prose comment at preloop.gms:160 ("historical production and croparea"); positive control `rg -ln vm_tau modules/14_yields/managementcalib_aug19/` returns 2 files
-rg -n 'vm_manure|vm_nr_som|vm_prod\(' modules/14_yields/dynRegPastrTau_apr26/*.gms  → empty
+With the default `s41_AEI_depreciation = 0` (`input.gms:11`; `config/default.cfg:1332`) that floor is exactly last timestep's AEI. **No `vm_AEI.up` assignment exists anywhere in the model.** The irrigated-area constraint binds against the *current, endogenous* AEI —
+`q41_area_irrig(j2) .. sum(kcr, vm_area(j2,kcr,"irrigated")) =l= vm_AEI(j2);` (`equations.gms:10-11`) — and expansion happens **within** the same timestep, priced by `q41_cost_AEI` on `(vm_AEI - pc41_AEI_start)` (`equations.gms:19-23`). The previous timestep never caps irrigation; it only prevents disinvestment. The doc's own step 2 ("Investment: New AEI capacity based on current irrigation use") contradicts its step 1.
+
+Related default-config point: in the **default** croparea realization `simple_apr24` (`config/default.cfg:915`), module 30 does not reference `vm_AEI` at all — it is listed in `modules/30_croparea/simple_apr24/not_used.txt:2`. `vm_AEI` enters a module-30 equation only in the non-default `detail_apr24` (`equations.gms:82`). So in a default run the 30↔41 coupling is entirely `q41_area_irrig` inside module 41.
+
+**Verify**
 ```
-**Why Critical**: §3.1 is flagged "⭐⭐⭐ / 🔴 HIGH / Test always", and §6.3 tells the reader to "Verify all modules in dependency cycle still function". A reader acting on this tests/modifies 55/59 looking for a manure→yield channel that does not exist, and may report a model feedback MAgPIE does not implement. This is the AGENT.md primary-directive anti-pattern (parameterized ≠ mechanistic; here, not even parameterized).
-**Fix**: replace the manure legs of the C1 chain with the actual coupling: `vm_yld [14] → vm_prod [30 q30_prod] → vm_prod_reg [17 q17_prod_reg] → feed demand [70 q70_feed]`, and the return leg `pm_past_mngmnt_factor [70 presolve] → q14_yield_past [14]` (cross-timestep, exogenous-proxy driven). State explicitly that **manure and soil nitrogen never feed back into yields in MAgPIE**. Drop the "Limit manure impact on yields (Module 59, SOM)" fix.
+rg -n "vm_AEI\.(up|lo|fx)" modules/
+  -> endo_apr13/presolve.gms:11  (.lo)  |  static/presolve.gms:9 (.fx, non-default)
+     + 4 ov_AEI output-writing lines in postsolve
+positive control: rg -n "vm_land.up" modules/  -> 3 hits (proves ".up" greps work)
+rg -n "vm_AEI" modules/30_croparea/  -> detail_apr24/equations.gms:82 ; simple_apr24/not_used.txt:2
+```
+
+**Why Critical**: this is the sole "How It Works" mechanism for cycle C3. A modeller debugging "irrigated area exceeded last period's AEI" would conclude the model is broken, or would add a redundant/incorrect `.up` bound — building a modification on an inverted constraint.
+
+**Fix**: "Within timestep: the previous timestep's (depreciated) AEI is a **lower** bound on the endogenous `vm_AEI` (`modules/41_area_equipped_for_irrigation/endo_apr13/presolve.gms:11`); irrigated area is capped by the *current* `vm_AEI`, which may expand in the same timestep at the annuitised cost `q41_cost_AEI`. The temporal link is the cost anchor `pc41_AEI_start`, not a capacity ceiling." Reclassify C3 as **Simultaneous Equations with a one-way ratchet**. Note that under the default `simple_apr24`, module 30 lists `vm_AEI` in `not_used.txt`; and that the non-default `static` realization fixes `vm_AEI.fx` at 1995 levels, dissolving the cycle entirely.
 
 ---
 
-### B02 — Major — C1 arrow `vm_prod [17] → pm_yields_semi_calib [14]` is direction-inverted
-**Doc** `circular_dependency_resolution:237`
+### CDR-02 🔴 Critical — the livestock → manure → soil-fertility → yield feedback does not exist in the code `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:241-245`, `:253`, `:273`
+> `vm_prod_reg(i2,kap) [70] → manure availability` / `(Manure affects soil fertility)` / `pm_yields_semi_calib(j,kve,w) [14] → vm_prod(j,kcr) [17]`
+> ":253 3. **Across timesteps**: Manure from livestock(t) affects yields(t+1)"
+> ":273 - Limit manure impact on yields (Module 59, SOM)"
+
+**Reality** — MAgPIE yields have **no nutrient input at all**. A complete inventory of every interface object referenced anywhere in the default yields realization contains no nitrogen, manure or SOM object:
+```
+rg -no "(vm_|pm_|im_|fm_|pcm_|sm_)[a-zA-Z0-9_]*" modules/14_yields/managementcalib_aug19/ \
+  | awk -F: '{print $NF}' | sort -u
+-> fm_aboveground_fraction, fm_carbon_density, fm_croparea, fm_ipcc_bef, fm_tau1995,
+   im_growing_stock, im_growing_stock_ysf, pcm_tau, pm_carbon_density_{other,plantation,secdforest}_ac,
+   pm_climate_class, pm_land_start, pm_past_mngmnt_factor, pm_yields_semi_calib,
+   sm_carbon_fraction, sm_fix_cc, vm_tau, vm_yld
+```
+`vm_manure` (declared 55_awms) is read only by **50, 51, 53**; `vm_nr_som` and `vm_nr_som_fertilizer` (declared 59_som) are read only by **51** and **50** respectively. Manure and SOM enter the **nitrogen budget / fertiliser requirement**, never `vm_yld` or `i14_yields_calib`. `vm_yld` is fully determined by `q14_yield_crop` / `q14_yield_past` (`equations.gms:14-16, 35-39`).
+
+The **real** 70→14 edge is `pm_past_mngmnt_factor` — declared `modules/70_livestock/fbask_jan16/declarations.gms:41`, computed in `presolve.gms:64-67` from a cattle-number proxy (`p70_incr_cattle`, `f70_pyld_slope_reg`), read at `modules/14_yields/managementcalib_aug19/equations.gms:38`. It is a **pasture-management intensification factor**, not manure, and scales **pasture yields only**.
+
+Secondary defect on the same line: the tag `vm_prod_reg(i2,kap) [70]` is a *reader* tag. `vm_prod_reg` is declared in 17_production and populated by 17/18/20/21; every module-70 occurrence is on an equation RHS (`modules/70_livestock/fbask_jan16/equations.gms:18,28,36,60,65,70`). Elsewhere in the same chain the tags name the declaring/populating module.
+
+**Verify**
+```
+rg -ln "vm_manure" modules/    -> 55_awms/*, 50_nr_soil_budget/macceff_aug22, 51_nitrogen/rescaled_jan21,
+                                  53_methane/ipcc2006_aug22  (no 14_yields)
+rg -n  "vm_prod\(" modules/70_livestock/  -> 0 hits
+positive control: rg -c "vm_prod_reg\(" modules/70_livestock/fbask_jan16/equations.gms -> 6
+rg -n "pm_past_mngmnt_factor" modules/     -> 70 presolve:64-67 (populate) ; 14 equations.gms:38 (read)
+```
+Role map agrees: `vm_manure {declared 55, read_by [50,51,53,55]}`, `vm_nr_som {declared 59, read_by [51,59]}`, `vm_nr_som_fertilizer {declared 59, read_by [50,59]}`, `pm_past_mngmnt_factor {declared 70, read_by [14,70]}`.
+
+**Cross-doc**: the same false claim is in `core_docs/Module_Dependencies.md:194` ("Livestock provides manure affecting yields") — a shared latent doc error; fix both or the fix will be re-imported.
+
+**Why Critical**: §3.1 is flagged ⭐⭐⭐ / 🔴 HIGH / "Test always", and §6.3 instructs the reader to verify every module in the cycle. A reader acting on this modifies/tests 55 and 59 hunting a manure→yield channel that does not exist, and may report a MAgPIE feedback the model does not implement — the AGENT.md primary-directive anti-pattern (here not even parameterized, simply absent).
+
+**Fix**: replace the manure legs with the actual coupling — `vm_yld [14] → vm_prod [30] → vm_prod_reg [17 q17_prod_reg] → feed demand [70 q70_feed]`, return leg `pm_past_mngmnt_factor [70 presolve.gms:64-67] → q14_yield_past [14 equations.gms:35-39]` (cross-timestep, exogenous-proxy driven, pasture only). State explicitly that **manure and soil nitrogen never feed back into yields in MAgPIE**. Delete the ":273 Limit manure impact on yields (Module 59, SOM)" fix. Retag `vm_prod_reg(i2,kap) [declared+populated 17; read by 70]`.
+
+---
+
+### CDR-03 🟠 Major — C1 arrow `vm_prod [17] → pm_yields_semi_calib [14]` is direction-inverted `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:237`
 > `vm_prod(j,kcr) [17] → pm_yields_semi_calib(j,kve,w) [14]`
 
-**Reality**: the edge runs the other way and only the other way. `pm_yields_semi_calib` is assigned in module 14's **preloop** from `i14_yields_calib("y1995",…)` (`modules/14_yields/managementcalib_aug19/preloop.gms:116,149`) — before any solve — and is read by module 17 (`modules/17_production/flexreg_apr16/presolve.gms:10`, `pm_prod_init(j,kcr)=sum(w,fm_croparea(...)*pm_yields_semi_calib(j,kcr,w))`). Role map: `pm_yields_semi_calib` → `populated_by:["14"], read_by:["14","17"]`. Nothing in module 14 references `vm_prod`. (The offline calibration in `scripts/calibration/calc_calib.R` is not this edge either: it is off by default, `cfg$recalibrate <- FALSE`, `config/default.cfg:70`, and `get_areacalib()` targets **area** vs `pm_land_start`.)
-**Verify**: `rg -n 'pm_yields_semi_calib' modules/` → 14 preloop/declarations + `17_production/flexreg_apr16/presolve.gms:10` only.
-**Fix**: reverse the arrow to `pm_yields_semi_calib(j,kve,w) [14] → pm_prod_init [17]` and note it is a preloop-fixed parameter, i.e. not part of any within-run cycle.
+**Reality** — the edge runs the other way and only the other way. `pm_yields_semi_calib` is declared in M14 (`modules/14_yields/managementcalib_aug19/declarations.gms:19`), assigned in M14's **preloop** from the 1995 calibrated yields (`preloop.gms:116,149`: `pm_yields_semi_calib(j,knbe14,w) = i14_yields_calib("y1995",j,knbe14,w)`) — i.e. **before any solve** — and read by exactly one other module: 17, in presolve (`modules/17_production/flexreg_apr16/presolve.gms:10`, feeding `pm_prod_init`). Nothing in module 14 references `vm_prod` (see the CDR-02 interface inventory). The doc's own prose at `:251` states the correct within-timestep coupling (`vm_tau`), so the diagram contradicts the paragraph beneath it.
+
+**Verify**
+```
+rg -n "pm_yields_semi_calib" modules/ core/
+-> 14_yields/managementcalib_aug19/{declarations.gms:19, preloop.gms:116,149}
+   17_production/flexreg_apr16/presolve.gms:10        (+ the dynRegPastrTau_apr26 mirror)
+```
+Role map: `{declared_in: 14_yields, populated_by: [14], read_by: [14,17]}`.
+
+**Fix**: reverse to `pm_yields_semi_calib(j,kve,w) [14] → pm_prod_init [17]`, and mark it a **preloop-fixed parameter** — it is not part of any within-run cycle. The genuine 17↔14 within-timestep coupling is via `vm_tau`.
 
 ---
 
-### B03 — Major — `vm_prod_reg(i2,kap)` attributed to module 70
-**Doc** `circular_dependency_resolution:241`
-> `vm_prod_reg(i2,kap) [70] → manure availability`
+### CDR-04 🟠 Major — C4: `vm_emissions_reg → vm_reward_cdr_aff` is a false serial hand-off; the branches are parallel `[new]`
 
-**Reality**: `vm_prod_reg` is DECLARED in `17_production` and POPULATED by 17 (`q17_prod_reg`), 18, 20, 21. Module 70 only READS it — every occurrence in `modules/70_livestock/fbask_jan16/equations.gms` (lines 18, 28, 36, 60, 65, 70) is on an equation RHS. Every other entry in this doc's cycle chains tags the *populating* module, so `[70]` misdirects.
-**Verify**: `rg -n 'vm_prod_reg' modules/70_livestock/fbask_jan16/*.gms` → 6 hits, all RHS. Role map: `populated_by:["17","18","20","21"]`.
-**Fix**: `vm_prod_reg(i2,kap) [declared+populated 17; read by 70]`.
+**Doc** `circular_dependency_resolution.md:392-396`
+> `vm_emissions_reg(i,"co2_c") [52] → reduced (or negative) CO2 emissions` ↓ `vm_reward_cdr_aff(i) [56] → revenue from carbon removal` ↓ `vm_cost_glo [11]`
+
+**Reality** — `vm_reward_cdr_aff` never sees `vm_emissions_reg`:
+```gams
+* modules/56_ghg_policy/price_aug22/equations.gms:73-79
+q56_reward_cdr_aff(j2) .. v56_reward_cdr_aff(j2) =e=
+   sum(ct, p56_fader_cpriceaff(ct)) *
+   sum(ac, (sum(aff_effect,(1-s56_buffer_aff)*vm_cdr_aff(j2,ac,aff_effect))
+            * sum((cell(i2,j2),ct), p56_c_price_aff(ct,i2,ac))) / ((1+...pm_interest...)**(ac.off*5)))
+   * sum((cell(i2,j2),ct), pm_interest(ct,i2)/(1+pm_interest(ct,i2)));
+```
+`vm_cdr_aff` is declared **and populated in M32** (`modules/32_forestry/dynamic_may24/declarations.gms:83`; `equations.gms:37,42`) and read only by 32 and 56. `vm_emissions_reg` is read in M56 only by `q56_emis_pricing` / `q56_emis_pricing_co2` (`equations.gms:15-22`), which flow to `v56_emission_cost` → `vm_emission_costs`. The two routes into the objective are **parallel**, not serial:
+
+- carbon stock → `q52_emis_co2_actual` → `vm_emissions_reg` → `q56_emis_pricing_co2` → `v56_emission_cost` → `vm_emission_costs` → `vm_cost_glo`
+- **`vm_cdr_aff` (M32)** → `q56_reward_cdr_aff` → `vm_reward_cdr_aff` → `vm_cost_glo`
+
+This is the R51 pattern (MANDATE 21): both consumers read shared/independent inputs; neither reads the other's output. The chain also drops `vm_cdr_aff` — the actual afforestation-incentive interface — entirely.
+
+**Verify**
+```
+rg -n "vm_cdr_aff" modules/
+  -> 32_forestry/dynamic_may24/{declarations.gms:83, equations.gms:37,42}  (populate)
+     56_ghg_policy/price_aug22/equations.gms:77                            (read)
+rg -n "vm_emissions_reg" modules/56_ghg_policy/price_aug22/equations.gms   -> line 17 only
+```
+Role map: `vm_cdr_aff {declared 32_forestry, populated_by [32], read_by [32,56]}`.
+
+**Fix**: split the C4 chain into the two parallel branches above and insert the missing node `vm_cdr_aff(j,ac,aff_effect) [32 q32_cdr_aff]` between forestry expansion and the M56 reward. State that `vm_emissions_reg` and `vm_reward_cdr_aff` meet only in the objective (`vm_cost_glo`, M11).
 
 ---
 
-### B04 — Major — `vm_land(j,"crop")` attributed to module 30 in the C4 chain
-**Doc** `circular_dependency_resolution:386`
+### CDR-05 🟠 Major — `vm_land(j,"crop")` attributed to module 30; the crop slice is populated by module 29 `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:386`
 > `vm_land(j,"crop") [30] → competes for land (crop ↓ as forest ↑)`
 
-**Reality**: the `"crop"` slice of `vm_land` is populated by **29_cropland**, equation `q29_cropland`, in the default realization `detail_apr24` (`cfg$gms$cropland <- "detail_apr24"`, `config/default.cfg:814`): `vm_land(j2,"crop") =e= sum((kcr,w), vm_area(j2,kcr,w)) + vm_fallow(j2) + sum(ac, v29_treecover(j2,ac));` (`modules/29_cropland/detail_apr24/equations.gms:11-12`; the alternative `simple_apr24/equations.gms:12-13` drops the fallow and tree-cover terms). Module 30 (default `simple_apr24`, `config/default.cfg:915`) only *reads* `vm_land(j2,"crop")` (`modules/30_croparea/simple_apr24/equations.gms:23`, the bioenergy-tree target). Module 29 is also absent from the C4 module list at `:378` and from the C4 row in the §8.1 catalog (`:743`).
-**Verify**: `rg -n 'vm_land\(j2?,"crop"\)' modules/` → LHS `=e=` only at `modules/29_cropland/detail_apr24/equations.gms:12` and `simple_apr24/equations.gms:13`; every module-30 hit is RHS. Role map: `vm_land populated_by:["10","29","31","32","34","35"]` — 30 absent.
-**Fix**: `vm_land(j,"crop") [29 q29_cropland]`, and add 29_cropland to the C4 module list in §3.4 and §8.1.
+**Reality** — `vm_land` is declared in M10; the `"crop"` slice is set on the LHS of `q29_cropland` in the **default** cropland realization `detail_apr24` (`config/default.cfg:814`):
+```gams
+* modules/29_cropland/detail_apr24/equations.gms:12
+vm_land(j2,"crop") =e= sum((kcr,w), vm_area(j2,kcr,w)) + vm_fallow(j2) + sum(ac, v29_treecover(j2,ac));
+```
+(the alternative `simple_apr24/equations.gms:13` drops the fallow and tree-cover terms). M30 (default `simple_apr24`) only **reads** it, on the RHS of the bioenergy-tree target `modules/30_croparea/simple_apr24/equations.gms:23`. The neighbouring C4 entries tag the populating module (`vm_land(j,"forestry") [32]` ✓, `vm_emissions_reg [52]` ✓), so `[30]` is wrong under the chain's own convention and under both alternatives (declaring module would be `[10]`). Module 29 is also missing from the C4 module list at `:378` and from the C4 row of the §8.1 catalog (`:743`).
+
+**Verify**
+```
+rg -n 'vm_land\(j2,"crop"\)' modules/
+-> LHS "=e=" only at 29_cropland/detail_apr24/equations.gms:12 and simple_apr24/equations.gms:13;
+   every 30_croparea hit is RHS.
+```
+Role map: `vm_land populated_by [10,29,31,32,34,35]` — 30 appears only under `read_by`.
+
+**Fix**: `vm_land(j,"crop") [29 q29_cropland]`, and add 29_cropland to the C4 module list in §3.4 and to the §8.1 C4 row.
 
 ---
 
-### B05 — Major — `vm_carbon_stock(j,"forestry",…)` attributed to module 56 in the C4 chain
-**Doc** `circular_dependency_resolution:390`
+### CDR-06 🟠 Major — conservation bounds attributed to module 22; they are applied in 35_natveg / 31_past, and the rendered inequality drops the restore term `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:302` (with `:288` and `:292` carrying the same misdirection via `[10]`)
+> `vm_land(j,land_natveg) ≥ pm_land_conservation(t,j,land_natveg,"protect")  [22, bounds]`
+
+**Reality** — module 22 (`area_based_apr22`, the only realization) has **no `presolve.gms` and no `equations.gms`**; its only in-loop file is `presolve_ini.gms`, which merely *reads* `vm_land.lo(j,"crop")` (lines 86, 97, 108). The bounds are set elsewhere:
+```
+modules/35_natveg/pot_forest_may24/presolve.gms:162  vm_land.lo(j,"primforest") <- pm_land_conservation(...,"protect")  [conditional]
+modules/35_natveg/pot_forest_may24/presolve.gms:201  vm_land.lo(j,"secdforest") = pm_land_conservation(...,"protect") + p35_land_restoration(j,"secdforest")
+modules/35_natveg/pot_forest_may24/presolve.gms:231  vm_land.lo(j,"other")      = pm_land_conservation(...,"protect") + p35_land_restoration(j,"other")
+modules/31_past/endo_jun13/presolve.gms:9            vm_land.lo(j,"past")       = sum(consv_type, pm_land_conservation(t,j,"past",consv_type))
+```
+Two consequences: (a) `[22, bounds]` and `[10]` both point at modules that never assign the bound; (b) the rendered inequality omits `+ p35_land_restoration` for secdforest/other. A related classification issue: M22's own inputs are all **lagged or presolve** values (`pcm_land` at `presolve_ini.gms:16,17,55,66`), so the 10→22 leg is sequential/temporal, not the "Simultaneous Equations" the doc assigns to the whole C2 cycle at `:295`.
+
+**Verify**
+```
+ls modules/22_land_conservation/area_based_apr22/
+  -> declarations.gms input input.gms preloop.gms presolve_ini.gms realization.gms sets.gms
+rg -n "vm_land" modules/22_land_conservation/   -> only vm_land.lo(j,"crop") reads at :86,97,108
+rg -n "pm_land_conservation" modules/35_natveg/ modules/31_past/  -> the bound assignments above
+```
+
+**Fix**: attribute the bound to `modules/35_natveg/pot_forest_may24/presolve.gms:162,201,231` and `modules/31_past/endo_jun13/presolve.gms:9`; module 22 supplies the *parameter* only. Add the `+ p35_land_restoration` term. Split the C2 resolution type: "10↔35 simultaneous; 22→35 sequential (parameter computed in M22's `presolve_ini.gms` from lagged `pcm_land`)".
+
+---
+
+### CDR-07 🟠 Major — `im_pollutant_prices` units are USD per **tC**, not USD/tCO2 `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:410`
+> "- `im_pollutant_prices`: Carbon price trajectory (0-1000 USD/tCO2)"
+
+**Reality** — `modules/56_ghg_policy/price_aug22/declarations.gms:9`: "Certificate prices for N2O-N CH4 CO2-C used in the model (**USD17MER per Mg**)", i.e. per Mg of the carrier species; for `co2_c` that is per Mg **carbon** — a factor 44/12 ≈ 3.67 from per-tCO2. Corroborated in the same realization:
+```gams
+* modules/56_ghg_policy/price_aug22/input.gms:67
+s56_minimum_cprice   Minium C price (USD17MER per tC) / 3.67 /
+* preloop.gms:74 clips im_pollutant_prices(...,"co2_c",...) to exactly this scalar
+* preloop.gms:80-82 converts the CO2-eq caps to the model basis by *12/44
+```
+
+**Verify**
+```
+rg -n "im_pollutant_prices|s56_minimum_cprice" \
+   modules/56_ghg_policy/price_aug22/{declarations,input,preloop}.gms
+```
+
+**Fix**: "(USD17MER per Mg C for `co2_c`; ≈ ×3.67 lower than the same price quoted per tCO2)". Replace the unsourced "0-1000" range with the default scenario `c56_pollutant_prices <- "R34M410-SSP2-NPi2025"` (`config/default.cfg:1734`).
+
+---
+
+### CDR-08 🟠 Major — "`im_*` = Input data (exogenous, never changes)" is false `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:61`
+> "- `im_*` = **Input data** (exogenous, never changes)"
+
+**Reality** — `im_` marks a module **interface** parameter, not immutability; several are recomputed **inside the timestep loop**. `im_growing_stock(t,j,ac,land_timber)` is assigned every timestep in module 14's presolve from `pm_carbon_density_*`, `fm_carbon_density`, `pm_climate_class` and `fm_ipcc_bef`, then read by 32 and 35:
+```
+modules/14_yields/managementcalib_aug19/presolve.gms:24,33,42,51,64,76,78,80,81
+```
+`im_pollutant_prices` is likewise rescaled in M56 preloop by the devstate scaling, the fader, `s56_cprice_red_factor` and the min/max caps (`preloop.gms:37-89`).
+
+This matters *here specifically*: §5.2's classification decision tree and §2.3's "Type 3: Sequential Execution" both lean on `im_*` being immutable preloop data, so the gloss propagates into cycle mis-classification.
+
+**Verify**
+```
+rg -n "^ *im_growing_stock" modules/14_yields/managementcalib_aug19/presolve.gms   -> 9 assignment lines
+rg -n "im_growing_stock" modules/*/*/declarations.gms  -> declared in 14_yields (both realizations)
+```
+Role map: `im_growing_stock {declared 14_yields, populated_by [14], read_by [14,32,35]}`.
+
+**Fix**: "`im_*` = **interface input parameter** (module-external; usually loaded or derived in `preloop`, but some are recomputed each timestep in `presolve` — e.g. `im_growing_stock` in 14_yields)."
+
+---
+
+### CDR-09 🟠 Major — "All `pcm_*` variables are updated in `postsolve.gms`" is false for `pcm_land` `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:980`
+> "**Pattern**: All `pcm_*` variables are updated in `postsolve.gms` from corresponding `vm_*` optimal values"
+
+**Reality** — `pcm_land` is re-assigned *outside* postsolve in three other modules, all in default realizations, and — critically — **inside the timestep, before the solve**:
+```
+modules/35_natveg/pot_forest_may24/presolve.gms:39   pcm_land(j,"primforest") = pcm_land(j,"primforest") - p35_disturbance_loss_primf(t,j);
+modules/35_natveg/pot_forest_may24/presolve.gms:131  pcm_land(j,"secdforest") = sum(ac, pc35_secdforest(j,ac));
+modules/35_natveg/pot_forest_may24/presolve.gms:137  pcm_land(j,"other")      = sum((othertype35,ac), pc35_land_other(j,othertype35,ac));
+modules/32_forestry/dynamic_may24/presolve.gms:101   pcm_land(j,"forestry")   = sum((type32,ac), v32_land.l(j,type32,ac));
+modules/34_urban/exo_nov21/preloop.gms:17            pcm_land(j,"urban")      = i34_urban_area("y1995",j);
+modules/10_land/landmatrix_dec18/start.gms:11        pcm_land(j,land)         = pm_land_start(j,land);
+```
+So the parameter the optimiser actually sees is *previous state adjusted in presolve* (M35 line 39 subtracts disturbance losses from the lagged primforest state), not a pure `vm_*.l` copy — material for a document whose thesis is that `pcm_*` provides clean temporal decoupling.
+
+**Verify**
+```
+rg -n "^ *pcm_land\(" modules/    -> 17 hits, including all six lines above
+```
+
+**Fix**: "Most `pcm_*` are refreshed in `postsolve.gms` from `vm_*.l`, but some are **additionally rewritten in `presolve.gms`/`preloop.gms`** by the module that owns the land pool — `pcm_land` for `primforest`/`secdforest`/`other` (M35 presolve), `forestry` (M32 presolve), `urban` (M34 preloop). Grep `^ *pcm_<name>(` model-wide before assuming a single writer."
+
+---
+
+### CDR-10 🟠 Major — `pm_water_avail` does not exist, yet is presented as "existing" `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:591-594`, under "✅ SAFE"
+```gams
+vm_area.up(j,kcr,"irrigated")$(pm_water_avail(j) < threshold) = 0;
+* Does NOT create new dependency (just uses existing pm_water_avail)
+```
+
+**Reality** — no such object anywhere. The real interface is `im_wat_avail(t,wat_src,j)` (`modules/43_water_availability/total_water_aug13/declarations.gms:9`, "Water availability (mio. m^3 per yr)"). The doc explicitly asserts the invented name is "existing".
+
+**Verify**
+```
+rg -n "pm_water_avail" modules/ core/          -> 0 hits
+positive control: rg -c "im_wat" modules/43_water_availability/  -> non-zero in 3 files
+rg -n "wat_avail" modules/43_water_availability/*/declarations.gms -> im_wat_avail(t,wat_src,j)
+```
+
+**Fix**: use `im_wat_avail`, respecting its time and source dimensions — e.g. `$(sum((ct,wat_src), im_wat_avail(ct,wat_src,j)) < threshold)` — or relabel the whole snippet with an explicit `<pm_placeholder>`.
+
+---
+
+### CDR-11 🟠 Major — citation drift: `Source: module_56.md (lines 60-79)` `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:414`, sourcing the "Critical Parameters" block (`im_pollutant_prices`, `s56_buffer_aff`, `s56_c_price_induced_aff`).
+
+**Reality** — `modules/module_56.md:60-79` is the **q56_emis_pricing / q56_emis_pricing_co2** equation walkthrough (`v56_emis_pricing` components, `emis_annual` vs `emis_oneoff`). None of the three parameters appears there; they live at `modules/module_56.md:40-41` (switch table with defaults), `:287`, `:310`, `:691-697`.
+
+**Verify**
+```
+rg -n "s56_buffer_aff|s56_c_price_induced_aff" modules/module_56.md
+-> 40, 41, 257, 287, 310, 691, 697, 785, 858, 906   (nothing in 60-79)
+```
+
+**Fix**: `Source: modules/module_56.md:40-41 (switch table) and :287-310 (buffer semantics)`.
+
+---
+
+### CDR-12 🟠 Major — citation drift: `Source: Module_Dependencies.md (lines 149-179)` `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:745`, sourcing the four core cycles C1-C4.
+
+**Reality** — `core_docs/Module_Dependencies.md:149-179` is the layered-architecture diagram (Layers 4-6) plus §3.2 Hub-and-Spoke Patterns. The circular-dependency content starts at `:182` (`### 4. Circular Dependencies (Feedback Loops)`), with the numbered cycle list at `:186-215`.
+
+**Verify**
+```
+awk 'NR>=145 && NR<=215 {print NR"\t"$0}' core_docs/Module_Dependencies.md
+```
+
+**Fix**: `Source: core_docs/Module_Dependencies.md:182-215`.
+
+---
+
+### CDR-13 🟡 Minor — `vm_emissions_reg(i,"co2_c")` drops the `emis_source` dimension `[new]`
+
+**Doc** `circular_dependency_resolution.md:392`
+**Reality** — `vm_emissions_reg(i,emis_source,pollutants)` (`modules/56_ghg_policy/price_aug22/declarations.gms:40`); M52 populates only the slice `vm_emissions_reg(i2,emis_oneoff,"co2_c")` (`modules/52_carbon/normal_dec17/equations.gms:17`). Every other entry in the same diagram is dimensionally complete (`im_pollutant_prices(t_all,i,pollutants,emis_source)`, `vm_carbon_stock(j,"forestry","vegc","actual")`), so the truncation reads as authoritative.
+**Verify**: `rg -n "vm_emissions_reg" modules/56_ghg_policy/price_aug22/declarations.gms`
+**Fix**: `vm_emissions_reg(i,emis_oneoff,"co2_c") [52]`.
+
+---
+
+### CDR-14 🟡 Minor — §2.2 pseudo-equation over-broadens `q17_prod_reg` to `kall` `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:143`
+> `vm_prod_reg(i,kall) = sum(cell(i,j), vm_prod(j,kall))               [q17_prod_reg]`
+
+**Reality** — `q17_prod_reg(i2,k) .. vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k));` (`modules/17_production/flexreg_apr16/equations.gms:10-11`). `k(kall)` = **28 primary** products (`modules/14_yields/managementcalib_aug19/sets.gms:12-16`); `kall` = **41** members (`core/sets.gms:228-235`), adding the secondary/processed goods (`oils, oilcakes, sugar, molasses, alcohol, ethanol, distillers_grain, brans, scp, fibres`, `res_*`), whose regional production is set in module 20, not by `q17_prod_reg`. (The *declaration* `vm_prod_reg(i,kall)` at `flexreg_apr16/declarations.gms:10` is over `kall` — it is the **equation domain** the doc gets wrong.)
+**Verify**: `cat -n modules/17_production/flexreg_apr16/equations.gms`; `sed -n '8,20p' modules/14_yields/managementcalib_aug19/sets.gms`
+**Fix**: write the equation domain as `k`, and add "secondary products (`kall \ k`) get `vm_prod_reg` from 20_processing".
+
+---
+
+### CDR-15 🟡 Minor — `vm_carbon_stock(j,"forestry",…) [56]` misdirects under the chain's own tagging convention `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:390`
 > `vm_carbon_stock(j,"forestry","vegc","actual") [56] → carbon sequestration`
 
-**Reality**: 56_ghg_policy DECLARES `vm_carbon_stock` (`modules/56_ghg_policy/price_aug22/declarations.gms`) and READS it (`equations.gms:22`), but the `"forestry"` slice is POPULATED by module 32: `q32_carbon(j2,ag_pools,stockType) .. vm_carbon_stock(j2,"forestry",ag_pools,stockType) =e= …` (`modules/32_forestry/dynamic_may24/equations.gms:108`). Populators overall: 29 (crop), 31 (past), 32 (forestry), 34, 35 (primforest/secdforest/other), 59 (soilc).
-**Verify**: `rg -n 'vm_carbon_stock\(j2,' modules/*/*/equations.gms` → LHS by 29/31/32/35/59; 52 and 56 appear on RHS only. Role map: `populated_by:["29","31","32","34","35","59"], read_by:["52","56","59"]`.
+**Reality** — 56_ghg_policy *declares* `vm_carbon_stock` (`declarations.gms:34`) and *reads* it (`equations.gms:22`), but the `"forestry"` slice is **populated by module 32**:
+```gams
+* modules/32_forestry/dynamic_may24/equations.gms:108
+q32_carbon(j2,ag_pools,stockType) .. vm_carbon_stock(j2,"forestry",ag_pools,stockType) =e= ...
+```
+Role map: `populated_by [29,31,32,34,35,59]`, `read_by [52,56,59]`. Every *other* tag in this C4 chain names the populating module, so a reader following `[56]` looks for the forestry carbon equation in a module that does not contain it.
+**Severity note**: graded Minor rather than Major because `[56]` is defensible as the *declaring* module and the doc never states its tagging convention.
+**Verify**: `rg -n "vm_carbon_stock" modules/32_forestry/` → `dynamic_may24/equations.gms:108` (LHS).
 **Fix**: `vm_carbon_stock(j,"forestry","vegc","actual") [declared 56; populated by 32 q32_carbon; read by 52/56]`.
 
 ---
 
-### B06 — Major — conservation bounds attributed to module 22 (they are set in 35_natveg / 31_past)
-**Doc** `circular_dependency_resolution:302` (with `:288` and `:292` carrying the same error via `[10]`)
-> `vm_land(j,land_natveg) ≥ pm_land_conservation(t,j,land_natveg,"protect")  [22, bounds]`
+### CDR-16 🟡 Minor — C1 diagram puts `vm_prod(kli)` under Module 70; M70 never touches cellular `vm_prod` `[new]`
 
-**Reality**: module 22 (`area_based_apr22`, the default) has **no** `presolve.gms` and **no** `equations.gms` — its only in-loop file is `presolve_ini.gms`, which merely *reads* `vm_land.lo(j,"crop")` (lines 86, 97, 108). The bounds are applied in module **35** and module **31**:
-- `modules/35_natveg/pot_forest_may24/presolve.gms:162` — primforest floor raised to `pm_land_conservation(t,j,"primforest","protect")` when the harvest-share floor is lower;
-- `:201` — `vm_land.lo(j,"secdforest") = pm_land_conservation(t,j,"secdforest","protect") + p35_land_restoration(j,"secdforest");`
-- `:231` — same for `"other"`;
-- `modules/31_past/endo_jun13/presolve.gms:9` — `vm_land.lo(j,"past") = sum(consv_type, pm_land_conservation(t,j,"past",consv_type));`
+**Doc** `circular_dependency_resolution.md:206`
+> `Module 14 (Yields) ←→ Module 13 (TC) ←→ Module 70 (Livestock)` / `… vm_prod(kli)`
 
-Two consequences: (a) `[22, bounds]` and `[10]` both point at modules that never assign the bound; (b) the rendered inequality omits the `+ p35_land_restoration` term for secdforest/other and the `max(…, (1-s35_natveg_harvest_shr)·pcm_land)` structure for primforest.
-**Verify**: `rg -n 'vm_land\.(lo|up|fx)' modules/` → assignments only in 35_natveg, 34_urban, 31_past; `ls modules/22_land_conservation/area_based_apr22/` → `declarations input input.gms preloop.gms presolve_ini.gms realization.gms sets.gms`.
-**Fix**: attribute the bound to `modules/35_natveg/pot_forest_may24/presolve.gms:162,201,231` (and `modules/31_past/endo_jun13/presolve.gms:9` for pasture); module 22 supplies the parameter only. Add the restoration term.
+**Reality** — `rg -n "vm_prod\(" modules/70_livestock/` → **0 hits** (positive control: `rg -c "vm_prod_reg\(" modules/70_livestock/fbask_jan16/equations.gms` → 6). M70 (default `fbask_jan16`) works exclusively with the *regional* `vm_prod_reg`. The cellular livestock slices are populated by **M71**: `vm_prod(j2,kli_rum)` / `vm_prod(j2,kli_mon)` at `modules/71_disagg_lvst/foragebased_aug18/equations.gms:38,45`. The doc's own line `:241` uses `vm_prod_reg` correctly.
+**Fix**: `vm_prod_reg(i,kli)` under M70, or move `vm_prod(j,kli)` under M71.
 
 ---
 
-### B07 — Major — C3: previous-timestep AEI is a **lower** bound on `vm_AEI`, not an upper bound on irrigated area
-**Doc** `circular_dependency_resolution:344-346`
-> "1. **Within timestep**: AEI capacity from **previous timestep** is **upper bound**
->  3. **Next timestep**: Increased AEI allows more irrigation"
+### CDR-17 🟡 Minor — Appendix A `pcm_carbon_stock` row: wrong declared domain, and M59 missing as co-updater `[re-derived]`
 
-**Reality**: in the default `endo_apr13`, `vm_AEI(j)` is a **positive variable optimized in the current timestep** (`declarations.gms:19`). Presolve sets a *floor*, not a ceiling: `vm_AEI.lo(j) = pc41_AEI_start(j) / ((1 - s41_AEI_depreciation)**(m_timestep_length));` (`modules/41_area_equipped_for_irrigation/endo_apr13/presolve.gms:11`), and with the default `s41_AEI_depreciation = 0` (`input.gms:11`, `config/default.cfg:1332`) that floor equals last timestep's AEI exactly. The irrigated-area constraint `q41_area_irrig(j2) .. sum(kcr, vm_area(j2,kcr,"irrigated")) =l= vm_AEI(j2);` (`equations.gms:10-11`) therefore binds against the **current, endogenous** AEI — expansion happens *within* the same timestep, priced by `q41_cost_AEI` on `(vm_AEI - pc41_AEI_start)`. The previous timestep never caps irrigation; it only prevents disinvestment.
-Related: in the **default** croparea realization `simple_apr24`, module 30 does not reference `vm_AEI` at all — it is listed in `modules/30_croparea/simple_apr24/not_used.txt:2`. `vm_AEI` enters a module-30 equation only in the non-default `detail_apr24` (`equations.gms:82`, rotation rules). So the 30↔41 coupling in a default run is entirely `q41_area_irrig` inside module 41.
-**Verify**: `cat modules/41_area_equipped_for_irrigation/endo_apr13/presolve.gms` (line 11 = `.lo`); `rg -n 'vm_AEI' modules/30_croparea/` → `detail_apr24/equations.gms:82` + `simple_apr24/not_used.txt:2`.
-**Fix**: rewrite as "Within timestep: previous AEI (depreciated) is a **lower** bound on the endogenous `vm_AEI`; irrigated area is capped by the *current* `vm_AEI`, which may expand in the same timestep at the cost of `q41_cost_AEI`." Reclassify C3 as **Simultaneous Equations** with a one-way ratchet, not "Simultaneous + Temporal". Note that with the default `simple_apr24`, module 30 has `vm_AEI` in `not_used.txt`.
+**Doc** `circular_dependency_resolution.md:976`
+> `| pcm_carbon_stock(j,land,ag_pools,stockType) | 56_ghg_policy | Previous carbon stocks | modules/56_ghg_policy/price_aug22/postsolve.gms:8 |`
 
----
-
-### B08 — Major — "`im_*` = Input data (exogenous, never changes)" is false
-**Doc** `circular_dependency_resolution:61`
-> "- `im_*` = **Input data** (exogenous, never changes)"
-
-**Reality**: `im_` denotes a module-**interface** input parameter, not immutability, and several are recomputed **inside the timestep loop**. `im_growing_stock(t,j,ac,land_timber)` is assigned in module 14's presolve every timestep from `pm_carbon_density_plantation_ac`, `pm_carbon_density_secdforest_ac`, `pm_carbon_density_other_ac`, `fm_carbon_density`, `pm_climate_class` and `fm_ipcc_bef` (`modules/14_yields/managementcalib_aug19/presolve.gms:24,33,42,51,64,76-81`), then read by 32 and 35. Role map: `im_growing_stock populated_by:["14"], read_by:["14","32","35"]`; `im_feed_baskets populated_by:["70"]`; `im_pollutant_prices populated_by:["56"]` (module 56 preloop rescales it by the devstate scaling, fader, `s56_cprice_red_factor` and the min/max caps).
-This matters here specifically: §5.2's classification decision tree and §2.3's "Type 3: Sequential Execution" both lean on `im_*` being immutable preloop data, so the gloss propagates into wrong cycle classifications.
-**Verify**: `rg -n '^\s*im_\w+\(' modules/*/*/presolve.gms` → `modules/14_yields/managementcalib_aug19/presolve.gms:24,33,42,51,64,76,78,80,81` (plus `dynRegPastrTau_apr26`).
-**Fix**: "`im_*` = **interface input parameter** (module-external; usually loaded/derived in `preloop`, but some are recomputed each timestep in `presolve` — e.g. `im_growing_stock` in 14_yields)."
+**Reality** — declared over `c_pools`, not `ag_pools` (`modules/56_ghg_policy/price_aug22/declarations.gms:19`); `c_pools = {vegc,litc,soilc}` (`core/sets.gms:324-325`), `ag_pools = {vegc,litc}` (`modules/56_ghg_policy/price_aug22/sets.gms:209-210`) is only the slice M56's postsolve writes. The `"soilc"` slice is updated by **M59** in both realizations — default `cellpool_jan23` (`config/default.cfg:1937`) at `postsolve.gms:13`, and `static_jan19` at `postsolve.gms:9`. A reader tracing lagged *soil* carbon to module 56 finds nothing there.
+**Verify**: `rg -n "^ *pcm_carbon_stock\(" modules/` → 56 (postsolve:8, preloop:10), 59 static (postsolve:9, preloop:11), 59 cellpool (postsolve:13, preloop:30,33). Role map: `populated_by ["56","59"]`.
+**Fix**: signature → `pcm_carbon_stock(j,land,c_pools,stockType)`; "Module" → `56 (ag_pools) + 59 (soilc)`; "Updated in" → `.../price_aug22/postsolve.gms:8` **and** `modules/59_som/cellpool_jan23/postsolve.gms:13`.
 
 ---
 
-### B09 — Major — `pm_water_avail` does not exist
-**Doc** `circular_dependency_resolution:593-594`
-> `vm_area.up(j,kcr,"irrigated")$(pm_water_avail(j) < threshold) = 0;`
-> `* Does NOT create new dependency (just uses existing pm_water_avail)`
+### CDR-18 🟡 Minor — timesteps are not uniformly 5-yearly under the default `c_timesteps` `[new]`
 
-**Reality**: no `pm_water_avail` anywhere in the model. The real water-availability interface is `im_wat_avail(t,wat_src,j)` (`modules/43_water_availability/total_water_aug13/declarations.gms:9`; `total_water_aug13` is the default, `config/default.cfg:1427`). The doc explicitly calls the invented name "existing".
-**Verify**: `grep -rn "pm_water_avail" .` → 0 hits; `rg -n 'pm_water_avail' modules/ core/` → 0 hits; positive control `rg -ln 'pm_interest' modules/` → 3+ files. `rg -n 'water_avail' modules/43_water_availability/*/declarations.gms` → `im_wat_avail`.
-**Fix**: use `im_wat_avail(t,"surface",j)` (or drop the example to a clearly-labelled `<pm_some_param>` placeholder).
+**Doc** `circular_dependency_resolution.md:41-51` and `:1004`
+> "Timestep 1: Optimize 1995-2000 (5 years) … … continue until 2100" / "FOR EACH TIMESTEP (t = 1995, 2000, 2005, ..., 2100)"
 
----
-
-### B10 — Major — Appendix A row for `pcm_carbon_stock`: wrong declared domain, and module 59 is missing as an updater
-**Doc** `circular_dependency_resolution:976`
-> `| `pcm_carbon_stock(j,land,ag_pools,stockType)` | 56_ghg_policy | Previous carbon stocks | modules/56_ghg_policy/price_aug22/postsolve.gms:8 |`
-
-**Reality**: the declaration is `pcm_carbon_stock(j,land,c_pools,stockType)` (`modules/56_ghg_policy/price_aug22/declarations.gms:19`) — `c_pools` (`core/sets.gms:324`) is the superset that includes `soilc`; `ag_pools` is only the slice module 56's postsolve happens to write. The `soilc` slice is updated by module **59** in both its realizations — default `cellpool_jan23` (`cfg$gms$som <- "cellpool_jan23"`, `config/default.cfg:1937`) at `modules/59_som/cellpool_jan23/postsolve.gms:13`, and `static_jan19` at `postsolve.gms:9` (`pcm_carbon_stock(j,land,"soilc",stockType) = vm_carbon_stock.l(j,land,"soilc",stockType);`), with preloop initialisation at `59_som/*/preloop.gms` and `56_ghg_policy/price_aug22/preloop.gms:10`. A reader tracing lagged **soil** carbon to module 56 finds nothing there.
-**Verify**: `rg -n '^\s*pcm_carbon_stock\(' modules/` → 56 (postsolve:8, preloop:10), 59 static (postsolve:9, preloop:11), 59 cellpool (postsolve:13, preloop:30,33). Role map: `pcm_carbon_stock populated_by:["56","59"]`.
-**Fix**: signature → `pcm_carbon_stock(j,land,c_pools,stockType)`; "Updated in" → `56_ghg_policy/price_aug22/postsolve.gms:8` (ag_pools) **and** `59_som/<realization>/postsolve.gms:9|13` (soilc).
+**Reality** — default `cfg$gms$c_timesteps <- "coup2100"` (`config/default.cfg:133`) resolves to
+```
+core/sets.gms:188
+$If "%c_timesteps%"== "coup2100" /y1995,...,y2050,y2055,y2060,y2070,y2080,y2090,y2100/;
+```
+— 5-yearly through 2060, then **10-yearly** (2060→2070→2080→2090→2100). The doc's own stability test inherits the wrong step length for the second half of the century ("<20% per 5-year timestep", `:263`), where `m_timestep_length` doubles and per-timestep changes mechanically grow.
+**Verify**: `rg -n "coup2100" core/sets.gms config/default.cfg`
+**Fix**: "…5-yearly to 2060, then 10-yearly to 2100 under the default `c_timesteps = "coup2100"` (`core/sets.gms:188`); normalise stability thresholds by `m_timestep_length`."
 
 ---
 
-### B11 — Minor — §2.2 pseudo-equation over-broadens `q17_prod_reg` to `kall`
-**Doc** `circular_dependency_resolution:143`
-> `vm_prod_reg(i,kall) = sum(cell(i,j), vm_prod(j,kall))               [q17_prod_reg]`
+### CDR-19 🟡 Minor — "Modifying Module 10 (Land): … 15 consumers" undercounts under every definition tried `[new]`
 
-**Reality**: `q17_prod_reg(i2,k) .. vm_prod_reg(i2,k) =e= sum(cell(i2,j2), vm_prod(j2,k));` (`modules/17_production/flexreg_apr16/equations.gms:10-11`). `k(kall)` = 28 *primary* products (`modules/14_yields/managementcalib_aug19/sets.gms:12-18`); `kall` has 41 members (`core/sets.gms:228-236`) and adds the secondary/processed goods (`oils, oilcakes, sugar, molasses, alcohol, ethanol, distillers_grain, brans, scp, fibres`, `res_*`), whose regional production is set in module 20, not by `q17_prod_reg`.
-**Verify**: `cat -n modules/17_production/flexreg_apr16/equations.gms`; `sed -n '8,20p' modules/14_yields/managementcalib_aug19/sets.gms`.
-**Fix**: write the domain as `k`, and add "secondary products (`kall \ k`) get `vm_prod_reg` from module 20_processing".
+**Doc** `circular_dependency_resolution.md:584`
 
----
-
-### B12 — Minor — `im_pollutant_prices` unit given as USD/tCO2
-**Doc** `circular_dependency_resolution:410`
-> "- `im_pollutant_prices`: Carbon price trajectory (0-1000 USD/tCO2)"
-
-**Reality**: `im_pollutant_prices(t_all,i,pollutants,emis_source) Certificate prices for N2O-N CH4 CO2-C used in the model (**USD17MER per Mg**)` (`modules/56_ghg_policy/price_aug22/declarations.gms:9`) — for `co2_c` that is per Mg **carbon**, a factor 44/12 ≈ 3.67 from per-tCO2. Corroborated by the sibling scalars in the same realization: `s56_minimum_cprice … (USD17MER per tC) / 3.67 /` and `s56_limit_ch4_n2o_price … (USD17MER per tC) / 4920 /` (`input.gms:65,67`), and by `modules/module_56.md:152`.
-**Verify**: `rg -n 'im_pollutant_prices' modules/56_ghg_policy/price_aug22/declarations.gms`.
-**Fix**: "(USD17MER per Mg C for `co2_c`; ≈ ×3.67 lower in USD/tCO2 terms)". Also note the default price scenario is `c56_pollutant_prices <- "R34M410-SSP2-NPi2025"` (`config/default.cfg:1734`), not a free 0–1000 range.
+**Reality** — modules reading any M10-declared interface object (`vm_land`, `pcm_land`, `vm_lu_transitions`, `vm_landexpansion`, `vm_landreduction`, `vm_landdiff`, `vm_cost_land_transition`, `pm_land_start`, `pm_land_hist`, `fm_land_iso`, `fm_luh2_side_layers`) = **18**. Excluding M80 — which lists `vm_landdiff` in `modules/80_optimization/nlp_apr17/not_used.txt:2` and therefore consumes nothing from M10 under the **default** realization — gives **17**. Restricting to `vm_*`/`pcm_*` only gives 17 (16 without M80). No definition reaches 15.
+The figure is inherited from `core_docs/Module_Dependencies.md:179` ("10_land: 15 out"), so fix both or it will be re-imported.
+**Severity note**: graded Minor, not Major, because the counting rule ("consumers") is nowhere defined in either doc — the direction and magnitude of the error are solid, the exact target number is convention-dependent.
+**Verify**: role-map aggregation over `declared_in == "10_land"`, cross-checked with `rg -n "vm_landdiff" modules/80_optimization/`.
+**Fix**: "≈17 consuming modules under the default config (M80 consumes M10 output only in the non-default `lp_nlp_apr17`)"; better, replace the hard-coded number with the re-runnable role-map derivation.
 
 ---
 
-### B13 — Minor — stale cross-doc citation: `Module_Dependencies.md (lines 149-179)`
-**Doc** `circular_dependency_resolution:745`
-**Reality**: `core_docs/Module_Dependencies.md:149-179` is the layered-architecture diagram plus §3.2 Hub-and-Spoke. The 4 core cycles it is cited for live at `:182-215` (`### 4. Circular Dependencies` at 182, the numbered cycle list 188-215).
-**Verify**: `grep -n "" core_docs/Module_Dependencies.md | sed -n '145,190p'`.
-**Fix**: cite `core_docs/Module_Dependencies.md:182-215`.
+### CDR-20 🟡 Minor — machine-local scratch path published in a public doc `[re-derived]`
+
+**Doc** `circular_dependency_resolution.md:497`
+> "Visualize using GraphViz (files in `/tmp/magpie_analysis/`)"
+
+**Reality** — `/tmp/magpie_analysis` does not exist and is in neither repository (`ls -d /tmp/magpie_analysis` → "No such file or directory"). This is a dead machine-local pointer in a public repo, and it instructs the reader to look somewhere that will never contain anything.
+**Fix**: delete, or replace with the command that regenerates the graph plus a repo-relative output path.
 
 ---
 
-### B14 — Minor — stale cross-doc citation: `module_56.md (lines 60-79)`
-**Doc** `circular_dependency_resolution:414`
-**Reality**: `modules/module_56.md:60-79` covers `q56_emis_pricing` / `q56_emis_pricing_co2`. The parameters this line is sourcing (`s56_c_price_induced_aff`, `s56_buffer_aff`, `im_pollutant_prices`) are documented at `modules/module_56.md:40-41`, `:152`, `:257`, `:287`, `:310`.
-**Verify**: `grep -n "s56_buffer_aff\|s56_c_price_induced_aff\|im_pollutant_prices" modules/module_56.md`.
-**Fix**: cite `modules/module_56.md:40-41, 287, 310`.
+## 2. Deferred (checked; not scored)
+
+1. `:60` — "`pcm_*` … ('p' = parameter, 'cm' = current module)". MAgPIE's naming table lives in the external Coding Etiquette; `README.md:44-45` only points at it and the repo carries no `CONTRIBUTING.md`. Not code-checkable. Note the internal tension worth resolving once a source exists: `reference/GAMS_MAgPIE_Patterns.md:225,521` glosses `pcm_` as "Previous Current Module", and `pcm_land` is declared in M10 but read by 17 other modules — "current module" reads oddly for an interface parameter.
+2. `:11`, `:749`, `:1036` — the "26 circular dependency cycles" figure. It matches `core_docs/Module_Dependencies.md:186`, but neither doc carries a re-runnable artifact, and §8.2 concedes only 4 are documented plus 6 "suspected". Falls under AGENT.md rule 4 (no figure without an artifact); I did not re-derive a cycle count, so I do not assert 26 is wrong.
+3. `:390` tagging convention generally — the C4 chain mixes declaring-module and populating-module tags. Scored only where the tag matches neither (CDR-05) or contradicts the chain's dominant convention (CDR-15); the convention itself should be stated once in the doc rather than audited per-line.
+4. `:723-724` — "Independent modules (37, 45, 54) can be run in parallel" / "water system: 41-42-43 … no cycles". Checked: M37→38, M45→{14,52,58,59}, M54→11 are all pure sources with no inbound interface reads; within {42,43} both couplings run 43→42 (`im_wat_avail` read by 42; `vm_watdem` slices set by 43), so no 42↔43 cycle. But M41 is coupled to M30 (the doc's own C3) and M42 reads M17/M30 outputs, so "isolatable" is architecturally loose rather than code-false. The paragraph is explicitly speculative ("Opportunities").
+5. `:135-137` — the §2.2 ASCII return arrow `└── vm_supply/trade ─────┘` into Module 17. `vm_supply` is declared+populated by 16_demand and read only by 16 and 21 (`rg -n "vm_supply" modules/17_production/` → 0 hits), so nothing flows 21→17 via `vm_supply`; but the label is too vague to score, and the genuine simultaneity (M21's inequalities constrain M17's `vm_prod_reg`) is real.
+6. `:600`, `:608`, `:683-711` — hypothetical "BEFORE/AFTER" snippets. `vm_cost_landcon` exists (M39) but is paired with a 2-index `pcm_carbon_stock`; all are explicitly labelled examples, so no bug recorded (unlike CDR-10, where the doc asserts the invented name is "existing").
+7. `:150`, `:831`, `:1012` — CONOPT / IPOPT / CPLEX. All three exist; the doc never claims which is default (`nlp_apr17` + `c80_nlp_solver = "conopt4"`). An omission of the default, not an error.
+8. All R verification snippets (`land_conservation()`, `AEI()`, `costs(components=...)`, `yields(...)`, `gdx$status$solve_status`, `readGDX(..., select=list(t=...))`) — magpie4 API surface, not checkable against the GAMS worktree. Route to `agent/helpers/magpie4_reference.md` in a separate pass.
 
 ---
 
-### B15 — Minor — Appendix A "Pattern" sentence and the `/tmp/magpie_analysis/` pointer
-**Doc** `circular_dependency_resolution:980` and `:497`
-> ":980 **Pattern**: All `pcm_*` variables are updated in `postsolve.gms` from corresponding `vm_*` optimal values"
-> ":497 Visualize using GraphViz (files in `/tmp/magpie_analysis/`)"
+## 3. Suggested fix ordering
 
-**Reality (980)**: `pcm_land` is additionally rewritten **inside the timestep, before the solve**: `modules/35_natveg/pot_forest_may24/presolve.gms:39` (`pcm_land(j,"primforest") = pcm_land(j,"primforest") - p35_disturbance_loss_primf(t,j);`), `:131`, `:137`, and `modules/32_forestry/dynamic_may24/presolve.gms:101` (from `v32_land.l`, a module-internal variable, not a `vm_`); `modules/34_urban/exo_nov21/preloop.gms:17` initialises it. So the parameter the optimiser sees is *previous state adjusted in presolve*, not a pure `vm_*.l` copy — material for a document whose thesis is that `pcm_*` provides clean temporal decoupling.
-**Reality (497)**: `/tmp/magpie_analysis/` does not exist and is not in either repo; it is a machine-local scratch path in a shared public doc.
-**Verify**: `rg -n '^\s*pcm_land\(' modules/`; `ls -d /tmp/magpie_analysis` → "No such file or directory".
-**Fix**: qualify to "updated in `postsolve.gms` from `vm_*.l`; some (`pcm_land`) are additionally adjusted in `presolve` by 32/34/35 — see `modules/35_natveg/pot_forest_may24/presolve.gms:39,131,137`". Delete the `/tmp/...` pointer or replace it with a repo path/regeneration command.
-
----
-
-## Deferred (not bugs — unverified or unverifiable here)
-
-1. `:60` "`pcm_*` … ('p' = parameter, 'cm' = current module)" — the MAgPIE repo carries no naming-convention document (no `CONTRIBUTING.md`; `README.md` has none), so the etymology is not code-checkable. Note the internal inconsistency: `reference/GAMS_MAgPIE_Patterns.md:225,521` glosses `pcm_` as "Previous Current Module". One of the two agent docs should be corrected once a source is found.
-2. `:5,11,749,1036` "26 circular dependency cycles" — traces to `core_docs/Module_Dependencies.md:6,186,424` with no re-runnable artifact behind it (the doc's own §8.2 concedes only 4 are documented and lists 6 more as "suspected"). Falls under AGENT.md rule 4 (no figure without an artifact) but I did not re-derive a cycle count, so I am not asserting 26 is wrong.
-3. `:584` "Modifying Module 10 (Land): … 15 consumers" — matches `core_docs/Module_Dependencies.md:179` ("10_land: 15 out"). The role map gives 18 distinct reader modules for the non-`fm_` interfaces declared in `10_land` (`11,13,14,22,29,30,31,32,34,35,39,44,50,56,58,59,71,80`). The counting rule is undefined, so I did not flag it.
-4. `:723-724` "Independent modules (37, 45, 54) can be run in parallel" / "water system: 41-42-43 … no cycles". Factually 37/45 are parameter-only modules with no equations, and 54_phosphorus has **only** the `off` realization (`ls modules/54_phosphorus/` → `off`; `cfg$gms$phosphorus <- "off"`, `config/default.cfg:1608`) yet still contributes `vm_p_fert_costs` to `q11_cost_reg`. The paragraph is speculative ("Opportunities"), so I did not score it.
-5. `:135-137` the §2.2 ASCII diagram's return arrow `└── vm_supply/trade ─────┘` into Module 17. `vm_supply` is declared+populated by 16_demand and read only by 16 and 21 (`rg -n 'vm_supply' modules/17_production/` → 0 hits), so nothing flows 21→17 via `vm_supply`; but the arrow label is too vague to score, and the genuine simultaneity (21's inequalities constrain 17's `vm_prod_reg`) is real.
-6. All R verification snippets (`land_conservation()`, `AEI()`, `costs(components=...)`, `yields(...)`, `gdx$status$solve_status`) — magpie4 API surface, not checkable against the GAMS worktree. Should be routed to `agent/helpers/magpie4_reference.md` in a separate pass.
+1. **CDR-01, CDR-02** (Critical) — both invert or invent a *mechanism*; both also require a matching edit to `core_docs/Module_Dependencies.md:194` (manure→yields) so the error is not re-imported.
+2. **CDR-03, CDR-04, CDR-05, CDR-06** — the two cycle chains (§3.1 C1, §3.4 C4) should be rewritten as units rather than patched arrow-by-arrow; state the `[NN]` tagging convention explicitly while doing so.
+3. **CDR-07, CDR-08, CDR-09** — glossary/appendix claims that the rest of the doc leans on (unit, `im_*` semantics, `pcm_*` write pattern).
+4. **CDR-11, CDR-12, CDR-20** — pointer hygiene, mechanical.
+5. Remaining Minors.
