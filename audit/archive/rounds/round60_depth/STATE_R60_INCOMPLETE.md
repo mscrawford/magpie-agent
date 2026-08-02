@@ -23,7 +23,13 @@ quoted as a result.** The pre-registered decision rules in
 | `water_balance_conservation` | cross_module | 94 | 2/5 returned, **5/5 on disk** |
 | `land_balance_conservation` | cross_module | 181 | 1/5 |
 | `nitrogen_food_balance` | cross_module | 123 | 0/5 |
-| `module_35` / `module_34` / `module_56` | **module** | 364 / 117 / 594 | **0/5 — arm entirely missing** |
+| `module_34` | **module** | 114 | **5/5 + REFUTED — completed 2026-08-02 morning, see below** |
+| `module_35` / `module_56` | **module** | 364 / 594 | 0/5 |
+
+> **UPDATE 2026-08-02 morning — this document was written before `module_34` completed.**
+> The "within-module arm entirely missing" statement below is superseded: `module_34` now
+> has full lens coverage AND a refuter verdict, making it the round's first — and the
+> project's only — clean within-module measurement. The arm is 1 of 3 docs, not 0 of 3.
 
 ## ⚠️ The returned matrix is invalid, in two independent ways
 
@@ -74,11 +80,39 @@ would have reported ~42%.
 **Selection caveat:** the 3 complete docs are simply the first 3 in the dispatch array — they
 finished before the limit hit. Arrival order, not a doc property, but not random either.
 
+## `module_34` — the one complete, refuted result (2026-08-02, commit 6f446ba)
+
+Within-module arm, drawn at random (seed 60), and the **coldest doc in the corpus** — 2 prior
+round records, never depth-audited. `validity.reportable: true`, 5/5 lenses, refuter ran.
+
+```
+claims                    114
+findings (prose key)       37   32.5%  95% CI [24.6%, 41.5%]
+distinct (code-fact)       22   19.3%  95% CI [13.1%, 27.5%]
+Critical 6   Major 13   fully refuted 0   CORRECTED 8
+classes: other 7, mechanism 7, attribution_* 11, set_membership 4, citation 4
+```
+
+**This is the gradient's third point, and it is the one that matters:**
+
+```
+R55  3 MOST-audited hubs      498 claims   5.6%    1 Critical
+R58  3 stale hubs             595 claims   7.7%    7 Criticals
+R60  module_34, never audited 114 claims  19-32%   6 Criticals
+```
+
+Audit ATTENTION drives measured residual down, so a hub result is a **floor**, not a ceiling.
+Caveats that must travel: n=1 doc; as the coldest doc this is plausibly a within-module upper
+bound; and the refuter CORRECTED 8 of 19 Critical/Major rather than upholding them as
+written, so the severity mix is softer than the raw counts suggest.
+
 ## What cannot be answered, at any confidence
 
-- **The locus comparison — the round's primary question.** The within-module arm has zero
-  lens coverage on all 3 docs. There is no within-module rate to compare against.
-- **Any Critical/Major rate**, unrefuted.
+- **The locus comparison — the round's primary question.** `module_34` gives a refuted
+  within-module rate, but the cross_module side is still UNREFUTED, so the two are not
+  comparable. **The cheapest possible completion is 3 refuters over already-cached lens
+  results** — that alone answers the round's primary question.
+- **Any cross_module Critical/Major rate**, unrefuted.
 - **Every pre-registered decision rule.** All UNDECIDED at this n.
 
 ## Recovery, when budget allows

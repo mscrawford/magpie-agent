@@ -1,5 +1,73 @@
 # Corpus investigation — master plan, priority-ordered
 
+---
+
+# ⏸ READ FIRST — state at 2026-08-02, and the open strategic decision
+
+**R60 ran partially and is HALTED on a monthly spend limit.** Full state:
+`audit/archive/rounds/round60_depth/STATE_R60_INCOMPLETE.md`. One doc completed and was
+adversarially refuted (`module_34`); the cross_module side has 476 claims and 98 distinct
+findings but **no refutation**, so it is below this project's bar.
+
+## The defect gradient — the session's main empirical result
+
+```
+R55  3 MOST-audited hub docs    498 claims  28 confirmed   5.6%    1 Critical
+R58  3 stale hub docs           595 claims  46 confirmed   7.7%    7 Criticals
+R60  module_34, NEVER audited   114 claims  22-37         19-32%   6 Criticals
+```
+
+**Measured density is a function of audit ATTENTION, not of centrality.** A hub result is a
+FLOOR. The instrument had the opposite premise hard-coded ("hubs are an UPPER-BOUND sample")
+until it was removed on 2026-08-02 — see `doc_depth_audit.workflow.js` measurePrompt.
+
+Corpus surface, measured: **46 module docs / 48,259 lines**, 7 cross_module / 5,330, 7
+core_docs / 3,273, 30 helpers+reference / 12,757. **Only 7 of 46 module docs (15%) have ever
+been depth-audited** — R55 (10/52/56), R58 (11/29/70), R60 (34). Thirty-nine never have.
+
+There is no defensible corpus-wide point estimate, and producing one would repeat the 9.52
+error. What is defensible: the floor is ~6%, the one cold-doc measurement is 3-5x that, and
+85% of the corpus sits in the unmeasured cold region.
+
+## THE OPEN DECISION: corpus-maintenance vs. scaffolding-first
+
+**Recommendation on the evidence: scaffolding-first.** Mike is deciding; do not act on this
+without him. Four independent lines converge:
+
+1. **The highest-defect classes are the most mechanizable.** `attribution_read` 23.7%,
+   `set_membership` 15.9% — against `mechanism` 2.5% and `citation` 1.1%. Attribution is
+   exactly what `scripts/check_attribution_omissions.py --dump-rolemap` derives
+   deterministically from code at ~0 FNR. The class carrying the most harm needs no prose.
+2. **The corpus matters most where it cannot be checked.** Arena 1A: docs-only propagation
+   29.2% vs 3.1% normal (p=0.0157). With code access the model self-corrects.
+3. **The cost curve does not converge.** Measured 2026-08-02: **$30/doc, 1.13M tokens.** A
+   full sweep is ~$1,400 and decays with every MAgPIE merge; after ~60 rounds coverage is 15%.
+4. **R58's structural finding**: the machine-checkable surface is already clean and defects
+   migrated to prose synthesis — M29's auditor found a per-claim audit of
+   `equations.gms`/`declarations.gms`/`input.gms` would catch **zero** of that round's
+   Criticals. The residual lives in the layer scaffolding would not have.
+
+**Strongest counter, and it partly dissolves:** cross-module interconnection is what users
+most need and what a per-file index does not naturally produce — but the role map IS that
+graph, mechanically derived. What genuinely remains is narrative (why a cycle exists, what
+breaks if you touch it), which is real and small.
+
+**What would change the recommendation:** a refuted cross_module rate materially BELOW the
+module rate would mean curated synthesis docs hold up better than per-module prose.
+
+## Next actions, cheapest first
+
+1. **3 refuters over already-cached cross_module lens results.** Answers the locus question
+   and is the cheapest thing left. Resume with the FULL args payload plus
+   `resumeFromRunId` — a resume does NOT restore args, and does NOT guarantee cache replay
+   (both cost real money on 2026-08-02; size any block by its worst case).
+2. **Scaffolding pilot**: generate module docs' interface sections FROM the role map, which
+   deletes the highest-defect class instead of re-auditing it at $30/doc forever.
+3. **Sweep the 9.52 residue**: 41 mentions remain in the corpus, while `AGENT.md` documents
+   it as the canonical unmeasured number.
+
+---
+
 **Written 2026-08-01. Supersedes the ordering in `other_falsehoods_mining_plan.md`,
 which remains the detailed spec for track 2.** Every gate and threshold here is fixed
 *before* the corresponding run.
