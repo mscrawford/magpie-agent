@@ -9,7 +9,28 @@
 adversarially refuted (`module_34`); the cross_module side has 476 claims and 98 distinct
 findings but **no refutation**, so it is below this project's bar.
 
-## ✅ THE LOCUS HYPOTHESIS IS REFUTED — and the class hypothesis is confirmed
+## THE LOCUS COMPARISON: no difference detected — but UNDERPOWERED, not refuted
+
+> **CORRECTED 2026-08-02, second pass.** This section first read "THE LOCUS HYPOTHESIS IS
+> REFUTED". That overstates it, and my own pre-registered rule says so: *"a rule fires only
+> if the 95% interval excludes the threshold; a straddle is recorded as UNDECIDED at this n."*
+> The intervals here exclude nothing. Computed power at n=210 vs n=114:
+>
+> ```
+> true difference          power to detect it
+> 19% vs 24%  (5 pts)             17%
+> 19% vs 29%  (10 pts)            51%
+> 19% vs 34%  (15 pts)            83%
+> ```
+>
+> The study could only have caught a LARGE effect. The supported claim is **"no difference
+> detected, at low power"**; the locus hypothesis is **NOT refuted**, it is **UNDECIDED** —
+> and deciding it needs roughly n≈290 claims per arm for a 10-point effect.
+>
+> Note what failed here: the pre-registration was followed, but the pre-registered rule had
+> **no power clause**, so following it faithfully still produced an overstatement.
+> Pre-registration protects against post-hoc rationalisation; it does not protect against an
+> underpowered design. Add a power requirement to any future comparison rule.
 
 **Both arms are now measured with the same instrument, adversarially refuted, against the
 corrected role map** (`validity.reportable: true` on both, zero unadjudicated drops):

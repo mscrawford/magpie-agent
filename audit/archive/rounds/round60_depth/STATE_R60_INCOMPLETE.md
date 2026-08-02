@@ -106,7 +106,10 @@ Caveats that must travel: n=1 doc; as the coldest doc this is plausibly a within
 bound; and the refuter CORRECTED 8 of 19 Critical/Major rather than upholding them as
 written, so the severity mix is softer than the raw counts suggest.
 
-## ✅ ANSWERED 2026-08-02 evening — `carbon_balance_conservation` refuted
+## 2026-08-02 evening — `carbon_balance_conservation` measured (adversarial refutation ran)
+
+⚠️ This section was first headed "✅ ANSWERED". **The locus question is NOT answered** — see
+the power correction below. What IS answered: both arms now have a refuted measurement.
 
 `validity.reportable: true`, 5/5 lenses, refuter 1/1, `crit_major_dropped_unadjudicated: 0`.
 210 claims, 67 prose-key / **43 distinct code facts**, 3 Critical, 18 Major, 0 fully refuted,
@@ -119,8 +122,13 @@ within-module module_34              114   32.5%   22   19.3%  CI [13.1, 27.5]
                                    Fisher exact, code-fact:  p = 0.885
 ```
 
-**THE LOCUS HYPOTHESIS IS REFUTED.** The two arms are indistinguishable. The pre-registered
-rule fires as written: re-target on CLASS, not locus.
+**NO DIFFERENCE DETECTED — but the comparison is UNDERPOWERED, so this is UNDECIDED, not a
+refutation.** (Corrected second pass, 2026-08-02.) Power at n=210 vs n=114 is 17% for a
+5-point true difference, 51% for 10 points, 83% only at 15. My own pre-registered rule says a
+straddling interval is recorded as UNDECIDED with the n that would decide it: **~290 claims
+per arm** for a 10-point effect. The locus hypothesis is not refuted; it is untested at
+adequate power. The re-target onto CLASS is still the right move, but it rests on the class
+evidence below, NOT on this comparison.
 
 ⚠️ **PER-CLASS RATES FROM R60 ARE INVALID — retracted 2026-08-02.** The Enumerate agent
 classifies CLAIMS into classes and the lens agents classify DEFECTS into classes, and the two
