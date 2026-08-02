@@ -106,14 +106,38 @@ Caveats that must travel: n=1 doc; as the coldest doc this is plausibly a within
 bound; and the refuter CORRECTED 8 of 19 Critical/Major rather than upholding them as
 written, so the severity mix is softer than the raw counts suggest.
 
-## What cannot be answered, at any confidence
+## ✅ ANSWERED 2026-08-02 evening — `carbon_balance_conservation` refuted
 
-- **The locus comparison — the round's primary question.** `module_34` gives a refuted
-  within-module rate, but the cross_module side is still UNREFUTED, so the two are not
-  comparable. **The cheapest possible completion is 3 refuters over already-cached lens
-  results** — that alone answers the round's primary question.
-- **Any cross_module Critical/Major rate**, unrefuted.
-- **Every pre-registered decision rule.** All UNDECIDED at this n.
+`validity.reportable: true`, 5/5 lenses, refuter 1/1, `crit_major_dropped_unadjudicated: 0`.
+210 claims, 67 prose-key / **43 distinct code facts**, 3 Critical, 18 Major, 0 fully refuted,
+5 CORRECTED.
+
+```
+                                   claims  prose-key         code-fact
+cross_module  carbon_balance         210   31.9%   43   20.5%  CI [15.6, 26.4]
+within-module module_34              114   32.5%   22   19.3%  CI [13.1, 27.5]
+                                   Fisher exact, code-fact:  p = 0.885
+```
+
+**THE LOCUS HYPOTHESIS IS REFUTED.** The two arms are indistinguishable. The pre-registered
+rule fires as written: re-target on CLASS, not locus.
+
+**The class signal, from an instrument that shares no code with the other two:**
+`attribution_read` in `carbon_balance` is **11/19 = 58%**, and **all 3 of its Criticals are
+`attribution_read`**. That is now three independent confirmations (R55 23.7%; arena
+`attribution_role` 28.1% vs 4.2%, p=0.0012; this).
+
+**What predicts density is PRIOR AUDIT EXPOSURE.** Two docs of different kinds, both never
+depth-audited, land 0.6 points apart (31.9% / 32.5%) and 4-6x above the audited hubs (R55
+5.6%, R58 7.7%).
+
+## Still open
+
+- `module_35`, `module_56`, and the remaining cross_module docs are unaudited. They would
+  narrow the intervals but are unlikely to change the direction, which is now consistent
+  across four docs and three instruments.
+- Both new guards proved out on live data: the per-doc-set `MEASUREMENT_<slug>.md` filename
+  (no collision) and `_checkpoint_audits.json` (25 KB, 67 bugs, written BEFORE Verify).
 
 ## Recovery, when budget allows
 

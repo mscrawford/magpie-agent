@@ -9,6 +9,44 @@
 adversarially refuted (`module_34`); the cross_module side has 476 claims and 98 distinct
 findings but **no refutation**, so it is below this project's bar.
 
+## ✅ THE LOCUS HYPOTHESIS IS REFUTED — and the class hypothesis is confirmed
+
+**Both arms are now measured with the same instrument, adversarially refuted, against the
+corrected role map** (`validity.reportable: true` on both, zero unadjudicated drops):
+
+```
+                                   claims  prose-key         code-fact
+cross_module  carbon_balance_conservation   210   31.9%   43   20.5%  CI [15.6, 26.4]
+within-module module_34                     114   32.5%   22   19.3%  CI [13.1, 27.5]
+                                   Fisher exact on code-fact rate:  p = 0.885
+```
+
+**They are indistinguishable.** Sprint X's central premise — that defects concentrate in
+cross-module claims — **does not hold.** This fires the pre-registered rule verbatim:
+*"Cross-module ≈ within-module → the locus hypothesis is wrong, and that is a real result
+worth recording; re-target on CLASS (attribution_role) instead of locus."*
+
+**Re-targeting on class is now backed by three instruments that share no code:**
+
+```
+R55           attribution_read   9/38  = 23.7%   (highest class; carried the round's only Critical)
+Arena 1A      attribution_role   28.1% vs 4.2% all other classes   p = 0.0012
+R60 carbon    attribution_read  11/19  = 58%     ALL 3 of its Criticals are attribution_read
+```
+
+**What actually predicts defect density is PRIOR AUDIT EXPOSURE — not locus, not doc type:**
+
+```
+R55  3 MOST-audited hub docs     498 claims   5.6%   (prose-key basis)
+R58  3 stale hub docs            595 claims   7.7%
+R60  module_34,   never audited  114 claims  32.5%
+R60  carbon_balance, never audited 210 claims 31.9%
+```
+
+Two docs of completely different kinds, both never depth-audited, land within 0.6 points of
+each other and 4-6x above the audited hubs. **Attention is the variable. Everything else
+tested so far is not.**
+
 ## The defect gradient — the session's main empirical result
 
 ```

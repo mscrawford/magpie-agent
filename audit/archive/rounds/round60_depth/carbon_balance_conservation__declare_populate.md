@@ -5,13 +5,18 @@
 **Ground truth**: MAgPIE `develop` read-only worktree, HEAD `2c02843ec` (identical to local `develop`).
 **Role map**: `audit/integrated/depth_rolemap.json` — consulted FIRST for every `vm_`/`pm_`/`im_`/`pcm_`/`fm_`
 attribution claim, then confirmed with a both-endpoints grep (`NAME(` **and** `NAME.`).
-**Date**: 2026-08-02 · **Claims verified**: 78 · **Bugs**: 12 (0 Critical · 4 Major · 7 Minor · 1 Informational)
+**Date**: 2026-08-02 · **Claims verified**: 79 this pass (cumulative corpus larger) · **Bugs**: 14
+(0 Critical · 4 Major · 9 Minor · 1 Informational)
 
-**Provenance note**: a prior pass of this same lens on this same doc existed at this path. Five of its seven
-findings are reproduced below — each **re-derived from code in this session**, not inherited; the two I could
-not stand behind as filed are moved to Deferred with reasons. Six findings below are new to this pass. Each
-bug is tagged `[re-derived]` or `[new]` so a reader can see which claims have two independent derivations and
-which have one.
+**Provenance note**: this file is the product of **three** independent passes of the `declare_populate` lens on
+this doc. Pass 2 merged pass 1 (five of its seven findings reproduced after re-derivation from code; two moved
+to Deferred) and added six of its own. **Pass 3 (this edit)** independently re-derived the load-bearing pass-2
+findings before preserving them — B1 (`m_carbon_stock` reads `sum(ct,·)` + `c52_carbon_scenario` default `cc`),
+B2 (`100·(1−e^(−0.06y))²` vs the printed table), B3 (fire), B4 (`s29_fallow_max = 0`, `s29_treecover_map = 0`,
+`q29_fallow_max`), B5 (`config/default.cfg` 1835→1838), B6 (550 vs 458), B7 (1−0.85⁵ = 0.556), B10 (zero residue
+variables in M59, positive-controlled), B11, B12 — **all confirmed**, none retracted. Pass 3 adds **B13** and
+**B14**, both misses of the earlier passes. Each bug is tagged `[re-derived]` / `[new]` / `[new-p3]` so a reader
+can see how many independent derivations back it.
 
 ---
 
@@ -422,6 +427,82 @@ and transition matrix. M59 reads **all** slices in `q59_carbon_soil`
 
 ---
 
+### B13 — Minor — `set_membership` — §3.1 truncates the closed 4-member `inputs59` set to three `[new-p3]`
+
+**doc_line**: `carbon_balance_conservation.md:139`
+
+> - Input level: Low, medium, high without manure (default: medium)
+
+**Reality**: `inputs59` is a **closed 4-member** set —
+`/low_input, medium_input, high_input_nomanure, high_input_manure/`
+(`modules/59_som/cellpool_jan23/sets.gms:16-17`). §3.1 drops `high_input_manure`. The doc's own §5.3 (`:430`)
+enumerates all four correctly ("Low / Medium / High / High with manure"), so this is a single-site truncation,
+not a systematic misreading.
+
+The default *is* medium — `i59_input_share(i,inputs59)=0; i59_input_share(i,"medium_input")=1`
+(`modules/59_som/cellpool_jan23/preloop.gms:54-55`) — so that half of the bullet is right.
+
+**Why it is not merely cosmetic**: the omitted member is the one that carries the largest stock-change factor,
+and it is the member a reader designing a manure/SOC scenario would go looking for. It also interacts with
+Deferred item 4: the code's dedicated-SCM factor is built from `high_input_**nomanure**`
+(`.../preloop.gms:88-90`), so the manure/nomanure distinction is load-bearing in this module, not decorative.
+
+**verify_cmd**
+```
+sed -n '16,17p' modules/59_som/cellpool_jan23/sets.gms
+   -> inputs59 Input management categories of IPCC
+   -> /low_input,medium_input,high_input_nomanure,high_input_manure/     # 4 members
+sed -n '52,55p' modules/59_som/cellpool_jan23/preloop.gms
+   -> i59_tillage_share(i,"full_tillage")=1 ; i59_input_share(i,"medium_input")=1
+rg -n "Low / Medium / High" cross_module/carbon_balance_conservation.md   -> :430 lists all four
+```
+**Fix**: `:139` → "Input level: low, medium, high without manure, high with manure (default: medium)
+(`inputs59`, `modules/59_som/cellpool_jan23/sets.gms:16-17`)".
+
+---
+
+### B14 — Minor — `set_membership` — §7.4's "appears in exactly these equations" self-certification is false `[new-p3]`
+
+**doc_line**: `carbon_balance_conservation.md:595`
+
+> **Applies to** (verified against code - the mitigation factor `(1 - im_maccs_mitigation)` appears in
+> **exactly these equations**):
+
+**Reality**: the *substantive* list that follows is correct — I re-derived every entry (M53 ent_ferm `:29`,
+AWMS `:52`, rice `:63`; not resid-burn `:70-72`; M51 AWMS `:71`; M50 as an NUE uplift `presolve.gms:54-64`;
+nothing on M52 CO₂). But the literal exhaustiveness claim is false: `(1 - im_maccs_mitigation(...))` also occurs
+at **`modules/57_maccs/on_aug22/equations.gms:38` and `:48`**, as a **divisor** in M57's own `q57_labor_costs` /
+`q57_capital_costs` — dividing post-abatement `vm_emissions_reg` back out to the unabated level for the MACC
+cost integral. The role map carries the same fourth consumer: `im_maccs_mitigation` → `read_by ['50','51','53','57']`.
+
+**Why file it**: the parenthetical is a *self-certification* ("verified against code … exactly"), which is
+precisely the kind of claim later readers cite without re-checking. A refactor of `im_maccs_mitigation` driven
+off this list would miss two live equation sites.
+
+**Tier reasoning**: the R20 anchor (wrong consumer set → Critical) is in tension, but the omitted consumer is
+the **declaring module itself**, and "Applies to" plainly scopes to *abated emission streams* — M57's use is not
+an application to a stream. Filed **Minor** per the tie-breaker. Note this narrows, but does not overturn, the
+"§7.4 is the strongest part of the doc" verdict in the Cleared table below.
+
+**verify_cmd**
+```
+rg -n "im_maccs_mitigation" modules/ core/
+   -> 50_nr_soil_budget/macceff_aug22/presolve.gms:56,58,61,63
+   -> 51_nitrogen/rescaled_jan21/equations.gms:71
+   -> 53_methane/ipcc2006_aug22/equations.gms:29,52,63
+   -> 57_maccs/on_aug22/preloop.gms:46,48,52,56,60,64 ; declarations.gms:13
+   -> 57_maccs/on_aug22/equations.gms:38,41,48,51      <-- the two omitted "(1 - ...)" sites are :38 and :48
+sed -n '35,52p' modules/57_maccs/on_aug22/equations.gms
+   -> q57_labor_costs / q57_capital_costs: ... * vm_emissions_reg(...) / (1 - im_maccs_mitigation(...))
+python3 -c "import json;print(json.load(open('audit/integrated/depth_rolemap.json'))['im_maccs_mitigation'])"
+   -> {'declared_in':'57_maccs','populated_by':['57'],'read_by':['50','51','53','57']}
+```
+**Fix**: `:595` → "**Applies to** (verified against code — `(1 - im_maccs_mitigation)` is applied as an
+*abatement multiplier* in exactly these equations; M57's own cost equations
+`modules/57_maccs/on_aug22/equations.gms:38,48` additionally **divide** by it to recover unabated emissions):"
+
+---
+
 ### B12 — Informational — `other` (declaration signature) — `t` written where the declaration says `t_all` `[new]`
 
 **doc_line**: `carbon_balance_conservation.md:107`, `:513-516`, `:699`
@@ -492,7 +573,9 @@ MACC at `modules/51_nitrogen/rescaled_jan21/equations.gms:71` with the `n_pollut
 `:62-64`; `q51_emissions_inorg_fert` `:30-39` MACC-free; M50 NUE uplift at
 `modules/50_nr_soil_budget/macceff_aug22/presolve.gms:54-64`; `emis_source_n51`
 (`modules/51_nitrogen/rescaled_jan21/sets.gms:15-16`, no `rice`) with `.fx`/`.lo`/`.up` at `preloop.gms:8-10`.
-**This section is the strongest part of the doc.**
+**This section is the strongest part of the doc** — with one caveat added in pass 3: its parenthetical
+*"appears in exactly these equations"* is not literally true (see **B14**). The list of abated streams is right;
+only the exhaustiveness wording is wrong.
 
 **Peatland (§10.2 item 7)** — `q58_peatland_emis` at `modules/58_peatland/v2/equations.gms:91-92` populating
 `vm_emissions_reg(i,"peatland",poll58)`; realization prose `realization.gms:8-17`; defaults
@@ -569,3 +652,22 @@ it must state which realization.
 - Data-flow direction was re-derived at **both** endpoints for the M52↔M56 claim rather than inherited.
 - Every finding carried over from the prior pass at this path was re-derived from source in this session before
   being filed; the two that did not survive re-derivation are listed in Deferred item 10.
+
+**Pass-3 notes (2026-08-02, merge rather than clobber)**
+
+- On finding a prior report at this path, pass 3 **merged** rather than overwrote: the pass-2 findings were
+  re-derived from `develop` first (see the provenance note at the top for the list), then preserved verbatim,
+  and only genuinely new findings were appended. Overwriting a stronger prior pass with a weaker one is a
+  silent information loss that no downstream reader could detect.
+- Pass 3's independent sweep converged on pass 2 for BUG-3/B3 (fire default), B5 (1835→1838), B11 (`vm_land`
+  scope) and B12 (`t` vs `t_all`) **without having read the prior report first** — four two-derivation findings.
+  It found two misses (B13, B14) and no false positives to retract.
+- Pass 3 also independently confirmed the doc's cleanest claim, and it is worth restating because it is the
+  one a future round is most tempted to re-litigate: the `vm_carbon_stock` populator set
+  `{29, 31, 32, 34, 35, 59}` is **exactly** right, verified three ways — role map, whole-tree `rg` on both
+  `vm_carbon_stock(` and `vm_carbon_stock.`, and reading each populating equation's LHS. M56's
+  `preloop.gms:11` initialisation and M56's `postsolve.gms` reporting writes are correctly excluded.
+- Near-miss avoided in pass 3: the role map lists `vm_land_other` as read by M59, which looks like an omission
+  from §7.2's "Receives". It is **not** — `vm_land_other` appears in
+  `modules/59_som/cellpool_jan23/not_used.txt:2` and is read only by the *non-default* `static_jan19`
+  realization. Do not file this in a later round.

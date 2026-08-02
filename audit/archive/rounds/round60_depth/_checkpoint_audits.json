@@ -1,0 +1,717 @@
+{
+ "round": 60,
+ "docs": [
+  {
+   "label": "carbon_balance_conservation",
+   "klass": "cross_module"
+  }
+ ],
+ "lens_coverage": {
+  "carbon_balance_conservation": [
+   "declare_populate",
+   "consumer_read",
+   "config_realization",
+   "citation_formula",
+   "mechanism_direction"
+  ]
+ },
+ "ledgers": {
+  "carbon_balance_conservation": {
+   "total_checkable": 210,
+   "by_class": {
+    "attribution_declare": 3,
+    "attribution_populate": 30,
+    "attribution_read": 19,
+    "citation": 2,
+    "formula": 12,
+    "default_value": 15,
+    "realization": 1,
+    "mechanism": 45,
+    "data_flow_direction": 20,
+    "set_membership": 25,
+    "other": 38
+   }
+  }
+ },
+ "bugs_by_doc": {
+  "carbon_balance_conservation": [
+   {
+    "id": "carbon_balance_conservation:1",
+    "severity": "Major",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:201",
+    "evidence": "modules/35_natveg/pot_forest_may24/equations.gms:42-44; core/macros.gms:99-101; modules/52_carbon/normal_dec17/input.gms:8,16,22; config/default.cfg:1590",
+    "lenses": [
+     "declare_populate",
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:2",
+    "severity": "Major",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:485",
+    "evidence": "core/macros.gms:18; modules/52_carbon/normal_dec17/start.gms:17,28,48",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:3",
+    "severity": "Major",
+    "bug_class": "default_value",
+    "doc_line": "carbon_balance_conservation.md:870",
+    "evidence": "modules/35_natveg/pot_forest_may24/input.gms:27,28; modules/35_natveg/pot_forest_may24/presolve.gms:19-22,24-27; modules/35_natveg/pot_forest_may24/sets.gms:12,14-15; config/default.cfg:1184,1186,1200",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:4",
+    "severity": "Major",
+    "bug_class": "default_value",
+    "doc_line": "carbon_balance_conservation.md:134",
+    "evidence": "modules/29_cropland/detail_apr24/input.gms:24,33,35; modules/29_cropland/detail_apr24/equations.gms:70-72; modules/29_cropland/detail_apr24/presolve.gms:81,120; config/default.cfg:863,868,901",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:5",
+    "severity": "Minor",
+    "bug_class": "citation",
+    "doc_line": "carbon_balance_conservation.md:101",
+    "evidence": "config/default.cfg:1838 (assignment); config/default.cfg:1833-1837 (comment block); modules/56_ghg_policy/price_aug22/input.gms:90",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:6",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:656",
+    "evidence": "illustrative arithmetic; method anchored on modules/52_carbon/normal_dec17/equations.gms:16-19 and the 44/12 conversion stated at carbon_balance_conservation.md:359",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:7",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:734",
+    "evidence": "modules/59_som/cellpool_jan23/preloop.gms:45 (formula); modules/59_som/cellpool_jan23/preloop.gms:42 (loose code comment)",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:8",
+    "severity": "Minor",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:593",
+    "evidence": "modules/57_maccs/on_aug22/declarations.gms:25; modules/11_costs/default/equations.gms:28; modules/36_employment/exo_may22/equations.gms:28; config/default.cfg:1212",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:9",
+    "severity": "Minor",
+    "bug_class": "attribution_declare",
+    "doc_line": "carbon_balance_conservation.md:512",
+    "evidence": "modules/52_carbon/normal_dec17/declarations.gms:10,13,23; modules/52_carbon/normal_dec17/start.gms:43-44; modules/52_carbon/normal_dec17/preloop.gms:21; modules/73_timber/default/preloop.gms:49,51,90,",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:10",
+    "severity": "Minor",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:122",
+    "evidence": "modules/59_som/cellpool_jan23/preloop.gms:60-67 (i59_cratio product); modules/59_som/cellpool_jan23/preloop.gms:86 and modules/59_som/cellpool_jan23/input.gms:22-23 (comment prose only)",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:11",
+    "severity": "Minor",
+    "bug_class": "attribution_populate",
+    "doc_line": "carbon_balance_conservation.md:547",
+    "evidence": "modules/59_som/cellpool_jan23/equations.gms:63 (all land) vs :33 (noncropland59); modules/59_som/cellpool_jan23/sets.gms:10-11; core/sets.gms:250-251",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:12",
+    "severity": "Minor",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:139",
+    "evidence": "modules/59_som/cellpool_jan23/sets.gms:16-17; modules/59_som/cellpool_jan23/preloop.gms:54-55,88-90",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:13",
+    "severity": "Minor",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:595",
+    "evidence": "modules/57_maccs/on_aug22/equations.gms:38,48; modules/53_methane/ipcc2006_aug22/equations.gms:29,52,63; modules/51_nitrogen/rescaled_jan21/equations.gms:71; modules/50_nr_soil_budget/macceff_aug22/pr",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:14",
+    "severity": "Informational",
+    "bug_class": "other",
+    "doc_line": "carbon_balance_conservation.md:513",
+    "evidence": "modules/52_carbon/normal_dec17/declarations.gms:9-13; modules/52_carbon/normal_dec17/input.gms:16",
+    "lenses": [
+     "declare_populate"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:15",
+    "severity": "Critical",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:180 (byte-identical duplicate at :479)",
+    "evidence": "modules/32_forestry/dynamic_may24/presolve.gms:65; modules/32_forestry/dynamic_may24/equations.gms:108; modules/14_yields/managementcalib_aug19/presolve.gms:26; core/calculations.gms:13,15",
+    "lenses": [
+     "consumer_read",
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:16",
+    "severity": "Major",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:201 (repeated at :841; table rows :194-196)",
+    "evidence": "modules/52_carbon/normal_dec17/input.gms:8,16,22; config/default.cfg:1590; core/macros.gms:99-101; modules/35_natveg/pot_forest_may24/equations.gms:42-44",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:17",
+    "severity": "Major",
+    "bug_class": "default_value",
+    "doc_line": "carbon_balance_conservation.md:869-872 (same premise at :221 and :626)",
+    "evidence": "modules/35_natveg/pot_forest_may24/input.gms:27; config/default.cfg:1184,1186,1200; modules/35_natveg/pot_forest_may24/presolve.gms:19-22,24-27; modules/35_natveg/pot_forest_may24/preloop.gms:88; modu",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:18",
+    "severity": "Major",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:518-519",
+    "evidence": "modules/52_carbon/normal_dec17/preloop.gms:14,53,55,59,88,90,94,26,61,96; modules/28_ageclass/oct24/declarations.gms:9 + preloop.gms:10,11,14; modules/32_forestry/dynamic_may24/declarations.gms:59 + p",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:19",
+    "severity": "Major",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:485-500",
+    "evidence": "core/macros.gms:18",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:20",
+    "severity": "Major",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:593",
+    "evidence": "modules/11_costs/default/equations.gms:28; modules/36_employment/exo_may22/equations.gms:28; config/default.cfg:1212",
+    "lenses": [
+     "consumer_read",
+     "config_realization",
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:21",
+    "severity": "Major",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:573",
+    "evidence": "modules/57_maccs/on_aug22/equations.gms:38,40,48,50; modules/57_maccs/on_aug22/sets.gms:25-26",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:22",
+    "severity": "Major",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:734 (same slip at :678 and :684)",
+    "evidence": "modules/59_som/cellpool_jan23/preloop.gms:45 (formula), :42 (the upstream comment carrying the same slip)",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:23",
+    "severity": "Minor",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:122 (same claim at :434)",
+    "evidence": "modules/59_som/cellpool_jan23/equations.gms:20-27; modules/59_som/cellpool_jan23/preloop.gms:54-55,60-67",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:24",
+    "severity": "Minor",
+    "bug_class": "attribution_populate",
+    "doc_line": "carbon_balance_conservation.md:263-264",
+    "evidence": "modules/34_urban/exo_nov21/presolve.gms:8; modules/52_carbon/normal_dec17/input.gms:33-35; config/default.cfg:1147",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:25",
+    "severity": "Minor",
+    "bug_class": "attribution_populate",
+    "doc_line": "carbon_balance_conservation.md:101 (and :296, :632)",
+    "evidence": "modules/56_ghg_policy/price_aug22/postsolve.gms:8; modules/59_som/cellpool_jan23/postsolve.gms:13",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:26",
+    "severity": "Minor",
+    "bug_class": "citation",
+    "doc_line": "carbon_balance_conservation.md:101",
+    "evidence": "config/default.cfg:1838 (assignment), :1835 (comment), :1831 and :1843 (prefixed siblings)",
+    "lenses": [
+     "consumer_read",
+     "config_realization",
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:27",
+    "severity": "Minor",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:107 and :513-516 (same form at :699)",
+    "evidence": "modules/52_carbon/normal_dec17/input.gms:16; modules/52_carbon/normal_dec17/declarations.gms:9,11,12",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:28",
+    "severity": "Minor",
+    "bug_class": "citation",
+    "doc_line": "carbon_balance_conservation.md:987",
+    "evidence": "modules/52_carbon/normal_dec17/start.gms:48,51 (other-land curves, outside the cited 8-39)",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:29",
+    "severity": "Minor",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:547",
+    "evidence": "modules/59_som/cellpool_jan23/equations.gms:63; modules/59_som/cellpool_jan23/postsolve.gms:9; modules/59_som/cellpool_jan23/equations.gms:31-33 (the one genuinely restricted read)",
+    "lenses": [
+     "consumer_read"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:30",
+    "severity": "Major",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:201 (plus the three \"Static\" cells at :194-196)",
+    "evidence": "modules/52_carbon/normal_dec17/input.gms:8,22-23; core/macros.gms:99-101; modules/35_natveg/pot_forest_may24/equations.gms:42-44; config/default.cfg:1590",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:31",
+    "severity": "Major",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:573",
+    "evidence": "modules/57_maccs/on_aug22/equations.gms:38,48; modules/57_maccs/on_aug22/sets.gms:25-26",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:32",
+    "severity": "Minor",
+    "bug_class": "attribution_populate",
+    "doc_line": "carbon_balance_conservation.md:263-264",
+    "evidence": "modules/34_urban/exo_nov21/presolve.gms:8; modules/52_carbon/normal_dec17/input.gms:33-35; modules/56_ghg_policy/price_aug22/sets.gms:209-210",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:33",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:734",
+    "evidence": "modules/59_som/cellpool_jan23/preloop.gms:45 (and the loose comment at :42-43)",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:34",
+    "severity": "Minor",
+    "bug_class": "default_value",
+    "doc_line": "carbon_balance_conservation.md:429 (parallel bullet at :137)",
+    "evidence": "modules/59_som/cellpool_jan23/input.gms:43; modules/59_som/cellpool_jan23/preloop.gms:60-67,73-77,82; modules/59_som/cellpool_jan23/sets.gms:13-17",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:35",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:552",
+    "evidence": "modules/59_som/cellpool_jan23/equations.gms:20-27",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:36",
+    "severity": "Minor",
+    "bug_class": "citation",
+    "doc_line": "carbon_balance_conservation.md:107 (under a \"Verified:\" badge), :513-516, :699",
+    "evidence": "modules/52_carbon/normal_dec17/declarations.gms:9,11,12; modules/52_carbon/normal_dec17/input.gms:16",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:37",
+    "severity": "Minor",
+    "bug_class": "default_value",
+    "doc_line": "carbon_balance_conservation.md:583",
+    "evidence": "modules/56_ghg_policy/price_aug22/preloop.gms:85-91; modules/56_ghg_policy/price_aug22/input.gms:86; config/default.cfg:1831,1811",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:38",
+    "severity": "Minor",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:760-778",
+    "evidence": "modules/56_ghg_policy/price_aug22/declarations.gms:19,49; modules/52_carbon/normal_dec17/equations.gms:19; core/macros.gms:104-106",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:39",
+    "severity": "Minor",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:730",
+    "evidence": "modules/59_som/cellpool_jan23/preloop.gms:85-90",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:40",
+    "severity": "Minor",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:139",
+    "evidence": "modules/59_som/cellpool_jan23/sets.gms:16-17",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:41",
+    "severity": "Informational",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:595",
+    "evidence": "modules/57_maccs/on_aug22/equations.gms:38,48; modules/50_nr_soil_budget/macceff_aug22/presolve.gms:54-64",
+    "lenses": [
+     "config_realization"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:42",
+    "severity": "Critical",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:180",
+    "evidence": "modules/32_forestry/dynamic_may24/presolve.gms:65; modules/32_forestry/dynamic_may24/preloop.gms:18,56; modules/14_yields/managementcalib_aug19/presolve.gms:26; sink at modules/32_forestry/dynamic_may",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:43",
+    "severity": "Major",
+    "bug_class": "citation",
+    "doc_line": "carbon_balance_conservation.md:101",
+    "evidence": "config/default.cfg:1838 (assignment); config/default.cfg:1835 (comment); config/default.cfg:1831 (prefixed sibling); modules/56_ghg_policy/price_aug22/input.gms:90 (effective default)",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:44",
+    "severity": "Major",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:493",
+    "evidence": "core/sets.gms:269-275; modules/52_carbon/normal_dec17/start.gms:17",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:45",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:823",
+    "evidence": "core/sets.gms:269-275",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:46",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:734",
+    "evidence": "modules/59_som/cellpool_jan23/preloop.gms:45",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:47",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:656",
+    "evidence": "n/a (arithmetic on doc-internal numbers; the mio. tC = Tg C identity confirmed against modules/56_ghg_policy/price_aug22/declarations.gms:34,40)",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:48",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:487",
+    "evidence": "core/macros.gms:18",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:49",
+    "severity": "Minor",
+    "bug_class": "citation",
+    "doc_line": "carbon_balance_conservation.md:987",
+    "evidence": "modules/52_carbon/normal_dec17/start.gms:46-51 (other-land curves, outside the range); :33-44 (calibration init + uncalib snapshot, inside it)",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:50",
+    "severity": "Minor",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:593",
+    "evidence": "modules/36_employment/exo_may22/equations.gms:28 (omitted); modules/11_costs/default/equations.gms:28 (documented, correct)",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:51",
+    "severity": "Minor",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:428",
+    "evidence": "modules/59_som/cellpool_jan23/input.gms:43; modules/59_som/cellpool_jan23/preloop.gms:60-67 (the i59_cratio product: landuse x tillage-share x tillage x input-share x input x irrigation)",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:52",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:678",
+    "evidence": "modules/59_som/cellpool_jan23/preloop.gms:45",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:53",
+    "severity": "Informational",
+    "bug_class": "citation",
+    "doc_line": "carbon_balance_conservation.md:180",
+    "evidence": "modules/14_yields/managementcalib_aug19/presolve.gms:66; modules/29_cropland/detail_apr24/preloop.gms:46,48; modules/32_forestry/dynamic_may24/presolve.gms:59,61,68; modules/35_natveg/pot_forest_may24",
+    "lenses": [
+     "citation_formula"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:54",
+    "severity": "Critical",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:180",
+    "evidence": "modules/32_forestry/dynamic_may24/presolve.gms:65; modules/14_yields/managementcalib_aug19/presolve.gms:26 (also modules/32_forestry/dynamic_may24/preloop.gms:18,56)",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:55",
+    "severity": "Major",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:870",
+    "evidence": "modules/35_natveg/pot_forest_may24/presolve.gms:19-22 (default branch) and :24-27 (wildfire branch); modules/35_natveg/pot_forest_may24/input.gms:27; modules/35_natveg/pot_forest_may24/preloop.gms:88;",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:56",
+    "severity": "Major",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:201",
+    "evidence": "modules/52_carbon/normal_dec17/input.gms:8,16-20,22-23; config/default.cfg:1590; modules/35_natveg/pot_forest_may24/equations.gms:42-44; core/macros.gms:99-101; modules/59_som/cellpool_jan23/equations",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:57",
+    "severity": "Major",
+    "bug_class": "data_flow_direction",
+    "doc_line": "carbon_balance_conservation.md:760",
+    "evidence": "modules/56_ghg_policy/price_aug22/declarations.gms:19 (pcm_carbon_stock, no t) and :40 (vm_emissions_reg regional); modules/56_ghg_policy/price_aug22/postsolve.gms:8,25; modules/59_som/cellpool_jan23/",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:58",
+    "severity": "Minor",
+    "bug_class": "attribution_populate",
+    "doc_line": "carbon_balance_conservation.md:263",
+    "evidence": "modules/34_urban/exo_nov21/presolve.gms:8; modules/52_carbon/normal_dec17/input.gms:35; config/default.cfg:1147",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:59",
+    "severity": "Minor",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:428",
+    "evidence": "modules/59_som/cellpool_jan23/sets.gms:13-14,16-17; modules/59_som/cellpool_jan23/input.gms:43; modules/59_som/cellpool_jan23/preloop.gms:16,62,73-75,82",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:60",
+    "severity": "Minor",
+    "bug_class": "attribution_read",
+    "doc_line": "carbon_balance_conservation.md:573",
+    "evidence": "modules/57_maccs/on_aug22/equations.gms:38,40,48,50; modules/57_maccs/on_aug22/sets.gms:25-26",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:61",
+    "severity": "Minor",
+    "bug_class": "mechanism",
+    "doc_line": "carbon_balance_conservation.md:73",
+    "evidence": "core/macros.gms:20; modules/52_carbon/normal_dec17/start.gms:10,19-20,30-31,51; modules/59_som/cellpool_jan23/equations.gms:20-27,31-34",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:62",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:486",
+    "evidence": "core/macros.gms:18",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:63",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:734",
+    "evidence": "modules/59_som/cellpool_jan23/preloop.gms:45 (and the misleading comment at :42)",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:64",
+    "severity": "Minor",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:610",
+    "evidence": "modules/29_cropland/detail_apr24/equations.gms:38-42; modules/29_cropland/detail_apr24/preloop.gms:46,48; config/default.cfg:814",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:65",
+    "severity": "Informational",
+    "bug_class": "formula",
+    "doc_line": "carbon_balance_conservation.md:656",
+    "evidence": "n/a (arithmetic internal to the doc; the 44/12 conversion is consistent with SS4.4)",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:66",
+    "severity": "Informational",
+    "bug_class": "citation",
+    "doc_line": "carbon_balance_conservation.md:513",
+    "evidence": "modules/52_carbon/normal_dec17/input.gms:16; modules/52_carbon/normal_dec17/declarations.gms:9-13",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   },
+   {
+    "id": "carbon_balance_conservation:67",
+    "severity": "Informational",
+    "bug_class": "set_membership",
+    "doc_line": "carbon_balance_conservation.md:21",
+    "evidence": "modules/52_carbon/normal_dec17/equations.gms:16-19; modules/56_ghg_policy/price_aug22/declarations.gms:40",
+    "lenses": [
+     "mechanism_direction"
+    ]
+   }
+  ]
+ },
+ "NOTE": "PRE-VERIFY CHECKPOINT. Auditor-confirmed, NOT adversarially refuted -- Critical/Major are below this project's bar until a refuter verdict exists. Written before Verify so a rate-limit cap cannot destroy structured findings that already cost full price."
+}
