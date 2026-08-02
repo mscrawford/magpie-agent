@@ -122,10 +122,20 @@ within-module module_34              114   32.5%   22   19.3%  CI [13.1, 27.5]
 **THE LOCUS HYPOTHESIS IS REFUTED.** The two arms are indistinguishable. The pre-registered
 rule fires as written: re-target on CLASS, not locus.
 
-**The class signal, from an instrument that shares no code with the other two:**
-`attribution_read` in `carbon_balance` is **11/19 = 58%**, and **all 3 of its Criticals are
-`attribution_read`**. That is now three independent confirmations (R55 23.7%; arena
-`attribution_role` 28.1% vs 4.2%, p=0.0012; this).
+⚠️ **PER-CLASS RATES FROM R60 ARE INVALID — retracted 2026-08-02.** The Enumerate agent
+classifies CLAIMS into classes and the lens agents classify DEFECTS into classes, and the two
+allocations disagree (cells include 8 citation defects / 2 citation claims). Pooled rates and
+severity COUNTS are sound; the per-class split is not. Any "N/M = X%" per class published
+from this round is withdrawn.
+
+**The class signal, as COUNTS, from an instrument that shares no code with the other two:**
+**All 3 of `carbon_balance`'s Criticals are `attribution_read`**, and 3 of `module_34`'s 6
+Criticals sit in mechanizable classes. Those are COUNTS from the refuted findings and are
+sound. Alongside R55 (attribution_read was its highest class and carried its only Critical)
+and arena 1A (`attribution_role` 28.1% vs 4.2%, p=0.0012 — computed from hand-labelled traps,
+so unaffected by the denominator defect above), that is three independent instruments
+pointing at the same class. **The direction is supported; no percentage from R60's per-class
+split is.**
 
 **What predicts density is PRIOR AUDIT EXPOSURE.** Two docs of different kinds, both never
 depth-audited, land 0.6 points apart (31.9% / 32.5%) and 4-6x above the audited hubs (R55

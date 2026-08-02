@@ -31,8 +31,26 @@ worth recording; re-target on CLASS (attribution_role) instead of locus."*
 ```
 R55           attribution_read   9/38  = 23.7%   (highest class; carried the round's only Critical)
 Arena 1A      attribution_role   28.1% vs 4.2% all other classes   p = 0.0012
-R60 carbon    attribution_read  11/19  = 58%     ALL 3 of its Criticals are attribution_read
+R60 carbon    ALL 3 Criticals are attribution_read      (COUNT, not a rate -- see below)
+R60 module_34 3 of 6 Criticals are in mechanizable classes
 ```
+
+⚠️ **RETRACTED 2026-08-02: the "attribution_read 11/19 = 58%" figure first published here was
+invalid, and NO per-class rate may be quoted from R60.** The Enumerate agent classifies
+CLAIMS into classes; the lens agents classify DEFECTS into classes; **the two allocations do
+not agree.** R60 per-class cells include `citation 8 defects / 2 claims` and
+`attribution_read 4 defects / 1 claim` — rates above 100%, which is proof of misallocation,
+not of density. The per-class denominators sum correctly to `total_checkable` (210), so the
+POOLED rate is sound and the SEVERITY COUNTS are sound; only the per-class split is not.
+
+R55's per-class table showed no >100% cell and is not obviously affected, but it was produced
+by the same two-agent mechanism, so treat its per-class rates as **suspect pending a
+consistency check** rather than as verified. The arena's class effect is unaffected — it was
+computed from hand-labelled traps, not from this ledger.
+
+**Fix before any future per-class claim:** have ONE pass assign the class, or reconcile the
+two and report the disagreement rate. This is a coverage-denominator defect of exactly the
+kind `feedback_validator_coverage_denominator` warns about.
 
 **What actually predicts defect density is PRIOR AUDIT EXPOSURE — not locus, not doc type:**
 
