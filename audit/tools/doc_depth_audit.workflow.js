@@ -345,10 +345,18 @@ verifyByDoc.forEach(vd => (vd.verdicts || []).forEach(v => { verdictByBug[v.bug_
 
 // ---------- compute the residual-density matrix (JS; deterministic) ----------
 const SURVIVE = new Set(['UPHELD', 'CORRECTED'])
+// PARTIAL-RUN ACCOUNTING (added 2026-08-02). isConfirmed() drops any Critical/Major that has
+// no refuter verdict. That is CORRECT when the refuter ran and refuted; it is CATASTROPHIC
+// when the refuter never ran, because the matrix then reports Critical:0 / Major:0 in every
+// cell -- which reads as "no serious defects" when it means "the refutation phase died".
+// R60 hit exactly this: 0 of 9 refuters ran (monthly spend limit) and 122 Critical/Major
+// findings were silently zeroed. Count the drops explicitly so the run cannot hide them.
+let droppedNoVerdict = 0
 function isConfirmed(b) {
   if (b.severity === 'Critical' || b.severity === 'Major') {
     const v = verdictByBug[b.id]
-    return v ? SURVIVE.has(v.verdict) : false   // Crit/Major MUST survive refutation
+    if (!v) { droppedNoVerdict += 1; return false }   // NOT refuted -- unadjudicated, and counted
+    return SURVIVE.has(v.verdict)                      // Crit/Major MUST survive refutation
   }
   return true  // Minor/Info: auditor-confirmed, not adversarially re-checked
 }
@@ -411,8 +419,44 @@ const dedup = {
 }
 log(`dedup: ${dedup.findings} findings -> ${dedup.distinct_defects} distinct defects across ${dedup.doc_sites} doc sites (${dedup.cross_doc_merges} cross-doc merges)`)
 
+// ---------- VALIDITY BLOCK: a partial run must not read as a measurement ----------
+// Coverage is a precondition for a rate, not a footnote. Every number above is computed over
+// whatever agents happened to return, while the DENOMINATOR comes from the ledgers, which
+// nearly always succeed (they are cheap and run first). A partial run therefore produces a
+// FULL denominator against a PARTIAL numerator and understates density by construction.
+const lensesByDoc = {}
+DOCS.forEach(d => { lensesByDoc[d.label] = audits.filter(a => a && a._label === d.label).length })
+const incompleteDocs = DOCS.filter(d => lensesByDoc[d.label] < LENSES.length).map(d => d.label)
+const refutersRun = verifyByDoc.filter(v => (v.verdicts || []).length > 0 || v.report_file).length
+const armsCovered = [...new Set(DOCS.filter(d => lensesByDoc[d.label] === LENSES.length).map(d => d.klass))]
+const validity = {
+  reportable: incompleteDocs.length === 0 && droppedNoVerdict === 0,
+  lenses_expected: DOCS.length * LENSES.length,
+  lenses_returned: audits.filter(Boolean).length,
+  docs_with_full_lens_coverage: DOCS.length - incompleteDocs.length,
+  docs_incomplete: incompleteDocs,
+  refuters_run: refutersRun,
+  refuters_expected: DOCS.length,
+  crit_major_dropped_unadjudicated: droppedNoVerdict,
+  arms_with_full_coverage: armsCovered,
+  WARNING: null,
+}
+if (!validity.reportable) {
+  validity.WARNING =
+    'PARTIAL RUN -- THE MATRIX IS NOT A MEASUREMENT. ' +
+    `${droppedNoVerdict} Critical/Major finding(s) were dropped for lack of a refuter verdict, so ` +
+    'Critical/Major cells read 0 because refutation did not run, NOT because none were found. ' +
+    `${incompleteDocs.length} doc(s) have partial lens coverage while their FULL ledger denominator is ` +
+    'still counted, biasing every rate DOWNWARD. Rate only the docs listed as fully covered, mark ' +
+    'findings UNREFUTED (below this project\'s confirmation bar), and if an arm has no fully covered ' +
+    'doc, that arm is UNMEASURED -- no cross-arm comparison is available at any confidence.'
+  log('!! ' + validity.WARNING)
+}
+
 phase('Measure')
-const measure = await agent(measurePrompt(matrix, perDoc.map(d => ({ ...d, confirmed_bugs: undefined }))), { label: 'measure', phase: 'Measure', model: 'opus', schema: MEASURE_SCHEMA }).catch(() => null)
+const measure = await agent(measurePrompt(matrix, perDoc.map(d => ({ ...d, confirmed_bugs: undefined }))) +
+  (validity.reportable ? '' : `\n\n!! VALIDITY: ${validity.WARNING}\nFully covered docs ONLY: ${DOCS.filter(d => lensesByDoc[d.label] === LENSES.length).map(d => d.label).join(', ') || 'NONE'}. Return verdict UNDECIDED unless every pre-registered criterion can be evaluated on fully covered docs alone.`),
+  { label: 'measure', phase: 'Measure', model: 'opus', schema: MEASURE_SCHEMA }).catch(() => null)
 
 return {
   round: R,
@@ -420,6 +464,7 @@ return {
   doc_klass: Object.fromEntries(DOCS.map(d => [d.label, d.klass])),   // locus arm, for post-hoc aggregation
   lenses: LENSES.map(l => l.key),
   matrix,
+  validity,          // READ THIS FIRST -- if reportable:false the matrix is not a measurement
   per_doc: perDoc,
   dedup,
   measurement: measure,
