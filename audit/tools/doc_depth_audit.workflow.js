@@ -250,8 +250,32 @@ ${PATH_HYGIENE}
 OUTPUT: write full verification to ${ARC}/round${R}_depth/verify__${doc.label}.md; return the schema (notes <=300 chars).`
 }
 
+// Rewritten 2026-08-02. The previous version carried three defects that fed every measure
+// agent a false frame, which is the correlated-confabulation failure mode with the shared
+// prior supplied by the instrument itself:
+//   1. It hard-coded R55's doc set ("3 hub docs: M10 land, M52 carbon, M56 ghg_policy")
+//      regardless of what the round actually audited.
+//   2. It asserted "the hubs are highest-centrality -> an UPPER-BOUND sample of corpus bug
+//      density". This project's own data INVERTS that: R55 measured 5.6% on the 3 MOST-
+//      audited hubs, R58 7.7% on stale hubs, R60 19-32% on a never-depth-audited doc. Audit
+//      ATTENTION drives measured density down, so hubs are a LOWER bound.
+//   3. It cited "the 2026-06-29 wide-net 9.52 pass" as a baseline. No round record carries
+//      that date (nearest is R52, 2026-06-28), and AGENT.md documents 9.52 as the project's
+//      canonical unmeasured number -- one prose sentence later cited 35 times across 14
+//      files as if corroborated. An instrument must not hard-code that as a premise.
+// The output filename is also per-round-and-doc-set now: a fixed MEASUREMENT.md meant a
+// second block silently overwrote the first block's report.
 function measurePrompt(matrix, perDoc) {
-  return `You are the MEASUREMENT synthesizer for a depth-first doc-accuracy audit of 3 high-stakes MAgPIE-agent hub docs (M10 land, M52 carbon, M56 ghg_policy). The numeric matrix below was computed deterministically from the verified findings (only UPHELD/CORRECTED survive) and the claim-ledger denominators. Your job: interpret it and issue a go/no-go on a FULL-CORPUS depth campaign.
+  const labels = DOCS.map(d => `${d.label} [${d.klass}]`).join(', ')
+  const slug = DOCS.map(d => d.label).join('+').slice(0, 80)
+  return `You are the MEASUREMENT synthesizer for a depth-first doc-accuracy audit.
+
+DOCS ACTUALLY AUDITED THIS RUN (${DOCS.length}): ${labels}
+Reason about THESE docs only. Do not assume they are hubs, central, stale, or representative
+of anything; their selection is stated in the round record, not inferable from this prompt.
+
+The matrix was computed deterministically from findings where only UPHELD/CORRECTED survive,
+against claim-ledger denominators.
 
 RESIDUAL-DENSITY MATRIX (confirmed bugs / claims-checked, per class x severity, per doc + pooled):
 ${JSON.stringify(matrix, null, 1)}
@@ -259,14 +283,30 @@ ${JSON.stringify(matrix, null, 1)}
 PER-DOC DETAIL (ledger totals, verified counts, refuted/corrected/citation-failed):
 ${JSON.stringify(perDoc, null, 1)}
 
-DECISION RULE (the hubs are highest-centrality -> an UPPER-BOUND sample of corpus bug density):
-  - GO (full-corpus depth warranted) if EITHER (a) >=1 confirmed Critical-class attribution omission per hub that survived the 2026-06-29 wide-net 9.52 pass, OR (b) pooled semantic density > ~1 confirmed Critical / 2 docs OR > ~2 Major-attribution bugs / 100 attribution claims checked.
-  - NO_GO / TARGETED_ONLY if the hubs are below threshold: even the densest docs are clean at depth -> run mechanical-only corpus-wide (free) and reserve semantic depth for the top-centrality quartile.
-Extrapolate expected_corpus_criticals ~= hub_density x corpus_attribution_claim_count (state how you derived it; it is an estimate, not a guarantee). Report the attribution-class residual SEPARATELY and note it must NEVER be relayed as answer-quality.
+MEASURED PRIORS from earlier rounds -- context, NOT a rule to apply:
+  R55  3 most-audited hub docs   498 claims  28 confirmed  5.6%   1 Critical
+  R58  3 stale hub docs          595 claims  46 confirmed  7.7%   7 Criticals
+  R60  module_34, never audited  114 claims  22-37         19-32% 6 Criticals
+The gradient runs OPPOSITE to centrality: the more a doc has been audited, the lower its
+measured residual. Treat a hub result as a FLOOR on corpus density, never a ceiling. The
+R55-vs-R58 comparison is additionally confounded (imposed vs open-ended taxonomy).
+
+WHAT TO REPORT
+  - Defect rate PER CLAIM, per class and per doc, each with a 95% interval. Never pool
+    across docs whose lens coverage differs, and never report a share-of-findings as a rate.
+  - State the coverage denominator for every cell. A rate whose numerator came from partial
+    lens coverage against a full ledger denominator is biased downward -- say so and refuse it.
+  - Report the attribution classes SEPARATELY, and note they must NEVER be relayed as, or
+    alongside, an answer-quality score.
+  - If a criterion cannot be evaluated on the data present, return UNDECIDED and state the n
+    that would decide it. UNDECIDED is a correct answer; a verdict on a straddling interval
+    is not.
+  - Any extrapolation to the wider corpus must name every inherited numerator it rests on and
+    carry its interval. If it rests on a single event, say that in the same sentence.
 
 ${PATH_HYGIENE}
 
-OUTPUT: write the full measurement report (matrix table, what the 9.52 pass missed, the go/no-go with reasoning) to ${ARC}/round${R}_depth/MEASUREMENT.md; return the schema.`
+OUTPUT: write the full report to ${ARC}/round${R}_depth/MEASUREMENT_${slug}.md; return the schema.`
 }
 
 // ---------- helpers ----------
@@ -330,6 +370,34 @@ audits.filter(Boolean).forEach(a => {
     else bugsByDoc[label][k].lenses.push(a.lens)
   })
 })
+
+// ---------- STRUCTURED CHECKPOINT, per doc, BEFORE the expensive Verify phase ----------
+// 2026-08-02: a mid-run cap left 21 lens REPORTS on disk but only 18 structured returns, so
+// water_balance had 5/5 complete reports that were unusable as data -- the structured tally
+// only materialised in the final return value, which never arrived. Reports are prose;
+// prose cannot be re-merged into a rate without changing substrate. Persist the STRUCTURE
+// as soon as it exists, so a cap costs the remaining agents and nothing already earned.
+// Same principle as disk-first reports, applied to the data rather than the narrative.
+// The workflow script itself has NO filesystem access, so the write goes through one cheap
+// agent. Only the STRUCTURE needed to recompute rates is checkpointed (ids, severities,
+// classes, doc_line, first evidence path) -- the full prose already lives in the per-lens
+// reports, and duplicating it here would make the prompt fragile.
+const CKPT = `${ARC}/round${R}_depth/_checkpoint_audits.json`
+const ckpt = {
+  round: R,
+  docs: DOCS.map(d => ({ label: d.label, klass: d.klass })),
+  lens_coverage: Object.fromEntries(DOCS.map(d => [d.label, audits.filter(a => a && a._label === d.label).map(a => a.lens)])),
+  ledgers: Object.fromEntries(DOCS.map(d => [d.label, ledgerByLabel[d.label] ? { total_checkable: ledgerByLabel[d.label].total_checkable, by_class: ledgerByLabel[d.label].by_class } : null])),
+  bugs_by_doc: Object.fromEntries(DOCS.map(d => [d.label, Object.values(bugsByDoc[d.label]).map(b => ({
+    id: b.id, severity: b.severity, bug_class: b.bug_class, doc_line: b.doc_line,
+    evidence: String(b.file_evidence || '').slice(0, 200), lenses: b.lenses,
+  }))])),
+  NOTE: 'PRE-VERIFY CHECKPOINT. Auditor-confirmed, NOT adversarially refuted -- Critical/Major are below this project\'s bar until a refuter verdict exists. Written before Verify so a rate-limit cap cannot destroy structured findings that already cost full price.',
+}
+await agent(
+  `Write EXACTLY the following JSON to ${CKPT}, byte for byte, with no commentary, no reformatting and no added fields. Create the directory if needed. Then reply with only the number of bytes written.\n\n${JSON.stringify(ckpt, null, 1)}`,
+  { label: 'checkpoint', phase: 'Audit', model: 'haiku' },
+).catch(e => log(`CHECKPOINT WRITE FAILED (findings survive only as prose reports): ${e && e.message}`))
 
 phase('Verify')
 // Adversarially refute every Critical/Major (cap per doc to bound cost); Minor/Info pass through unverified but are NOT counted as confirmed in the density.
