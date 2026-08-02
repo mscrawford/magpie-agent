@@ -24,6 +24,28 @@ const AGENT_DIR = P.agentDir || '/path/to/magpie/magpie-agent'
 const PARENT = P.parent || '/path/to/magpie'
 const DEV = P.dev || '/tmp/magpie_develop_ro'   // detached origin/develop worktree (verification truth)
 const ROLEMAP = P.rolemap || (AGENT_DIR + '/audit/integrated/depth_rolemap.json')
+
+// VACUITY GUARD -- a misinvocation must FAIL LOUDLY, never emit a clean-looking zero matrix.
+// 2026-08-02: this workflow was re-invoked with {scriptPath, resumeFromRunId} and NO args.
+// resumeFromRunId replays cached agent() calls but does NOT restore `args`, so DOCS became []
+// and R became undefined. Enumerate/Audit/Verify each iterated an empty list, zero audit
+// agents were spawned, and the run returned a fully-populated all-zero residual-density
+// matrix with denominator 0 -- indistinguishable at a glance from "the corpus is clean".
+// A zero-scan MUST error, not read as green. Same class as the check_gams_citations_impl
+// crash whose zero findings read as a blind spot for a full round.
+if (!DOCS.length) {
+  throw new Error('VACUITY GUARD: DOCS is empty -- no docs to audit. args.docs was not supplied. ' +
+    'NOTE: resumeFromRunId does NOT restore args; a resume must pass the full args payload again. ' +
+    'Expected {round:int, docs:[{path,label,klass}], paths:{agentDir,parent,dev,rolemap}}.')
+}
+if (R === undefined || R === null) {
+  throw new Error('VACUITY GUARD: args.round is unset -- output would be written to round<undefined>_depth.')
+}
+if (!P.agentDir) {
+  throw new Error('VACUITY GUARD: args.paths.agentDir is unset -- AGENT_DIR would fall back to the ' +
+    'documented PLACEHOLDER "/path/to/magpie/magpie-agent" and every agent would read a nonexistent tree.')
+}
+
 const ARC = AGENT_DIR + '/audit/archive/rounds'
 const RUBRIC = AGENT_DIR + '/audit/flywheel_rubric.md'
 const VERIFIERS = AGENT_DIR + '/agent/helpers/verifiers.md'
